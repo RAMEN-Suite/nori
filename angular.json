@@ -27,7 +27,7 @@
               }
             ],
             "styles": [
-              "projects/editor/src/styles/main.scss"
+              "projects/editor/src/styles/tailwind.css"
             ]
           },
           "configurations": {
@@ -82,7 +82,7 @@
               }
             ],
             "styles": [
-              "projects/editor/src/styles/main.scss"
+              "projects/editor/src/styles/tailwind.css"
             ]
           }
         }

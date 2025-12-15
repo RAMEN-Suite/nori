@@ -26,18 +26,6 @@
     "publish": "npm run build:electron && npm run build:editor && npm run publish:forge",
     "publish:forge": "tsx node_modules/@electron-forge/cli/src/electron-forge-publish"
   },
-  "prettier": {
-    "printWidth": 100,
-    "singleQuote": true,
-    "overrides": [
-      {
-        "files": "*.html",
-        "options": {
-          "parser": "angular"
-        }
-      }
-    ]
-  },
   "dependencies": {
     "@angular/common": "^21.0.5",
     "@angular/compiler": "^21.0.5",
@@ -50,6 +38,7 @@
     "json-schema-library": "^10.5.2",
     "primeng": "^21.0.1",
     "rxjs": "~7.8.2",
+    "tailwindcss": "^4.1.18",
     "tslib": "^2.8.1"
   },
   "devDependencies": {
@@ -62,6 +51,7 @@
     "@electron-forge/maker-squirrel": "^7.10.2",
     "@electron-forge/maker-zip": "^7.10.2",
     "@electron-forge/plugin-auto-unpack-natives": "^7.10.2",
+    "@tailwindcss/postcss": "^4.1.12",
     "@types/jasmine": "~5.1.13",
     "concurrently": "^9.2.1",
     "electron": "^39.2.6",
@@ -71,7 +61,10 @@
     "karma-coverage": "~2.2.1",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "postcss": "^8.5.3",
     "prettier": "^3.7.4",
+    "prettier-plugin-tailwindcss": "^0.7.2",
+    "tailwindcss": "^4.1.12",
     "ts-loader": "^9.5.4",
     "ts-node": "^10.9.2",
     "typescript": "~5.9.3",
