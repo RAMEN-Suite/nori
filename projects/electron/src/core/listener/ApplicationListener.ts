@@ -1,11 +1,11 @@
-import { Listener, ListenerMap } from '../EventInitializer';
+import { IListener, Listener } from '../EventInitializer';
 import { Application } from '../Application';
 import { APPLICATION_IPC } from '../../../../shared/static/IPC_EVENTS';
 import { app, BrowserWindow, IpcMainEvent, shell } from 'electron';
 
 export class ApplicationListener extends Listener {
   protected application: Application;
-  protected listener: ListenerMap = {
+  protected listener: IListener = {
     [APPLICATION_IPC.GET_APP_VERSION]: {
       type: 'handle',
       fn: this.handleGetAppVersion,

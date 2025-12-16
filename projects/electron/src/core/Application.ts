@@ -2,6 +2,7 @@ import { app, BrowserWindow, dialog, screen } from 'electron';
 import { ERROR_MSG } from '../static/ERROR_MSG';
 import { DEVELOPMENT_PATH, PRELOAD_PATH, PRODUCTION_PATH, PROJECTS_PATH } from '../static/PATHS';
 import fs from 'fs';
+import * as process from 'node:process';
 
 export class Application {
   protected title: string = '';
@@ -57,7 +58,6 @@ export class Application {
     const screenHeight: number = Math.floor(height * 0.9);
 
     this.window = new BrowserWindow({
-      frame: false,
       height: screenHeight,
       width: screenWidth,
       minWidth: Math.min(1024, screenWidth),
@@ -65,6 +65,7 @@ export class Application {
       useContentSize: true,
       center: true,
       autoHideMenuBar: true,
+      titleBarStyle: 'hiddenInset',
       webPreferences: {
         preload: PRELOAD_PATH,
         webSecurity: this.isProduction,
