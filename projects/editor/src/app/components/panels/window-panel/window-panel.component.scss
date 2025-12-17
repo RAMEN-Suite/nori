@@ -12,6 +12,11 @@
 
   &.custom-menubar {
     position: relative;
+    font-size: 10pt !important;
+
+    i {
+      font-size: 9pt !important;
+    }
 
     .menubar-title {
       position: absolute;
@@ -19,6 +24,10 @@
       transform: translateX(-50%);
     }
   }
+}
+
+p-divider {
+  padding: 0;
 }
 
 .window-settings {
