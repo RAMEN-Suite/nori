@@ -1,48 +1,42 @@
-<p-menubar class="custom-menubar py-0">
+<p-menubar>
   <ng-template #start>
-    <div class="menubar-title">
+    <div class="absolute left-1/2 -translate-x-1/2">
       <i [class]="windowPanelState.state().icon"></i>
       <span class="ml-3">{{ windowPanelState.state().title }}</span>
     </div>
   </ng-template>
   <ng-template #end>
-    <div class="window-settings ml-2 flex items-center">
-      <p-button
-        icon="pi pi-sun"
-        severity="primary"
-        variant="text"
-        size="small"
-        ariaLabel="minimize window"
-        fluid="true"
-      />
-      <p-divider layout="vertical"></p-divider>
-      <p-button
-        icon="pi pi-minus"
-        severity="primary"
-        variant="text"
-        size="small"
-        ariaLabel="minimize window"
-        fluid="true"
-        (click)="electron.minimizeApplication()"
-      />
-      <p-button
-        icon="pi pi-expand"
-        severity="primary"
-        variant="text"
-        size="small"
-        ariaLabel="maximize window"
-        fluid="true"
-        (click)="electron.maximizeApplication()"
-      />
-      <p-button
-        icon="pi pi-times"
-        severity="danger"
-        variant="text"
-        size="small"
-        ariaLabel="close window"
-        fluid="true"
-        (click)="electron.closeApplication()"
-      />
-    </div>
+    @if (hasControls) {
+      <div class="window-buttons ml-2 flex items-center">
+        <p-divider layout="vertical"></p-divider>
+        <p-button
+          icon="pi pi-minus"
+          severity="primary"
+          variant="text"
+          size="small"
+          ariaLabel="minimize window"
+          fluid="true"
+          (click)="electron.minimizeApplication()"
+        />
+        <p-button
+          icon="pi pi-expand"
+          severity="primary"
+          variant="text"
+          size="small"
+          ariaLabel="maximize window"
+          fluid="true"
+          (click)="electron.maximizeApplication()"
+        />
+        <p-button
+          icon="pi pi-times"
+          severity="danger"
+          variant="text"
+          size="small"
+          ariaLabel="close window"
+          fluid="true"
+          (click)="electron.closeApplication()"
+        />
+      </div>
+    }
   </ng-template>
 </p-menubar>

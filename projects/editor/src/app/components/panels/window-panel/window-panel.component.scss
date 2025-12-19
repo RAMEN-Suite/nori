@@ -1,7 +1,7 @@
-.p-menubar {
+p-menubar {
+  position: relative;
+  min-height: 36px;
   padding: 0;
-  -webkit-user-select: none;
-  -webkit-app-region: drag;
 
   border-left: 0;
   border-top: 0;
@@ -10,19 +10,13 @@
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
 
-  &.custom-menubar {
-    position: relative;
-    font-size: 10pt !important;
+  font-size: 10pt !important;
 
-    i {
-      font-size: 9pt !important;
-    }
+  -webkit-user-select: none;
+  -webkit-app-region: drag;
 
-    .menubar-title {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-    }
+  i {
+    font-size: 9pt !important;
   }
 }
 
@@ -30,6 +24,6 @@ p-divider {
   padding: 0;
 }
 
-.window-settings {
+.window-buttons {
   -webkit-app-region: no-drag;
 }

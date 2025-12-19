@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
+contextBridge.exposeInMainWorld('platform', process.platform);
 contextBridge.exposeInMainWorld('electron', {
   send: (channel: string, data: any): void => {
     ipcRenderer.send(channel, data);

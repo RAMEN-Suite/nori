@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { Menubar } from 'primeng/menubar';
 import { Button } from 'primeng/button';
 import { Divider } from 'primeng/divider';
@@ -11,7 +11,13 @@ import { WindowPanelState } from './window-panel.state';
   templateUrl: './window-panel.component.html',
   styleUrl: './window-panel.component.scss',
 })
-export class WindowPanelComponent {
+export class WindowPanelComponent implements OnInit {
+  public hasControls: boolean = false;
+
   public electron: ElectronService = inject(ElectronService);
   public windowPanelState: WindowPanelState = inject(WindowPanelState);
+
+  public async ngOnInit(): Promise<void> {
+    this.hasControls = window.platform !== 'darwin';
+  }
 }

@@ -1,6 +1,7 @@
 declare global {
   interface Window {
-    electron: IElectron;
+    electron?: IElectron;
+    platform?: string;
   }
 }
 

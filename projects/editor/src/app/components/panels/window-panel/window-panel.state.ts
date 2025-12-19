@@ -1,7 +1,7 @@
 import { effect, inject, Injectable, signal, Signal, WritableSignal } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 
-export interface IWindowPanelState {
+interface IWindowPanelState {
   title: string;
   icon: string;
 }

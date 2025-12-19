@@ -1,15 +1,11 @@
 import { IListener, Listener } from '../EventInitializer';
 import { Application } from '../Application';
-import { APPLICATION_IPC } from '../../../../shared/static/IPC_EVENTS';
+import { APPLICATION_IPC } from '../../static/IPC_EVENTS';
 import { app, BrowserWindow, IpcMainEvent, shell } from 'electron';
 
 export class ApplicationListener extends Listener {
   protected application: Application;
   protected listener: IListener = {
-    [APPLICATION_IPC.GET_APP_VERSION]: {
-      type: 'handle',
-      fn: this.handleGetAppVersion,
-    },
     [APPLICATION_IPC.CLOSE_APPLICATION]: {
       type: 'on',
       fn: this.handleCloseApplication,
@@ -31,10 +27,6 @@ export class ApplicationListener extends Listener {
   constructor(application: Application) {
     super();
     this.application = application;
-  }
-
-  protected handleGetAppVersion(): string {
-    return app.getVersion();
   }
 
   protected handleCloseApplication(): void {
