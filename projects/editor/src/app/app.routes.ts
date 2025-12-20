@@ -1,4 +1,9 @@
 import { Routes } from '@angular/router';
-import { DashboardComponent } from './pages/dashboard/dashboard.component';
+import { DashboardScreen } from './pages/dashboard/dashboard.screen';
+import { EditorScreen } from './pages/editor/editor.screen';
 
-export const routes: Routes = [{ path: '', component: DashboardComponent }];
+export const routes: Routes = [
+  { path: '', pathMatch: 'full', redirectTo: 'start' },
+  { path: 'start', component: DashboardScreen },
+  { path: 'editor', component: EditorScreen },
+];

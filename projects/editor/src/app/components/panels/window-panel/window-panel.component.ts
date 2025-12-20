@@ -12,10 +12,10 @@ import { WindowPanelState } from './window-panel.state';
   styleUrl: './window-panel.component.scss',
 })
 export class WindowPanelComponent implements OnInit {
-  public hasControls: boolean = false;
+  protected readonly electron: ElectronService = inject(ElectronService);
+  protected readonly windowPanelState: WindowPanelState = inject(WindowPanelState);
 
-  public electron: ElectronService = inject(ElectronService);
-  public windowPanelState: WindowPanelState = inject(WindowPanelState);
+  protected hasControls: boolean = false;
 
   public async ngOnInit(): Promise<void> {
     this.hasControls = window.platform !== 'darwin';

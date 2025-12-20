@@ -6,20 +6,25 @@ interface IWindowPanelState {
   icon: string;
 }
 
+const defaultState: IWindowPanelState = {
+  title: '',
+  icon: '',
+};
+
 @Injectable({
   providedIn: 'root',
 })
 export class WindowPanelState {
-  private readonly title: Title = inject(Title);
-  private readonly _state: WritableSignal<IWindowPanelState> = signal({ title: '', icon: '' });
+  private readonly titleService: Title = inject(Title);
+  private readonly _state: WritableSignal<IWindowPanelState> = signal(defaultState);
 
   public readonly state: Signal<IWindowPanelState> = this._state.asReadonly();
 
   constructor() {
-    effect((): void => this.title.setTitle(this._state().title));
+    effect((): void => this.titleService.setTitle(this._state().title));
   }
 
-  public setState(state: IWindowPanelState): void {
-    this._state.set(state);
+  public setTitle(title: string, icon: string): void {
+    this._state.update((s: IWindowPanelState): IWindowPanelState => ({ ...s, title, icon }));
   }
 }

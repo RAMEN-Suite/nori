@@ -1,8 +1,8 @@
 import { Preset } from '@primeuix/themes/types';
 import { definePreset } from '@primeuix/themes';
-import Lara from '@primeuix/themes/Nora';
+import Aura from '@primeuix/themes/Aura';
 
-export const SuitePreset: Preset = definePreset(Lara, {
+export const SuitePreset: Preset = definePreset(Aura, {
   semantic: {
     primary: {
       50: '{zinc.50}',

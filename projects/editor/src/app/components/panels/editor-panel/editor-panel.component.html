@@ -1,0 +1,23 @@
+@let isDark = editorStatePanel.state().theme === EDITOR_THEME.DARK;
+
+<p-menubar [model]="menuItems">
+  <ng-template #start>
+    <svg height="24px" width="24px" class="mx-3">
+      <use href="images/ramen.svg#ramen-logo"></use>
+    </svg>
+    <span class="font-bold uppercase">Nori</span>
+    <p-divider layout="vertical"></p-divider>
+  </ng-template>
+  <ng-template #end>
+    <div class="ml-2 flex items-center gap-1">
+      <p-button
+        [icon]="isDark ? 'pi pi-moon' : 'pi pi-sun'"
+        severity="primary"
+        variant="text"
+        fluid="true"
+        (click)="editorStatePanel.setTheme(isDark ? EDITOR_THEME.LIGHT : EDITOR_THEME.DARK)"
+      />
+      <p-button icon="pi pi-cog" severity="primary" variant="text" fluid="true" />
+    </div>
+  </ng-template>
+</p-menubar>

@@ -3,3 +3,7 @@
 @import "primeicons/primeicons.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
+
+.p-menu-overlay-left {
+    right: -40px;
+}
