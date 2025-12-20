@@ -24,7 +24,8 @@ export class EditorPanelState {
   public readonly state: Signal<IEditorPanelState> = this._state.asReadonly();
 
   constructor() {
-    effect((): void => this.storageService.setItems('editor', this._state().theme));
+    this._state.set(this.storageService.getItems('editor') ?? defaultState);
+    effect((): void => this.storageService.setItems('editor', this._state()));
   }
 
   public setTheme(theme: EDITOR_THEME): void {

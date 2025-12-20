@@ -21,7 +21,7 @@ export class App {
 
   constructor() {
     effect((): void => {
-      const html: HTMLElement = document.documentElement;
+      const html: HTMLElement = this.document.documentElement;
       const isDark: boolean = this.editorPanelState.state().theme === EDITOR_THEME.DARK;
 
       html.classList.toggle('dark', isDark);
