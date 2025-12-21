@@ -31,6 +31,10 @@ export const SuitePreset: Preset = definePreset(Aura, {
           color: '#ffffff',
           focusColor: '#ffffff',
         },
+        surface: {
+          0: '{zinc.50}',
+          50: '#ffffff',
+        },
       },
       dark: {
         primary: {
