@@ -1,0 +1,317 @@
+{
+  "$schema": "https://ramen-schema.org/core/0.1.0/schema.json",
+  "$id": "https://ramen-schema.org/ramen/0.1.0/schema.json",
+
+  "kind": "Model",
+  "id": "ramen",
+  "name": "RAMEN",
+
+  "types": [
+    { "kind": "DataType", "id": "uuid", "name": "UUID" },
+    { "kind": "DataType", "id": "string", "name": "String" },
+
+    {
+      "kind": "Class",
+      "id": "collection",
+      "name": "Collection",
+      "properties": [
+        { "name": "uuid", "typeId": "uuid", "multiplicity": { "lower": 1, "upper": 1 } },
+        { "name": "label", "typeId": "string", "multiplicity": { "lower": 1, "upper": 1 } }
+      ]
+    },
+    {
+      "kind": "Class",
+      "id": "entity",
+      "name": "Entity",
+      "properties": [
+        { "name": "uuid", "typeId": "uuid", "multiplicity": { "lower": 1, "upper": 1 } },
+        { "name": "label", "typeId": "string", "multiplicity": { "lower": 1, "upper": 1 } }
+      ]
+    },
+    {
+      "kind": "Class",
+      "id": "text",
+      "name": "Text",
+      "properties": [
+        { "name": "uuid", "typeId": "uuid", "multiplicity": { "lower": 1, "upper": 1 } },
+        { "name": "label", "typeId": "string", "multiplicity": { "lower": 1, "upper": 1 } }
+      ]
+    },
+    {
+      "kind": "Class",
+      "id": "image",
+      "name": "Image",
+      "properties": [
+        { "name": "uuid", "typeId": "uuid", "multiplicity": { "lower": 1, "upper": 1 } },
+        { "name": "label", "typeId": "string", "multiplicity": { "lower": 1, "upper": 1 } }
+      ]
+    },
+    {
+      "kind": "Class",
+      "id": "annotation",
+      "name": "Annotation",
+      "properties": [
+        { "name": "uuid", "typeId": "uuid", "multiplicity": { "lower": 1, "upper": 1 } },
+        { "name": "type", "typeId": "string", "multiplicity": { "lower": 1, "upper": 1 } },
+        { "name": "dict", "typeId": "string", "multiplicity": { "lower": 1, "upper": 1 } }
+      ]
+    }
+  ],
+
+  "associations": [
+    {
+      "kind": "Association",
+      "id": "a_part_of_collection_collection",
+      "name": "PART_OF",
+      "ends": [
+        {
+          "classId": "collection",
+          "role": "children",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": false
+        },
+        {
+          "classId": "collection",
+          "role": "parents",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": true
+        }
+      ]
+    },
+
+    {
+      "kind": "Association",
+      "id": "a_part_of_text_collection",
+      "name": "PART_OF",
+      "ends": [
+        {
+          "classId": "text",
+          "role": "texts",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": false
+        },
+        {
+          "classId": "collection",
+          "role": "collections",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": true
+        }
+      ]
+    },
+    {
+      "kind": "Association",
+      "id": "a_part_of_image_collection",
+      "name": "PART_OF",
+      "ends": [
+        {
+          "classId": "image",
+          "role": "images",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": false
+        },
+        {
+          "classId": "collection",
+          "role": "collections",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": true
+        }
+      ]
+    },
+
+    {
+      "kind": "Association",
+      "id": "a_has_annotation_collection_annotation",
+      "name": "HAS_ANNOTATION",
+      "ends": [
+        {
+          "classId": "collection",
+          "role": "collections",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": false
+        },
+        {
+          "classId": "annotation",
+          "role": "annotations",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": true
+        }
+      ]
+    },
+    {
+      "kind": "Association",
+      "id": "a_has_annotation_text_annotation",
+      "name": "HAS_ANNOTATION",
+      "ends": [
+        {
+          "classId": "text",
+          "role": "texts",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": false
+        },
+        {
+          "classId": "annotation",
+          "role": "annotations",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": true
+        }
+      ]
+    },
+    {
+      "kind": "Association",
+      "id": "a_has_annotation_image_annotation",
+      "name": "HAS_ANNOTATION",
+      "ends": [
+        {
+          "classId": "image",
+          "role": "images",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": false
+        },
+        {
+          "classId": "annotation",
+          "role": "annotations",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": true
+        }
+      ]
+    },
+    {
+      "kind": "Association",
+      "id": "a_has_annotation_entity_annotation",
+      "name": "HAS_ANNOTATION",
+      "ends": [
+        {
+          "classId": "entity",
+          "role": "entities",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": false
+        },
+        {
+          "classId": "annotation",
+          "role": "annotations",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": true
+        }
+      ]
+    },
+    {
+      "kind": "Association",
+      "id": "a_has_annotation_annotation_annotation",
+      "name": "HAS_ANNOTATION",
+      "ends": [
+        {
+          "classId": "annotation",
+          "role": "annotations",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": false
+        },
+        {
+          "classId": "annotation",
+          "role": "annotations",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": true
+        }
+      ]
+    },
+
+    {
+      "kind": "Association",
+      "id": "a_refers_to_annotation_collection",
+      "name": "REFERS_TO",
+      "ends": [
+        {
+          "classId": "annotation",
+          "role": "annotations",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": false
+        },
+        {
+          "classId": "collection",
+          "role": "collections",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": true
+        }
+      ]
+    },
+    {
+      "kind": "Association",
+      "id": "a_refers_to_annotation_text",
+      "name": "REFERS_TO",
+      "ends": [
+        {
+          "classId": "annotation",
+          "role": "annotations",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": false
+        },
+        {
+          "classId": "text",
+          "role": "texts",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": true
+        }
+      ]
+    },
+    {
+      "kind": "Association",
+      "id": "a_refers_to_annotation_image",
+      "name": "REFERS_TO",
+      "ends": [
+        {
+          "classId": "annotation",
+          "role": "annotations",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": false
+        },
+        {
+          "classId": "image",
+          "role": "images",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": true
+        }
+      ]
+    },
+    {
+      "kind": "Association",
+      "id": "a_refers_to_annotation_entity",
+      "name": "REFERS_TO",
+      "ends": [
+        {
+          "classId": "annotation",
+          "role": "annotations",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": false
+        },
+        {
+          "classId": "entity",
+          "role": "entities",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": true
+        }
+      ]
+    },
+    {
+      "kind": "Association",
+      "id": "a_refers_to_annotation_annotation",
+      "name": "REFERS_TO",
+      "ends": [
+        {
+          "classId": "annotation",
+          "role": "annotations",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": false
+        },
+        {
+          "classId": "annotation",
+          "role": "annotations",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": true
+        }
+      ]
+    }
+  ],
+
+  "generalizations": [],
+  "constraints": [],
+  "ext": {}
+}

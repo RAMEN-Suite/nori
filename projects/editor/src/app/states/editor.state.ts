@@ -1,27 +1,27 @@
 import { effect, inject, Injectable, Signal, signal, WritableSignal } from '@angular/core';
-import { StorageService } from '../../../services/storage.service';
+import { StorageService } from '../services/storage.service';
 
 export enum EDITOR_THEME {
   LIGHT = 'light',
   DARK = 'dark',
 }
 
-interface IEditorPanelState {
+interface IEditorState {
   theme: EDITOR_THEME;
 }
 
-const defaultState: IEditorPanelState = {
+const defaultState: IEditorState = {
   theme: EDITOR_THEME.LIGHT,
 };
 
 @Injectable({
   providedIn: 'root',
 })
-export class EditorPanelState {
+export class EditorState {
   private readonly storageService: StorageService = inject(StorageService);
-  private readonly _state: WritableSignal<IEditorPanelState> = signal(defaultState);
+  private readonly _state: WritableSignal<IEditorState> = signal(defaultState);
 
-  public readonly state: Signal<IEditorPanelState> = this._state.asReadonly();
+  public readonly state: Signal<IEditorState> = this._state.asReadonly();
 
   constructor() {
     this._state.set(this.storageService.getItems('editor') ?? defaultState);
@@ -29,6 +29,6 @@ export class EditorPanelState {
   }
 
   public setTheme(theme: EDITOR_THEME): void {
-    this._state.update((s: IEditorPanelState): IEditorPanelState => ({ ...s, theme: theme }));
+    this._state.update((s: IEditorState): IEditorState => ({ ...s, theme: theme }));
   }
 }

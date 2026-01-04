@@ -8,7 +8,7 @@
     "url": "https://www.sebenns.com"
   },
   "license": "MIT",
-  "version": "0.1.0",
+  "version": "2026.0.1",
   "main": "dist/electron/index.js",
   "private": true,
   "scripts": {

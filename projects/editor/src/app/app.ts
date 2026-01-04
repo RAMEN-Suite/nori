@@ -1,20 +1,17 @@
 import { Component, DOCUMENT, effect, inject } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
-import { WindowPanelComponent } from './components/panels/window-panel/window-panel.component';
+import { TitleBarComponent } from './components/bars/title-bar/title-bar.component';
 import { RouterOutlet } from '@angular/router';
-import {
-  EDITOR_THEME,
-  EditorPanelState,
-} from './components/panels/editor-panel/editor-panel.state';
+import { EDITOR_THEME, EditorState } from './states/editor.state';
 
 @Component({
   selector: 'app-root',
-  imports: [ButtonModule, WindowPanelComponent, RouterOutlet],
+  imports: [ButtonModule, TitleBarComponent, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
 export class App {
-  private readonly editorPanelState: EditorPanelState = inject(EditorPanelState);
+  private readonly editorState: EditorState = inject(EditorState);
   private readonly document: Document = inject(DOCUMENT);
 
   protected readonly isElectronRuntime: boolean = !!window.electron;
@@ -22,7 +19,7 @@ export class App {
   constructor() {
     effect((): void => {
       const html: HTMLElement = this.document.documentElement;
-      const isDark: boolean = this.editorPanelState.state().theme === EDITOR_THEME.DARK;
+      const isDark: boolean = this.editorState.state().theme === EDITOR_THEME.DARK;
 
       html.classList.toggle('dark', isDark);
     });

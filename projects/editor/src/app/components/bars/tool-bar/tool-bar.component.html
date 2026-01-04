@@ -1,4 +1,4 @@
-@let isDark = editorStatePanel.state().theme === EDITOR_THEME.DARK;
+@let isDark = editorState.state().theme === EDITOR_THEME.DARK;
 
 <p-menubar [model]="menuItems">
   <ng-template #start>
@@ -15,7 +15,7 @@
         severity="primary"
         variant="text"
         fluid="true"
-        (click)="editorStatePanel.setTheme(isDark ? EDITOR_THEME.LIGHT : EDITOR_THEME.DARK)"
+        (click)="editorState.setTheme(isDark ? EDITOR_THEME.LIGHT : EDITOR_THEME.DARK)"
       />
       <p-button icon="pi pi-cog" severity="primary" variant="text" fluid="true" />
     </div>

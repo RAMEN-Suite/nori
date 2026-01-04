@@ -1,0 +1,258 @@
+{
+  "$schema": "https://ramen-schema.org/core/0.1.0/schema.json",
+  "$id": "https://sozinianer.de/schema.json",
+
+  "kind": "Model",
+  "id": "socinian",
+  "name": "Socinian Correspondence (M1 example)",
+
+  "imports": [
+    {
+      "modelId": "https://ramen-schema.org/ramen/0.1.0/schema.json",
+      "alias": "ramen"
+    }
+  ],
+
+  "types": [
+    { "kind": "Class", "id": "corpus", "name": "Corpus", "metaType": "ramen:collection" },
+    {
+      "kind": "Class",
+      "id": "communication",
+      "name": "Communication",
+      "metaType": "ramen:collection"
+    },
+    {
+      "kind": "Class",
+      "id": "letter",
+      "name": "Letter",
+      "metaType": "ramen:collection"
+    },
+    {
+      "kind": "Class",
+      "id": "abstract",
+      "name": "Abstract",
+      "metaType": "ramen:collection"
+    },
+    {
+      "kind": "Class",
+      "id": "variant",
+      "name": "Variant",
+      "metaType": "ramen:collection"
+    },
+
+    {
+      "kind": "Class",
+      "id": "attachment",
+      "name": "Attachment",
+      "metaType": "ramen:collection"
+    },
+    {
+      "kind": "Class",
+      "id": "document",
+      "name": "Document",
+      "metaType": "ramen:collection"
+    },
+    {
+      "kind": "Class",
+      "id": "figure",
+      "name": "Figure",
+      "metaType": "ramen:collection"
+    },
+
+    {
+      "kind": "Class",
+      "id": "witness",
+      "name": "Witness",
+      "metaType": "ramen:collection"
+    }
+  ],
+
+  "associations": [
+    {
+      "kind": "Association",
+      "id": "communication_partOf_corpus",
+      "name": "PART_OF",
+      "metaAssociation": "ramen:a_part_of_collection_collection",
+      "ends": [
+        {
+          "classId": "communication",
+          "role": "child",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": false
+        },
+        {
+          "classId": "corpus",
+          "role": "parent",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": true
+        }
+      ]
+    },
+    {
+      "kind": "Association",
+      "id": "letter_partOf_communication",
+      "name": "PART_OF",
+      "metaAssociation": "ramen:a_part_of_collection_collection",
+      "ends": [
+        {
+          "classId": "letter",
+          "role": "child",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": false
+        },
+        {
+          "classId": "communication",
+          "role": "parent",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": true
+        }
+      ]
+    },
+    {
+      "kind": "Association",
+      "id": "abstract_partOf_letter",
+      "name": "PART_OF",
+      "metaAssociation": "ramen:a_part_of_collection_collection",
+      "ends": [
+        {
+          "classId": "abstract",
+          "role": "child",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": false
+        },
+        {
+          "classId": "letter",
+          "role": "parent",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": true
+        }
+      ]
+    },
+
+    {
+      "kind": "Association",
+      "id": "attachment_partOf_corpus",
+      "name": "PART_OF",
+      "metaAssociation": "ramen:a_part_of_collection_collection",
+      "ends": [
+        {
+          "classId": "attachment",
+          "role": "child",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": false
+        },
+        {
+          "classId": "corpus",
+          "role": "parent",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": true
+        }
+      ]
+    },
+    {
+      "kind": "Association",
+      "id": "document_partOf_attachment",
+      "name": "PART_OF",
+      "metaAssociation": "ramen:a_part_of_collection_collection",
+      "ends": [
+        {
+          "classId": "document",
+          "role": "child",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": false
+        },
+        {
+          "classId": "attachment",
+          "role": "parent",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": true
+        }
+      ]
+    },
+    {
+      "kind": "Association",
+      "id": "figure_partOf_attachment",
+      "name": "PART_OF",
+      "metaAssociation": "ramen:a_part_of_collection_collection",
+      "ends": [
+        {
+          "classId": "figure",
+          "role": "child",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": false
+        },
+        {
+          "classId": "attachment",
+          "role": "parent",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": true
+        }
+      ]
+    },
+
+    {
+      "kind": "Association",
+      "id": "witness_partOf_document",
+      "name": "PART_OF",
+      "metaAssociation": "ramen:a_part_of_collection_collection",
+      "ends": [
+        {
+          "classId": "witness",
+          "role": "child",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": false
+        },
+        {
+          "classId": "document",
+          "role": "parent",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": true
+        }
+      ]
+    },
+    {
+      "kind": "Association",
+      "id": "variant_partOf_witness",
+      "name": "PART_OF",
+      "metaAssociation": "ramen:a_part_of_collection_collection",
+      "ends": [
+        {
+          "classId": "variant",
+          "role": "child",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": false
+        },
+        {
+          "classId": "witness",
+          "role": "parent",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": true
+        }
+      ]
+    },
+    {
+      "kind": "Association",
+      "id": "letter_partOf_attachment",
+      "name": "PART_OF",
+      "metaAssociation": "ramen:a_part_of_collection_collection",
+      "ends": [
+        {
+          "classId": "letter",
+          "role": "child",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": false
+        },
+        {
+          "classId": "attachment",
+          "role": "parent",
+          "multiplicity": { "lower": 0, "upper": "*" },
+          "isNavigable": true
+        }
+      ]
+    }
+  ],
+
+  "generalizations": [],
+  "constraints": [],
+  "ext": {}
+}

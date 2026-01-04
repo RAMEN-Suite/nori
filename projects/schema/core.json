@@ -1,0 +1,416 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ramen-schema.org/core/0.1.0/schema.json",
+  "title": "UML-Light Core",
+
+  "type": "object",
+  "required": ["$schema", "$id", "kind", "id"],
+
+  "properties": {
+    "$schema": {
+      "type": "string",
+      "$comment": "Model documents may declare their schema URI here."
+    },
+    "$id": {
+      "type": "string",
+      "$comment": "Canonical, versioned URI of the model document (not used for internal references)."
+    },
+
+    "kind": {
+      "const": "Model",
+      "$comment": "Root element marker."
+    },
+    "id": {
+      "$ref": "#/$defs/Id",
+      "$comment": "Model-local identifier (not $id). Enforce uniqueness in tooling."
+    },
+    "name": {
+      "type": "string",
+      "$comment": "Optional display name."
+    },
+
+    "imports": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/Import" },
+      "default": [],
+      "$comment": "Multi-level: imported models (e.g., M1 imports M2)."
+    },
+    "types": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/Type" },
+      "default": [],
+      "$comment": "Declared classifiers: Class, DataType, Enumeration."
+    },
+    "associations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/Association" },
+      "default": [],
+      "$comment": "Relationships. Ends carry roles and multiplicities."
+    },
+    "generalizations": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/Generalization" },
+      "default": [],
+      "$comment": "Inheritance edges: specificId -> generalId."
+    },
+    "constraints": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/Constraint" },
+      "default": [],
+      "$comment": "Optional rules. Not executed by JSON Schema."
+    },
+
+    "ext": {
+      "type": "object",
+      "additionalProperties": true,
+      "default": {},
+      "$comment": "Extension bucket. Keep keys namespaced (e.g., 'x-project:*')."
+    }
+  },
+  "additionalProperties": false,
+  "$comment": "Note: JSON Schema cannot reliably enforce referential integrity (e.g., typeId exists) or unique ids across arrays. Do that in tooling.",
+
+  "$defs": {
+    "Id": {
+      "type": "string",
+      "pattern": "^[a-z_][A-Za-z0-9_\\-:.]*$",
+      "$comment": "Identifier must start with a lowercase letter or '_' and may contain letters (camelCase allowed), digits, '_', '-', '.', ':'."
+    },
+
+    "Upper": {
+      "oneOf": [{ "type": "integer", "minimum": 0 }, { "const": "*" }],
+      "$comment": "Multiplicity upper bound. '*' means unbounded."
+    },
+    "Lower": {
+      "oneOf": [{ "type": "integer", "minimum": 0 }],
+      "$comment": "Multiplicity lower bound."
+    },
+
+    "ModelRef": {
+      "type": "string",
+      "minLength": 1,
+      "$comment": "Reference to an imported model. Typically an absolute URI (same as that model's $id)."
+    },
+    "MetaRef": {
+      "type": "string",
+      "minLength": 1,
+      "$comment": "Reference to a meta element in an imported model. Convention: '<model-uri>#<elementId>' or 'prefix:elementId' if your tooling maps prefixes via imports."
+    },
+    "Import": {
+      "type": "object",
+      "required": ["modelId"],
+      "properties": {
+        "modelId": {
+          "$ref": "#/$defs/ModelRef",
+          "$comment": "Imported model canonical URI."
+        },
+        "alias": {
+          "type": "string",
+          "$comment": "Optional short name/prefix used in MetaRef (e.g., 'ramen')."
+        }
+      },
+      "additionalProperties": false,
+      "$comment": "Tooling should enforce unique alias and resolve alias->modelId mapping."
+    },
+
+    "Multiplicity": {
+      "type": "object",
+      "required": ["lower", "upper"],
+      "properties": {
+        "lower": {
+          "$ref": "#/$defs/Lower",
+          "$comment": "Lower bound (>=0)."
+        },
+        "upper": {
+          "$ref": "#/$defs/Upper",
+          "$comment": "Upper bound (>=0 or '*')."
+        }
+      },
+      "additionalProperties": false,
+      "$comment": "Tooling should enforce lower <= upper when upper is numeric."
+    },
+
+    "Property": {
+      "type": "object",
+      "required": ["name", "typeId", "multiplicity"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "$comment": "Attribute name."
+        },
+        "typeId": {
+          "$ref": "#/$defs/Id",
+          "$comment": "Referenced typeId (Class/DataType/Enumeration)."
+        },
+        "multiplicity": {
+          "$ref": "#/$defs/Multiplicity",
+          "$comment": "Attribute multiplicity."
+        },
+
+        "isDerived": {
+          "type": "boolean",
+          "default": false,
+          "$comment": "Derived/computed attribute hint."
+        },
+        "isReadOnly": {
+          "type": "boolean",
+          "default": false,
+          "$comment": "Read-only hint."
+        },
+
+        "defaultValue": {
+          "$comment": "Optional default. Interpreted by tooling/exporters."
+        },
+        "ext": {
+          "type": "object",
+          "additionalProperties": true,
+          "default": {},
+          "$comment": "Per-property extensions (e.g., visibility)."
+        }
+      },
+      "additionalProperties": false,
+      "$comment": "Class-owned attribute only. Association ends are modeled separately as AssociationEnd."
+    },
+
+    "Type": {
+      "oneOf": [
+        { "$ref": "#/$defs/Class" },
+        { "$ref": "#/$defs/DataType" },
+        { "$ref": "#/$defs/Enumeration" }
+      ],
+      "$comment": "Classifier union."
+    },
+
+    "Class": {
+      "type": "object",
+      "required": ["kind", "id", "name"],
+      "properties": {
+        "kind": { "const": "Class" },
+        "id": {
+          "$ref": "#/$defs/Id",
+          "$comment": "Class identifier (referenced by AssociationEnd and Generalization)."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "$comment": "Display name."
+        },
+
+        "metaType": {
+          "$ref": "#/$defs/MetaRef",
+          "$comment": "Multi-level: the metatype this Class conforms to (e.g., M1 Class typed by M2 Class 'Collection')."
+        },
+
+        "isAbstract": {
+          "type": "boolean",
+          "default": false,
+          "$comment": "If true, class cannot be instantiated."
+        },
+
+        "properties": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Property" },
+          "default": [],
+          "$comment": "Class attributes (not relationships)."
+        },
+        "ext": {
+          "type": "object",
+          "additionalProperties": true,
+          "default": {},
+          "$comment": "Per-class extensions."
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "DataType": {
+      "type": "object",
+      "required": ["kind", "id", "name"],
+      "properties": {
+        "kind": { "const": "DataType" },
+        "id": {
+          "$ref": "#/$defs/Id",
+          "$comment": "Type identifier referenced by Property.typeId."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "$comment": "Display name."
+        },
+        "ext": {
+          "type": "object",
+          "additionalProperties": true,
+          "default": {},
+          "$comment": "Per-datatype extensions (e.g., underlying representation)."
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "Enumeration": {
+      "type": "object",
+      "required": ["kind", "id", "name", "literals"],
+      "properties": {
+        "kind": { "const": "Enumeration" },
+        "id": {
+          "$ref": "#/$defs/Id",
+          "$comment": "Enum identifier referenced by Property.typeId."
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "$comment": "Display name."
+        },
+        "literals": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "$comment": "Allowed literals. Order preserved."
+        },
+        "ext": {
+          "type": "object",
+          "additionalProperties": true,
+          "default": {},
+          "$comment": "Per-enum extensions."
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "AssociationEnd": {
+      "type": "object",
+      "required": ["classId", "role", "multiplicity"],
+      "properties": {
+        "classId": {
+          "$ref": "#/$defs/Id",
+          "$comment": "Endpoint class (must reference a Class.id)."
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1,
+          "$comment": "Role name on this end (often becomes a property name)."
+        },
+        "multiplicity": {
+          "$ref": "#/$defs/Multiplicity",
+          "$comment": "End multiplicity."
+        },
+
+        "isNavigable": {
+          "type": "boolean",
+          "default": true,
+          "$comment": "If true, this end is navigable from the opposite end (arrow points here)."
+        },
+
+        "ext": {
+          "type": "object",
+          "additionalProperties": true,
+          "default": {},
+          "$comment": "End-specific metadata."
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "Association": {
+      "type": "object",
+      "required": ["kind", "id", "ends"],
+      "properties": {
+        "kind": { "const": "Association" },
+        "id": {
+          "$ref": "#/$defs/Id",
+          "$comment": "Association identifier."
+        },
+        "name": {
+          "type": "string",
+          "$comment": "Optional association name (often omitted; roles carry meaning)."
+        },
+        "metaAssociation": {
+          "$ref": "#/$defs/MetaRef",
+          "$comment": "Multi-level: the meta-association this Association conforms to (e.g., M1 PART_OF typed by M2 PART_OF)."
+        },
+        "ends": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": { "$ref": "#/$defs/AssociationEnd" },
+          "$comment": "Exactly two ends (binary association)."
+        },
+        "ext": {
+          "type": "object",
+          "additionalProperties": true,
+          "default": {},
+          "$comment": "Per-association extensions."
+        }
+      },
+      "additionalProperties": false,
+      "$comment": "No direction stored here; direction is implied by end roles."
+    },
+
+    "Generalization": {
+      "type": "object",
+      "required": ["kind", "id", "specificId", "generalId"],
+      "properties": {
+        "kind": { "const": "Generalization" },
+        "id": {
+          "$ref": "#/$defs/Id",
+          "$comment": "Generalization identifier."
+        },
+        "specificId": {
+          "$ref": "#/$defs/Id",
+          "$comment": "Subclass (must reference a Class.id)."
+        },
+        "generalId": {
+          "$ref": "#/$defs/Id",
+          "$comment": "Superclass (must reference a Class.id)."
+        },
+        "ext": {
+          "type": "object",
+          "additionalProperties": true,
+          "default": {},
+          "$comment": "Per-generalization extensions."
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "Constraint": {
+      "type": "object",
+      "required": ["kind", "id", "body", "targetIds"],
+      "properties": {
+        "kind": { "const": "Constraint" },
+        "id": {
+          "$ref": "#/$defs/Id",
+          "$comment": "Constraint identifier."
+        },
+        "name": {
+          "type": "string",
+          "$comment": "Optional short name."
+        },
+        "language": {
+          "type": "string",
+          "default": "text",
+          "$comment": "E.g., 'text' or 'ocl'. Informational unless tooling interprets it."
+        },
+        "body": {
+          "type": "string",
+          "minLength": 1,
+          "$comment": "Constraint text/expression."
+        },
+        "targetIds": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/Id" },
+          "$comment": "Ids of affected elements (Class/Association/etc.)."
+        },
+        "ext": {
+          "type": "object",
+          "additionalProperties": true,
+          "default": {},
+          "$comment": "Per-constraint extensions."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

@@ -3,17 +3,17 @@ import { Menubar } from 'primeng/menubar';
 import { Button } from 'primeng/button';
 import { Divider } from 'primeng/divider';
 import { ElectronService } from '../../../services/electron.service';
-import { WindowPanelState } from './window-panel.state';
+import { WindowState } from '../../../states/window.state';
 
 @Component({
-  selector: 'app-window-panel',
+  selector: 'app-title-bar',
   imports: [Menubar, Button, Divider],
-  templateUrl: './window-panel.component.html',
-  styleUrl: './window-panel.component.scss',
+  templateUrl: './title-bar.component.html',
+  styleUrl: './title-bar.component.scss',
 })
-export class WindowPanelComponent implements OnInit {
+export class TitleBarComponent implements OnInit {
   protected readonly electron: ElectronService = inject(ElectronService);
-  protected readonly windowPanelState: WindowPanelState = inject(WindowPanelState);
+  protected readonly windowState: WindowState = inject(WindowState);
 
   protected hasControls: boolean = false;
 

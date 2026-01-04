@@ -1,12 +1,12 @@
 import { effect, inject, Injectable, signal, Signal, WritableSignal } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 
-interface IWindowPanelState {
+interface IWindowState {
   title: string;
   icon: string;
 }
 
-const defaultState: IWindowPanelState = {
+const defaultState: IWindowState = {
   title: '',
   icon: '',
 };
@@ -14,17 +14,17 @@ const defaultState: IWindowPanelState = {
 @Injectable({
   providedIn: 'root',
 })
-export class WindowPanelState {
+export class WindowState {
   private readonly titleService: Title = inject(Title);
-  private readonly _state: WritableSignal<IWindowPanelState> = signal(defaultState);
+  private readonly _state: WritableSignal<IWindowState> = signal(defaultState);
 
-  public readonly state: Signal<IWindowPanelState> = this._state.asReadonly();
+  public readonly state: Signal<IWindowState> = this._state.asReadonly();
 
   constructor() {
     effect((): void => this.titleService.setTitle(this._state().title));
   }
 
   public setTitle(title: string, icon: string): void {
-    this._state.update((s: IWindowPanelState): IWindowPanelState => ({ ...s, title, icon }));
+    this._state.update((s: IWindowState): IWindowState => ({ ...s, title, icon }));
   }
 }
