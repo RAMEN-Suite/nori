@@ -1,0 +1,30 @@
+<main class="max-h-window relative flex flex-col items-center justify-center gap-y-10 text-center">
+  <section class="flex flex-col gap-y-2" animate.enter="logo-entrance">
+    <div class="flex flex-col">
+      <svg height="126px" width="126px">
+        <use href="images/ramen.svg#ramen-logo"></use>
+      </svg>
+      <div class="text-5xl font-stretch-semi-expanded">NORI</div>
+    </div>
+    <div class="text-sm opacity-50">Version {{ environment.version }}</div>
+  </section>
+
+  <section class="flex flex-col" animate.enter="menu-entrance">
+    <p-button
+      variant="text"
+      size="large"
+      icon="pi pi-file-plus"
+      label="create a new project"
+      routerLink="start"
+    />
+    <p-button
+      variant="text"
+      size="large"
+      icon="pi pi-folder"
+      label="open an existing project"
+      routerLink="open"
+    />
+  </section>
+
+  <div class="background-circle" animate.enter="logo-entrance"></div>
+</main>

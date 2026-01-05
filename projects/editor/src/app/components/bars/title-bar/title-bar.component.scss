@@ -1,5 +1,6 @@
 p-menubar {
-  position: relative;
+  position: fixed;
+  width: 100%;
   z-index: 100;
 
   min-height: 36px;
@@ -8,9 +9,7 @@ p-menubar {
   border-left: 0;
   border-top: 0;
   border-right: 0;
-
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
+  border-radius: 0;
 
   font-size: 10pt !important;
 

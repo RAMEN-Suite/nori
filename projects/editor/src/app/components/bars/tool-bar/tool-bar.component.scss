@@ -1,16 +1,16 @@
 p-menubar {
+  position: fixed;
+  width: 100%;
   z-index: 50;
 
-  min-height: 43px;
+  min-height: 44px;
   padding: 5px;
 
   border-top: 0;
   border-left: 0;
   border-right: 0;
 
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-
+  border-radius: 0;
   font-size: 11pt;
 
   animation: slideInDown;

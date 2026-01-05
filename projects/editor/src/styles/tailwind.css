@@ -4,6 +4,28 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+html, body {
+  height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  background: var(--p-ground-background);
+}
+
+.max-h-window {
+  height: calc(100% - 36px);
+}
+
 .p-menu-overlay-left {
     right: -40px;
+}
+
+.card {
+  background: var(--p-content-background);
+  border: var(--p-content-border-color);
+  padding: 2rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
 }

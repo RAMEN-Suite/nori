@@ -1,0 +1,41 @@
+import { Component, inject, OnInit } from '@angular/core';
+import { WindowState } from '../../states/window.state';
+import { FormsModule } from '@angular/forms';
+import { InputText } from 'primeng/inputtext';
+import { Fieldset } from 'primeng/fieldset';
+import { Textarea } from 'primeng/textarea';
+import { IftaLabel } from 'primeng/iftalabel';
+import { InputGroup } from 'primeng/inputgroup';
+import { Button } from 'primeng/button';
+import { Select } from 'primeng/select';
+import { Checkbox } from 'primeng/checkbox';
+
+@Component({
+  selector: 'app-create',
+  imports: [
+    FormsModule,
+    InputText,
+    Fieldset,
+    Textarea,
+    IftaLabel,
+    InputGroup,
+    Button,
+    Select,
+    Checkbox,
+  ],
+  templateUrl: './start.screen.html',
+  styleUrl: './start.screen.scss',
+})
+export class StartScreen implements OnInit {
+  private readonly windowState: WindowState = inject(WindowState);
+  protected readonly isElectronRuntime: boolean = !!window.electron;
+
+  protected name: string = '';
+  protected description: string = '';
+
+  protected location: string = '';
+
+  public ngOnInit(): void {
+    this.windowState.setTitle('Create Project', 'pi pi-folder-plus');
+  }
+}

@@ -1,39 +1,41 @@
-<p-menubar>
-  <ng-template #start>
-    <div class="absolute left-1/2 -translate-x-1/2">
-      <i [class]="windowState.state().icon"></i>
-      <span class="ml-3">{{ windowState.state().title }}</span>
-    </div>
-  </ng-template>
-  <ng-template #end>
-    @if (hasControls) {
-      <div class="window-buttons ml-2 flex items-center">
-        <p-divider layout="vertical"></p-divider>
-        <p-button
-          icon="pi pi-minus"
-          severity="primary"
-          variant="text"
-          size="small"
-          fluid="true"
-          (click)="electron.minimizeApplication()"
-        />
-        <p-button
-          icon="pi pi-expand"
-          severity="primary"
-          variant="text"
-          size="small"
-          fluid="true"
-          (click)="electron.maximizeApplication()"
-        />
-        <p-button
-          icon="pi pi-times"
-          severity="danger"
-          variant="text"
-          size="small"
-          fluid="true"
-          (click)="electron.closeApplication()"
-        />
+<header class="min-h-9">
+  <p-menubar>
+    <ng-template #start>
+      <div class="absolute left-1/2 -translate-x-1/2">
+        <i [class]="windowState.state().icon"></i>
+        <span class="ml-3">{{ windowState.state().title }}</span>
       </div>
-    }
-  </ng-template>
-</p-menubar>
+    </ng-template>
+    <ng-template #end>
+      @if (hasControls) {
+        <div class="window-buttons ml-2 flex items-center">
+          <p-divider layout="vertical"></p-divider>
+          <p-button
+            icon="pi pi-minus"
+            severity="primary"
+            variant="text"
+            size="small"
+            fluid="true"
+            (click)="electron.minimizeApplication()"
+          />
+          <p-button
+            icon="pi pi-expand"
+            severity="primary"
+            variant="text"
+            size="small"
+            fluid="true"
+            (click)="electron.maximizeApplication()"
+          />
+          <p-button
+            icon="pi pi-times"
+            severity="danger"
+            variant="text"
+            size="small"
+            fluid="true"
+            (click)="electron.closeApplication()"
+          />
+        </div>
+      }
+    </ng-template>
+  </p-menubar>
+</header>

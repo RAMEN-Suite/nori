@@ -1,0 +1,54 @@
+<main class="mx-auto my-5 flex flex-col md:max-w-3/4 lg:max-w-1/2">
+  <section class="card flex flex-col gap-5">
+    <p-fieldset legend="Basics">
+      <div class="flex flex-col gap-3">
+        <p-ifta-label>
+          <input pInputText id="project_name" [(ngModel)]="name" autocomplete="off" fluid />
+          <label for="project_name">Project Name</label>
+        </p-ifta-label>
+        <p-ifta-label>
+          <textarea
+            pTextarea
+            id="project_description"
+            [(ngModel)]="description"
+            autocomplete="off"
+            fluid
+          ></textarea>
+          <label for="project_description">Project Description</label>
+        </p-ifta-label>
+      </div>
+    </p-fieldset>
+    <p-fieldset legend="Modelling">
+      <div class="flex flex-col gap-3">
+        <p-ifta-label>
+          <p-select id="metamodel" fluid />
+          <label for="metamodel">Metamodel</label>
+        </p-ifta-label>
+        <div class="flex flex-row items-center gap-3">
+          <p-check-box />
+          <p class="m-0 text-sm">Create an example model based on the selected metamodel.</p>
+        </div>
+      </div>
+    </p-fieldset>
+
+    @if (isElectronRuntime) {
+      <p-fieldset legend="Workspace">
+        <div class="flex flex-col gap-3">
+          <p-input-group>
+            <p-ifta-label>
+              <input
+                pInputText
+                id="project_location"
+                [(ngModel)]="location"
+                autocomplete="off"
+                fluid
+              />
+              <label for="project_location">Project Location</label>
+            </p-ifta-label>
+            <p-button icon="pi pi-folder-open" size="large" variant="outlined" />
+          </p-input-group>
+        </div>
+      </p-fieldset>
+    }
+  </section>
+</main>
