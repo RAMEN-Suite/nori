@@ -9,6 +9,7 @@ import { InputGroup } from 'primeng/inputgroup';
 import { Button } from 'primeng/button';
 import { Select } from 'primeng/select';
 import { Checkbox } from 'primeng/checkbox';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-create',
@@ -22,6 +23,7 @@ import { Checkbox } from 'primeng/checkbox';
     Button,
     Select,
     Checkbox,
+    RouterLink,
   ],
   templateUrl: './start.screen.html',
   styleUrl: './start.screen.scss',

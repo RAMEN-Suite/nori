@@ -86,6 +86,7 @@ export const SuitePreset: Preset = definePreset(Aura, {
     fieldset: {
       legend: {
         background: 'transparent',
+        fontWeight: '300',
       },
     },
   },

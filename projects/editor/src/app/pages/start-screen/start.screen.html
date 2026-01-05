@@ -1,11 +1,14 @@
-<main class="mx-auto my-5 flex flex-col md:max-w-3/4 lg:max-w-1/2">
-  <section class="card flex flex-col gap-5">
+<main class="min-h-window mx-auto flex max-w-2xl items-center">
+  <section class="card flex w-full flex-col gap-5" animate.enter="card-entrance">
+    <span class="block text-center text-3xl font-light">Creating a NORI Project</span>
+
     <p-fieldset legend="Basics">
       <div class="flex flex-col gap-3">
         <p-ifta-label>
           <input pInputText id="project_name" [(ngModel)]="name" autocomplete="off" fluid />
           <label for="project_name">Project Name</label>
         </p-ifta-label>
+
         <p-ifta-label>
           <textarea
             pTextarea
@@ -18,12 +21,14 @@
         </p-ifta-label>
       </div>
     </p-fieldset>
+
     <p-fieldset legend="Modelling">
       <div class="flex flex-col gap-3">
         <p-ifta-label>
           <p-select id="metamodel" fluid />
           <label for="metamodel">Metamodel</label>
         </p-ifta-label>
+
         <div class="flex flex-row items-center gap-3">
           <p-check-box />
           <p class="m-0 text-sm">Create an example model based on the selected metamodel.</p>
@@ -50,5 +55,10 @@
         </div>
       </p-fieldset>
     }
+
+    <div class="flex flex-row items-center justify-center gap-5">
+      <p-button label="Cancel" severity="danger" variant="outlined" routerLink="/" />
+      <p-button label="Finish Setup" outlined="outlined" disabled />
+    </div>
   </section>
 </main>

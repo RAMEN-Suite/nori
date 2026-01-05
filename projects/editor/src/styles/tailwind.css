@@ -14,11 +14,14 @@ body {
   background: var(--p-ground-background);
 }
 
-.max-h-window {
-  height: calc(100% - 36px);
+.min-h-window {
+  min-height: calc(100% - 36px);
 }
 
 .p-menu-overlay-left {
     right: -40px;
 }
 
+.p-button:disabled {
+  cursor: not-allowed !important;
+}
