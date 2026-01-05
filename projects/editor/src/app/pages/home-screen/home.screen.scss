@@ -1,20 +1,3 @@
-.background-circle {
-  position: absolute;
-
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-
-  z-index: -1;
-
-  width: 600px;
-  height: 600px;
-  border-radius: 50%;
-
-  background: var(--p-content-background);
-  pointer-events: none;
-}
-
 .logo-entrance {
   animation: fadeIn;
   animation-duration: 1.5s;

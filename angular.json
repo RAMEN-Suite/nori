@@ -33,7 +33,8 @@
             ],
             "styles": [
               "projects/editor/src/styles/tailwind.css",
-              "node_modules/animate.css/animate.css"
+              "node_modules/animate.css/animate.css",
+              "projects/editor/src/styles/components.css"
             ]
           },
           "configurations": {
@@ -95,7 +96,8 @@
             ],
             "styles": [
               "projects/editor/src/styles/tailwind.css",
-              "node_modules/animate.css/animate.css"
+              "node_modules/animate.css/animate.css",
+              "projects/editor/src/styles/components.css"
             ]
           }
         }
