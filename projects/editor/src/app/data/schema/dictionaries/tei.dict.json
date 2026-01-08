@@ -1,9 +1,9 @@
 {
-  "$schema": "https://ramen-schema.org/gcore/0.1.0/schema.json",
-  "$id": "https://example.org/dicts/tei/0.1.0/model.json",
+  "$schema": "https://ramen-schema.org/gcore/1.0.0/schema.json",
+  "$id": "https://example.org/dicts/tei/1.0.0/model.json",
 
   "id": "tei",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "kind": "GModel",
   "name": "TEI Dictionary",
 
