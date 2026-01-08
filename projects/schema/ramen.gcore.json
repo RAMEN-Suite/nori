@@ -1,0 +1,328 @@
+{
+  "$schema": "https://ramen-schema.org/gcore/0.1.0/schema.json",
+  "$id": "https://ramen-schema.org/ramen/0.1.0/schema.json",
+
+  "id": "ramen",
+  "version": "0.1.0",
+  "kind": "GModel",
+  "name": "RAMEN",
+
+  "imports": [],
+
+  "classifiers": [
+    { "kind": "GDataType", "id": "uuid", "name": "UUID" },
+
+    {
+      "kind": "GNode",
+      "id": "collection",
+      "name": "Collection",
+      "superTypes": [],
+      "attributes": [
+        {
+          "name": "uuid",
+          "typeId": "uuid",
+          "bounds": { "lowerBound": 1, "upperBound": 1 },
+          "isKey": true
+        },
+        {
+          "name": "label",
+          "typeId": "string",
+          "bounds": { "lowerBound": 1, "upperBound": 1 }
+        }
+      ]
+    },
+
+    {
+      "kind": "GNode",
+      "id": "entity",
+      "name": "Entity",
+      "superTypes": [],
+      "attributes": [
+        {
+          "name": "uuid",
+          "typeId": "uuid",
+          "bounds": { "lowerBound": 1, "upperBound": 1 },
+          "isKey": true
+        },
+        {
+          "name": "label",
+          "typeId": "string",
+          "bounds": { "lowerBound": 1, "upperBound": 1 }
+        }
+      ]
+    },
+
+    {
+      "kind": "GNode",
+      "id": "text",
+      "name": "Text",
+      "superTypes": [],
+      "attributes": [
+        {
+          "name": "uuid",
+          "typeId": "uuid",
+          "bounds": { "lowerBound": 1, "upperBound": 1 },
+          "isKey": true
+        },
+        {
+          "name": "label",
+          "typeId": "string",
+          "bounds": { "lowerBound": 1, "upperBound": 1 }
+        }
+      ]
+    },
+
+    {
+      "kind": "GNode",
+      "id": "image",
+      "name": "Image",
+      "superTypes": [],
+      "attributes": [
+        {
+          "name": "uuid",
+          "typeId": "uuid",
+          "bounds": { "lowerBound": 1, "upperBound": 1 },
+          "isKey": true
+        },
+        {
+          "name": "label",
+          "typeId": "string",
+          "bounds": { "lowerBound": 1, "upperBound": 1 }
+        }
+      ]
+    },
+
+    {
+      "kind": "GNode",
+      "id": "annotation",
+      "name": "Annotation",
+      "superTypes": [],
+      "attributes": [
+        {
+          "name": "uuid",
+          "typeId": "uuid",
+          "bounds": { "lowerBound": 1, "upperBound": 1 },
+          "isKey": true
+        },
+        {
+          "name": "type",
+          "typeId": "string",
+          "bounds": { "lowerBound": 1, "upperBound": 1 },
+          "constraints": [
+            {
+              "id": "c_annotation_type_is_dictref",
+              "language": "regex",
+              "expression": "^[a-z_][A-Za-z0-9_\\-]*:[a-z_][A-Za-z0-9_\\-:.]*$",
+              "severity": "error",
+              "message": "Annotation.type must be a dictionary ref of the form dict:type (e.g., tei:persName).",
+              "code": "ANNOTATION_TYPE_DICT"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+
+  "relations": [
+    {
+      "kind": "GRelation",
+      "id": "part_of_collection_collection",
+      "name": "PART_OF",
+      "from": {
+        "nodeId": "collection",
+        "role": "children",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      },
+      "to": {
+        "nodeId": "collection",
+        "role": "parents",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      }
+    },
+
+    {
+      "kind": "GRelation",
+      "id": "part_of_text_collection",
+      "name": "PART_OF",
+      "from": {
+        "nodeId": "text",
+        "role": "texts",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      },
+      "to": {
+        "nodeId": "collection",
+        "role": "collections",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      }
+    },
+    {
+      "kind": "GRelation",
+      "id": "part_of_image_collection",
+      "name": "PART_OF",
+      "from": {
+        "nodeId": "image",
+        "role": "images",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      },
+      "to": {
+        "nodeId": "collection",
+        "role": "collections",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      }
+    },
+
+    {
+      "kind": "GRelation",
+      "id": "has_annotation_collection_annotation",
+      "name": "HAS_ANNOTATION",
+      "from": {
+        "nodeId": "collection",
+        "role": "collections",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      },
+      "to": {
+        "nodeId": "annotation",
+        "role": "annotations",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      }
+    },
+    {
+      "kind": "GRelation",
+      "id": "has_annotation_text_annotation",
+      "name": "HAS_ANNOTATION",
+      "from": {
+        "nodeId": "text",
+        "role": "texts",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      },
+      "to": {
+        "nodeId": "annotation",
+        "role": "annotations",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      }
+    },
+    {
+      "kind": "GRelation",
+      "id": "has_annotation_image_annotation",
+      "name": "HAS_ANNOTATION",
+      "from": {
+        "nodeId": "image",
+        "role": "images",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      },
+      "to": {
+        "nodeId": "annotation",
+        "role": "annotations",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      }
+    },
+    {
+      "kind": "GRelation",
+      "id": "has_annotation_entity_annotation",
+      "name": "HAS_ANNOTATION",
+      "from": {
+        "nodeId": "entity",
+        "role": "entities",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      },
+      "to": {
+        "nodeId": "annotation",
+        "role": "annotations",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      }
+    },
+    {
+      "kind": "GRelation",
+      "id": "has_annotation_annotation_annotation",
+      "name": "HAS_ANNOTATION",
+      "from": {
+        "nodeId": "annotation",
+        "role": "annotations",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      },
+      "to": {
+        "nodeId": "annotation",
+        "role": "annotations",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      }
+    },
+
+    {
+      "kind": "GRelation",
+      "id": "refers_to_annotation_collection",
+      "name": "REFERS_TO",
+      "from": {
+        "nodeId": "annotation",
+        "role": "annotations",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      },
+      "to": {
+        "nodeId": "collection",
+        "role": "collections",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      }
+    },
+    {
+      "kind": "GRelation",
+      "id": "refers_to_annotation_text",
+      "name": "REFERS_TO",
+      "from": {
+        "nodeId": "annotation",
+        "role": "annotations",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      },
+      "to": {
+        "nodeId": "text",
+        "role": "texts",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      }
+    },
+    {
+      "kind": "GRelation",
+      "id": "refers_to_annotation_image",
+      "name": "REFERS_TO",
+      "from": {
+        "nodeId": "annotation",
+        "role": "annotations",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      },
+      "to": {
+        "nodeId": "image",
+        "role": "images",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      }
+    },
+    {
+      "kind": "GRelation",
+      "id": "refers_to_annotation_entity",
+      "name": "REFERS_TO",
+      "from": {
+        "nodeId": "annotation",
+        "role": "annotations",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      },
+      "to": {
+        "nodeId": "entity",
+        "role": "entities",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      }
+    },
+    {
+      "kind": "GRelation",
+      "id": "refers_to_annotation_annotation",
+      "name": "REFERS_TO",
+      "from": {
+        "nodeId": "annotation",
+        "role": "annotations",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      },
+      "to": {
+        "nodeId": "annotation",
+        "role": "annotations",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      }
+    }
+  ],
+
+  "ext": {}
+}

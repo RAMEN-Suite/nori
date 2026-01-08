@@ -1,0 +1,226 @@
+{
+  "$schema": "https://ramen-schema.org/gcore/0.1.0/schema.json",
+  "$id": "https://sozinianer.de/schema.json",
+
+  "id": "socinian_correspondence",
+  "version": "0.1.0",
+
+  "kind": "GModel",
+  "name": "Socinian Correspondence (M2)",
+
+  "imports": [
+    {
+      "modelId": "https://ramen-schema.org/ramen/0.1.0/schema.json",
+      "alias": "ramen"
+    }
+  ],
+
+  "classifiers": [
+    {
+      "kind": "GNode",
+      "id": "corpus",
+      "name": "Corpus",
+      "superTypes": ["ramen:collection"],
+      "attributes": []
+    },
+    {
+      "kind": "GNode",
+      "id": "communication",
+      "name": "Communication",
+      "superTypes": ["ramen:collection"],
+      "attributes": []
+    },
+    {
+      "kind": "GNode",
+      "id": "letter",
+      "name": "Letter",
+      "superTypes": ["ramen:collection"],
+      "attributes": []
+    },
+    {
+      "kind": "GNode",
+      "id": "abstract",
+      "name": "Abstract",
+      "superTypes": ["ramen:collection"],
+      "attributes": []
+    },
+    {
+      "kind": "GNode",
+      "id": "variant",
+      "name": "Variant",
+      "superTypes": ["ramen:collection"],
+      "attributes": []
+    },
+    {
+      "kind": "GNode",
+      "id": "attachment",
+      "name": "Attachment",
+      "superTypes": ["ramen:collection"],
+      "attributes": []
+    },
+    {
+      "kind": "GNode",
+      "id": "document",
+      "name": "Document",
+      "superTypes": ["ramen:collection"],
+      "attributes": []
+    },
+    {
+      "kind": "GNode",
+      "id": "figure",
+      "name": "Figure",
+      "superTypes": ["ramen:collection"],
+      "attributes": []
+    },
+    {
+      "kind": "GNode",
+      "id": "witness",
+      "name": "Witness",
+      "superTypes": ["ramen:collection"],
+      "attributes": []
+    }
+  ],
+
+  "relations": [
+    {
+      "kind": "GRelation",
+      "id": "communication_part_of_corpus",
+      "name": "PART_OF",
+      "from": {
+        "nodeId": "communication",
+        "role": "child",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      },
+      "to": {
+        "nodeId": "corpus",
+        "role": "parent",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      }
+    },
+    {
+      "kind": "GRelation",
+      "id": "letter_part_of_communication",
+      "name": "PART_OF",
+      "from": {
+        "nodeId": "letter",
+        "role": "child",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      },
+      "to": {
+        "nodeId": "communication",
+        "role": "parent",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      }
+    },
+    {
+      "kind": "GRelation",
+      "id": "abstract_part_of_letter",
+      "name": "PART_OF",
+      "from": {
+        "nodeId": "abstract",
+        "role": "child",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      },
+      "to": {
+        "nodeId": "letter",
+        "role": "parent",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      }
+    },
+
+    {
+      "kind": "GRelation",
+      "id": "attachment_part_of_corpus",
+      "name": "PART_OF",
+      "from": {
+        "nodeId": "attachment",
+        "role": "child",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      },
+      "to": {
+        "nodeId": "corpus",
+        "role": "parent",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      }
+    },
+    {
+      "kind": "GRelation",
+      "id": "document_part_of_attachment",
+      "name": "PART_OF",
+      "from": {
+        "nodeId": "document",
+        "role": "child",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      },
+      "to": {
+        "nodeId": "attachment",
+        "role": "parent",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      }
+    },
+    {
+      "kind": "GRelation",
+      "id": "figure_part_of_attachment",
+      "name": "PART_OF",
+      "from": {
+        "nodeId": "figure",
+        "role": "child",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      },
+      "to": {
+        "nodeId": "attachment",
+        "role": "parent",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      }
+    },
+
+    {
+      "kind": "GRelation",
+      "id": "witness_part_of_document",
+      "name": "PART_OF",
+      "from": {
+        "nodeId": "witness",
+        "role": "child",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      },
+      "to": {
+        "nodeId": "document",
+        "role": "parent",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      }
+    },
+    {
+      "kind": "GRelation",
+      "id": "variant_part_of_witness",
+      "name": "PART_OF",
+      "from": {
+        "nodeId": "variant",
+        "role": "child",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      },
+      "to": {
+        "nodeId": "witness",
+        "role": "parent",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      }
+    },
+
+    {
+      "kind": "GRelation",
+      "id": "letter_part_of_attachment",
+      "name": "PART_OF",
+      "from": {
+        "nodeId": "letter",
+        "role": "child",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      },
+      "to": {
+        "nodeId": "attachment",
+        "role": "parent",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      }
+    }
+  ],
+
+  "ext": {}
+}
