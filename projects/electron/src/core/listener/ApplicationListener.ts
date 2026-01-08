@@ -1,11 +1,11 @@
-import { IListener, Listener } from '../EventInitializer';
+import { Listener, ListenerFn } from '../EventInitializer';
 import { Application } from '../Application';
 import { APPLICATION_IPC } from '../../static/IPC_EVENTS';
 import { app, BrowserWindow, IpcMainEvent, shell } from 'electron';
 
 export class ApplicationListener extends Listener {
   protected application: Application;
-  protected listener: IListener = {
+  protected listener: ListenerFn = {
     [APPLICATION_IPC.CLOSE_APPLICATION]: {
       type: 'on',
       fn: this.handleCloseApplication,

@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron';
 import IpcMain = Electron.IpcMain;
 
-export interface IListener {
+export interface ListenerFn {
   [listener: string]: {
     type: 'on' | 'handle';
     fn: Function;
@@ -10,7 +10,7 @@ export interface IListener {
 
 export abstract class Listener {
   protected constructor(...args: unknown[]) {}
-  protected listener: IListener;
+  protected listener: ListenerFn;
 
   public listen(): void {
     for (const [event, details] of Object.entries(this.listener)) {
