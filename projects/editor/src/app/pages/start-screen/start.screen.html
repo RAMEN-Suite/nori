@@ -5,7 +5,14 @@
     <p-fieldset legend="Basics">
       <div class="flex flex-col gap-3">
         <p-ifta-label>
-          <input pInputText id="project_name" [(ngModel)]="name" autocomplete="off" fluid />
+          <input
+            pInputText
+            id="project_name"
+            [(ngModel)]="manifest.name"
+            maxlength="100"
+            autocomplete="off"
+            fluid
+          />
           <label for="project_name">Project Name</label>
         </p-ifta-label>
 
@@ -13,7 +20,8 @@
           <textarea
             pTextarea
             id="project_description"
-            [(ngModel)]="description"
+            [(ngModel)]="manifest.description"
+            maxlength="280"
             autocomplete="off"
             fluid
           ></textarea>
@@ -29,9 +37,15 @@
           <label for="metamodel">Metamodel</label>
         </p-ifta-label>
 
-        <div class="flex flex-row items-center gap-3">
-          <p-check-box />
-          <p class="m-0 text-sm">Create an example model based on the selected metamodel.</p>
+        <div class="flex items-center gap-3">
+          <p-check-box id="metamodel_example" [(ngModel)]="isExampleNeeded" binary />
+          <label
+            for="metamodel_example"
+            class="cursor-pointer text-sm"
+            (click)="isExampleNeeded = !isExampleNeeded"
+          >
+            Create an example model based on the selected metamodel.
+          </label>
         </div>
       </div>
     </p-fieldset>
@@ -44,7 +58,7 @@
               <input
                 pInputText
                 id="project_location"
-                [(ngModel)]="location"
+                [(ngModel)]="manifest.location"
                 autocomplete="off"
                 fluid
               />
@@ -56,9 +70,9 @@
       </p-fieldset>
     }
 
-    <div class="flex flex-row items-center justify-center gap-5">
+    <div class="mt-4 flex flex-row items-center justify-center gap-5">
       <p-button label="Cancel" severity="danger" variant="outlined" routerLink="/" />
-      <p-button label="Finish Setup" outlined="outlined" disabled />
+      <p-button label="Finish Setup" outlined="outlined" [disabled]="!isFormCompleted()" />
     </div>
   </section>
 </main>
