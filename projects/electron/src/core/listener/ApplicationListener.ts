@@ -28,7 +28,7 @@ export class ApplicationListener extends Listener {
     },
     [APPLICATION_IPC.APPLICATION_ACCESS_PATH]: {
       type: 'handle',
-      fn: this.handleAccessPath,
+      fn: this.handleIsPathAccessible,
     },
   };
 
@@ -63,7 +63,7 @@ export class ApplicationListener extends Listener {
     else return filePaths[0];
   }
 
-  protected async handleAccessPath(_: IpcMainEvent, path: string): Promise<boolean> {
+  protected async handleIsPathAccessible(_: IpcMainEvent, path: string): Promise<boolean> {
     try {
       await fs.promises.access(path);
       return true;

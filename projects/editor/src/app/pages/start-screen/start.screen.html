@@ -70,8 +70,7 @@
             <p-input-group>
               <p-ifta-label>
                 <input
-                  (input)="handleLocationAccessibility()"
-                  [invalid]="isLocationInvalid"
+                  [invalid]="!isLocationValid"
                   pInputText
                   id="project_location"
                   [(ngModel)]="manifest.location"
@@ -88,7 +87,7 @@
               />
             </p-input-group>
             <p-message severity="error" size="small" variant="simple">
-              @if (isLocationInvalid) {
+              @if (!isLocationValid) {
                 Cannot create a new project in selected folder location.
               }
             </p-message>
@@ -99,7 +98,12 @@
 
     <div class="mt-4 flex flex-row items-center justify-center gap-5">
       <p-button label="Cancel" severity="danger" variant="outlined" routerLink="/" />
-      <p-button label="Finish Setup" outlined="outlined" [disabled]="!isFormCompleted()" />
+      <p-button
+        label="Finish Setup"
+        outlined="outlined"
+        [disabled]="!isFormCompleted()"
+        (click)="handleProjectCreation()"
+      />
     </div>
   </section>
 </main>

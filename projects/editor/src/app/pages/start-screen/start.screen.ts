@@ -43,13 +43,12 @@ export class StartScreen implements OnInit {
   protected readonly metamodelService: MetamodelService = inject(MetamodelService);
   protected readonly isElectronRuntime: boolean = !!window.electron;
 
-  protected manifest: Partial<Manifest> = {};
+  protected manifest: Partial<Manifest> = { name: '', description: '', location: '' };
   protected isExampleNeeded: boolean = false;
-  protected isLocationInvalid: boolean = false;
+  protected isLocationValid: boolean = true;
 
   public async ngOnInit(): Promise<void> {
     this.windowState.setTitle('Create Project', 'pi pi-folder-plus');
-    this.manifest = { name: '', description: '', location: '' };
     this.manifest.projectId = new ShortUniqueId({ length: 16 }).randomUUID();
     this.manifest.metamodelId = this.metamodelService.metamodels()[0].id;
   }
@@ -61,9 +60,10 @@ export class StartScreen implements OnInit {
     return hasWorkspace && hasProjectName && hasMetamodel;
   }
 
-  protected async handleLocationAccessibility(): Promise<void> {
+  protected async isLocationAccessible(): Promise<boolean> {
     const location: string = this.manifest.location?.trim() ?? '';
-    this.isLocationInvalid = await this.electronService.accessLocation(location);
+    this.isLocationValid = await this.electronService.isPathAccessible(location);
+    return this.isLocationValid;
   }
 
   protected async handleProjectLocation(): Promise<void> {
@@ -74,8 +74,10 @@ export class StartScreen implements OnInit {
   }
 
   protected async handleProjectCreation(): Promise<void> {
-    await this.handleLocationAccessibility();
-    if (!this.isLocationInvalid) return;
     if (!this.isFormCompleted()) return;
+    if (this.isElectronRuntime) {
+      await this.isLocationAccessible();
+      if (!this.isLocationValid) return;
+    }
   }
 }

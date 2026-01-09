@@ -26,7 +26,7 @@ export class ElectronService {
     return window.electron?.invoke(APPLICATION_IPC.APPLICATION_OPEN_DIRECTORY);
   }
 
-  public async accessLocation(path: string): Promise<boolean> {
+  public async isPathAccessible(path: string): Promise<boolean> {
     if (!window.electron) return false;
     return window.electron.invoke(APPLICATION_IPC.APPLICATION_ACCESS_PATH, path);
   }
