@@ -4,7 +4,7 @@ import { Nullable } from '../../global';
 @Injectable({
   providedIn: 'root',
 })
-export class StorageService {
+export class LocalStorage {
   public getItems<T>(key: string): Nullable<T> {
     try {
       const contents: Nullable<string> = localStorage.getItem(key);

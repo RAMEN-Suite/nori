@@ -57,10 +57,10 @@ export const SuitePreset: Preset = definePreset(Aura, {
           activeColor: '{surface.200}',
         },
         highlight: {
-          background: 'rgba(250, 250, 250, .16)',
-          focusBackground: 'rgba(250, 250, 250, .24)',
-          color: 'rgba(255,255,255,.87)',
-          focusColor: 'rgba(255,255,255,.87)',
+          background: '{surface.950}',
+          focusBackground: '{surface.700}',
+          color: '{surface.0}',
+          focusColor: '{surface.0}',
         },
         ground: {
           background: '{surface.950}',

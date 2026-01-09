@@ -33,7 +33,20 @@
     <p-fieldset legend="Modelling">
       <div class="flex flex-col gap-3">
         <p-ifta-label>
-          <p-select id="metamodel" fluid />
+          <p-select
+            id="metamodel"
+            [(ngModel)]="manifest.metamodelId"
+            [options]="metamodelService.metamodels()"
+            optionValue="id"
+            fluid
+          >
+            <ng-template let-model #selectedItem>
+              {{ model.name }} <span class="text-xs">(v.{{ model.version }})</span>
+            </ng-template>
+            <ng-template let-model #item>
+              {{ model.name }} <span class="text-xs">(v.{{ model.version }})</span>
+            </ng-template>
+          </p-select>
           <label for="metamodel">Metamodel</label>
         </p-ifta-label>
 
@@ -53,19 +66,33 @@
     @if (isElectronRuntime) {
       <p-fieldset legend="Workspace">
         <div class="flex flex-col gap-3">
-          <p-input-group>
-            <p-ifta-label>
-              <input
-                pInputText
-                id="project_location"
-                [(ngModel)]="manifest.location"
-                autocomplete="off"
-                fluid
+          <div class="flex flex-col gap-1">
+            <p-input-group>
+              <p-ifta-label>
+                <input
+                  (input)="handleLocationAccessibility()"
+                  [invalid]="isLocationInvalid"
+                  pInputText
+                  id="project_location"
+                  [(ngModel)]="manifest.location"
+                  autocomplete="off"
+                  fluid
+                />
+                <label for="project_location">Project Location</label>
+              </p-ifta-label>
+              <p-button
+                icon="pi pi-folder-open"
+                size="large"
+                variant="outlined"
+                (click)="handleProjectLocation()"
               />
-              <label for="project_location">Project Location</label>
-            </p-ifta-label>
-            <p-button icon="pi pi-folder-open" size="large" variant="outlined" />
-          </p-input-group>
+            </p-input-group>
+            <p-message severity="error" size="small" variant="simple">
+              @if (isLocationInvalid) {
+                Cannot create a new project in selected folder location.
+              }
+            </p-message>
+          </div>
         </div>
       </p-fieldset>
     }

@@ -1,33 +1,36 @@
 import { Listener, ListenerFn } from '../EventInitializer';
-import { Application } from '../Application';
 import { APPLICATION_IPC } from '../../static/IPC_EVENTS';
-import { app, BrowserWindow, IpcMainEvent, shell } from 'electron';
+import { app, BrowserWindow, dialog, IpcMainEvent, shell } from 'electron';
+import { Nullable } from '../../global';
+import fs from 'fs';
 
 export class ApplicationListener extends Listener {
-  protected application: Application;
   protected listener: ListenerFn = {
-    [APPLICATION_IPC.CLOSE_APPLICATION]: {
+    [APPLICATION_IPC.APPLICATION_CLOSE]: {
       type: 'on',
       fn: this.handleCloseApplication,
     },
-    [APPLICATION_IPC.MINIMIZE_APPLICATION]: {
+    [APPLICATION_IPC.APPLICATION_MINIMIZE]: {
       type: 'on',
       fn: this.handleMinimizeApplicationWindow,
     },
-    [APPLICATION_IPC.MAXIMIZE_APPLICATION]: {
+    [APPLICATION_IPC.APPLICATION_MAXIMIZE]: {
       type: 'on',
       fn: this.handleMaximizeApplicationWindow,
     },
-    [APPLICATION_IPC.OPEN_EXTERNAL_URL]: {
+    [APPLICATION_IPC.APPLICATION_OPEN_URL]: {
       type: 'on',
       fn: this.handleOpenExternalURL,
     },
+    [APPLICATION_IPC.APPLICATION_OPEN_DIRECTORY]: {
+      type: 'handle',
+      fn: this.handleOpenDirectory,
+    },
+    [APPLICATION_IPC.APPLICATION_ACCESS_PATH]: {
+      type: 'handle',
+      fn: this.handleAccessPath,
+    },
   };
-
-  constructor(application: Application) {
-    super();
-    this.application = application;
-  }
 
   protected handleCloseApplication(): void {
     app.quit();
@@ -47,5 +50,25 @@ export class ApplicationListener extends Listener {
 
   protected async handleOpenExternalURL(_: IpcMainEvent, url: string): Promise<void> {
     await shell.openExternal(url);
+  }
+
+  protected handleOpenDirectory(_: IpcMainEvent, title: string): string {
+    const filePaths: Nullable<string[]> = dialog.showOpenDialogSync(this.application.getWindow(), {
+      properties: ['openDirectory', 'createDirectory'],
+      defaultPath: app.getPath('documents'),
+      title,
+    });
+
+    if (!filePaths) return '';
+    else return filePaths[0];
+  }
+
+  protected async handleAccessPath(_: IpcMainEvent, path: string): Promise<boolean> {
+    try {
+      await fs.promises.access(path);
+      return true;
+    } catch (error: unknown) {
+      return false;
+    }
   }
 }

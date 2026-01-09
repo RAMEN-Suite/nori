@@ -1,11 +1,11 @@
 declare global {
   interface Window {
-    electron?: IElectron;
+    electron?: Electron;
     platform?: string;
   }
 }
 
-export interface IElectron {
+export interface Electron {
   on: (channel: string, func: (...args: any[]) => void) => void;
 
   send: (channel: string, data?: any) => void;

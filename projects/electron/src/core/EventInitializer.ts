@@ -1,4 +1,5 @@
 import { ipcMain } from 'electron';
+import { Application } from './Application';
 import IpcMain = Electron.IpcMain;
 
 export interface ListenerFn {
@@ -9,8 +10,12 @@ export interface ListenerFn {
 }
 
 export abstract class Listener {
-  protected constructor(...args: unknown[]) {}
+  protected application: Application;
   protected listener: ListenerFn;
+
+  protected constructor(application: Application) {
+    this.application = application;
+  }
 
   public listen(): void {
     for (const [event, details] of Object.entries(this.listener)) {
