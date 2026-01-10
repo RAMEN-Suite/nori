@@ -1,9 +1,9 @@
 export const APPLICATION_IPC = {
-  APPLICATION_CLOSE: 'app:exec:close-window',
-  APPLICATION_MINIMIZE: 'app:exec:minimize-window',
-  APPLICATION_MAXIMIZE: 'app:exec:maximize-window',
-  APPLICATION_OPEN_URL: 'app:open:external-url',
-  APPLICATION_OPEN_DIRECTORY: 'app:open:directory',
+  APPLICATION_CLOSE: 'app:exec:close',
+  APPLICATION_MINIMIZE: 'app:exec:minimize',
+  APPLICATION_MAXIMIZE: 'app:exec:maximize',
+  APPLICATION_OPEN_URL: 'app:open:url',
+  APPLICATION_SHOW_DIRECTORY: 'app:show:directory',
   APPLICATION_ACCESS_PATH: 'app:access:path',
 };
 

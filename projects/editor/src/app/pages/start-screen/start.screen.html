@@ -4,58 +4,79 @@
 
     <p-fieldset legend="Basics">
       <div class="flex flex-col gap-3">
-        <p-ifta-label>
-          <input
-            pInputText
-            id="project_name"
-            [(ngModel)]="manifest.name"
-            maxlength="100"
-            autocomplete="off"
-            fluid
-          />
-          <label for="project_name">Project Name</label>
-        </p-ifta-label>
+        <div class="flex flex-col gap-2">
+          <p-ifta-label>
+            <input
+              pInputText
+              id="name"
+              [(ngModel)]="manifest.name"
+              #nameModel="ngModel"
+              maxlength="100"
+              autocomplete="off"
+              fluid
+              required
+              [invalid]="(nameModel.touched || isSubmitted) && !isProjectNameValid()"
+            />
+            <label for="name">Project Name</label>
+          </p-ifta-label>
+
+          @if ((nameModel.touched || isSubmitted) && !isProjectNameValid()) {
+            <p-message severity="error" size="small" variant="simple">
+              Project name must be at least 4 characters.
+            </p-message>
+          }
+        </div>
 
         <p-ifta-label>
           <textarea
             pTextarea
-            id="project_description"
+            id="description"
             [(ngModel)]="manifest.description"
             maxlength="280"
             autocomplete="off"
             fluid
           ></textarea>
-          <label for="project_description">Project Description</label>
+          <label for="description">Project Description</label>
         </p-ifta-label>
       </div>
     </p-fieldset>
 
     <p-fieldset legend="Modelling">
       <div class="flex flex-col gap-3">
-        <p-ifta-label>
-          <p-select
-            id="metamodel"
-            [(ngModel)]="manifest.metamodelId"
-            [options]="metamodelService.metamodels()"
-            optionValue="id"
-            fluid
-          >
-            <ng-template let-model #selectedItem>
-              {{ model.name }} <span class="text-xs">(v.{{ model.version }})</span>
-            </ng-template>
-            <ng-template let-model #item>
-              {{ model.name }} <span class="text-xs">(v.{{ model.version }})</span>
-            </ng-template>
-          </p-select>
-          <label for="metamodel">Metamodel</label>
-        </p-ifta-label>
+        <div class="flex flex-col gap-2">
+          <p-ifta-label>
+            <p-select
+              id="metamodel"
+              [(ngModel)]="manifest.metamodelId"
+              #metamodelModel="ngModel"
+              [options]="metamodels"
+              optionValue="id"
+              fluid
+              [invalid]="(metamodelModel.touched || isSubmitted) && !isMetamodelValid()"
+            >
+              <ng-template let-model #selectedItem>
+                {{ model.name }} <span class="text-xs">(v.{{ model.version }})</span>
+              </ng-template>
+              <ng-template let-model #item>
+                {{ model.name }} <span class="text-xs">(v.{{ model.version }})</span>
+              </ng-template>
+            </p-select>
+            <label for="metamodel">Metamodel</label>
+          </p-ifta-label>
+
+          @if ((metamodelModel.touched || isSubmitted) && !isMetamodelValid()) {
+            <p-message severity="error" size="small" variant="simple">
+              Please select a valid metamodel.
+            </p-message>
+          }
+        </div>
 
         <div class="flex items-center gap-3">
-          <p-check-box id="metamodel_example" [(ngModel)]="isExampleNeeded" binary />
+          <p-check-box id="metamodel_example" [(ngModel)]="isCreatingExamples" binary />
           <label
             for="metamodel_example"
             class="cursor-pointer text-sm"
-            (click)="isExampleNeeded = !isExampleNeeded"
+            (click)="isCreatingExamples = !isCreatingExamples"
           >
             Create an example model based on the selected metamodel.
           </label>
@@ -63,21 +84,23 @@
       </div>
     </p-fieldset>
 
-    @if (isElectronRuntime) {
+    @if (platformAdapter.hasFilesystem) {
       <p-fieldset legend="Workspace">
         <div class="flex flex-col gap-3">
           <div class="flex flex-col gap-1">
             <p-input-group>
               <p-ifta-label>
                 <input
-                  [invalid]="!isLocationValid"
                   pInputText
-                  id="project_location"
+                  id="location"
+                  #locationModel="ngModel"
                   [(ngModel)]="manifest.location"
                   autocomplete="off"
                   fluid
+                  (blur)="validateProjectLocation()"
+                  [invalid]="(locationModel.touched || isSubmitted) && !isProjectLocationValid"
                 />
-                <label for="project_location">Project Location</label>
+                <label for="location">Project Location</label>
               </p-ifta-label>
               <p-button
                 icon="pi pi-folder-open"
@@ -86,11 +109,11 @@
                 (click)="handleProjectLocation()"
               />
             </p-input-group>
-            <p-message severity="error" size="small" variant="simple">
-              @if (!isLocationValid) {
-                Cannot create a new project in selected folder location.
-              }
-            </p-message>
+            @if ((locationModel.touched || isSubmitted) && !isProjectLocationValid) {
+              <p-message severity="error" size="small" variant="simple">
+                Cannot create a new project in the selected folder location.
+              </p-message>
+            }
           </div>
         </div>
       </p-fieldset>
@@ -101,8 +124,8 @@
       <p-button
         label="Finish Setup"
         outlined="outlined"
-        [disabled]="!isFormCompleted()"
-        (click)="handleProjectCreation()"
+        [disabled]="!isFormValid"
+        (click)="handleCreateProject()"
       />
     </div>
   </section>

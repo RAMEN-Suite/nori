@@ -9,13 +9,16 @@ import { InputGroup } from 'primeng/inputgroup';
 import { Button } from 'primeng/button';
 import { Select } from 'primeng/select';
 import { Checkbox } from 'primeng/checkbox';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import ShortUniqueId from 'short-unique-id';
 import { Manifest } from '../../models/Manifest';
-import { MetamodelService } from '../../services/metamodel.service';
-import { ElectronService } from '../../services/electron.service';
 import { Nullable } from '../../../global';
 import { Message } from 'primeng/message';
+import { CATALOG } from '../../data/CATALOG';
+import { environment } from '../../../environments/environment';
+import { GModel } from '../../models/GModel';
+import { PlatformAdapter } from '../../adapter/platforms/PlatformAdapter';
+import { PLATFORM } from '../../tokens/platform.token';
 
 @Component({
   selector: 'app-create',
@@ -37,47 +40,78 @@ import { Message } from 'primeng/message';
 })
 export class StartScreen implements OnInit {
   private readonly windowState: WindowState = inject(WindowState);
-  private readonly electronService: ElectronService = inject(ElectronService);
-  private readonly changeDetectorRef: ChangeDetectorRef = inject(ChangeDetectorRef);
+  private readonly cdr: ChangeDetectorRef = inject(ChangeDetectorRef);
+  private readonly router: Router = inject(Router);
 
-  protected readonly metamodelService: MetamodelService = inject(MetamodelService);
-  protected readonly isElectronRuntime: boolean = !!window.electron;
+  protected readonly platformAdapter: PlatformAdapter = inject(PLATFORM);
+  protected readonly manifest: Manifest;
+  protected readonly metamodels: GModel[] = CATALOG;
 
-  protected manifest: Partial<Manifest> = { name: '', description: '', location: '' };
-  protected isExampleNeeded: boolean = false;
-  protected isLocationValid: boolean = true;
+  protected isCreatingExamples: boolean = false;
+  protected isProjectLocationValid: boolean = true;
+  protected isSubmitted: boolean = false;
+
+  constructor() {
+    this.manifest = {
+      name: '',
+      description: '',
+      location: '',
+      manifestVersion: environment.manifestVersion,
+      appVersion: environment.appVersion,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      projectId: new ShortUniqueId({ length: 16 }).randomUUID(),
+      metamodelId: CATALOG[0].id,
+    };
+  }
 
   public async ngOnInit(): Promise<void> {
     this.windowState.setTitle('Create Project', 'pi pi-folder-plus');
-    this.manifest.projectId = new ShortUniqueId({ length: 16 }).randomUUID();
-    this.manifest.metamodelId = this.metamodelService.metamodels()[0].id;
   }
 
-  protected isFormCompleted(): boolean {
-    const hasWorkspace: boolean = !this.isElectronRuntime || this.manifest.location?.trim() !== '';
-    const hasProjectName: boolean = this.manifest.name?.trim() !== '';
-    const hasMetamodel: boolean = this.manifest.metamodelId !== '';
-    return hasWorkspace && hasProjectName && hasMetamodel;
+  protected isProjectNameValid(): boolean {
+    const projectName: string = this.manifest.name.trim();
+    return projectName !== '' && projectName.length >= 3;
   }
 
-  protected async isLocationAccessible(): Promise<boolean> {
+  protected isMetamodelValid(): boolean {
+    const metamodelIds: string[] = this.metamodels.map((m: GModel): string => m.id);
+    return metamodelIds.includes(this.manifest.metamodelId);
+  }
+
+  protected isFormValid(): boolean {
+    const projectLocation: Nullable<string> = this.manifest.location?.trim();
+    const hasWorkspace: boolean = !this.platformAdapter.hasFilesystem || projectLocation !== '';
+
+    return hasWorkspace && this.isProjectNameValid() && this.isMetamodelValid();
+  }
+
+  protected async validateProjectLocation(): Promise<void> {
+    if (!this.platformAdapter.hasFilesystem) return;
+
     const location: string = this.manifest.location?.trim() ?? '';
-    this.isLocationValid = await this.electronService.isPathAccessible(location);
-    return this.isLocationValid;
+    this.isProjectLocationValid = await this.platformAdapter.isProjectLocationValid(location);
+    this.cdr.markForCheck();
   }
 
   protected async handleProjectLocation(): Promise<void> {
-    const location: Nullable<string> = await this.electronService.openDirectory();
+    const location: Nullable<string> = await this.platformAdapter.chooseProjectLocation();
     if (!location || location === '') return;
+
     this.manifest.location = location;
-    this.changeDetectorRef.markForCheck();
+    await this.validateProjectLocation();
   }
 
-  protected async handleProjectCreation(): Promise<void> {
-    if (!this.isFormCompleted()) return;
-    if (this.isElectronRuntime) {
-      await this.isLocationAccessible();
-      if (!this.isLocationValid) return;
+  protected async handleCreateProject(): Promise<void> {
+    this.isSubmitted = true;
+    if (!this.isFormValid()) return;
+
+    if (this.platformAdapter.hasFilesystem) {
+      await this.validateProjectLocation();
+      if (!this.isProjectLocationValid) return;
     }
+
+    await this.platformAdapter.saveManifest(this.manifest);
+    await this.router.navigate(['/ws', this.manifest.projectId]);
   }
 }

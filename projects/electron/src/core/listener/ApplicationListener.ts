@@ -22,9 +22,9 @@ export class ApplicationListener extends Listener {
       type: 'on',
       fn: this.handleOpenExternalURL,
     },
-    [APPLICATION_IPC.APPLICATION_OPEN_DIRECTORY]: {
+    [APPLICATION_IPC.APPLICATION_SHOW_DIRECTORY]: {
       type: 'handle',
-      fn: this.handleOpenDirectory,
+      fn: this.handleShowDialog,
     },
     [APPLICATION_IPC.APPLICATION_ACCESS_PATH]: {
       type: 'handle',
@@ -52,7 +52,7 @@ export class ApplicationListener extends Listener {
     await shell.openExternal(url);
   }
 
-  protected handleOpenDirectory(_: IpcMainEvent, title: string): string {
+  protected handleShowDialog(_: IpcMainEvent, title: string): string {
     const filePaths: Nullable<string[]> = dialog.showOpenDialogSync(this.application.getWindow(), {
       properties: ['openDirectory', 'createDirectory'],
       defaultPath: app.getPath('documents'),

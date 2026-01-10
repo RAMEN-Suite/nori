@@ -1,33 +1,47 @@
 import { Injectable } from '@angular/core';
 import { APPLICATION_IPC } from '../../../../electron/src/static/IPC_EVENTS';
+import { Electron } from '../../electron';
+import { Nullable } from '../../global';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ElectronService {
+  private readonly electronAPI: Nullable<Electron> = window.electron;
+  public readonly isAvailable: boolean = this.electronAPI !== undefined;
+
+  private send(event: string, ...args: unknown[]): void {
+    this.electronAPI?.send(event, ...args);
+  }
+
+  private async invoke<T>(event: string, fallback: T, ...args: unknown[]): Promise<T> {
+    if (!this.electronAPI) return fallback;
+    return this.electronAPI?.invoke(event, ...args);
+  }
+
   public minimizeApplication(): void {
-    window.electron?.send(APPLICATION_IPC.APPLICATION_MINIMIZE);
+    this.send(APPLICATION_IPC.APPLICATION_MINIMIZE);
   }
 
   public maximizeApplication(): void {
-    window.electron?.send(APPLICATION_IPC.APPLICATION_MAXIMIZE);
+    this.send(APPLICATION_IPC.APPLICATION_MAXIMIZE);
   }
 
   public closeApplication(): void {
-    window.electron?.send(APPLICATION_IPC.APPLICATION_CLOSE);
+    this.send(APPLICATION_IPC.APPLICATION_CLOSE);
   }
 
   public openExternalURL(url: string): void {
-    window.electron?.send(APPLICATION_IPC.APPLICATION_OPEN_URL, url);
+    this.send(APPLICATION_IPC.APPLICATION_OPEN_URL, url);
   }
 
-  public async openDirectory(): Promise<string> {
-    if (!window.electron) return '';
-    return window.electron?.invoke(APPLICATION_IPC.APPLICATION_OPEN_DIRECTORY);
+  public async showDirectory(): Promise<string> {
+    const defaultValue: string = '';
+    return this.invoke(APPLICATION_IPC.APPLICATION_SHOW_DIRECTORY, defaultValue);
   }
 
   public async isPathAccessible(path: string): Promise<boolean> {
-    if (!window.electron) return false;
-    return window.electron.invoke(APPLICATION_IPC.APPLICATION_ACCESS_PATH, path);
+    const defaultValue: boolean = false;
+    return this.invoke(APPLICATION_IPC.APPLICATION_ACCESS_PATH, defaultValue, path);
   }
 }
