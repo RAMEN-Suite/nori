@@ -3,6 +3,7 @@ import { WindowState } from '../../states/window.state';
 import { Button } from 'primeng/button';
 import { environment } from '../../../environments/environment';
 import { RouterLink } from '@angular/router';
+import { EDITOR_THEME, EditorState } from '../../states/editor.state';
 
 @Component({
   selector: 'app-home',
@@ -11,8 +12,11 @@ import { RouterLink } from '@angular/router';
   styleUrl: './home.screen.scss',
 })
 export class HomeScreen implements OnInit {
-  private readonly windowState: WindowState = inject(WindowState);
   protected readonly environment = environment;
+  protected readonly EDITOR_THEME = EDITOR_THEME;
+
+  private readonly windowState: WindowState = inject(WindowState);
+  protected readonly editorState: EditorState = inject(EditorState);
 
   public ngOnInit(): void {
     this.windowState.setTitle('NORI - A Model Layering Tool', 'pi pi-home');

@@ -1,3 +1,5 @@
+@let isDark = editorState.state().theme === EDITOR_THEME.DARK;
+
 <main
   class="min-h-window relative flex flex-col items-center justify-center gap-y-10 text-center"
   #main
@@ -24,6 +26,16 @@
       icon="pi pi-folder"
       label="open an existing project"
       routerLink="open"
+    />
+  </section>
+
+  <section class="mt-10 flex" animate.enter="sub-menu-entrance">
+    <p-button
+      variant="text"
+      size="small"
+      [icon]="isDark ? 'pi pi-moon' : 'pi pi-sun'"
+      label="change theme"
+      (click)="editorState.setTheme(isDark ? EDITOR_THEME.LIGHT : EDITOR_THEME.DARK)"
     />
   </section>
 
