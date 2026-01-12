@@ -1,14 +1,11 @@
-import { app, BrowserWindow, dialog, screen } from 'electron';
-import { ERROR_MSG } from '../static/ERROR_MSG';
-import { DEVELOPMENT_PATH, PRELOAD_PATH, PRODUCTION_PATH, PROJECTS_PATH } from '../static/PATHS';
-import fs from 'fs';
+import { app, BrowserWindow, screen } from 'electron';
+import { DEVELOPMENT_PATH, PRELOAD_PATH, PRODUCTION_PATH } from '../static/PATHS';
 import * as process from 'node:process';
 
 export class Application {
-  protected title: string = '';
+  protected readonly title: string = '';
+  protected readonly isProduction: boolean;
   protected window: BrowserWindow;
-
-  protected isProduction: boolean;
 
   constructor(title: string, isProduction: boolean) {
     this.title = title;
@@ -21,19 +18,7 @@ export class Application {
   }
 
   public init(): void {
-    this.initProjectFolder();
     this.initAppListener();
-  }
-
-  protected initProjectFolder(): void {
-    try {
-      if (!fs.existsSync(PROJECTS_PATH)) {
-        fs.mkdirSync(PROJECTS_PATH);
-      }
-    } catch (error) {
-      dialog.showErrorBox(ERROR_MSG.PROJECT_INIT.TITLE, ERROR_MSG.PROJECT_INIT.MSG);
-      app.quit();
-    }
   }
 
   protected initAppListener(): void {

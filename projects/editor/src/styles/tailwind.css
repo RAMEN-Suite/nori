@@ -27,3 +27,7 @@ body {
   cursor: not-allowed !important;
 }
 
+.p-tooltip-text {
+  font-size: 9pt;
+}
+

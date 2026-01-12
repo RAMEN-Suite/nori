@@ -13,7 +13,7 @@ export abstract class Listener {
   protected application: Application;
   protected listener: ListenerFn;
 
-  protected constructor(application: Application) {
+  constructor(application: Application) {
     this.application = application;
   }
 

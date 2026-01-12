@@ -1,8 +1,6 @@
 import { Listener, ListenerFn } from '../EventInitializer';
 import { APPLICATION_IPC } from '../../static/IPC_EVENTS';
-import { app, BrowserWindow, dialog, IpcMainEvent, shell } from 'electron';
-import { Nullable } from '../../global';
-import fs from 'fs';
+import { app, BrowserWindow, IpcMainEvent, shell } from 'electron';
 
 export class ApplicationListener extends Listener {
   protected listener: ListenerFn = {
@@ -21,14 +19,6 @@ export class ApplicationListener extends Listener {
     [APPLICATION_IPC.APPLICATION_OPEN_URL]: {
       type: 'on',
       fn: this.handleOpenExternalURL,
-    },
-    [APPLICATION_IPC.APPLICATION_SHOW_DIRECTORY]: {
-      type: 'handle',
-      fn: this.handleShowDialog,
-    },
-    [APPLICATION_IPC.APPLICATION_ACCESS_PATH]: {
-      type: 'handle',
-      fn: this.handleIsPathAccessible,
     },
   };
 
@@ -50,25 +40,5 @@ export class ApplicationListener extends Listener {
 
   protected async handleOpenExternalURL(_: IpcMainEvent, url: string): Promise<void> {
     await shell.openExternal(url);
-  }
-
-  protected handleShowDialog(_: IpcMainEvent, title: string): string {
-    const filePaths: Nullable<string[]> = dialog.showOpenDialogSync(this.application.getWindow(), {
-      properties: ['openDirectory', 'createDirectory'],
-      defaultPath: app.getPath('documents'),
-      title,
-    });
-
-    if (!filePaths) return '';
-    else return filePaths[0];
-  }
-
-  protected async handleIsPathAccessible(_: IpcMainEvent, path: string): Promise<boolean> {
-    try {
-      await fs.promises.access(path);
-      return true;
-    } catch (error: unknown) {
-      return false;
-    }
   }
 }

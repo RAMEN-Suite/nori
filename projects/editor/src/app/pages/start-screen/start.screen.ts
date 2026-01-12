@@ -1,24 +1,18 @@
-import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { WindowState } from '../../states/window.state';
 import { FormsModule } from '@angular/forms';
 import { InputText } from 'primeng/inputtext';
 import { Fieldset } from 'primeng/fieldset';
 import { Textarea } from 'primeng/textarea';
 import { IftaLabel } from 'primeng/iftalabel';
-import { InputGroup } from 'primeng/inputgroup';
 import { Button } from 'primeng/button';
 import { Select } from 'primeng/select';
 import { Checkbox } from 'primeng/checkbox';
 import { Router, RouterLink } from '@angular/router';
-import ShortUniqueId from 'short-unique-id';
-import { Manifest } from '../../models/Manifest';
-import { Nullable } from '../../../global';
 import { Message } from 'primeng/message';
-import { CATALOG } from '../../data/CATALOG';
-import { environment } from '../../../environments/environment';
+import { CATALOG } from '../../../data/CATALOG';
 import { GModel } from '../../models/GModel';
-import { PlatformAdapter } from '../../adapter/platforms/PlatformAdapter';
-import { PLATFORM } from '../../tokens/platform.token';
+import { CreateManifest, StorageService } from '../../services/storage.service';
 
 @Component({
   selector: 'app-create',
@@ -28,7 +22,6 @@ import { PLATFORM } from '../../tokens/platform.token';
     Fieldset,
     Textarea,
     IftaLabel,
-    InputGroup,
     Button,
     Select,
     Checkbox,
@@ -40,29 +33,17 @@ import { PLATFORM } from '../../tokens/platform.token';
 })
 export class StartScreen implements OnInit {
   private readonly windowState: WindowState = inject(WindowState);
-  private readonly cdr: ChangeDetectorRef = inject(ChangeDetectorRef);
+  private readonly storage: StorageService = inject(StorageService);
   private readonly router: Router = inject(Router);
 
-  protected readonly platformAdapter: PlatformAdapter = inject(PLATFORM);
-  protected readonly manifest: Manifest;
+  protected readonly manifest: CreateManifest;
   protected readonly metamodels: GModel[] = CATALOG;
 
-  protected isCreatingExamples: boolean = false;
-  protected isProjectLocationValid: boolean = true;
+  protected isCreatingExample: boolean = false;
   protected isSubmitted: boolean = false;
 
   constructor() {
-    this.manifest = {
-      name: '',
-      description: '',
-      location: '',
-      manifestVersion: environment.manifestVersion,
-      appVersion: environment.appVersion,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      projectId: new ShortUniqueId({ length: 16 }).randomUUID(),
-      metamodelId: CATALOG[0].id,
-    };
+    this.manifest = { name: '', description: '', metamodelId: CATALOG[0].id };
   }
 
   public async ngOnInit(): Promise<void> {
@@ -80,38 +61,14 @@ export class StartScreen implements OnInit {
   }
 
   protected isFormValid(): boolean {
-    const projectLocation: Nullable<string> = this.manifest.location?.trim();
-    const hasWorkspace: boolean = !this.platformAdapter.hasFilesystem || projectLocation !== '';
-
-    return hasWorkspace && this.isProjectNameValid() && this.isMetamodelValid();
-  }
-
-  protected async validateProjectLocation(): Promise<void> {
-    if (!this.platformAdapter.hasFilesystem) return;
-
-    const location: string = this.manifest.location?.trim() ?? '';
-    this.isProjectLocationValid = await this.platformAdapter.isProjectLocationValid(location);
-    this.cdr.markForCheck();
-  }
-
-  protected async handleProjectLocation(): Promise<void> {
-    const location: Nullable<string> = await this.platformAdapter.chooseProjectLocation();
-    if (!location || location === '') return;
-
-    this.manifest.location = location;
-    await this.validateProjectLocation();
+    return this.isProjectNameValid() && this.isMetamodelValid();
   }
 
   protected async handleCreateProject(): Promise<void> {
     this.isSubmitted = true;
     if (!this.isFormValid()) return;
 
-    if (this.platformAdapter.hasFilesystem) {
-      await this.validateProjectLocation();
-      if (!this.isProjectLocationValid) return;
-    }
-
-    await this.platformAdapter.saveManifest(this.manifest);
-    await this.router.navigate(['/ws', this.manifest.projectId]);
+    await this.storage.createProject(this.manifest);
+    await this.router.navigate(['/ws', this.storage.selectedProjectId()]);
   }
 }

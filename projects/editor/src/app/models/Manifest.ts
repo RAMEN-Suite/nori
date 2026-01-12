@@ -1,9 +1,4 @@
-import { Nullable } from '../../global';
-
 export interface Manifest {
-  manifestVersion: string;
-  appVersion: string;
-
   projectId: string;
   name: string;
   description: string;
@@ -12,5 +7,6 @@ export interface Manifest {
   createdAt: string;
   updatedAt: string;
 
-  location: Nullable<string>;
+  manifestVersion: string;
+  appVersion: string;
 }

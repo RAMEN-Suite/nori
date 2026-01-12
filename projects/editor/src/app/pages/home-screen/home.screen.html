@@ -1,4 +1,7 @@
-<main class="min-h-window relative flex flex-col items-center justify-center gap-y-10 text-center">
+<main
+  class="min-h-window relative flex flex-col items-center justify-center gap-y-10 text-center"
+  #main
+>
   <section class="flex flex-col gap-y-2" animate.enter="logo-entrance">
     <div class="flex flex-col">
       <svg height="126px" width="126px"><use href="images/ramen.svg#ramen-logo"></use></svg>
@@ -11,7 +14,7 @@
     <p-button
       variant="text"
       size="large"
-      icon="pi pi-file-plus"
+      icon="pi pi-folder-plus"
       label="create a new project"
       routerLink="start"
     />

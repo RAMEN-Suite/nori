@@ -1,7 +1,4 @@
-import { app } from 'electron';
 import path from 'path';
-
-export const PROJECTS_PATH: string = path.join(app.getPath('userData'), 'projects');
 
 export const ROOT_PATH: string = path.join(__dirname, '..');
 export const PRELOAD_PATH: string = path.join(ROOT_PATH, 'preload.js');

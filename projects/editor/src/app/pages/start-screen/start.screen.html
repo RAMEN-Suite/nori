@@ -72,52 +72,17 @@
         </div>
 
         <div class="flex items-center gap-3">
-          <p-check-box id="metamodel_example" [(ngModel)]="isCreatingExamples" binary />
+          <p-check-box id="metamodel_example" [(ngModel)]="isCreatingExample" binary />
           <label
             for="metamodel_example"
             class="cursor-pointer text-sm"
-            (click)="isCreatingExamples = !isCreatingExamples"
+            (click)="isCreatingExample = !isCreatingExample"
           >
             Create an example model based on the selected metamodel.
           </label>
         </div>
       </div>
     </p-fieldset>
-
-    @if (platformAdapter.hasFilesystem) {
-      <p-fieldset legend="Workspace">
-        <div class="flex flex-col gap-3">
-          <div class="flex flex-col gap-1">
-            <p-input-group>
-              <p-ifta-label>
-                <input
-                  pInputText
-                  id="location"
-                  #locationModel="ngModel"
-                  [(ngModel)]="manifest.location"
-                  autocomplete="off"
-                  fluid
-                  (blur)="validateProjectLocation()"
-                  [invalid]="(locationModel.touched || isSubmitted) && !isProjectLocationValid"
-                />
-                <label for="location">Project Location</label>
-              </p-ifta-label>
-              <p-button
-                icon="pi pi-folder-open"
-                size="large"
-                variant="outlined"
-                (click)="handleProjectLocation()"
-              />
-            </p-input-group>
-            @if ((locationModel.touched || isSubmitted) && !isProjectLocationValid) {
-              <p-message severity="error" size="small" variant="simple">
-                Cannot create a new project in the selected folder location.
-              </p-message>
-            }
-          </div>
-        </div>
-      </p-fieldset>
-    }
 
     <div class="mt-4 flex flex-row items-center justify-center gap-5">
       <p-button label="Cancel" severity="danger" variant="outlined" routerLink="/" />

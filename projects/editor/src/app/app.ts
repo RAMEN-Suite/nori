@@ -3,8 +3,6 @@ import { ButtonModule } from 'primeng/button';
 import { TitleBarComponent } from './components/bars/title-bar/title-bar.component';
 import { RouterOutlet } from '@angular/router';
 import { EDITOR_THEME, EditorState } from './states/editor.state';
-import { PlatformAdapter } from './adapter/platforms/PlatformAdapter';
-import { PLATFORM } from './tokens/platform.token';
 
 @Component({
   selector: 'app-root',
@@ -15,7 +13,7 @@ import { PLATFORM } from './tokens/platform.token';
 export class App {
   private readonly editorState: EditorState = inject(EditorState);
   private readonly document: Document = inject(DOCUMENT);
-  protected readonly platformAdapter: PlatformAdapter = inject(PLATFORM);
+  protected readonly isElectronRuntime: boolean = !!window.electron;
 
   constructor() {
     effect((): void => {
