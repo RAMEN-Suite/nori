@@ -7,6 +7,7 @@ import { EDITOR_THEME, EditorState } from './states/editor.state';
 @Component({
   selector: 'app-root',
   imports: [ButtonModule, TitleBarComponent, RouterOutlet],
+  providers: [],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })

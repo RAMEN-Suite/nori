@@ -5,7 +5,7 @@ import { database } from '../app.database';
 import { environment } from '../../environments/environment';
 import ShortUniqueId from 'short-unique-id';
 
-export type CreateManifest = Pick<Manifest, 'name' | 'description' | 'metamodelId'>;
+export type CreateManifest = Pick<Manifest, 'name' | 'description' | 'metamodelId' | 'metaVersion'>;
 export type UpdateManifest = Pick<Manifest, 'name' | 'description'>;
 
 export type CreateModel = Pick<Model, 'projectId' | 'slot' | 'gmodel' | 'name' | 'description'>;

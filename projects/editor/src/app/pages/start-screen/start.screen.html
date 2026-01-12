@@ -32,7 +32,7 @@
             pTextarea
             id="description"
             [(ngModel)]="manifest.description"
-            maxlength="280"
+            maxlength="140"
             autocomplete="off"
             fluid
           ></textarea>
@@ -47,10 +47,9 @@
           <p-ifta-label>
             <p-select
               id="metamodel"
-              [(ngModel)]="manifest.metamodelId"
+              [(ngModel)]="selectedMetamodel"
               #metamodelModel="ngModel"
               [options]="metamodels"
-              optionValue="id"
               fluid
               [invalid]="(metamodelModel.touched || isSubmitted) && !isMetamodelValid()"
             >
@@ -84,12 +83,15 @@
       </div>
     </p-fieldset>
 
-    <div class="mt-4 flex flex-row items-center justify-center gap-5">
-      <p-button label="Cancel" severity="danger" variant="outlined" routerLink="/" />
+    <div class="mt-4 flex flex-row items-center justify-between gap-5">
+      <div class="button-group flex gap-5">
+        <p-button label="Cancel" severity="danger" variant="outlined" routerLink="/" />
+        <p-button label="Open Project" variant="outlined" routerLink="/open" />
+      </div>
       <p-button
         label="Finish Setup"
         outlined="outlined"
-        [disabled]="!isFormValid"
+        [disabled]="!isFormValid()"
         (click)="handleCreateProject()"
       />
     </div>

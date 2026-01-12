@@ -39,11 +39,13 @@ export class StartScreen implements OnInit {
   protected readonly manifest: CreateManifest;
   protected readonly metamodels: GModel[] = CATALOG;
 
+  protected selectedMetamodel: GModel;
   protected isCreatingExample: boolean = false;
   protected isSubmitted: boolean = false;
 
   constructor() {
-    this.manifest = { name: '', description: '', metamodelId: CATALOG[0].id };
+    this.manifest = { name: '', description: '', metamodelId: '', metaVersion: '' };
+    this.selectedMetamodel = CATALOG[0];
   }
 
   public async ngOnInit(): Promise<void> {
@@ -56,8 +58,11 @@ export class StartScreen implements OnInit {
   }
 
   protected isMetamodelValid(): boolean {
-    const metamodelIds: string[] = this.metamodels.map((m: GModel): string => m.id);
-    return metamodelIds.includes(this.manifest.metamodelId);
+    return !!this.metamodels.find((m: GModel): boolean => {
+      const hasSameVersion: boolean = m.version === this.selectedMetamodel.version;
+      const hasSameIdentifier: boolean = m.id === this.selectedMetamodel.id;
+      return hasSameVersion && hasSameIdentifier;
+    });
   }
 
   protected isFormValid(): boolean {
@@ -67,6 +72,9 @@ export class StartScreen implements OnInit {
   protected async handleCreateProject(): Promise<void> {
     this.isSubmitted = true;
     if (!this.isFormValid()) return;
+
+    this.manifest.metamodelId = this.selectedMetamodel.id;
+    this.manifest.metaVersion = this.selectedMetamodel.version;
 
     await this.storage.createProject(this.manifest);
     await this.router.navigate(['/ws', this.storage.selectedProjectId()]);

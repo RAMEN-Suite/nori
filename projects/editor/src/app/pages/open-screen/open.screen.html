@@ -1,1 +1,72 @@
-<p>open-screen works!</p>
+<main class="min-h-window mx-auto flex max-w-2xl items-center">
+  <section class="card flex w-full flex-col gap-4" animate.enter="card-entrance">
+    <span class="block text-center text-3xl font-light">Opening a NORI Project</span>
+    <p-fieldset legend="Your Projects">
+      <ng-template #content>
+        <p-scroll-panel class="h-95">
+          <div class="flex flex-col gap-3">
+            @for (manifest of filteredManifest(); track manifest.projectId) {
+              <div class="flex flex-row gap-1">
+                <div class="grow">
+                  <p-button
+                    fluid
+                    variant="outlined"
+                    severity="contrast"
+                    [routerLink]="['/ws', manifest.projectId]"
+                  >
+                    <ng-template #content>
+                      <div class="flex w-full flex-col gap-1 px-1 py-2 text-left">
+                        <div class="flex flex-row items-center">
+                          <span class="text-sm font-bold">{{ manifest.name }}</span>
+                          <span class="ml-2 text-xs uppercase">
+                            ({{ manifest.metamodelId }}, v.{{ manifest.metaVersion }})
+                          </span>
+                        </div>
+                        <div class="flex flex-row items-center">
+                          <span class="text-sm">
+                            @if (manifest.description === '') {
+                              No description available.
+                            } @else {
+                              {{ manifest.description }}
+                            }
+                          </span>
+                        </div>
+                      </div>
+                    </ng-template>
+                  </p-button>
+                </div>
+                <div class="self-stretch">
+                  <p-button
+                    fluid
+                    icon="pi pi-trash"
+                    severity="contrast"
+                    outlined
+                    styleClass="h-full"
+                    (click)="$event.stopPropagation(); handleDeleteProject(manifest)"
+                  />
+                </div>
+              </div>
+            } @empty {
+              <div class="flex h-50 flex-col items-center justify-center">
+                <span>...there are currently no projects available.</span>
+              </div>
+            }
+          </div>
+        </p-scroll-panel>
+      </ng-template>
+    </p-fieldset>
+    <div class="flex flex-row gap-3">
+      <div class="grow">
+        <p-inputgroup>
+          <p-inputgroup-addon>
+            <i class="pi pi-search"></i>
+          </p-inputgroup-addon>
+          <input pInputText [(ngModel)]="searchInput" placeholder="Search projects" />
+        </p-inputgroup>
+      </div>
+      <p-button label="New Project" variant="outlined" routerLink="/start" />
+    </div>
+  </section>
+</main>
+
+<p-confirm-dialog key="confirm-delete" />
