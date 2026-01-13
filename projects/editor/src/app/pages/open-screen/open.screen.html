@@ -4,7 +4,7 @@
     <p-fieldset legend="Your Projects">
       <ng-template #content>
         <p-scroll-panel class="h-95">
-          <div class="flex flex-col gap-3">
+          <div class="mt-2 flex flex-col gap-3 px-1">
             @for (manifest of filteredManifest(); track manifest.projectId) {
               <div class="me-4 flex flex-row gap-1">
                 <div class="grow">
