@@ -10,7 +10,7 @@ export class AppDatabase extends Dexie {
     super('nori');
     this.version(1).stores({
       manifests: 'projectId, updatedAt, metamodelId',
-      models: 'modelId, projectId, [projectId+slot], updatedAt',
+      models: 'modelId, projectId, &[projectId+slot], updatedAt',
     });
   }
 }

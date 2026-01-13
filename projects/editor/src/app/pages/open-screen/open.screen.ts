@@ -60,7 +60,7 @@ export class OpenScreen implements OnInit {
     this.confirmation.confirm({
       message: `Do you really want to delete ${manifest.name}?`,
       header: `Deleting Project`,
-      key: 'confirm-delete',
+      key: 'open-projects',
       dismissableMask: true,
       rejectButtonProps: {
         label: 'Cancel',
@@ -75,5 +75,9 @@ export class OpenScreen implements OnInit {
       },
       accept: async (): Promise<void> => void this.storage.deleteProject(manifest.projectId),
     });
+  }
+
+  public async handleDuplicateProject(manifest: Manifest): Promise<void> {
+    void this.storage.duplicateProject(manifest.projectId);
   }
 }

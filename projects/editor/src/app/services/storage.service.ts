@@ -9,12 +9,7 @@ export type CreateManifest = Pick<Manifest, 'name' | 'description' | 'metamodelI
 export type UpdateManifest = Pick<Manifest, 'name' | 'description'>;
 
 export type CreateModel = Pick<Model, 'projectId' | 'slot' | 'gmodel' | 'name' | 'description'>;
-export type UpdateModel = Omit<Model, 'modelId' | 'projectId' | 'revision'>;
-
-const sortModelsInSlot: (a: Model, b: Model) => number = (a: Model, b: Model): number => {
-  if (a.createdAt !== b.createdAt) return a.createdAt.localeCompare(b.createdAt);
-  return a.modelId.localeCompare(b.modelId);
-};
+export type UpdateModel = Pick<Model, 'gmodel' | 'name' | 'description'>;
 
 @Injectable({
   providedIn: 'root',
@@ -25,6 +20,14 @@ export class StorageService {
 
   public readonly selectedProjectId: WritableSignal<string | null> = signal(null);
   public readonly selectedManifest: WritableSignal<Manifest | null> = signal(null);
+
+  public readonly modelsBySlot: Signal<Map<number, Model>> = computed((): Map<number, Model> => {
+    const map: Map<number, Model> = new Map<number, Model>();
+    for (const model of this.models()) {
+      map.set(model.slot, model);
+    }
+    return map;
+  });
 
   constructor() {
     effect((): void => {
@@ -40,18 +43,6 @@ export class StorageService {
     });
   }
 
-  public modelsBySlot: Signal<Map<number, Model[]>> = computed((): Map<number, Model[]> => {
-    const map: Map<number, Model[]> = new Map<number, Model[]>();
-
-    for (const model of this.models()) {
-      const array: Model[] = map.get(model.slot) ?? [];
-      array.push(model);
-      map.set(model.slot, array);
-    }
-
-    return map;
-  });
-
   public async refreshManifests(): Promise<void> {
     const list: Manifest[] = await database.manifests.orderBy('updatedAt').reverse().toArray();
     this.manifests.set(list);
@@ -62,9 +53,7 @@ export class StorageService {
   }
 
   public async createProject(input: CreateManifest): Promise<void> {
-    const createdAt: string = new Date().toISOString();
-    const updatedAt: string = new Date().toISOString();
-
+    const timestamp: string = new Date().toISOString();
     const projectId: string = new ShortUniqueId({ length: 18 }).randomUUID();
     const manifestVersion: string = environment.manifestVersion;
     const appVersion: string = environment.appVersion;
@@ -74,8 +63,8 @@ export class StorageService {
       ...input,
       manifestVersion,
       appVersion,
-      createdAt,
-      updatedAt,
+      createdAt: timestamp,
+      updatedAt: timestamp,
     };
 
     await database.manifests.add(manifest);
@@ -94,6 +83,46 @@ export class StorageService {
     await this.refreshManifests();
   }
 
+  public async duplicateProject(projectId: string): Promise<void> {
+    const sourceManifest: Manifest | undefined = await database.manifests.get(projectId);
+    if (!sourceManifest) throw new Error(`Project not found: ${projectId}`);
+
+    const sourceModels: Model[] = await database.models
+      .where('projectId')
+      .equals(projectId)
+      .toArray();
+
+    const timestamp: string = new Date().toISOString();
+    const newProjectId: string = new ShortUniqueId({ length: 18 }).randomUUID();
+
+    const manifest: Manifest = {
+      ...sourceManifest,
+      name: `${sourceManifest.name} (copy)`,
+      projectId: newProjectId,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    };
+
+    const clonedModels: Model[] = sourceModels.map(
+      (existingModel: Model): Model => ({
+        ...existingModel,
+        modelId: new ShortUniqueId({ length: 18 }).randomUUID(),
+        projectId: newProjectId,
+        revision: 1,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      }),
+    );
+
+    await database.transaction('rw', database.manifests, database.models, async () => {
+      await database.manifests.add(manifest);
+      await database.models.bulkAdd(clonedModels);
+    });
+
+    await this.refreshManifests();
+    this.selectProject(newProjectId);
+  }
+
   public async loadProject(projectId: string): Promise<void> {
     const [manifest, models]: [Manifest | undefined, Model[]] = await Promise.all([
       database.manifests.get(projectId),
@@ -101,18 +130,26 @@ export class StorageService {
     ]);
 
     this.selectedManifest.set(manifest ?? null);
-
-    models.sort((a: Model, b: Model): number => {
-      if (a.slot !== b.slot) return a.slot - b.slot;
-      return sortModelsInSlot(a, b);
-    });
-
+    models.sort((a: Model, b: Model): number => a.slot - b.slot);
     this.models.set(models);
   }
 
-  public async createModel(input: CreateModel): Promise<string> {
-    const createdAt: string = new Date().toISOString();
-    const updatedAt: string = new Date().toISOString();
+  public async deleteProject(projectId: string): Promise<void> {
+    await database.transaction('rw', database.manifests, database.models, async () => {
+      await database.models.where('projectId').equals(projectId).delete();
+      await database.manifests.delete(projectId);
+    });
+
+    if (this.selectedProjectId() === projectId) this.selectProject(null);
+    await this.refreshManifests();
+  }
+
+  public async getModelBySlot(projectId: string, slot: number): Promise<Model | undefined> {
+    return database.models.where('[projectId+slot]').equals([projectId, slot]).first();
+  }
+
+  public async createModel(input: CreateModel): Promise<void> {
+    const timestamp: string = new Date().toISOString();
     const modelId: string = new ShortUniqueId({ length: 18 }).randomUUID();
     const revision: number = 1;
 
@@ -120,21 +157,17 @@ export class StorageService {
       modelId,
       ...input,
       revision,
-      createdAt,
-      updatedAt,
+      createdAt: timestamp,
+      updatedAt: timestamp,
     };
 
     await database.transaction('rw', database.manifests, database.models, async () => {
       await database.models.add(model);
-      await database.manifests.update(input.projectId, { updatedAt });
+      await database.manifests.update(input.projectId, { updatedAt: timestamp });
     });
 
-    if (this.selectedProjectId() === input.projectId) {
-      await this.loadProject(input.projectId);
-    }
-
+    if (this.selectedProjectId() === input.projectId) await this.loadProject(input.projectId);
     await this.refreshManifests();
-    return modelId;
   }
 
   public async updateModel(modelId: string, patch: UpdateModel): Promise<void> {
@@ -149,29 +182,30 @@ export class StorageService {
       await database.manifests.update(existing.projectId, { updatedAt });
     });
 
-    if (this.selectedProjectId() === existing.projectId) {
-      await this.loadProject(existing.projectId);
-    }
-
+    if (this.selectedProjectId() === existing.projectId) await this.loadProject(existing.projectId);
     await this.refreshManifests();
   }
 
-  public async listModelsBySlot(projectId: string, slot: number): Promise<Model[]> {
-    const rows: Model[] = await database.models
-      .where('[projectId+slot]')
-      .equals([projectId, slot])
-      .toArray();
-
-    rows.sort(sortModelsInSlot);
-    return rows;
+  public async canDeleteSlot(projectId: string, slot: number): Promise<boolean> {
+    const models: Model[] = await database.models.where('projectId').equals(projectId).toArray();
+    const maxSlot: number = models.reduce((max: number, m: Model) => Math.max(max, m.slot), -1);
+    return maxSlot <= slot;
   }
 
-  public async deleteModel(modelId: string): Promise<void> {
+  public async deleteSlot(projectId: string, slot: number): Promise<void> {
+    const model: Model | undefined = await this.getModelBySlot(projectId, slot);
+    if (!model) return;
+
+    const isAllowed: boolean = await this.canDeleteSlot(projectId, slot);
+    if (!isAllowed) throw new Error(`Cannot delete slot ${slot}: higher slots exist.`);
+    await this.deleteModel(model.modelId);
+  }
+
+  private async deleteModel(modelId: string): Promise<void> {
     const existing: Model | undefined = await database.models.get(modelId);
     if (!existing) return;
 
     const updatedAt: string = new Date().toISOString();
-
     await database.transaction('rw', database.manifests, database.models, async () => {
       await database.models.delete(modelId);
       await database.manifests.update(existing.projectId, { updatedAt });
@@ -179,19 +213,6 @@ export class StorageService {
 
     if (this.selectedProjectId() === existing.projectId) {
       await this.loadProject(existing.projectId);
-    }
-
-    await this.refreshManifests();
-  }
-
-  public async deleteProject(projectId: string): Promise<void> {
-    await database.transaction('rw', database.manifests, database.models, async () => {
-      await database.models.where('projectId').equals(projectId).delete();
-      await database.manifests.delete(projectId);
-    });
-
-    if (this.selectedProjectId() === projectId) {
-      this.selectProject(null);
     }
 
     await this.refreshManifests();

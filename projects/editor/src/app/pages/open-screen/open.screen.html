@@ -6,14 +6,9 @@
         <p-scroll-panel class="h-95">
           <div class="flex flex-col gap-3">
             @for (manifest of filteredManifest(); track manifest.projectId) {
-              <div class="flex flex-row gap-1">
+              <div class="me-4 flex flex-row gap-1">
                 <div class="grow">
-                  <p-button
-                    fluid
-                    variant="outlined"
-                    severity="contrast"
-                    [routerLink]="['/ws', manifest.projectId]"
-                  >
+                  <p-button fluid variant="outlined" [routerLink]="['/ws', manifest.projectId]">
                     <ng-template #content>
                       <div class="flex w-full flex-col gap-1 px-1 py-2 text-left">
                         <div class="flex flex-row items-center">
@@ -38,11 +33,19 @@
                 <div class="self-stretch">
                   <p-button
                     fluid
-                    icon="pi pi-trash"
-                    severity="contrast"
+                    icon="pi pi-clone"
                     outlined
                     styleClass="h-full"
-                    (click)="$event.stopPropagation(); handleDeleteProject(manifest)"
+                    (click)="handleDuplicateProject(manifest)"
+                  />
+                </div>
+                <div class="self-stretch">
+                  <p-button
+                    fluid
+                    icon="pi pi-trash"
+                    outlined
+                    styleClass="h-full"
+                    (click)="handleDeleteProject(manifest)"
                   />
                 </div>
               </div>
@@ -69,4 +72,4 @@
   </section>
 </main>
 
-<p-confirm-dialog key="confirm-delete" />
+<p-confirm-dialog key="open-projects" />
