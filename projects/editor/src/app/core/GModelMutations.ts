@@ -1,0 +1,173 @@
+import {
+  Bounds,
+  GAttribute,
+  GClassifier,
+  GDataType,
+  GModel,
+  GNode,
+  GRelation,
+} from '../models/GModel';
+
+export type PatchNode = Partial<Pick<GNode, 'name' | 'superTypes' | 'attributes'>>;
+export type PatchDataType = Partial<Pick<GDataType, 'name' | 'literals'>>;
+export type PatchAttribute = Partial<
+  Pick<GAttribute, 'name' | 'typeId' | 'bounds' | 'defaultValue' | 'isKey' | 'isDerived'>
+>;
+export type PatchRelation = Partial<Pick<GRelation, 'name' | 'from' | 'to' | 'isBidirectional'>>;
+
+export class GModelMutations {
+  public static addClassifier(model: GModel, classifier: GClassifier): GModel {
+    return { ...model, classifiers: [...(model.classifiers ?? []), classifier] };
+  }
+
+  public static removeClassifierById(model: GModel, classifierId: string): GModel {
+    const classifiers: GClassifier[] = model.classifiers ?? [];
+
+    const filtered: GClassifier[] = classifiers.filter((classifier: GClassifier): boolean => {
+      return classifier.id !== classifierId;
+    });
+    if (filtered.length === classifiers.length) {
+      throw new Error(`Classifier not found: ${classifierId}`);
+    }
+
+    return { ...model, classifiers: filtered };
+  }
+
+  public static updateNode(model: GModel, nodeId: string, patch: PatchNode): GModel {
+    const classifiers: GClassifier[] = model.classifiers ?? [];
+    let found: boolean = false;
+
+    const patched: GClassifier[] = classifiers.map((classifier: GClassifier): GClassifier => {
+      if (classifier.kind !== 'GNode') return classifier;
+      if (classifier.id !== nodeId) return classifier;
+
+      found = true;
+      return { ...classifier, ...patch };
+    });
+
+    if (!found) throw new Error(`Node not found: ${nodeId}`);
+    return { ...model, classifiers: patched };
+  }
+
+  public static updateDataType(model: GModel, dataTypeId: string, patch: PatchDataType): GModel {
+    const classifiers: GClassifier[] = model.classifiers ?? [];
+    let found: boolean = false;
+
+    const patched: GClassifier[] = classifiers.map((collection: GClassifier): GClassifier => {
+      if (collection.kind !== 'GDataType') return collection;
+      if (collection.id !== dataTypeId) return collection;
+
+      found = true;
+      return { ...collection, ...patch };
+    });
+
+    if (!found) throw new Error(`DataType not found: ${dataTypeId}`);
+    return { ...model, classifiers: patched };
+  }
+
+  public static addAttribute(model: GModel, nodeId: string, attribute: GAttribute): GModel {
+    return this.updateNode(model, nodeId, {
+      attributes: [...(this.getNode(model, nodeId).attributes ?? []), attribute],
+    });
+  }
+
+  public static updateAttribute(
+    model: GModel,
+    nodeId: string,
+    attributeName: string,
+    patch: PatchAttribute,
+  ): GModel {
+    const node: GNode = this.getNode(model, nodeId);
+    const attributes: GAttribute[] = node.attributes ?? [];
+    const index: number = attributes.findIndex((attribute: GAttribute): boolean => {
+      return attribute.name === attributeName;
+    });
+
+    if (index < 0) throw new Error(`Attribute not found: ${nodeId}.${attributeName}`);
+    const patched: GAttribute[] = attributes.map(
+      (attribute: GAttribute, index: number): GAttribute => {
+        if (index !== index) return attribute;
+        return { ...attribute, ...patch };
+      },
+    );
+
+    return this.updateNode(model, nodeId, { attributes: patched });
+  }
+
+  public static removeAttribute(model: GModel, nodeId: string, attributeName: string): GModel {
+    const node: GNode = this.getNode(model, nodeId);
+    const attributes: GAttribute[] = node.attributes ?? [];
+
+    const filtered: GAttribute[] = attributes.filter((a: GAttribute): boolean => {
+      return a.name !== attributeName;
+    });
+    if (filtered.length === attributes.length) {
+      throw new Error(`Attribute not found: ${nodeId}.${attributeName}`);
+    }
+
+    return this.updateNode(model, nodeId, { attributes: filtered });
+  }
+
+  public static addRelation(model: GModel, relation: GRelation): GModel {
+    return { ...model, relations: [...(model.relations ?? []), relation] };
+  }
+
+  public static removeRelationById(model: GModel, relationId: string): GModel {
+    const relations: GRelation[] = model.relations ?? [];
+    const filtered: GRelation[] = relations.filter((r: GRelation): boolean => r.id !== relationId);
+
+    if (filtered.length === relations.length) {
+      throw new Error(`Relation not found: ${relationId}`);
+    }
+
+    return { ...model, relations: filtered };
+  }
+
+  public static updateRelation(model: GModel, relationId: string, patch: PatchRelation): GModel {
+    const relations: GRelation[] = model.relations ?? [];
+    let found: boolean = false;
+
+    const patched: GRelation[] = relations.map((relation: GRelation): GRelation => {
+      if (relation.id !== relationId) return relation;
+
+      found = true;
+      return { ...relation, ...patch };
+    });
+
+    if (!found) throw new Error(`Relation not found: ${relationId}`);
+    return { ...model, relations: patched };
+  }
+
+  public static updateRelationBounds(
+    model: GModel,
+    relationId: string,
+    relationEnd: 'from' | 'to',
+    bounds: Bounds,
+  ): GModel {
+    const relations: GRelation[] = model.relations ?? [];
+    const relation: GRelation | undefined = relations.find((rel: GRelation): boolean => {
+      return rel.id === relationId;
+    });
+
+    if (!relation) throw new Error(`Relation not found: ${relationId}`);
+    const patched: GRelation = {
+      ...relation,
+      [relationEnd]: {
+        ...relation[relationEnd],
+        bounds,
+      },
+    };
+
+    return this.updateRelation(model, relationId, patched);
+  }
+
+  public static getNode(model: GModel, nodeId: string): GNode {
+    const classifiers: GClassifier[] = model.classifiers ?? [];
+    const node: GClassifier | undefined = classifiers.find((classifier: GClassifier): boolean => {
+      return classifier.kind === 'GNode' && classifier.id === nodeId;
+    });
+
+    if (!node || node.kind !== 'GNode') throw new Error(`Node not found: ${nodeId}`);
+    return node;
+  }
+}
