@@ -38,10 +38,6 @@ export class WorkspaceService {
   public readonly selectedDerivedSlot: WritableSignal<number> = signal(1);
   public readonly activeDraft: WritableSignal<GModel | null> = signal(null);
 
-  public readonly baseId: Signal<string> = computed((): string => {
-    return this.baseModel()?.id ?? '';
-  });
-
   private readonly baseSlot: Signal<number> = computed((): number => {
     return this.selectedDerivedSlot() - 1;
   });
@@ -56,6 +52,10 @@ export class WorkspaceService {
     return model?.gmodel ?? null;
   });
 
+  public readonly baseId: Signal<string> = computed((): string => {
+    return this.baseModel()?.id ?? '';
+  });
+
   public readonly validation: Signal<ValidationResult> = computed((): ValidationResult => {
     const base: GModel | null = this.baseModel();
     const derivedDraft: GModel | null = this.activeDraft();
@@ -63,39 +63,6 @@ export class WorkspaceService {
     if (!base || !derivedDraft) return { diagnostics: [], hasErrors: false };
     return this.validator.validate(base, derivedDraft);
   });
-
-  constructor() {
-    effect((): void => {
-      const modelsBySlot: Map<number, Model> = this.storage.modelsBySlot();
-      if (modelsBySlot.size === 0) return;
-
-      const slot: number = this.selectedDerivedSlot();
-      if (!modelsBySlot.has(slot)) this.selectDerivedSlot(1);
-    });
-
-    effect((): void => {
-      const derived: GModel | null = this.derivedModel();
-      const isDirty: boolean = untracked((): boolean => this.workspaceState.state().isDirty);
-
-      if (isDirty) return;
-
-      this.activeDraft.set(derived ? structuredClone(derived) : null);
-      this.workspaceState.isDirty(false);
-    });
-  }
-
-  public selectDerivedSlot(slot: number): void {
-    this.selectedDerivedSlot.set(slot);
-  }
-
-  private updateDraft(mutator: (draft: GModel) => GModel): void {
-    const draft: GModel | null = this.activeDraft();
-    if (!draft) throw new Error('No draft loaded.');
-
-    const updated: GModel = mutator(draft);
-    this.activeDraft.set(updated);
-    this.workspaceState.isDirty(true);
-  }
 
   public readonly baseNodes: Signal<ReadonlyArray<GNode>> = computed((): ReadonlyArray<GNode> => {
     const base: GModel | null = this.baseModel();
@@ -135,6 +102,30 @@ export class WorkspaceService {
       return this.suggest.listDataTypes(derived);
     },
   );
+
+  constructor() {
+    effect((): void => {
+      const modelsBySlot: Map<number, Model> = this.storage.modelsBySlot();
+      if (modelsBySlot.size === 0) return;
+
+      const slot: number = this.selectedDerivedSlot();
+      if (!modelsBySlot.has(slot)) this.selectDerivedSlot(1);
+    });
+
+    effect((): void => {
+      const derived: GModel | null = this.derivedModel();
+      const isDirty: boolean = untracked((): boolean => this.workspaceState.state().isDirty);
+
+      if (isDirty) return;
+
+      this.activeDraft.set(derived ? structuredClone(derived) : null);
+      this.workspaceState.isDirty(false);
+    });
+  }
+
+  public selectDerivedSlot(slot: number): void {
+    this.selectedDerivedSlot.set(slot);
+  }
 
   public listAllowedFromRelations(fromNodeId: string): ReadonlyArray<GRelation> {
     const base: GModel | null = this.baseModel();
@@ -237,5 +228,14 @@ export class WorkspaceService {
     });
 
     this.workspaceState.isDirty(false);
+  }
+
+  private updateDraft(mutator: (draft: GModel) => GModel): void {
+    const draft: GModel | null = this.activeDraft();
+    if (!draft) throw new Error('No draft loaded.');
+
+    const updated: GModel = mutator(draft);
+    this.activeDraft.set(updated);
+    this.workspaceState.isDirty(true);
   }
 }

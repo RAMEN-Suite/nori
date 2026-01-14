@@ -29,11 +29,11 @@ export class WorkspaceScreen implements OnInit {
     void this.storage.refreshManifests();
   }
 
-  public async handleOpenCreateModal(): Promise<void> {
+  public handleOpenCreateModal(): void {
     this.isCreateModalVisible = true;
   }
 
-  public async handleCloseCreateModal(): Promise<void> {
+  public handleCloseCreateModal(): void {
     this.isCreateModalVisible = false;
   }
 }
