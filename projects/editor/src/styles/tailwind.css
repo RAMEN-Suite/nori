@@ -31,3 +31,13 @@ body {
   font-size: 9pt;
 }
 
+.p-breadcrumb {
+  background: transparent !important;
+}
+
+.p-chip-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+

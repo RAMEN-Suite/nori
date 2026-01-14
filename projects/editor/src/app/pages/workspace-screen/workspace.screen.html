@@ -1,1 +1,18 @@
-<app-tool-bar></app-tool-bar>
+<app-tool-bar (openCreateModal)="handleOpenCreateModal()" />
+
+<main class="min-h-window flex flex-row">
+  <section class="flex flex-2">
+    <app-side-menu class="basis-full" />
+  </section>
+  <section class="flex flex-5">
+    <div class="basis-full">form content</div>
+  </section>
+  <section class="flex flex-4">test 3</section>
+</main>
+
+@if (isCreateModalVisible) {
+  <app-modal-create-model
+    [isVisible]="isCreateModalVisible"
+    (closeCreateModal)="handleCloseCreateModal()"
+  />
+}

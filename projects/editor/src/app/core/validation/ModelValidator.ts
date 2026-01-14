@@ -1,15 +1,10 @@
-import { StrictDomainValidator } from './StrictDomainValidator';
+import { StrictDomainValidator, StrictValidateOptions } from './StrictDomainValidator';
 import { Diagnostic, DiagnosticPath, DiagnosticReport, Diagnostics } from './container/Diagnostics';
 import { SchemaValidator } from './SchemaValidator';
 import { VALIDATION_ERROR } from '../const/VALIDATION_ERROR';
 import { GModel } from '../../models/GModel';
 
 export type SchemaKind = 'BASE' | 'DERIVED';
-
-export interface ValidateModelOptions {
-  readonly baseAlias: string;
-  readonly throwOnSchemaError: boolean;
-}
 
 export interface ValidationResult {
   readonly diagnostics: Diagnostic[];
@@ -19,20 +14,15 @@ export interface ValidationResult {
 export class ModelValidator {
   private readonly strict: StrictDomainValidator = new StrictDomainValidator();
 
-  public validate(
-    base: unknown,
-    derived: unknown,
-    options: ValidateModelOptions,
-  ): ValidationResult {
+  public validate(base: unknown, derived: unknown): ValidationResult {
     const diagnostics: Diagnostic[] = [];
 
-    diagnostics.push(...this.validateSchema('BASE', base, options));
-    diagnostics.push(...this.validateSchema('DERIVED', derived, options));
+    this.validateSchema('BASE', base, diagnostics);
+    this.validateSchema('DERIVED', derived, diagnostics);
     if (diagnostics.length > 0) return { diagnostics, hasErrors: true };
 
-    const strict: Diagnostic[] = this.strict.validate(base as GModel, derived as GModel, {
-      baseAlias: options.baseAlias,
-    });
+    const options: StrictValidateOptions = { baseId: base.id };
+    const strict: Diagnostic[] = this.strict.validate(base, derived, options);
 
     const all: Diagnostic[] = [...diagnostics, ...strict];
     const hasErrors: boolean = all.some((d: Diagnostic): boolean => d.severity === 'error');
@@ -42,33 +32,17 @@ export class ModelValidator {
   private validateSchema(
     kind: SchemaKind,
     input: unknown,
-    options: ValidateModelOptions,
-  ): Diagnostic[] {
+    diags: Diagnostic[],
+  ): asserts input is GModel {
     try {
-      if (options.throwOnSchemaError) {
-        SchemaValidator.assertValid(input);
-        return [];
-      }
-
-      if (SchemaValidator.isValid(input)) return [];
-
+      SchemaValidator.assertValid(input);
+    } catch (error: any) {
       const report: DiagnosticReport = {
         code: VALIDATION_ERROR.SCHEMA_INVALID,
-        message: `${kind} model does not conform to GCore schema.`,
+        message: `${kind} - ${error.message}`,
         path: DiagnosticPath.root(),
       };
-
-      return [Diagnostics.error(report)];
-    } catch (error: unknown) {
-      if (options.throwOnSchemaError) throw error;
-
-      const report: DiagnosticReport = {
-        code: VALIDATION_ERROR.SCHEMA_INVALID,
-        message: `${kind} model does not conform to GCore schema.`,
-        path: DiagnosticPath.root(),
-      };
-
-      return [Diagnostics.error(report)];
+      diags.push(Diagnostics.error(report));
     }
   }
 }

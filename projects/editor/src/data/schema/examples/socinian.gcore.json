@@ -10,8 +10,8 @@
 
   "imports": [
     {
-      "modelId": "https://ramen-schema.org/ramen/1.0.0/schema.json",
-      "alias": "ramen"
+      "schemaId": "https://ramen-schema.org/ramen/1.0.0/schema.json",
+      "modelId": "ramen"
     }
   ],
 

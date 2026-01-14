@@ -1,9 +1,13 @@
+header {
+  height: 50px;
+}
+
 p-menubar {
   position: fixed;
   width: 100%;
   z-index: 50;
 
-  min-height: 44px;
+  height: 50px;
   padding: 5px;
 
   border-top: 0;
@@ -19,4 +23,17 @@ p-menubar {
 
 p-divider {
   padding: 0;
+}
+
+.p-chip {
+  background-color: var(--p-button-outlined-primary-background);
+  border: 1px solid var(--p-button-outlined-primary-border-color);
+
+  &:hover {
+    background-color: var(--p-button-outlined-primary-hover-background);
+  }
+
+  &.active {
+    background-color: var(--p-button-outlined-primary-active-background);
+  }
 }

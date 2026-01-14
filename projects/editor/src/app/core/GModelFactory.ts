@@ -22,8 +22,8 @@ export class GModelFactory {
 
       imports: [
         {
-          modelId: base.$id,
-          alias: base.id,
+          schemaId: base.$id,
+          modelId: base.id,
         },
       ],
 

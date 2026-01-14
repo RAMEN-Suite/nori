@@ -1,4 +1,3 @@
-export type Alias = string;
 export type GClassifier = GNode | GDataType;
 export type Id = string;
 export type Ref = Id | QualifiedRef;
@@ -20,8 +19,8 @@ export interface GModel {
 }
 
 export interface Import {
-  modelId: string;
-  alias: Alias;
+  schemaId: string;
+  modelId: Id;
 }
 
 export interface GNode {

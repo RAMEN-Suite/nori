@@ -1,7 +1,7 @@
 import { GDataType, GModel, GNode, GRelation } from '../../../models/GModel';
 
 export class GModelIndex {
-  public readonly importsByAlias: ReadonlyMap<string, string>;
+  public readonly importsByModelId: ReadonlyMap<string, string>;
   public readonly nodesById: ReadonlyMap<string, GNode>;
   public readonly dataTypesById: ReadonlyMap<string, GDataType>;
   public readonly relationsById: ReadonlyMap<string, GRelation>;
@@ -9,7 +9,7 @@ export class GModelIndex {
   constructor(public readonly model: GModel) {
     const imports: Map<string, string> = new Map<string, string>();
     for (const imp of this.model.imports) {
-      imports.set(imp.alias, imp.modelId);
+      imports.set(imp.modelId, imp.schemaId);
     }
 
     const nodes: Map<string, GNode> = new Map<string, GNode>();
@@ -24,7 +24,7 @@ export class GModelIndex {
       relations.set(relation.id, relation);
     }
 
-    this.importsByAlias = imports;
+    this.importsByModelId = imports;
     this.nodesById = nodes;
     this.dataTypesById = dataTypes;
     this.relationsById = relations;

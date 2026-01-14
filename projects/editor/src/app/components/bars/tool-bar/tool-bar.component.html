@@ -1,13 +1,38 @@
 @let isDark = editorState.state().theme === EDITOR_THEME.DARK;
 
 <header class="min-h-11">
-  <p-menubar [model]="menuItems">
+  <p-menubar>
     <ng-template #start>
       <svg height="24px" width="24px" class="mx-3">
         <use href="images/ramen.svg#ramen-logo"></use>
       </svg>
       <span class="font-bold uppercase">Nori</span>
       <p-divider layout="vertical"></p-divider>
+      <div class="max-w-120 text-nowrap">
+        <p-breadcrumb [model]="breadcrumb()" styleClass="p-0!">
+          <ng-template #item let-item>
+            @if (!item.isLast) {
+              <p-chip
+                tabindex="0"
+                [label]="item.label"
+                class="justify-center py-1! text-xs select-none"
+                [class.active]="workspace.selectedDerivedSlot() === item.automationId"
+                [class.cursor-pointer]="!item.isFirst"
+                [disabled]="item.isFirst"
+                (keydown.enter)="handleChangeModelSlot(item.automationId)"
+                (click)="handleChangeModelSlot(item.automationId)"
+              />
+            } @else {
+              <p-chip
+                [icon]="item.icon"
+                class="cursor-pointer justify-center py-1! text-xs select-none"
+                (keydown.enter)="openCreateModal.emit()"
+                (click)="openCreateModal.emit()"
+              />
+            }
+          </ng-template>
+        </p-breadcrumb>
+      </div>
     </ng-template>
     <ng-template #end>
       <div class="ml-2 flex items-center gap-1">

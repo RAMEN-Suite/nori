@@ -5,20 +5,18 @@ import { database } from '../app.database';
 import { environment } from '../../environments/environment';
 import ShortUniqueId from 'short-unique-id';
 import { GModel } from '../models/GModel';
-import { CATALOG } from '../../data/CATALOG';
 
 export type CreateManifest = Pick<Manifest, 'name' | 'description' | 'metamodelId' | 'metaVersion'>;
 export type UpdateManifest = Pick<Manifest, 'name' | 'description'>;
 
-export type CreateModel = Pick<Model, 'projectId' | 'slot' | 'gmodel' | 'name' | 'description'>;
-export type UpdateModel = Pick<Model, 'gmodel' | 'name' | 'description'>;
+type CreateModelInput = Pick<Model, 'projectId' | 'gmodel' | 'name' | 'description'>;
+type UpdateModelInput = Pick<Model, 'gmodel' | 'name' | 'description'>;
 
 @Injectable({
   providedIn: 'root',
 })
 export class StorageService {
   public readonly manifests: WritableSignal<Manifest[]> = signal([]);
-  public readonly metamodels: WritableSignal<GModel[]> = signal(CATALOG);
   public readonly models: WritableSignal<Model[]> = signal([]);
 
   public readonly selectedProjectId: WritableSignal<string | null> = signal(null);
@@ -42,8 +40,16 @@ export class StorageService {
         return;
       }
 
-      void this.loadProject(pid);
+      void this.initProject(pid);
     });
+  }
+
+  public async isProjectExisting(projectId: string): Promise<boolean> {
+    return !!(await database.manifests.get(projectId));
+  }
+
+  public selectProject(projectId: string | null): void {
+    this.selectedProjectId.set(projectId);
   }
 
   public async refreshManifests(): Promise<void> {
@@ -51,13 +57,10 @@ export class StorageService {
     this.manifests.set(list);
   }
 
-  public selectProject(projectId: string | null): void {
-    this.selectedProjectId.set(projectId);
-  }
-
-  public async createProject(input: CreateManifest): Promise<void> {
+  public async createProject(input: CreateManifest, metamodel: GModel): Promise<void> {
     const timestamp: string = new Date().toISOString();
     const projectId: string = new ShortUniqueId({ length: 18 }).randomUUID();
+
     const manifestVersion: string = environment.manifestVersion;
     const appVersion: string = environment.appVersion;
 
@@ -70,9 +73,18 @@ export class StorageService {
       updatedAt: timestamp,
     };
 
-    await database.manifests.add(manifest);
+    await database.transaction('rw', database.manifests, database.models, async () => {
+      await database.manifests.add(manifest);
+      await this.createModel({
+        projectId,
+        name: metamodel.name,
+        description: '',
+        gmodel: metamodel,
+      });
+    });
+
+    this.selectProject(projectId);
     await this.refreshManifests();
-    this.selectProject(manifest.projectId);
   }
 
   public async updateProject(projectId: string, patch: UpdateManifest): Promise<void> {
@@ -80,7 +92,7 @@ export class StorageService {
     await database.manifests.update(projectId, { ...patch, updatedAt });
 
     if (this.selectedProjectId() === projectId) {
-      await this.loadProject(projectId);
+      await this.initProject(projectId);
     }
 
     await this.refreshManifests();
@@ -123,10 +135,18 @@ export class StorageService {
     });
 
     await this.refreshManifests();
-    this.selectProject(newProjectId);
   }
 
-  public async loadProject(projectId: string): Promise<void> {
+  public async deleteProject(projectId: string): Promise<void> {
+    await database.transaction('rw', database.manifests, database.models, async () => {
+      await database.models.where('projectId').equals(projectId).delete();
+      await database.manifests.delete(projectId);
+    });
+
+    await this.refreshManifests();
+  }
+
+  public async initProject(projectId: string): Promise<void> {
     const [manifest, models]: [Manifest | undefined, Model[]] = await Promise.all([
       database.manifests.get(projectId),
       database.models.where('projectId').equals(projectId).toArray(),
@@ -137,27 +157,15 @@ export class StorageService {
     this.models.set(models);
   }
 
-  public async deleteProject(projectId: string): Promise<void> {
-    await database.transaction('rw', database.manifests, database.models, async () => {
-      await database.models.where('projectId').equals(projectId).delete();
-      await database.manifests.delete(projectId);
-    });
-
-    if (this.selectedProjectId() === projectId) this.selectProject(null);
-    await this.refreshManifests();
-  }
-
-  public async getModelBySlot(projectId: string, slot: number): Promise<Model | undefined> {
-    return database.models.where('[projectId+slot]').equals([projectId, slot]).first();
-  }
-
-  public async createModel(input: CreateModel): Promise<void> {
+  public async createModel(input: CreateModelInput): Promise<void> {
     const timestamp: string = new Date().toISOString();
     const modelId: string = new ShortUniqueId({ length: 18 }).randomUUID();
+    const slot: number = (await this.getLastSlot(input.projectId)) + 1;
     const revision: number = 1;
 
     const model: Model = {
       modelId,
+      slot,
       ...input,
       revision,
       createdAt: timestamp,
@@ -169,11 +177,14 @@ export class StorageService {
       await database.manifests.update(input.projectId, { updatedAt: timestamp });
     });
 
-    if (this.selectedProjectId() === input.projectId) await this.loadProject(input.projectId);
+    if (this.selectedProjectId() === input.projectId) {
+      await this.initProject(input.projectId);
+    }
+
     await this.refreshManifests();
   }
 
-  public async updateModel(modelId: string, patch: UpdateModel): Promise<void> {
+  public async updateModel(modelId: string, patch: UpdateModelInput): Promise<void> {
     const existing: Model | undefined = await database.models.get(modelId);
     if (!existing) throw new Error(`Model not found: ${modelId}`);
 
@@ -185,14 +196,11 @@ export class StorageService {
       await database.manifests.update(existing.projectId, { updatedAt });
     });
 
-    if (this.selectedProjectId() === existing.projectId) await this.loadProject(existing.projectId);
-    await this.refreshManifests();
-  }
+    if (this.selectedProjectId() === existing.projectId) {
+      await this.initProject(existing.projectId);
+    }
 
-  public async canDeleteSlot(projectId: string, slot: number): Promise<boolean> {
-    const models: Model[] = await database.models.where('projectId').equals(projectId).toArray();
-    const maxSlot: number = models.reduce((max: number, m: Model) => Math.max(max, m.slot), -1);
-    return maxSlot <= slot;
+    await this.refreshManifests();
   }
 
   public async deleteSlot(projectId: string, slot: number): Promise<void> {
@@ -215,9 +223,28 @@ export class StorageService {
     });
 
     if (this.selectedProjectId() === existing.projectId) {
-      await this.loadProject(existing.projectId);
+      await this.initProject(existing.projectId);
     }
 
     await this.refreshManifests();
+  }
+
+  public async canDeleteSlot(projectId: string, slot: number): Promise<boolean> {
+    const models: Model[] = await database.models.where('projectId').equals(projectId).toArray();
+    const maxSlot: number = models.reduce((max: number, m: Model) => Math.max(max, m.slot), -1);
+    return maxSlot <= slot;
+  }
+
+  public async getModelBySlot(projectId: string, slot: number): Promise<Model | undefined> {
+    return database.models.where('[projectId+slot]').equals([projectId, slot]).first();
+  }
+
+  public async getLastSlot(projectId: string): Promise<number> {
+    const models: Model[] = await database.models
+      .where('projectId')
+      .equals(projectId)
+      .sortBy('slot');
+
+    return models[models.length - 1]?.slot ?? -1;
   }
 }

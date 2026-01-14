@@ -76,7 +76,7 @@ export class StartScreen implements OnInit {
     this.manifest.metamodelId = this.selectedMetamodel.id;
     this.manifest.metaVersion = this.selectedMetamodel.version;
 
-    await this.storage.createProject(this.manifest);
+    await this.storage.createProject(this.manifest, this.selectedMetamodel);
     await this.router.navigate(['/ws', this.storage.selectedProjectId()]);
   }
 }

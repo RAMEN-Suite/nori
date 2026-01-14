@@ -45,8 +45,8 @@ export class Application {
     this.window = new BrowserWindow({
       height: screenHeight,
       width: screenWidth,
-      minWidth: Math.min(1024, screenWidth),
-      minHeight: Math.min(576, screenHeight),
+      minWidth: Math.min(1280, screenWidth),
+      minHeight: Math.min(720, screenHeight),
       useContentSize: true,
       center: true,
       autoHideMenuBar: true,

@@ -1,8 +1,8 @@
 export type BuiltinScalarType = 'string' | 'boolean' | 'number' | 'integer';
 
 export interface QualifiedRefParts {
-  readonly alias: string;
-  readonly id: string;
+  readonly modelId: string;
+  readonly nodeId: string;
 }
 
 export class Builtins {
@@ -25,10 +25,10 @@ export class Refs {
 
   public static splitQualified(ref: string): QualifiedRefParts {
     const index: number = ref.indexOf(':');
-    return { alias: ref.slice(0, index), id: ref.slice(index + 1) };
+    return { modelId: ref.slice(0, index), nodeId: ref.slice(index + 1) };
   }
 
-  public static qualify(alias: string, id: string): string {
-    return `${alias}:${id}`;
+  public static qualify(baseId: string, nodeId: string): string {
+    return `${baseId}:${nodeId}`;
   }
 }

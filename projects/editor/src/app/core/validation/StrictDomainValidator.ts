@@ -6,7 +6,7 @@ import { BaseNode, StrictRules } from './rules/StrictRules';
 import { Builtins } from './container/References';
 
 export interface StrictValidateOptions {
-  readonly baseAlias: string;
+  readonly baseId: string;
 }
 
 export class StrictDomainValidator {
@@ -15,11 +15,11 @@ export class StrictDomainValidator {
     const derivedIndex: GModelIndex = new GModelIndex(derived);
     const diags: Diagnostic[] = [];
 
-    if (!derivedIndex.importsByAlias.has(options.baseAlias)) {
+    if (!derivedIndex.importsByModelId.has(options.baseId)) {
       const report: DiagnosticReport = {
         code: VALIDATION_ERROR.MISSING_BASE_IMPORT,
-        message: `Derived model must import base with alias '${options.baseAlias}'`,
-        ref: options.baseAlias,
+        message: `Derived model must import base with modelId '${options.baseId}'`,
+        ref: options.baseId,
         path: DiagnosticPath.root().property('imports'),
       };
 
@@ -45,7 +45,7 @@ export class StrictDomainValidator {
       const path: DiagnosticPath = DiagnosticPath.root().property('classifiers').index(index);
 
       if (classifier.kind === 'GNode') {
-        const superType = StrictRules.getSingleBaseSupertype(classifier, options.baseAlias);
+        const superType = StrictRules.getSingleBaseSupertype(classifier, options.baseId);
 
         if (!superType) {
           const report: DiagnosticReport = {
@@ -83,7 +83,7 @@ export class StrictDomainValidator {
         this.validateNodeAttributes(
           baseIndex,
           derivedIndex,
-          options.baseAlias,
+          options.baseId,
           classifier,
           path,
           diags,
@@ -128,13 +128,13 @@ export class StrictDomainValidator {
   private validateNodeAttributes(
     baseIndex: GModelIndex,
     derivedIndex: GModelIndex,
-    baseAlias: string,
+    modelId: string,
     node: GNode,
     nodePath: DiagnosticPath,
     diags: Diagnostic[],
   ): void {
     const attributes: GAttribute[] = node.attributes ?? [];
-    const inherited: ReadonlySet<string> = this.getBaseAttributeName(baseIndex, node, baseAlias);
+    const inherited: ReadonlySet<string> = this.getBaseAttributeName(baseIndex, node, modelId);
     const iteratedNames: Set<string> = new Set<string>();
 
     attributes.forEach((attribute: GAttribute, index: number): void => {
@@ -183,7 +183,7 @@ export class StrictDomainValidator {
 
       let isBaseQualifiedType: boolean = false;
       if (!isBuiltin && !isDerivedLocalType) {
-        const baseTypeId: string | null = StrictRules.getBaseTypeId(typeId, baseAlias);
+        const baseTypeId: string | null = StrictRules.getBaseTypeId(typeId, modelId);
         if (baseTypeId) isBaseQualifiedType = baseIndex.dataTypesById.has(baseTypeId);
       }
 
@@ -210,11 +210,11 @@ export class StrictDomainValidator {
     relations.forEach((relation: GRelation, index: number): void => {
       const path: DiagnosticPath = DiagnosticPath.root().property('relations').index(index);
 
-      const baseRelationId = StrictRules.getBaseRelationId(relation.id, options.baseAlias);
+      const baseRelationId = StrictRules.getBaseRelationId(relation.id, options.baseId);
       if (!baseRelationId) {
         const report: DiagnosticReport = {
           code: VALIDATION_ERROR.RELATION_ID_INVALID,
-          message: `Relation id must be '${options.baseAlias}:<baseRelationId>`,
+          message: `Relation id must be '${options.baseId}:<baseRelationId>`,
           path: path.property('id'),
           ref: relation.id,
         };
@@ -245,21 +245,14 @@ export class StrictDomainValidator {
         return;
       }
 
-      this.validateRelationEnds(
-        derivedIndex,
-        options.baseAlias,
-        relation,
-        baseRelation,
-        path,
-        diags,
-      );
+      this.validateRelationEnds(derivedIndex, options.baseId, relation, baseRelation, path, diags);
       this.validateRelationShape(relation, baseRelation, path, diags);
     });
   }
 
   private validateRelationEnds(
     derivedIndex: GModelIndex,
-    baseAlias: string,
+    baseId: string,
     dRelation: GRelation,
     bRelation: GRelation,
     path: DiagnosticPath,
@@ -292,7 +285,7 @@ export class StrictDomainValidator {
       return;
     }
 
-    const fromSuperType = StrictRules.getSingleBaseSupertype(fromNode, baseAlias);
+    const fromSuperType = StrictRules.getSingleBaseSupertype(fromNode, baseId);
     if (!fromSuperType) {
       const report: DiagnosticReport = {
         code: VALIDATION_ERROR.FROM_NODE_SUPERTYPE_INVALID,
@@ -304,7 +297,7 @@ export class StrictDomainValidator {
       return;
     }
 
-    const toSuperType = StrictRules.getSingleBaseSupertype(toNode, baseAlias);
+    const toSuperType = StrictRules.getSingleBaseSupertype(toNode, baseId);
     if (!toSuperType) {
       const report: DiagnosticReport = {
         code: VALIDATION_ERROR.TO_NODE_SUPERTYPE_INVALID,
@@ -388,9 +381,9 @@ export class StrictDomainValidator {
   private getBaseAttributeName(
     baseIndex: GModelIndex,
     node: GNode,
-    baseAlias: string,
+    baseId: string,
   ): ReadonlySet<string> {
-    const superType: BaseNode | null = StrictRules.getSingleBaseSupertype(node, baseAlias);
+    const superType: BaseNode | null = StrictRules.getSingleBaseSupertype(node, baseId);
     if (!superType) return new Set<string>();
 
     const baseNode: GNode | undefined = baseIndex.nodesById.get(superType.baseNodeId);

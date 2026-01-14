@@ -31,22 +31,28 @@ export interface RelationCandidate {
 }
 
 export class SuggestionHelper {
-  public listBaseNodes(base: GModel): ReadonlyArray<GNode> {
-    const baseIndex: GModelIndex = new GModelIndex(base);
-    const nodes: GNode[] = Array.from(baseIndex.nodesById.values());
+  public listNodes(model: GModel): ReadonlyArray<GNode> {
+    const modelIndex: GModelIndex = new GModelIndex(model);
+    const nodes: GNode[] = Array.from(modelIndex.nodesById.values());
     return nodes.sort((a: GNode, b: GNode): number => a.name.localeCompare(b.name));
   }
 
-  public listBaseRelations(base: GModel): ReadonlyArray<GRelation> {
-    const baseIndex: GModelIndex = new GModelIndex(base);
-    const relations: GRelation[] = Array.from(baseIndex.relationsById.values());
+  public listRelations(model: GModel): ReadonlyArray<GRelation> {
+    const modelIndex: GModelIndex = new GModelIndex(model);
+    const relations: GRelation[] = Array.from(modelIndex.relationsById.values());
     return relations.sort((a: GRelation, b: GRelation): number => a.name.localeCompare(b.name));
   }
 
-  public listDataTypes(base: GModel, derived: GModel, baseAlias: string): ReadonlyArray<GDataType> {
+  public listDataTypes(model: GModel): ReadonlyArray<GDataType> {
+    const modelIndex: GModelIndex = new GModelIndex(model);
+    const types: GDataType[] = Array.from(modelIndex.dataTypesById.values());
+    return types.sort((a: GDataType, b: GDataType): number => a.name.localeCompare(b.name));
+  }
+
+  public listAllDataTypes(base: GModel, derived: GModel, baseId: string): ReadonlyArray<GDataType> {
     const baseIndex: GModelIndex = new GModelIndex(base);
     const derivedIndex: GModelIndex = new GModelIndex(derived);
-    const types: GDataType[] = [];
+    const types: GDataType[] = [...Array.from(derivedIndex.dataTypesById.values())];
 
     for (const id of Builtins.set.values()) {
       types.push({
@@ -58,12 +64,10 @@ export class SuggestionHelper {
       });
     }
 
-    for (const dataType of derivedIndex.dataTypesById.values()) types.push(dataType);
-
     for (const dataType of baseIndex.dataTypesById.values()) {
       types.push({
         ...dataType,
-        id: Refs.qualify(baseAlias, dataType.id),
+        id: Refs.qualify(baseId, dataType.id),
         name: dataType.name,
       });
     }
@@ -75,7 +79,7 @@ export class SuggestionHelper {
   public listForbiddenAttributeNames(
     base: GModel,
     derived: GModel,
-    baseAlias: string,
+    baseId: string,
     nodeId: string,
   ): ReadonlySet<string> {
     const baseIndex: GModelIndex = new GModelIndex(base);
@@ -85,7 +89,7 @@ export class SuggestionHelper {
     if (!node) return new Set<string>();
 
     const forbidden: Set<string> = new Set<string>();
-    const superType: BaseNode | null = StrictRules.getSingleBaseSupertype(node, baseAlias);
+    const superType: BaseNode | null = StrictRules.getSingleBaseSupertype(node, baseId);
 
     if (superType) {
       const baseNode: GNode | undefined = baseIndex.nodesById.get(superType.baseNodeId);
@@ -102,7 +106,7 @@ export class SuggestionHelper {
   public listAllowedFromRelations(
     base: GModel,
     derived: GModel,
-    baseAlias: string,
+    baseId: string,
     fromNodeId: string,
   ): ReadonlyArray<GRelation> {
     const baseIndex: GModelIndex = new GModelIndex(base);
@@ -111,7 +115,7 @@ export class SuggestionHelper {
     const fromNode: GNode | undefined = derivedIndex.nodesById.get(fromNodeId);
     if (!fromNode) return [];
 
-    const fromSuperType: BaseNode | null = StrictRules.getSingleBaseSupertype(fromNode, baseAlias);
+    const fromSuperType: BaseNode | null = StrictRules.getSingleBaseSupertype(fromNode, baseId);
     if (!fromSuperType) return [];
 
     const allowed: GRelation[] = [];
@@ -129,7 +133,7 @@ export class SuggestionHelper {
   public listAllowedToNodes(
     base: GModel,
     derived: GModel,
-    baseAlias: string,
+    baseId: string,
     baseRelationId: string,
   ): ReadonlyArray<GNode> {
     const baseIndex: GModelIndex = new GModelIndex(base);
@@ -142,7 +146,7 @@ export class SuggestionHelper {
     const allowed: GNode[] = [];
 
     for (const node of derivedIndex.nodesById.values()) {
-      const superType: BaseNode | null = StrictRules.getSingleBaseSupertype(node, baseAlias);
+      const superType: BaseNode | null = StrictRules.getSingleBaseSupertype(node, baseId);
       if (!superType) continue;
       if (superType.baseNodeId === expectedToBaseId) allowed.push(node);
     }
@@ -151,29 +155,12 @@ export class SuggestionHelper {
     return allowed;
   }
 
-  public filterDerivedNodes(
-    derived: GModel,
-    baseAlias: string,
-    baseNodeId: string,
-  ): ReadonlyArray<GNode> {
-    const derivedIndex: GModelIndex = new GModelIndex(derived);
-    const nodes: GNode[] = [];
-
-    for (const node of derivedIndex.nodesById.values()) {
-      const superType: BaseNode | null = StrictRules.getSingleBaseSupertype(node, baseAlias);
-      if (!superType) continue;
-      if (superType.baseNodeId === baseNodeId) nodes.push(node);
-    }
-
-    return nodes.sort((a: GNode, b: GNode): number => a.name.localeCompare(b.name));
-  }
-
-  public createDerivedNode(baseAlias: string, input: CreateNodeInput): GNode {
+  public createDerivedNode(baseId: string, input: CreateNodeInput): GNode {
     return {
       kind: 'GNode',
-      id: this.createIdentifier(input.name),
+      id: SuggestionHelper.createIdentifier(input.name),
       name: input.name,
-      superTypes: [Refs.qualify(baseAlias, input.baseNodeId)],
+      superTypes: [Refs.qualify(baseId, input.baseNodeId)],
       attributes: [],
       constraints: [],
       ext: {},
@@ -193,7 +180,7 @@ export class SuggestionHelper {
   public createDataType(input: CreateDataTypeInput): GDataType {
     return {
       kind: 'GDataType',
-      id: this.createIdentifier(input.name),
+      id: SuggestionHelper.createIdentifier(input.name),
       name: input.name,
       literals: undefined,
       constraints: [],
@@ -203,7 +190,7 @@ export class SuggestionHelper {
 
   public createDerivedRelation(
     base: GModel,
-    baseAlias: string,
+    baseId: string,
     input: CreateRelationInput,
   ): GRelation {
     const baseIndex: GModelIndex = new GModelIndex(base);
@@ -212,7 +199,7 @@ export class SuggestionHelper {
 
     return {
       kind: 'GRelation',
-      id: Refs.qualify(baseAlias, input.baseRelationId),
+      id: Refs.qualify(baseId, input.baseRelationId),
       name: baseRelation.name,
       from: {
         nodeId: input.fromNodeId,
@@ -234,7 +221,7 @@ export class SuggestionHelper {
     };
   }
 
-  public createIdentifier(name: string): string {
+  public static createIdentifier(name: string): string {
     if (!name) return '';
 
     const words: string[] = name
