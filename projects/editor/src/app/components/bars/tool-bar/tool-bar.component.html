@@ -21,6 +21,7 @@
                 [disabled]="item.isFirst"
                 (keydown.enter)="handleChangeModelSlot(item.automationId)"
                 (click)="handleChangeModelSlot(item.automationId)"
+                (contextmenu)="handleBreadcrumbMenu($event, item)"
               />
             } @else {
               <p-chip
@@ -48,3 +49,5 @@
     </ng-template>
   </p-menubar>
 </header>
+
+<p-context-menu #breadcrumbMenuRef [model]="breadcrumbMenu" />
