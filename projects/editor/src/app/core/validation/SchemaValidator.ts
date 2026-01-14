@@ -5,6 +5,10 @@ import { GModel } from '../../models/GModel';
 export class SchemaValidator {
   private static schemaNode: SchemaNode = compileSchema(schema);
 
+  public static getSchemaNode(): SchemaNode {
+    return this.schemaNode;
+  }
+
   public static isValid(input: unknown): input is GModel {
     return this.schemaNode.validate(input).valid;
   }

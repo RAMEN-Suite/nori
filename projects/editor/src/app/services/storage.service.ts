@@ -4,6 +4,8 @@ import { Model } from '../models/Model';
 import { database } from '../app.database';
 import { environment } from '../../environments/environment';
 import ShortUniqueId from 'short-unique-id';
+import { GModel } from '../models/GModel';
+import { CATALOG } from '../../data/CATALOG';
 
 export type CreateManifest = Pick<Manifest, 'name' | 'description' | 'metamodelId' | 'metaVersion'>;
 export type UpdateManifest = Pick<Manifest, 'name' | 'description'>;
@@ -16,6 +18,7 @@ export type UpdateModel = Pick<Model, 'gmodel' | 'name' | 'description'>;
 })
 export class StorageService {
   public readonly manifests: WritableSignal<Manifest[]> = signal([]);
+  public readonly metamodels: WritableSignal<GModel[]> = signal(CATALOG);
   public readonly models: WritableSignal<Model[]> = signal([]);
 
   public readonly selectedProjectId: WritableSignal<string | null> = signal(null);

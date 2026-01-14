@@ -234,7 +234,7 @@ export class SuggestionHelper {
     };
   }
 
-  private createIdentifier(name: string): string {
+  public createIdentifier(name: string): string {
     if (!name) return '';
 
     const words: string[] = name

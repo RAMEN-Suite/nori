@@ -11,19 +11,32 @@ export interface ValidateModelOptions {
   readonly throwOnSchemaError: boolean;
 }
 
+export interface ValidationResult {
+  readonly diagnostics: Diagnostic[];
+  readonly hasErrors: boolean;
+}
+
 export class ModelValidator {
   private readonly strict: StrictDomainValidator = new StrictDomainValidator();
 
-  public validate(base: unknown, derived: unknown, options: ValidateModelOptions): Diagnostic[] {
-    const baseSchemaErrors: Diagnostic[] = this.validateSchema('BASE', base, options);
-    if (baseSchemaErrors.length > 0) return baseSchemaErrors;
+  public validate(
+    base: unknown,
+    derived: unknown,
+    options: ValidateModelOptions,
+  ): ValidationResult {
+    const diagnostics: Diagnostic[] = [];
 
-    const derivedSchemaErrors: Diagnostic[] = this.validateSchema('DERIVED', base, options);
-    if (derivedSchemaErrors.length > 0) return derivedSchemaErrors;
+    diagnostics.push(...this.validateSchema('BASE', base, options));
+    diagnostics.push(...this.validateSchema('DERIVED', derived, options));
+    if (diagnostics.length > 0) return { diagnostics, hasErrors: true };
 
-    return this.strict.validate(base as GModel, derived as GModel, {
+    const strict: Diagnostic[] = this.strict.validate(base as GModel, derived as GModel, {
       baseAlias: options.baseAlias,
     });
+
+    const all: Diagnostic[] = [...diagnostics, ...strict];
+    const hasErrors: boolean = all.some((d: Diagnostic): boolean => d.severity === 'error');
+    return { diagnostics: all, hasErrors };
   }
 
   private validateSchema(
@@ -38,6 +51,7 @@ export class ModelValidator {
       }
 
       if (SchemaValidator.isValid(input)) return [];
+
       const report: DiagnosticReport = {
         code: VALIDATION_ERROR.SCHEMA_INVALID,
         message: `${kind} model does not conform to GCore schema.`,
