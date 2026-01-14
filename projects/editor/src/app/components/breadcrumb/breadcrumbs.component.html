@@ -1,0 +1,43 @@
+<div class="max-w-110 text-nowrap">
+  <p-breadcrumb [model]="breadcrumb()" styleClass="p-0!">
+    <ng-template #item let-item>
+      @if (!item.isLast) {
+        <p-chip
+          tabindex="0"
+          [label]="item.label"
+          class="justify-center py-1! text-sm select-none"
+          [class.active]="workspace.selectedDerivedSlot() === item.automationId"
+          [class.cursor-pointer]="!item.isFirst"
+          [disabled]="item.isFirst"
+          (keydown.enter)="handleChangeModelSlot(item.automationId)"
+          (click)="handleChangeModelSlot(item.automationId)"
+          (contextmenu)="handleBreadcrumbMenu($event, item)"
+        />
+      } @else {
+        <p-chip
+          [icon]="item.icon"
+          class="cursor-pointer justify-center py-1! text-sm select-none"
+          (keydown.enter)="openCreateModal.emit()"
+          (click)="openCreateModal.emit()"
+        />
+      }
+    </ng-template>
+  </p-breadcrumb>
+
+  <p-context-menu #contextMenuRef [model]="contextMenu" appendTo="body">
+    <ng-template #item let-item>
+      <a
+        pRipple
+        class="flex cursor-pointer flex-row items-center justify-start gap-3 px-2 py-2"
+        [class.text-(--p-red-500)]="item.severity === 'error'"
+      >
+        <div class="flex flex-2 items-center justify-center">
+          <span [class]="item.icon"></span>
+        </div>
+        <div class="flex flex-10 items-center">
+          <span class="text-sm">{{ item.label }}</span>
+        </div>
+      </a>
+    </ng-template>
+  </p-context-menu>
+</div>
