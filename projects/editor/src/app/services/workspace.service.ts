@@ -64,44 +64,36 @@ export class WorkspaceService {
     return this.validator.validate(base, derivedDraft);
   });
 
-  public readonly baseNodes: Signal<ReadonlyArray<GNode>> = computed((): ReadonlyArray<GNode> => {
+  public readonly baseNodes: Signal<GNode[]> = computed((): GNode[] => {
     const base: GModel | null = this.baseModel();
     if (!base) return [];
-    return this.suggest.listNodes(base);
+    return Array.from(this.suggest.listNodes(base));
   });
 
-  public readonly derivedNodes: Signal<ReadonlyArray<GNode>> = computed(
-    (): ReadonlyArray<GNode> => {
-      const derived: GModel | null = this.derivedModel();
-      if (!derived) return [];
-      return this.suggest.listNodes(derived);
-    },
-  );
+  public readonly derivedNodes: Signal<GNode[]> = computed((): GNode[] => {
+    const derived: GModel | null = this.derivedModel();
+    if (!derived) return [];
+    return Array.from(this.suggest.listNodes(derived));
+  });
 
-  public readonly baseRelations: Signal<ReadonlyArray<GRelation>> = computed(
-    (): ReadonlyArray<GRelation> => {
-      const base: GModel | null = this.baseModel();
-      if (!base) return [];
-      return this.suggest.listRelations(base);
-    },
-  );
+  public readonly baseRelations: Signal<GRelation[]> = computed((): GRelation[] => {
+    const base: GModel | null = this.baseModel();
+    if (!base) return [];
+    return Array.from(this.suggest.listRelations(base));
+  });
 
-  public readonly dataTypes: Signal<ReadonlyArray<GDataType>> = computed(
-    (): ReadonlyArray<GDataType> => {
-      const base: GModel | null = this.baseModel();
-      const derived: GModel | null = this.activeDraft();
-      if (!base || !derived) return [];
-      return this.suggest.listAllDataTypes(base, derived, this.baseId());
-    },
-  );
+  public readonly dataTypes: Signal<GDataType[]> = computed((): GDataType[] => {
+    const base: GModel | null = this.baseModel();
+    const derived: GModel | null = this.activeDraft();
+    if (!base || !derived) return [];
+    return Array.from(this.suggest.listAllDataTypes(base, derived, this.baseId()));
+  });
 
-  public readonly derivedTypes: Signal<ReadonlyArray<GDataType>> = computed(
-    (): ReadonlyArray<GDataType> => {
-      const derived: GModel | null = this.derivedModel();
-      if (!derived) return [];
-      return this.suggest.listDataTypes(derived);
-    },
-  );
+  public readonly derivedTypes: Signal<GDataType[]> = computed((): GDataType[] => {
+    const derived: GModel | null = this.derivedModel();
+    if (!derived) return [];
+    return Array.from(this.suggest.listDataTypes(derived));
+  });
 
   constructor() {
     effect((): void => {
@@ -127,25 +119,34 @@ export class WorkspaceService {
     this.selectedDerivedSlot.set(slot);
   }
 
-  public listAllowedFromRelations(fromNodeId: string): ReadonlyArray<GRelation> {
+  public listFromRelations(fromNodeId: string): GRelation[] {
     const base: GModel | null = this.baseModel();
     const derived: GModel | null = this.activeDraft();
     if (!base || !derived) return [];
-    return this.suggest.listAllowedFromRelations(base, derived, this.baseId(), fromNodeId);
+    return Array.from(this.suggest.listFromRelations(base, derived, this.baseId(), fromNodeId));
   }
 
-  public listAllowedToNodes(baseRelationId: string): ReadonlyArray<GNode> {
+  public listToNodes(baseRelationId: string): GNode[] {
     const base: GModel | null = this.baseModel();
     const derived: GModel | null = this.activeDraft();
     if (!base || !derived) return [];
-    return this.suggest.listAllowedToNodes(base, derived, this.baseId(), baseRelationId);
+    return Array.from(this.suggest.listToNodes(base, derived, this.baseId(), baseRelationId));
   }
 
-  public listForbiddenAttributeNames(nodeId: string): ReadonlySet<string> {
+  public listForbiddenAttributes(nodeId: string): Set<string> {
     const base: GModel | null = this.baseModel();
     const derived: GModel | null = this.activeDraft();
     if (!base || !derived) return new Set<string>();
-    return this.suggest.listForbiddenAttributeNames(base, derived, this.baseId(), nodeId);
+    return new Set(this.suggest.listForbiddenAttributes(base, derived, this.baseId(), nodeId));
+  }
+
+  public filterDerivedNodes(nodeId: string): Signal<GNode[]> {
+    return computed((): GNode[] => {
+      const derived: GModel | null = this.derivedModel();
+      const base: GModel | null = this.baseModel();
+      if (!base || !derived) return [];
+      return Array.from(this.suggest.filterDerivedNodes(base, derived, nodeId));
+    });
   }
 
   public addNode(name: string, baseNodeId: string): void {

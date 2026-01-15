@@ -78,6 +78,64 @@
       "name": "Witness",
       "superTypes": ["ramen:collection"],
       "attributes": []
+    },
+    {
+      "kind": "GNode",
+      "id": "place",
+      "name": "Place",
+      "superTypes": ["ramen:entity"],
+      "attributes": [
+        { "name": "label", "typeId": "string", "bounds": { "lowerBound": 1, "upperBound": 1 } },
+        { "name": "geo", "typeId": "string", "bounds": { "lowerBound": 0, "upperBound": 1 } }
+      ]
+    },
+    {
+      "kind": "GNode",
+      "id": "organisation",
+      "name": "Organisation",
+      "superTypes": ["ramen:entity"],
+      "attributes": [
+        { "name": "label", "typeId": "string", "bounds": { "lowerBound": 1, "upperBound": 1 } },
+        { "name": "externalId", "typeId": "string", "bounds": { "lowerBound": 0, "upperBound": 1 } }
+      ]
+    },
+    {
+      "kind": "GNode",
+      "id": "person",
+      "name": "Person",
+      "superTypes": ["ramen:entity"],
+      "attributes": [
+        { "name": "label", "typeId": "string", "bounds": { "lowerBound": 1, "upperBound": 1 } },
+        { "name": "externalId", "typeId": "string", "bounds": { "lowerBound": 0, "upperBound": 1 } }
+      ]
+    },
+    {
+      "kind": "GNode",
+      "id": "annotation",
+      "name": "Annotation",
+      "superTypes": ["ramen:annotation"],
+      "attributes": []
+    },
+    {
+      "kind": "GNode",
+      "id": "text",
+      "name": "Text",
+      "superTypes": ["ramen:text"],
+      "attributes": []
+    },
+    {
+      "kind": "GNode",
+      "id": "postcard",
+      "name": "Postcard",
+      "superTypes": ["ramen:image"],
+      "attributes": []
+    },
+    {
+      "kind": "GNode",
+      "id": "image",
+      "name": "Image",
+      "superTypes": ["ramen:image"],
+      "attributes": []
     }
   ],
 

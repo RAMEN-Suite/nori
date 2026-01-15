@@ -10,7 +10,7 @@ import { Select } from 'primeng/select';
 import { Checkbox } from 'primeng/checkbox';
 import { Router, RouterLink } from '@angular/router';
 import { Message } from 'primeng/message';
-import { CATALOG } from '../../../data/CATALOG';
+import { CATALOG, EXAMPLES } from '../../../data/CATALOG';
 import { GModel } from '../../models/GModel';
 import { CreateManifest, StorageService } from '../../services/storage.service';
 
@@ -76,7 +76,11 @@ export class StartScreen implements OnInit {
     this.manifest.metamodelId = this.selectedMetamodel.id;
     this.manifest.metaVersion = this.selectedMetamodel.version;
 
-    await this.storage.createProject(this.manifest, this.selectedMetamodel);
+    await this.storage.createProject(
+      this.manifest,
+      this.selectedMetamodel,
+      this.isCreatingExample ? EXAMPLES[0] : undefined,
+    );
     await this.router.navigate(['/ws', this.storage.selectedProjectId()]);
   }
 }

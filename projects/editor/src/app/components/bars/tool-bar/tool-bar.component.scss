@@ -16,9 +16,6 @@ p-menubar {
 
   border-radius: 0;
   font-size: 11pt;
-
-  animation: slideInDown;
-  animation-duration: 0.75s;
 }
 
 p-divider {
@@ -36,4 +33,9 @@ p-divider {
   &.active {
     background-color: var(--p-button-outlined-primary-active-background);
   }
+}
+
+.tool-bar-entrance {
+  animation: slideInDown;
+  animation-duration: 0.75s;
 }

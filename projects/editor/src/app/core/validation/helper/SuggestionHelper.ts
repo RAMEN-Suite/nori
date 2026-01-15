@@ -76,7 +76,7 @@ export class SuggestionHelper {
     return types;
   }
 
-  public listForbiddenAttributeNames(
+  public listForbiddenAttributes(
     base: GModel,
     derived: GModel,
     baseId: string,
@@ -103,7 +103,7 @@ export class SuggestionHelper {
     return forbidden;
   }
 
-  public listAllowedFromRelations(
+  public listFromRelations(
     base: GModel,
     derived: GModel,
     baseId: string,
@@ -130,7 +130,7 @@ export class SuggestionHelper {
     return allowed;
   }
 
-  public listAllowedToNodes(
+  public listToNodes(
     base: GModel,
     derived: GModel,
     baseId: string,
@@ -153,6 +153,23 @@ export class SuggestionHelper {
 
     allowed.sort((a: GNode, b: GNode): number => a.name.localeCompare(b.name));
     return allowed;
+  }
+
+  public filterDerivedNodes(
+    base: GModel,
+    derived: GModel,
+    baseNodeId: string,
+  ): ReadonlyArray<GNode> {
+    const derivedIndex: GModelIndex = new GModelIndex(derived);
+    const nodes: GNode[] = [];
+
+    for (const node of derivedIndex.nodesById.values()) {
+      const superType: BaseNode | null = StrictRules.getSingleBaseSupertype(node, base.id);
+      if (!superType) continue;
+      if (superType.baseNodeId === baseNodeId) nodes.push(node);
+    }
+
+    return nodes.sort((a: GNode, b: GNode): number => a.name.localeCompare(b.name));
   }
 
   public createDerivedNode(baseId: string, input: CreateNodeInput): GNode {

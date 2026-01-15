@@ -4,9 +4,13 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+:root {
+  --toolbar-h: 36px;
+}
+
 html, body {
   height: 100%;
-  overflow-x: hidden;
+  overflow: hidden;
   color: var(--color-primary);
 }
 
@@ -15,8 +19,9 @@ body {
   background: var(--p-ground-background);
 }
 
-.min-h-window {
-  min-height: calc(100% - 36px);
+.main-window {
+  height: calc(100dvh - var(--toolbar-h));
+  overflow: hidden;
 }
 
 .p-menu-overlay-left {
@@ -41,3 +46,15 @@ body {
   justify-content: center;
 }
 
+::-webkit-scrollbar {
+  width: 3px;
+  background: var(--p-ground-background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--p-menubar-border-color);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--p-ground-background);
+}

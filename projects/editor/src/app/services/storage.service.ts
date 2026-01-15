@@ -57,7 +57,11 @@ export class StorageService {
     this.manifests.set(list);
   }
 
-  public async createProject(input: CreateManifest, metamodel: GModel): Promise<void> {
+  public async createProject(
+    input: CreateManifest,
+    metamodel: GModel,
+    example?: GModel,
+  ): Promise<void> {
     const timestamp: string = new Date().toISOString();
     const projectId: string = new ShortUniqueId({ length: 18 }).randomUUID();
 
@@ -81,6 +85,15 @@ export class StorageService {
         description: '',
         gmodel: metamodel,
       });
+
+      if (example) {
+        await this.createModel({
+          projectId,
+          name: example.name,
+          description: '',
+          gmodel: example,
+        });
+      }
     });
 
     this.selectProject(projectId);

@@ -5,6 +5,7 @@ import { StorageService } from '../../services/storage.service';
 import { Manifest } from '../../models/Manifest';
 import { SideMenuComponent } from '../../components/side-menu/side-menu.component';
 import { CreateModelModal } from '../../components/modals/create-model/create-model.modal';
+import { WorkspaceService } from '../../services/workspace.service';
 
 @Component({
   selector: 'app-workspace',
@@ -16,12 +17,18 @@ export class WorkspaceScreen implements OnInit {
   private readonly windowState: WindowState = inject(WindowState);
   private readonly storage: StorageService = inject(StorageService);
 
+  private readonly workspace: WorkspaceService = inject(WorkspaceService);
+
   protected isCreateModalVisible: boolean = false;
 
   constructor() {
     effect((): void => {
       const manifest: Manifest | null = this.storage.selectedManifest();
       this.windowState.setTitle(manifest?.name ?? '', 'pi pi-pen-to-square');
+    });
+
+    effect(() => {
+      console.log(this.workspace.validation());
     });
   }
 
