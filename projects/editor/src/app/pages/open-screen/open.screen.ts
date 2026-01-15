@@ -12,6 +12,7 @@ import { Manifest } from '../../models/Manifest';
 import { ScrollPanel } from 'primeng/scrollpanel';
 import { ConfirmationService } from 'primeng/api';
 import { ConfirmDialog } from 'primeng/confirmdialog';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-open-screen',
@@ -26,6 +27,7 @@ import { ConfirmDialog } from 'primeng/confirmdialog';
     FormsModule,
     ScrollPanel,
     ConfirmDialog,
+    DatePipe,
   ],
   providers: [ConfirmationService],
   templateUrl: './open.screen.html',

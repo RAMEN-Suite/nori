@@ -15,10 +15,11 @@
         />
       } @else {
         <p-chip
+          tabindex="0"
           [icon]="item.icon"
           class="cursor-pointer justify-center py-1! text-sm select-none"
-          (keydown.enter)="openCreateModal.emit()"
-          (click)="openCreateModal.emit()"
+          (keydown.enter)="handleOpenCreateModal()"
+          (click)="handleOpenCreateModal()"
         />
       }
     </ng-template>

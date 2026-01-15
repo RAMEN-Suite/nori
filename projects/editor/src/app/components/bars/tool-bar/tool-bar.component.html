@@ -3,12 +3,14 @@
 <header animate.enter="tool-bar-entrance">
   <p-menubar>
     <ng-template #start>
-      <svg height="24px" width="24px" class="mx-3">
-        <use href="images/ramen.svg#ramen-logo"></use>
-      </svg>
-      <span class="font-bold uppercase">Nori</span>
+      <div class="flex cursor-pointer flex-row items-center select-none" routerLink="/">
+        <svg height="24px" width="24px" class="mx-3">
+          <use href="images/ramen.svg#ramen-logo"></use>
+        </svg>
+        <span class="font-bold uppercase">Nori</span>
+      </div>
       <p-divider layout="vertical"></p-divider>
-      <app-breadcrumbs (openCreateModal)="openCreateModal.emit()" />
+      <app-breadcrumbs />
     </ng-template>
     <ng-template #end>
       <div class="ml-2 flex items-center gap-1">

@@ -5,10 +5,11 @@ import { MenuItem } from 'primeng/api';
 import { GNode } from '../../models/GModel';
 import { IftaLabel } from 'primeng/iftalabel';
 import { InputText } from 'primeng/inputtext';
+import { ScrollPanel } from 'primeng/scrollpanel';
 
 @Component({
   selector: 'app-side-menu',
-  imports: [PanelMenu, IftaLabel, InputText],
+  imports: [PanelMenu, IftaLabel, InputText, ScrollPanel],
   templateUrl: './side-menu.component.html',
   styleUrl: './side-menu.component.scss',
 })

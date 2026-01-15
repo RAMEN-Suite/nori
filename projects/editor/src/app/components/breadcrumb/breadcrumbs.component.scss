@@ -1,0 +1,12 @@
+.p-chip {
+  background-color: var(--p-button-outlined-primary-background);
+  border: 1px solid var(--p-button-outlined-primary-border-color);
+
+  &:hover {
+    background-color: var(--p-button-outlined-primary-hover-background);
+  }
+
+  &.active {
+    background-color: var(--p-button-outlined-primary-active-background);
+  }
+}

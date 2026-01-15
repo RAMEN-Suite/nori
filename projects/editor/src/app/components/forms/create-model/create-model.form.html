@@ -1,0 +1,122 @@
+@let isDirty = workspaceState.state().isDirty;
+
+<div class="flex max-w-140 min-w-140 flex-col gap-2">
+  @if (isDirty) {
+    <p-message severity="warn" class="mt-1">
+      Your current changes haven't been applied yet. By creating a new model your changes will be
+      saved. Do you want to proceed?
+    </p-message>
+  }
+
+  <p-fieldset legend="Basics">
+    <div class="flex flex-col gap-3">
+      <div class="flex flex-col gap-2">
+        <p-ifta-label>
+          <input
+            pInputText
+            id="name"
+            #nameModel="ngModel"
+            maxlength="70"
+            autocomplete="off"
+            fluid
+            [(ngModel)]="newModel.name"
+            [invalid]="(nameModel.touched || isSubmitted) && !isModelNameValid()"
+            required
+          />
+          <label for="name">Model Name</label>
+        </p-ifta-label>
+
+        @if ((nameModel.touched || isSubmitted) && !isModelNameValid()) {
+          <p-message severity="error" size="small" variant="simple">
+            Project name must be at least 4 characters.
+          </p-message>
+        }
+      </div>
+
+      <p-ifta-label>
+        <textarea
+          pTextarea
+          id="description"
+          [(ngModel)]="newModel.description"
+          maxlength="140"
+          autocomplete="off"
+          fluid
+        ></textarea>
+        <label for="description">Model Description</label>
+      </p-ifta-label>
+    </div>
+  </p-fieldset>
+
+  <p-fieldset legend="Semantics">
+    <div class="flex flex-col gap-3">
+      <div class="flex flex-col gap-2">
+        <p-ifta-label>
+          <input
+            pInputText
+            id="version"
+            #versionModel="ngModel"
+            placeholder="1.0.0"
+            [maxlength]="30"
+            autocomplete="off"
+            fluid
+            required
+            [(ngModel)]="newModel.version"
+            [invalid]="(versionModel.touched || isSubmitted) && !isVersionValid()"
+          />
+          <label for="version">Model Version</label>
+        </p-ifta-label>
+
+        @if ((versionModel.touched || isSubmitted) && !isVersionValid()) {
+          <p-message severity="error" size="small" variant="simple">
+            Version must comply to
+            <a href="https://semver.org/" class="text-primary" target="_blank">
+              semantic versioning <i class="pi pi-external-link" style="font-size: 8pt"></i>
+            </a>
+          </p-message>
+        }
+      </div>
+      <div class="flex flex-col gap-2">
+        <p-ifta-label>
+          <input
+            pInputText
+            id="uri"
+            #uriModel="ngModel"
+            placeholder="https://example.com/"
+            [maxlength]="30"
+            autocomplete="off"
+            fluid
+            required
+            [(ngModel)]="newModel.uri"
+            [invalid]="(uriModel.touched || isSubmitted) && !isUriValid()"
+          />
+          <label for="version">Model URI</label>
+        </p-ifta-label>
+
+        @if ((uriModel.touched || isSubmitted) && !isUriValid()) {
+          <p-message severity="error" size="small" variant="simple">
+            Expected an absolute URI with a scheme, e.g. 'https://example.com'.
+          </p-message>
+        }
+      </div>
+    </div>
+  </p-fieldset>
+
+  <div class="mt-4 flex flex-row justify-between gap-2">
+    <p-button label="Cancel" severity="danger" outlined (click)="handleCloseModal()" />
+    @if (!isDirty) {
+      <p-button
+        label="Create Domain Model"
+        outlined
+        (click)="handleCreateModel()"
+        [disabled]="!isFormValid()"
+      />
+    } @else {
+      <p-button
+        label="Yes, Create Domain Model"
+        outlined
+        (click)="handleCreateModel()"
+        [disabled]="!isFormValid()"
+      />
+    }
+  </div>
+</div>

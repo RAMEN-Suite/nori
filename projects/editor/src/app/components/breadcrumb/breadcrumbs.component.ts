@@ -1,10 +1,8 @@
 import {
   Component,
   effect,
-  EventEmitter,
   inject,
   OnInit,
-  Output,
   signal,
   ViewChild,
   WritableSignal,
@@ -17,10 +15,13 @@ import { WorkspaceService } from '../../services/workspace.service';
 import { StorageService } from '../../services/storage.service';
 import { Model } from '../../models/Model';
 import { Ripple } from 'primeng/ripple';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { CreateModelForm } from '../forms/create-model/create-model.form';
 
 @Component({
   selector: 'app-breadcrumbs',
   imports: [Breadcrumb, Chip, ContextMenu, Ripple],
+  providers: [DialogService, DynamicDialogRef],
   templateUrl: './breadcrumbs.component.html',
   styleUrl: './breadcrumbs.component.scss',
 })
@@ -28,12 +29,14 @@ export class BreadcrumbsComponent implements OnInit {
   protected readonly storage: StorageService = inject(StorageService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
 
+  protected readonly dialogService: DialogService = inject(DialogService);
+  protected dialogRef: DynamicDialogRef | null = inject(DynamicDialogRef);
+
   protected breadcrumb: WritableSignal<MenuItem[]> = signal([]);
   protected contextMenu: MenuItem[] = [];
   protected selectedItem: MenuItem | undefined;
 
   @ViewChild('contextMenuRef') contextMenuRef: ContextMenu | undefined;
-  @Output() openCreateModal: EventEmitter<void> = new EventEmitter();
 
   constructor() {
     effect((): void => {
@@ -44,7 +47,7 @@ export class BreadcrumbsComponent implements OnInit {
   public ngOnInit(): void {
     this.contextMenu = [
       {
-        label: 'Edit Model',
+        label: 'Edit Details',
         icon: 'pi pi-pen-to-square',
         command: (): void => {},
       },
@@ -76,7 +79,7 @@ export class BreadcrumbsComponent implements OnInit {
     const lastItem: MenuItem = { icon: 'pi pi-plus', isFirst: false, isLast: true };
 
     const modelLayers: MenuItem[] = [];
-    for (const [slot, _] of models) {
+    for (const [slot, model] of models) {
       if (slot === 0) continue;
 
       modelLayers.push({
@@ -88,6 +91,15 @@ export class BreadcrumbsComponent implements OnInit {
     }
 
     return [firstItem, ...modelLayers, lastItem];
+  }
+
+  protected handleOpenCreateModal(): void {
+    this.dialogRef = this.dialogService.open(CreateModelForm, {
+      header: 'Create Domain Model',
+      closeOnEscape: true,
+      draggable: true,
+      closable: true,
+    });
   }
 
   protected handleChangeModelSlot(slot: number): void {

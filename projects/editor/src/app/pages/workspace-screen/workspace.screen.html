@@ -1,6 +1,6 @@
-<app-tool-bar (openCreateModal)="handleOpenCreateModal()" />
+<app-tool-bar />
 
-<main class="main-window flex flex-row" style="--toolbar-h: 70px">
+<main class="main-window flex flex-row" style="--toolbar-h: 86px">
   <section
     class="flex flex-2 border-r border-(--p-menubar-border-color) bg-(--p-menubar-background)/40"
     animate.enter="side-menu-entrance"
@@ -8,14 +8,7 @@
     <app-side-menu class="basis-full" />
   </section>
   <section class="flex flex-5 border-(--p-menubar-border-color)">
-    <div class="basis-full">form content</div>
+    <div class="basis-full"></div>
   </section>
-  <section class="flex flex-4">test 3</section>
+  <section class="flex flex-4"></section>
 </main>
-
-@if (isCreateModalVisible) {
-  <app-modal-create-model
-    [isVisible]="isCreateModalVisible"
-    (closeCreateModal)="handleCloseCreateModal()"
-  />
-}

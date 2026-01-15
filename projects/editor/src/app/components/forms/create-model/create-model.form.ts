@@ -1,5 +1,4 @@
-import { Component, EventEmitter, inject, Input, Output } from '@angular/core';
-import { Dialog } from 'primeng/dialog';
+import { Component, inject } from '@angular/core';
 import { InputText } from 'primeng/inputtext';
 import { Button } from 'primeng/button';
 import { CreateModelInput, WorkspaceService } from '../../../services/workspace.service';
@@ -11,11 +10,11 @@ import { Textarea } from 'primeng/textarea';
 import { WorkspaceState } from '../../../states/workspace.state';
 import { REGEXP } from '../../../const/REGEXP';
 import { SuggestionHelper } from '../../../core/validation/helper/SuggestionHelper';
+import { DynamicDialogRef } from 'primeng/dynamicdialog';
 
 @Component({
   selector: 'app-modal-create-model',
   imports: [
-    Dialog,
     InputText,
     Button,
     Fieldset,
@@ -25,15 +24,13 @@ import { SuggestionHelper } from '../../../core/validation/helper/SuggestionHelp
     Textarea,
     FormsModule,
   ],
-  templateUrl: './create-model.modal.html',
-  styleUrl: './create-model.modal.scss',
+  templateUrl: './create-model.form.html',
+  styleUrl: './create-model.form.scss',
 })
-export class CreateModelModal {
-  @Input() isVisible: boolean = false;
-  @Output() closeCreateModal: EventEmitter<void> = new EventEmitter();
-
+export class CreateModelForm {
   protected workspaceState: WorkspaceState = inject(WorkspaceState);
   protected workspace: WorkspaceService = inject(WorkspaceService);
+  private dialogRef: DynamicDialogRef = inject(DynamicDialogRef);
 
   protected newModel: CreateModelInput;
   protected isSubmitted: boolean = false;
@@ -68,7 +65,7 @@ export class CreateModelModal {
   }
 
   public handleCloseModal(): void {
-    this.closeCreateModal.emit();
+    this.dialogRef.close();
   }
 
   public async handleCreateModel(): Promise<void> {
@@ -82,6 +79,6 @@ export class CreateModelModal {
     }
 
     await this.workspace.createModel(this.newModel);
-    this.closeCreateModal.emit();
+    this.dialogRef.close();
   }
 }
