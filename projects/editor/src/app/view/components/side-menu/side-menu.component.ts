@@ -1,7 +1,6 @@
 import {
   Component,
   computed,
-  effect,
   inject,
   OnInit,
   Signal,
@@ -11,7 +10,6 @@ import {
 } from '@angular/core';
 import { WorkspaceService } from '../../../services/workspace.service';
 import { PanelMenu } from 'primeng/panelmenu';
-import { MenuItem } from 'primeng/api';
 import { GNode } from '../../../models/GModel';
 import { IftaLabel } from 'primeng/iftalabel';
 import { InputText } from 'primeng/inputtext';
@@ -21,6 +19,16 @@ import { Ripple } from 'primeng/ripple';
 import { Tooltip } from 'primeng/tooltip';
 import { ContextMenu } from 'primeng/contextmenu';
 import { FormsModule } from '@angular/forms';
+import { ValidationResult } from '../../../core/validation/ModelValidator';
+import { MenuItem } from 'primeng/api';
+
+interface SideMenuItem extends MenuItem {
+  automationId?: string;
+  parentId?: string;
+  hasErrors?: boolean;
+  button?: string;
+  isCategory?: boolean;
+}
 
 @Component({
   selector: 'app-side-menu',
@@ -41,33 +49,46 @@ import { FormsModule } from '@angular/forms';
 export class SideMenuComponent implements OnInit {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
 
-  protected contextMenu: MenuItem[] = [];
-  protected selectedContextItem: MenuItem | undefined;
+  protected staticContextMenu: SideMenuItem[] = [];
+  protected readonly contextMenu: WritableSignal<SideMenuItem[]> = signal([]);
+  protected selectedContextItem: SideMenuItem | undefined;
 
-  protected sideMenuItems: WritableSignal<MenuItem[]> = signal([]);
   protected readonly searchInput: WritableSignal<string> = signal('');
-  protected readonly filteredMenuItems: Signal<MenuItem[]> = computed(() => this.filterMenuItems());
+  protected readonly sideMenuItems: Signal<SideMenuItem[]> = computed((): SideMenuItem[] => {
+    return this.createSideMenu();
+  });
+
+  protected readonly filteredMenuItems: Signal<SideMenuItem[]> = computed((): SideMenuItem[] => {
+    return this.filterMenuItems();
+  });
+
+  protected readonly erroredRefs: Signal<ReadonlySet<string>> = computed(() => {
+    const validation: ValidationResult = this.workspace.validation();
+    if (!validation.hasErrors) return new Set<string>();
+
+    const erroredSet = new Set<string>();
+    for (const diagnostic of validation.diagnostics) {
+      if (diagnostic.severity !== 'error') continue;
+      if (!diagnostic.ref) continue;
+      erroredSet.add(diagnostic.ref);
+    }
+
+    return erroredSet;
+  });
 
   @ViewChild('contextMenuRef') contextMenuRef: ContextMenu | undefined;
 
-  constructor() {
-    effect((): void => {
-      this.sideMenuItems.set(this.createSideMenu());
-    });
-  }
-
   public ngOnInit(): void {
-    this.contextMenu = [
+    this.staticContextMenu = [
       {
-        label: 'Create new Node',
-        icon: 'pi pi-plus',
+        label: 'Duplicate %s',
+        icon: 'pi pi-copy',
         command: (): void => {},
+        hasErrors: true,
       },
+      { separator: true },
       {
-        separator: true,
-      },
-      {
-        label: 'Delete Node',
+        label: 'Delete %s',
         icon: 'pi pi-trash',
         severity: 'error',
         command: (): void => {},
@@ -75,12 +96,12 @@ export class SideMenuComponent implements OnInit {
     ];
   }
 
-  private createSideMenu(): MenuItem[] {
+  private createSideMenu(): SideMenuItem[] {
     const baseNodes: GNode[] = this.workspace.baseNodes();
-    const menuItems: MenuItem[] = [];
+    const menuItems: SideMenuItem[] = [];
 
     for (const node of baseNodes) {
-      const subMenu: MenuItem[] = this.createSubMenu(node.id);
+      const subMenu: SideMenuItem[] = this.createSubMenu(node.id);
 
       menuItems.push({
         label: node.name,
@@ -96,38 +117,43 @@ export class SideMenuComponent implements OnInit {
     return menuItems;
   }
 
-  private createSubMenu(baseId: string): MenuItem[] {
+  private createSubMenu(baseId: string): SideMenuItem[] {
     const derivedNodes: GNode[] = this.workspace.filterDerivedNodes(baseId)();
-    const menuItems: MenuItem[] = [];
+    const errored: ReadonlySet<string> = this.erroredRefs();
 
-    for (const derived of derivedNodes) {
-      menuItems.push({
+    return derivedNodes.map((derived: GNode): SideMenuItem => {
+      return {
         label: derived.name,
         automationId: derived.id,
         parentId: baseId,
-      });
-    }
-
-    return menuItems;
+        hasErrors: this.nodeHasErrors(derived.id, errored),
+      };
+    });
   }
 
-  private filterMenuItems(): MenuItem[] {
+  private nodeHasErrors(nodeId: string, erroredRefs: ReadonlySet<string>): boolean {
+    for (const ref of erroredRefs) {
+      if (ref === nodeId) return true;
+      const parts: string[] = ref.split('_');
+      if (parts.includes(nodeId)) return true;
+    }
+    return false;
+  }
+
+  private filterMenuItems(): SideMenuItem[] {
     const searchQuery: string = this.searchInput().trim().toLowerCase();
-    const sideMenu: MenuItem[] = this.sideMenuItems();
+    const sideMenu: SideMenuItem[] = this.sideMenuItems();
 
     if (!searchQuery) return sideMenu;
-    const clonedMenu: MenuItem[] = structuredClone(sideMenu);
+    const clonedMenu: SideMenuItem[] = structuredClone(sideMenu);
 
-    return clonedMenu.filter((baseNode: MenuItem): boolean => {
-      const query: string = searchQuery;
+    return clonedMenu.filter((baseNode: SideMenuItem): boolean => {
       const baseLabel: string = (baseNode.label ?? '').toLowerCase();
+      if (baseLabel.includes(searchQuery)) return true;
 
-      const baseMatches: boolean = baseLabel.includes(query);
-      if (baseMatches) return true;
-
-      const derived: MenuItem[] = baseNode.items ?? [];
-      const filteredDerived: MenuItem[] = derived.filter((node: MenuItem): boolean =>
-        (node.label ?? '').toLowerCase().includes(query),
+      const derived: SideMenuItem[] = baseNode.items ?? [];
+      const filteredDerived: SideMenuItem[] = derived.filter((node: SideMenuItem): boolean =>
+        (node.label ?? '').toLowerCase().includes(searchQuery),
       );
 
       baseNode.items = filteredDerived;
@@ -135,8 +161,18 @@ export class SideMenuComponent implements OnInit {
     });
   }
 
-  protected handleContextMenu($event: Event, item: MenuItem): void {
-    this.selectedContextItem = item;
+  protected handleContextMenu($event: Event, clickedItem: SideMenuItem): void {
+    this.selectedContextItem = clickedItem;
+
+    this.contextMenu.set(
+      this.staticContextMenu.map(
+        (item: SideMenuItem): SideMenuItem => ({
+          ...item,
+          label: item.label?.replace('%s', clickedItem.label ?? 'Node'),
+        }),
+      ),
+    );
+
     this.contextMenuRef?.show($event);
   }
 }

@@ -29,12 +29,18 @@
               </div>
             </div>
           } @else {
-            <div
-              pRipple
-              class="flex flex-row items-center gap-3 px-1 py-1.5"
-              (contextmenu)="handleContextMenu($event, item)"
-            >
-              <i class="pi pi-chevron-right" style="font-size: 8pt !important"></i> {{ item.label }}
+            <div pRipple class="px-1 py-1.5" (contextmenu)="handleContextMenu($event, item)">
+              @if (!item.hasErrors) {
+                <span class="flex items-center gap-3">
+                  <i class="pi pi-chevron-right" style="font-size: 8pt !important"></i>
+                  {{ item.label }}
+                </span>
+              } @else {
+                <span class="flex items-center gap-3 text-red-500">
+                  <i class="pi pi-exclamation-triangle" style="font-size: 8pt !important"></i>
+                  {{ item.label }}
+                </span>
+              }
             </div>
           }
         </div>
@@ -43,9 +49,9 @@
   </div>
 </p-scroll-panel>
 
-<p-context-menu #contextMenuRef [model]="contextMenu" appendTo="body">
+<p-context-menu #contextMenuRef [model]="contextMenu()" appendTo="body">
   <ng-template #item let-item>
-    <a
+    <div
       pRipple
       class="flex cursor-pointer flex-row items-center justify-start gap-3 px-2 py-2"
       [class.text-(--p-red-500)]="item.severity === 'error'"
@@ -53,9 +59,9 @@
       <div class="flex flex-2 items-center justify-center">
         <span [class]="item.icon"></span>
       </div>
-      <div class="flex flex-10 items-center">
-        <span class="text-sm">{{ item.label }}</span>
+      <div class="flex flex-10 items-center truncate">
+        <span class="truncate text-sm">{{ item.label }}</span>
       </div>
-    </a>
+    </div>
   </ng-template>
 </p-context-menu>
