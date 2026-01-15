@@ -318,7 +318,7 @@
           "items": { "$ref": "#/$defs/Ref" },
           "default": []
         },
-        "name": { "type": "string", "minLength": 1 },
+        "name": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$", "minLength": 1 },
 
         "from": {
           "$ref": "#/$defs/RelationEnd",

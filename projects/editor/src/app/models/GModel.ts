@@ -63,7 +63,7 @@ export interface GConstraint {
 
 export interface GDataType {
   kind: 'GDataType';
-  id: Id;
+  id: Ref;
   name: string;
   literals?: [GLiteral, ...GLiteral[]];
   constraints?: GConstraint[];
@@ -81,6 +81,7 @@ export interface GLiteral {
 export interface GRelation {
   kind: 'GRelation';
   id: Id;
+  superTypes: Ref[];
   name: string;
   from: RelationEnd;
   to: RelationEnd;
