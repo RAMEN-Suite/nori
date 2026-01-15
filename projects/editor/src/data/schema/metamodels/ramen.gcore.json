@@ -126,7 +126,8 @@
   "relations": [
     {
       "kind": "GRelation",
-      "id": "part_of_collection_collection",
+      "id": "collection_partOf_collection",
+      "superTypes": [],
       "name": "PART_OF",
       "from": {
         "nodeId": "collection",
@@ -139,10 +140,10 @@
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       }
     },
-
     {
       "kind": "GRelation",
-      "id": "part_of_text_collection",
+      "id": "text_partOf_collection",
+      "superTypes": [],
       "name": "PART_OF",
       "from": {
         "nodeId": "text",
@@ -157,7 +158,8 @@
     },
     {
       "kind": "GRelation",
-      "id": "part_of_image_collection",
+      "id": "image_partOf_collection",
+      "superTypes": [],
       "name": "PART_OF",
       "from": {
         "nodeId": "image",
@@ -173,7 +175,8 @@
 
     {
       "kind": "GRelation",
-      "id": "has_annotation_collection_annotation",
+      "id": "collection_hasAnnotation_annotation",
+      "superTypes": [],
       "name": "HAS_ANNOTATION",
       "from": {
         "nodeId": "collection",
@@ -188,7 +191,8 @@
     },
     {
       "kind": "GRelation",
-      "id": "has_annotation_text_annotation",
+      "id": "text_hasAnnotation_annotation",
+      "superTypes": [],
       "name": "HAS_ANNOTATION",
       "from": {
         "nodeId": "text",
@@ -203,7 +207,8 @@
     },
     {
       "kind": "GRelation",
-      "id": "has_annotation_image_annotation",
+      "id": "image_hasAnnotation_annotation",
+      "superTypes": [],
       "name": "HAS_ANNOTATION",
       "from": {
         "nodeId": "image",
@@ -218,7 +223,8 @@
     },
     {
       "kind": "GRelation",
-      "id": "has_annotation_entity_annotation",
+      "id": "entity_hasAnnotation_annotation",
+      "superTypes": [],
       "name": "HAS_ANNOTATION",
       "from": {
         "nodeId": "entity",
@@ -233,7 +239,8 @@
     },
     {
       "kind": "GRelation",
-      "id": "has_annotation_annotation_annotation",
+      "id": "annotation_hasAnnotation_annotation",
+      "superTypes": [],
       "name": "HAS_ANNOTATION",
       "from": {
         "nodeId": "annotation",
@@ -249,7 +256,8 @@
 
     {
       "kind": "GRelation",
-      "id": "refers_to_annotation_collection",
+      "id": "annotation_refersTo_collection",
+      "superTypes": [],
       "name": "REFERS_TO",
       "from": {
         "nodeId": "annotation",
@@ -264,7 +272,8 @@
     },
     {
       "kind": "GRelation",
-      "id": "refers_to_annotation_text",
+      "id": "annotation_refersTo_text",
+      "superTypes": [],
       "name": "REFERS_TO",
       "from": {
         "nodeId": "annotation",
@@ -279,7 +288,8 @@
     },
     {
       "kind": "GRelation",
-      "id": "refers_to_annotation_image",
+      "id": "annotation_refersTo_image",
+      "superTypes": [],
       "name": "REFERS_TO",
       "from": {
         "nodeId": "annotation",
@@ -294,7 +304,8 @@
     },
     {
       "kind": "GRelation",
-      "id": "refers_to_annotation_entity",
+      "id": "annotation_refersTo_entity",
+      "superTypes": [],
       "name": "REFERS_TO",
       "from": {
         "nodeId": "annotation",
@@ -309,7 +320,8 @@
     },
     {
       "kind": "GRelation",
-      "id": "refers_to_annotation_annotation",
+      "id": "annotation_refersTo_annotation",
+      "superTypes": [],
       "name": "REFERS_TO",
       "from": {
         "nodeId": "annotation",

@@ -213,7 +213,7 @@
       "required": ["kind", "id", "name"],
       "properties": {
         "kind": { "const": "GDataType" },
-        "id": { "$ref": "#/$defs/Id" },
+        "id": { "$ref": "#/$defs/Ref" },
         "name": { "type": "string", "minLength": 1 },
 
         "literals": {
@@ -309,10 +309,15 @@
     "GRelation": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["kind", "id", "name", "from", "to"],
+      "required": ["kind", "id", "superTypes", "name", "from", "to"],
       "properties": {
         "kind": { "const": "GRelation" },
         "id": { "$ref": "#/$defs/Id" },
+        "superTypes": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Ref" },
+          "default": []
+        },
         "name": { "type": "string", "minLength": 1 },
 
         "from": {

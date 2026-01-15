@@ -85,7 +85,6 @@
       "name": "Place",
       "superTypes": ["ramen:entity"],
       "attributes": [
-        { "name": "label", "typeId": "string", "bounds": { "lowerBound": 1, "upperBound": 1 } },
         { "name": "geo", "typeId": "string", "bounds": { "lowerBound": 0, "upperBound": 1 } }
       ]
     },
@@ -95,7 +94,6 @@
       "name": "Organisation",
       "superTypes": ["ramen:entity"],
       "attributes": [
-        { "name": "label", "typeId": "string", "bounds": { "lowerBound": 1, "upperBound": 1 } },
         { "name": "externalId", "typeId": "string", "bounds": { "lowerBound": 0, "upperBound": 1 } }
       ]
     },
@@ -105,7 +103,6 @@
       "name": "Person",
       "superTypes": ["ramen:entity"],
       "attributes": [
-        { "name": "label", "typeId": "string", "bounds": { "lowerBound": 1, "upperBound": 1 } },
         { "name": "externalId", "typeId": "string", "bounds": { "lowerBound": 0, "upperBound": 1 } }
       ]
     },
@@ -142,139 +139,148 @@
   "relations": [
     {
       "kind": "GRelation",
-      "id": "communication_part_of_corpus",
+      "id": "communication_partOf_corpus",
+      "superTypes": ["ramen:collection_partOf_collection"],
       "name": "PART_OF",
       "from": {
         "nodeId": "communication",
-        "role": "child",
+        "role": "children",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       },
       "to": {
         "nodeId": "corpus",
-        "role": "parent",
+        "role": "parents",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       }
     },
     {
       "kind": "GRelation",
-      "id": "letter_part_of_communication",
+      "id": "letter_partOf_communication",
+      "superTypes": ["ramen:collection_partOf_collection"],
       "name": "PART_OF",
       "from": {
         "nodeId": "letter",
-        "role": "child",
+        "role": "children",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       },
       "to": {
         "nodeId": "communication",
-        "role": "parent",
+        "role": "parents",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       }
     },
     {
       "kind": "GRelation",
-      "id": "abstract_part_of_letter",
+      "id": "abstract_partOf_letter",
+      "superTypes": ["ramen:collection_partOf_collection"],
       "name": "PART_OF",
       "from": {
         "nodeId": "abstract",
-        "role": "child",
+        "role": "children",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       },
       "to": {
         "nodeId": "letter",
-        "role": "parent",
+        "role": "parents",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       }
     },
 
     {
       "kind": "GRelation",
-      "id": "attachment_part_of_corpus",
+      "id": "attachment_partOf_corpus",
+      "superTypes": ["ramen:collection_partOf_collection"],
       "name": "PART_OF",
       "from": {
         "nodeId": "attachment",
-        "role": "child",
+        "role": "children",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       },
       "to": {
         "nodeId": "corpus",
-        "role": "parent",
+        "role": "parents",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       }
     },
     {
       "kind": "GRelation",
-      "id": "document_part_of_attachment",
+      "id": "document_partOf_attachment",
+      "superTypes": ["ramen:collection_partOf_collection"],
       "name": "PART_OF",
       "from": {
         "nodeId": "document",
-        "role": "child",
+        "role": "children",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       },
       "to": {
         "nodeId": "attachment",
-        "role": "parent",
+        "role": "parents",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       }
     },
     {
       "kind": "GRelation",
-      "id": "figure_part_of_attachment",
+      "id": "figure_partOf_attachment",
+      "superTypes": ["ramen:collection_partOf_collection"],
       "name": "PART_OF",
       "from": {
         "nodeId": "figure",
-        "role": "child",
+        "role": "children",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       },
       "to": {
         "nodeId": "attachment",
-        "role": "parent",
+        "role": "parents",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       }
     },
 
     {
       "kind": "GRelation",
-      "id": "witness_part_of_document",
+      "id": "witness_partOf_document",
+      "superTypes": ["ramen:collection_partOf_collection"],
       "name": "PART_OF",
       "from": {
         "nodeId": "witness",
-        "role": "child",
+        "role": "children",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       },
       "to": {
         "nodeId": "document",
-        "role": "parent",
+        "role": "parents",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       }
     },
     {
       "kind": "GRelation",
-      "id": "variant_part_of_witness",
+      "id": "variant_partOf_witness",
+      "superTypes": ["ramen:collection_partOf_collection"],
       "name": "PART_OF",
       "from": {
         "nodeId": "variant",
-        "role": "child",
+        "role": "children",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       },
       "to": {
         "nodeId": "witness",
-        "role": "parent",
+        "role": "parents",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       }
     },
 
     {
       "kind": "GRelation",
-      "id": "letter_part_of_attachment",
+      "id": "letter_partOf_attachment",
+      "superTypes": ["ramen:collection_partOf_collection"],
       "name": "PART_OF",
       "from": {
         "nodeId": "letter",
-        "role": "child",
+        "role": "children",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       },
       "to": {
         "nodeId": "attachment",
-        "role": "parent",
+        "role": "parents",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       }
     }
