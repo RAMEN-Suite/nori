@@ -1,15 +1,15 @@
 import { Component, inject } from '@angular/core';
 import { InputText } from 'primeng/inputtext';
 import { Button } from 'primeng/button';
-import { CreateModelInput, WorkspaceService } from '../../../services/workspace.service';
+import { CreateModelInput, WorkspaceService } from '../../../../services/workspace.service';
 import { Fieldset } from 'primeng/fieldset';
 import { IftaLabel } from 'primeng/iftalabel';
 import { Message } from 'primeng/message';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Textarea } from 'primeng/textarea';
-import { WorkspaceState } from '../../../states/workspace.state';
-import { REGEXP } from '../../../const/REGEXP';
-import { SuggestionHelper } from '../../../core/validation/helper/SuggestionHelper';
+import { WorkspaceState } from '../../../../states/workspace.state';
+import { REGEXP } from '../../../../const/REGEXP';
+import { SuggestionHelper } from '../../../../core/validation/helper/SuggestionHelper';
 import { DynamicDialogRef } from 'primeng/dynamicdialog';
 
 @Component({

@@ -9,7 +9,7 @@ import {
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
-import { GraphData, GraphLink, GraphNode } from '../../core/GModelGraph';
+import { GraphData, GraphLink, GraphNode } from '../../../core/GModelGraph';
 import * as d3 from 'd3';
 
 type D3Node = GraphNode & d3.SimulationNodeDatum;

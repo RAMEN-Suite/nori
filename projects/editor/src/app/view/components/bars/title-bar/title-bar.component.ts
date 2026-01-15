@@ -2,8 +2,8 @@ import { Component, inject, OnInit } from '@angular/core';
 import { Menubar } from 'primeng/menubar';
 import { Button } from 'primeng/button';
 import { Divider } from 'primeng/divider';
-import { ElectronService } from '../../../services/electron.service';
-import { WindowState } from '../../../states/window.state';
+import { ElectronService } from '../../../../services/electron.service';
+import { WindowState } from '../../../../states/window.state';
 
 @Component({
   selector: 'app-title-bar',

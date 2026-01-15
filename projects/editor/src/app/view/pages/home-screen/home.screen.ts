@@ -1,9 +1,9 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { WindowState } from '../../states/window.state';
+import { WindowState } from '../../../states/window.state';
 import { Button } from 'primeng/button';
-import { environment } from '../../../environments/environment';
+import { environment } from '../../../../environments/environment';
 import { RouterLink } from '@angular/router';
-import { EDITOR_THEME, EditorState } from '../../states/editor.state';
+import { EDITOR_THEME, EditorState } from '../../../states/editor.state';
 
 @Component({
   selector: 'app-home',

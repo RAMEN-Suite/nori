@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
-import { HomeScreen } from './pages/home-screen/home.screen';
-import { WorkspaceScreen } from './pages/workspace-screen/workspace.screen';
-import { StartScreen } from './pages/start-screen/start.screen';
-import { OpenScreen } from './pages/open-screen/open.screen';
+import { HomeScreen } from './view/pages/home-screen/home.screen';
+import { WorkspaceScreen } from './view/pages/workspace-screen/workspace.screen';
+import { StartScreen } from './view/pages/start-screen/start.screen';
+import { OpenScreen } from './view/pages/open-screen/open.screen';
 import { workspaceGuard } from './guards/workspace.guard';
 
 export const routes: Routes = [

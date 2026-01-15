@@ -1,5 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { WindowState } from '../../states/window.state';
+import { WindowState } from '../../../states/window.state';
 import { FormsModule } from '@angular/forms';
 import { InputText } from 'primeng/inputtext';
 import { Fieldset } from 'primeng/fieldset';
@@ -10,9 +10,9 @@ import { Select } from 'primeng/select';
 import { Checkbox } from 'primeng/checkbox';
 import { Router, RouterLink } from '@angular/router';
 import { Message } from 'primeng/message';
-import { CATALOG, EXAMPLES } from '../../../data/CATALOG';
-import { GModel } from '../../models/GModel';
-import { CreateManifest, StorageService } from '../../services/storage.service';
+import { CATALOG, EXAMPLES } from '../../../../data/CATALOG';
+import { GModel } from '../../../models/GModel';
+import { CreateManifest, StorageService } from '../../../services/storage.service';
 
 @Component({
   selector: 'app-create',

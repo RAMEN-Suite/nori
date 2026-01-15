@@ -1,6 +1,6 @@
 import { Component, computed, inject, OnInit, Signal, signal, WritableSignal } from '@angular/core';
-import { StorageService } from '../../services/storage.service';
-import { WindowState } from '../../states/window.state';
+import { StorageService } from '../../../services/storage.service';
+import { WindowState } from '../../../states/window.state';
 import { InputText } from 'primeng/inputtext';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
@@ -8,7 +8,7 @@ import { RouterLink } from '@angular/router';
 import { InputGroup } from 'primeng/inputgroup';
 import { InputGroupAddon } from 'primeng/inputgroupaddon';
 import { Fieldset } from 'primeng/fieldset';
-import { Manifest } from '../../models/Manifest';
+import { Manifest } from '../../../models/Manifest';
 import { ScrollPanel } from 'primeng/scrollpanel';
 import { ConfirmationService } from 'primeng/api';
 import { ConfirmDialog } from 'primeng/confirmdialog';
@@ -39,7 +39,6 @@ export class OpenScreen implements OnInit {
   private readonly confirmation: ConfirmationService = inject(ConfirmationService);
 
   protected readonly searchInput: WritableSignal<string> = signal('');
-
   protected readonly filteredManifest: Signal<Manifest[]> = computed((): Manifest[] => {
     const query: string = this.searchInput().trim().toLowerCase();
     const list: Manifest[] = this.storage.manifests();

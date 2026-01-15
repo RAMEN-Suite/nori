@@ -11,9 +11,9 @@ import { Breadcrumb } from 'primeng/breadcrumb';
 import { Chip } from 'primeng/chip';
 import { ContextMenu } from 'primeng/contextmenu';
 import { MenuItem } from 'primeng/api';
-import { WorkspaceService } from '../../services/workspace.service';
-import { StorageService } from '../../services/storage.service';
-import { Model } from '../../models/Model';
+import { WorkspaceService } from '../../../services/workspace.service';
+import { StorageService } from '../../../services/storage.service';
+import { Model } from '../../../models/Model';
 import { Ripple } from 'primeng/ripple';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { CreateModelForm } from '../forms/create-model/create-model.form';
@@ -106,7 +106,7 @@ export class BreadcrumbsComponent implements OnInit {
     this.workspace.selectDerivedSlot(slot);
   }
 
-  protected handleBreadcrumbMenu($event: Event, item: MenuItem): void {
+  protected handleContextMenu($event: Event, item: MenuItem): void {
     this.selectedItem = item;
     this.contextMenuRef?.show($event);
   }

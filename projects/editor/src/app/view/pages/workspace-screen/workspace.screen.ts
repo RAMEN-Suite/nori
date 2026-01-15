@@ -1,10 +1,10 @@
 import { Component, effect, inject, OnInit } from '@angular/core';
-import { WindowState } from '../../states/window.state';
+import { WindowState } from '../../../states/window.state';
 import { ToolBarComponent } from '../../components/bars/tool-bar/tool-bar.component';
-import { StorageService } from '../../services/storage.service';
-import { Manifest } from '../../models/Manifest';
+import { StorageService } from '../../../services/storage.service';
+import { Manifest } from '../../../models/Manifest';
 import { SideMenuComponent } from '../../components/side-menu/side-menu.component';
-import { WorkspaceService } from '../../services/workspace.service';
+import { WorkspaceService } from '../../../services/workspace.service';
 
 @Component({
   selector: 'app-workspace',

@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { Menubar } from 'primeng/menubar';
 import { Divider } from 'primeng/divider';
 import { Button } from 'primeng/button';
-import { EDITOR_THEME, EditorState } from '../../../states/editor.state';
+import { EDITOR_THEME, EditorState } from '../../../../states/editor.state';
 import { BreadcrumbsComponent } from '../../breadcrumb/breadcrumbs.component';
 import { RouterLink } from '@angular/router';
 
