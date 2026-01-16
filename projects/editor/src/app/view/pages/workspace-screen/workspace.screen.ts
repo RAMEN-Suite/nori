@@ -15,17 +15,12 @@ import { WorkspaceService } from '../../../services/workspace.service';
 export class WorkspaceScreen implements OnInit {
   private readonly windowState: WindowState = inject(WindowState);
   private readonly storage: StorageService = inject(StorageService);
-
   private readonly workspace: WorkspaceService = inject(WorkspaceService);
 
   constructor() {
     effect((): void => {
       const manifest: Manifest | null = this.storage.selectedManifest();
       this.windowState.setTitle(manifest?.name ?? '', 'pi pi-pen-to-square');
-    });
-
-    effect(() => {
-      console.log(this.workspace.validation());
     });
   }
 

@@ -68,7 +68,7 @@ export class BreadcrumbsComponent implements OnInit {
         label: 'Delete Model',
         icon: 'pi pi-trash',
         severity: 'error',
-        command: (): Promise<void> => this.handleDeleteModel(),
+        command: (): void => void this.handleDeleteModel(),
       },
     ];
   }

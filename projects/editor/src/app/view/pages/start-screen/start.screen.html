@@ -1,5 +1,5 @@
 <main class="main-window mx-auto flex max-w-2xl items-center">
-  <section class="card flex w-full flex-col gap-5" animate.enter="card-entrance">
+  <div class="card flex w-full flex-col gap-5" animate.enter="card-entrance">
     <span class="block text-center text-3xl font-light">Creating a NORI Project</span>
 
     <p-fieldset legend="Basics">
@@ -9,6 +9,7 @@
             <input
               pInputText
               id="name"
+              name="name"
               [(ngModel)]="manifest.name"
               #nameModel="ngModel"
               maxlength="70"
@@ -22,7 +23,7 @@
 
           @if ((nameModel.touched || isSubmitted) && !isProjectNameValid()) {
             <p-message severity="error" size="small" variant="simple">
-              Project name must be at least 4 characters.
+              Project name must be at least 3 characters.
             </p-message>
           }
         </div>
@@ -31,6 +32,7 @@
           <textarea
             pTextarea
             id="description"
+            name="description"
             [(ngModel)]="manifest.description"
             maxlength="140"
             autocomplete="off"
@@ -47,6 +49,7 @@
           <p-ifta-label>
             <p-select
               id="metamodel"
+              name="metamodel"
               [(ngModel)]="selectedMetamodel"
               #metamodelModel="ngModel"
               [options]="metamodels"
@@ -54,10 +57,12 @@
               [invalid]="(metamodelModel.touched || isSubmitted) && !isMetamodelValid()"
             >
               <ng-template let-model #selectedItem>
-                {{ model.name }} <span class="text-xs">(v.{{ model.version }})</span>
+                {{ model.name }}
+                <span class="text-xs">(v.{{ model.version }})</span>
               </ng-template>
               <ng-template let-model #item>
-                {{ model.name }} <span class="text-xs">(v.{{ model.version }})</span>
+                {{ model.name }}
+                <span class="text-xs">(v.{{ model.version }})</span>
               </ng-template>
             </p-select>
             <label for="metamodel">Metamodel</label>
@@ -71,10 +76,10 @@
         </div>
 
         <div class="flex items-center gap-3">
-          <p-check-box id="metamodel_example" [(ngModel)]="isCreatingExample" binary />
+          <p-check-box id="example" name="example" [(ngModel)]="isCreatingExample" binary />
           <label
-            for="metamodel_example"
-            class="cursor-pointer text-sm"
+            for="example"
+            class="cursor-pointer text-sm select-none"
             (click)="isCreatingExample = !isCreatingExample"
           >
             Create an example model based on the selected metamodel.
@@ -90,10 +95,10 @@
       </div>
       <p-button
         label="Finish Setup"
-        outlined="outlined"
         [disabled]="!isFormValid()"
         (click)="handleCreateProject()"
+        outlined
       />
     </div>
-  </section>
+  </div>
 </main>

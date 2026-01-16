@@ -4,15 +4,15 @@
   class="main-window relative flex flex-col items-center justify-center gap-y-10 text-center"
   #main
 >
-  <section class="flex flex-col gap-y-2" animate.enter="logo-entrance">
+  <div class="flex flex-col gap-y-2" animate.enter="logo-entrance">
     <div class="flex flex-col">
       <svg height="126px" width="126px"><use href="images/ramen.svg#ramen-logo"></use></svg>
       <div class="text-5xl font-light font-stretch-semi-expanded select-none">NORI</div>
     </div>
     <div class="text-sm opacity-50">Version {{ environment.appVersion }}</div>
-  </section>
+  </div>
 
-  <section class="flex flex-col" animate.enter="menu-entrance">
+  <div class="flex flex-col" animate.enter="menu-entrance">
     <p-button
       variant="text"
       size="large"
@@ -27,9 +27,9 @@
       label="open an existing project"
       routerLink="open"
     />
-  </section>
+  </div>
 
-  <section class="mt-10 flex flex-col" animate.enter="sub-menu-entrance">
+  <div class="mt-10 flex flex-col" animate.enter="sub-menu-entrance">
     <p-button
       variant="text"
       size="small"
@@ -37,7 +37,7 @@
       label="change theme"
       (click)="editorState.setTheme(isDark ? EDITOR_THEME.LIGHT : EDITOR_THEME.DARK)"
     />
-  </section>
+  </div>
 
   <div class="background-circle h-170 w-170" animate.enter="logo-entrance"></div>
 </main>

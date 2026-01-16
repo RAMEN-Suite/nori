@@ -28,9 +28,9 @@ import { DynamicDialogRef } from 'primeng/dynamicdialog';
   styleUrl: './create-model.form.scss',
 })
 export class CreateModelForm {
-  protected workspaceState: WorkspaceState = inject(WorkspaceState);
-  protected workspace: WorkspaceService = inject(WorkspaceService);
-  private dialogRef: DynamicDialogRef = inject(DynamicDialogRef);
+  protected readonly workspaceState: WorkspaceState = inject(WorkspaceState);
+  protected readonly workspace: WorkspaceService = inject(WorkspaceService);
+  private readonly dialogRef: DynamicDialogRef = inject(DynamicDialogRef);
 
   protected newModel: CreateModelInput;
   protected isSubmitted: boolean = false;
@@ -56,7 +56,7 @@ export class CreateModelForm {
   }
 
   protected isUriValid(): boolean {
-    const uri: string = this.newModel.uri;
+    const uri: string = this.newModel.uri.trim();
     return uri !== '' && REGEXP.isValidURITemplate.test(uri);
   }
 
@@ -72,13 +72,18 @@ export class CreateModelForm {
     this.isSubmitted = true;
     if (!this.isFormValid()) return;
 
-    this.newModel.slug = SuggestionHelper.createIdentifier(this.newModel.name);
+    try {
+      this.newModel.slug = SuggestionHelper.createIdentifier(this.newModel.name);
 
-    if (this.workspaceState.state().isDirty) {
-      await this.workspace.saveDraftToActiveSlot();
+      if (this.workspaceState.state().isDirty) {
+        await this.workspace.saveDraftToActiveSlot();
+      }
+
+      await this.workspace.createModel(this.newModel);
+      this.dialogRef.close();
+    } catch (error: unknown) {
+      console.error(error);
+      // TODO: Add error handling
     }
-
-    await this.workspace.createModel(this.newModel);
-    this.dialogRef.close();
   }
 }

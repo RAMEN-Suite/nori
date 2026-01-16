@@ -4,6 +4,7 @@
       @if (!item.isLast) {
         <p-chip
           tabindex="0"
+          role="button"
           [label]="item.label"
           class="justify-center py-1! text-sm select-none"
           [class.active]="workspace.selectedDerivedSlot() === item.automationId"
@@ -16,6 +17,7 @@
       } @else {
         <p-chip
           tabindex="0"
+          role="button"
           [icon]="item.icon"
           class="min-h-7.5 cursor-pointer justify-center py-1! select-none"
           (keydown.enter)="handleOpenCreateModal()"

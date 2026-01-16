@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { WindowState } from '../../../states/window.state';
 import { FormsModule } from '@angular/forms';
 import { InputText } from 'primeng/inputtext';
@@ -31,7 +31,7 @@ import { CreateManifest, StorageService } from '../../../services/storage.servic
   templateUrl: './start.screen.html',
   styleUrl: './start.screen.scss',
 })
-export class StartScreen implements OnInit {
+export class StartScreen {
   private readonly windowState: WindowState = inject(WindowState);
   private readonly storage: StorageService = inject(StorageService);
   private readonly router: Router = inject(Router);
@@ -44,12 +44,9 @@ export class StartScreen implements OnInit {
   protected isSubmitted: boolean = false;
 
   constructor() {
+    this.windowState.setTitle('Create Project', 'pi pi-folder-plus');
     this.manifest = { name: '', description: '', metamodelId: '', metaVersion: '' };
     this.selectedMetamodel = CATALOG[0];
-  }
-
-  public async ngOnInit(): Promise<void> {
-    this.windowState.setTitle('Create Project', 'pi pi-folder-plus');
   }
 
   protected isProjectNameValid(): boolean {
@@ -73,14 +70,17 @@ export class StartScreen implements OnInit {
     this.isSubmitted = true;
     if (!this.isFormValid()) return;
 
-    this.manifest.metamodelId = this.selectedMetamodel.id;
-    this.manifest.metaVersion = this.selectedMetamodel.version;
+    const { id, version } = this.selectedMetamodel;
+    this.manifest.metamodelId = id;
+    this.manifest.metaVersion = version;
 
-    await this.storage.createProject(
-      this.manifest,
-      this.selectedMetamodel,
-      this.isCreatingExample ? EXAMPLES[0] : undefined,
-    );
-    await this.router.navigate(['/ws', this.storage.selectedProjectId()]);
+    try {
+      const example: GModel | undefined = this.isCreatingExample ? EXAMPLES[0] : undefined;
+      await this.storage.createProject(this.manifest, this.selectedMetamodel, example);
+      await this.router.navigate(['/ws', this.storage.selectedProjectId()]);
+    } catch (error: unknown) {
+      console.error(error);
+      // ToDo: Toast Message
+    }
   }
 }

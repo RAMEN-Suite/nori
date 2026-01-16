@@ -22,14 +22,6 @@ import { FormsModule } from '@angular/forms';
 import { ValidationResult } from '../../../core/validation/ModelValidator';
 import { MenuItem } from 'primeng/api';
 
-interface SideMenuItem extends MenuItem {
-  automationId?: string;
-  parentId?: string;
-  hasErrors?: boolean;
-  button?: string;
-  isCategory?: boolean;
-}
-
 @Component({
   selector: 'app-side-menu',
   imports: [
@@ -49,16 +41,17 @@ interface SideMenuItem extends MenuItem {
 export class SideMenuComponent implements OnInit {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
 
-  protected staticContextMenu: SideMenuItem[] = [];
-  protected readonly contextMenu: WritableSignal<SideMenuItem[]> = signal([]);
-  protected selectedContextItem: SideMenuItem | undefined;
+  protected staticContextMenu: MenuItem[] = [];
+  protected readonly contextMenu: WritableSignal<MenuItem[]> = signal([]);
+
+  protected selectedContextItem: MenuItem | undefined;
 
   protected readonly searchInput: WritableSignal<string> = signal('');
-  protected readonly sideMenuItems: Signal<SideMenuItem[]> = computed((): SideMenuItem[] => {
+  protected readonly sideMenuItems: Signal<MenuItem[]> = computed((): MenuItem[] => {
     return this.createSideMenu();
   });
 
-  protected readonly filteredMenuItems: Signal<SideMenuItem[]> = computed((): SideMenuItem[] => {
+  protected readonly filteredMenuItems: Signal<MenuItem[]> = computed((): MenuItem[] => {
     return this.filterMenuItems();
   });
 
@@ -96,12 +89,12 @@ export class SideMenuComponent implements OnInit {
     ];
   }
 
-  private createSideMenu(): SideMenuItem[] {
+  private createSideMenu(): MenuItem[] {
     const baseNodes: GNode[] = this.workspace.baseNodes();
-    const menuItems: SideMenuItem[] = [];
+    const menuItems: MenuItem[] = [];
 
     for (const node of baseNodes) {
-      const subMenu: SideMenuItem[] = this.createSubMenu(node.id);
+      const subMenu: MenuItem[] = this.createSubMenu(node.id);
 
       menuItems.push({
         label: node.name,
@@ -117,11 +110,11 @@ export class SideMenuComponent implements OnInit {
     return menuItems;
   }
 
-  private createSubMenu(baseId: string): SideMenuItem[] {
+  private createSubMenu(baseId: string): MenuItem[] {
     const derivedNodes: GNode[] = this.workspace.filterDerivedNodes(baseId)();
     const errored: ReadonlySet<string> = this.erroredRefs();
 
-    return derivedNodes.map((derived: GNode): SideMenuItem => {
+    return derivedNodes.map((derived: GNode): MenuItem => {
       return {
         label: derived.name,
         automationId: derived.id,
@@ -140,19 +133,19 @@ export class SideMenuComponent implements OnInit {
     return false;
   }
 
-  private filterMenuItems(): SideMenuItem[] {
+  private filterMenuItems(): MenuItem[] {
     const searchQuery: string = this.searchInput().trim().toLowerCase();
-    const sideMenu: SideMenuItem[] = this.sideMenuItems();
+    const sideMenu: MenuItem[] = this.sideMenuItems();
 
     if (!searchQuery) return sideMenu;
-    const clonedMenu: SideMenuItem[] = structuredClone(sideMenu);
+    const clonedMenu: MenuItem[] = structuredClone(sideMenu);
 
-    return clonedMenu.filter((baseNode: SideMenuItem): boolean => {
+    return clonedMenu.filter((baseNode: MenuItem): boolean => {
       const baseLabel: string = (baseNode.label ?? '').toLowerCase();
       if (baseLabel.includes(searchQuery)) return true;
 
-      const derived: SideMenuItem[] = baseNode.items ?? [];
-      const filteredDerived: SideMenuItem[] = derived.filter((node: SideMenuItem): boolean =>
+      const derived: MenuItem[] = baseNode.items ?? [];
+      const filteredDerived: MenuItem[] = derived.filter((node: MenuItem): boolean =>
         (node.label ?? '').toLowerCase().includes(searchQuery),
       );
 
@@ -161,12 +154,12 @@ export class SideMenuComponent implements OnInit {
     });
   }
 
-  protected handleContextMenu($event: Event, clickedItem: SideMenuItem): void {
+  protected handleContextMenu($event: Event, clickedItem: MenuItem): void {
     this.selectedContextItem = clickedItem;
 
     this.contextMenu.set(
       this.staticContextMenu.map(
-        (item: SideMenuItem): SideMenuItem => ({
+        (item: MenuItem): MenuItem => ({
           ...item,
           label: item.label?.replace('%s', clickedItem.label ?? 'Node'),
         }),

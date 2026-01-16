@@ -16,6 +16,7 @@
             pInputText
             id="name"
             #nameModel="ngModel"
+            name="name"
             maxlength="70"
             autocomplete="off"
             fluid
@@ -28,7 +29,7 @@
 
         @if ((nameModel.touched || isSubmitted) && !isModelNameValid()) {
           <p-message severity="error" size="small" variant="simple">
-            Project name must be at least 4 characters.
+            Model name must be at least 3 characters.
           </p-message>
         }
       </div>
@@ -38,6 +39,7 @@
           pTextarea
           id="description"
           [(ngModel)]="newModel.description"
+          name="description"
           maxlength="140"
           autocomplete="off"
           fluid
@@ -60,6 +62,7 @@
             autocomplete="off"
             fluid
             required
+            name="version"
             [(ngModel)]="newModel.version"
             [invalid]="(versionModel.touched || isSubmitted) && !isVersionValid()"
           />
@@ -70,7 +73,8 @@
           <p-message severity="error" size="small" variant="simple">
             Version must comply to
             <a href="https://semver.org/" class="text-primary" target="_blank">
-              semantic versioning <i class="pi pi-external-link" style="font-size: 8pt"></i>
+              semantic versioning
+              <i class="pi pi-external-link" style="font-size: 8pt"></i>
             </a>
           </p-message>
         }
@@ -82,14 +86,14 @@
             id="uri"
             #uriModel="ngModel"
             placeholder="https://example.com/"
-            [maxlength]="30"
             autocomplete="off"
             fluid
             required
+            name="uri"
             [(ngModel)]="newModel.uri"
             [invalid]="(uriModel.touched || isSubmitted) && !isUriValid()"
           />
-          <label for="version">Model URI</label>
+          <label for="uri">Model URI</label>
         </p-ifta-label>
 
         @if ((uriModel.touched || isSubmitted) && !isUriValid()) {
@@ -103,20 +107,11 @@
 
   <div class="mt-4 flex flex-row justify-between gap-2">
     <p-button label="Cancel" severity="danger" outlined (click)="handleCloseModal()" />
-    @if (!isDirty) {
-      <p-button
-        label="Create Domain Model"
-        outlined
-        (click)="handleCreateModel()"
-        [disabled]="!isFormValid()"
-      />
-    } @else {
-      <p-button
-        label="Yes, Create Domain Model"
-        outlined
-        (click)="handleCreateModel()"
-        [disabled]="!isFormValid()"
-      />
-    }
+    <p-button
+      [label]="isDirty ? 'Yes, Create Domain Model' : 'Create Domain Model'"
+      outlined
+      (click)="handleCreateModel()"
+      [disabled]="!isFormValid()"
+    />
   </div>
 </div>

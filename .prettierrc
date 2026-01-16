@@ -1,4 +1,10 @@
 {
+  "tabWidth": 2,
+  "semi": true,
+  "trailingComma": "all",
+  "bracketSameLine": false,
+  "htmlWhitespaceSensitivity": "ignore",
+  "embeddedLanguageFormatting": "auto",
   "printWidth": 100,
   "singleQuote": true,
   "overrides": [

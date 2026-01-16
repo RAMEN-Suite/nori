@@ -52,14 +52,14 @@ export class OpenScreen implements OnInit {
     );
   });
 
-  public async ngOnInit(): Promise<void> {
+  public ngOnInit(): void {
     this.windowState.setTitle('Open Project', 'pi pi-folder-open');
     void this.storage.refreshManifests();
   }
 
   public async handleDeleteProject(manifest: Manifest): Promise<void> {
     this.confirmation.confirm({
-      message: `Do you really want to delete ${manifest.name}?`,
+      message: `Do you really want to delete "${manifest.name}"?`,
       header: `Deleting Project`,
       key: 'open-projects',
       dismissableMask: true,
@@ -74,7 +74,7 @@ export class OpenScreen implements OnInit {
         size: 'small',
         variant: 'outlined',
       },
-      accept: async (): Promise<void> => void this.storage.deleteProject(manifest.projectId),
+      accept: (): void => void this.storage.deleteProject(manifest.projectId),
     });
   }
 
