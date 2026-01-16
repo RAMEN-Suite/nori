@@ -21,6 +21,8 @@ import { ContextMenu } from 'primeng/contextmenu';
 import { FormsModule } from '@angular/forms';
 import { ValidationResult } from '../../../core/validation/ModelValidator';
 import { MenuItem } from 'primeng/api';
+import { RouterLink } from '@angular/router';
+import { injectDeepParams } from '../../../utils/injectDeepParams';
 
 @Component({
   selector: 'app-side-menu',
@@ -34,23 +36,26 @@ import { MenuItem } from 'primeng/api';
     Tooltip,
     ContextMenu,
     FormsModule,
+    RouterLink,
   ],
+  providers: [RouterLink],
   templateUrl: './side-menu.component.html',
   styleUrl: './side-menu.component.scss',
 })
 export class SideMenuComponent implements OnInit {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
+  private readonly routerLink: RouterLink = inject(RouterLink);
 
   protected staticContextMenu: MenuItem[] = [];
-  protected readonly contextMenu: WritableSignal<MenuItem[]> = signal([]);
-
   protected selectedContextItem: MenuItem | undefined;
 
+  protected readonly contextMenu: WritableSignal<MenuItem[]> = signal([]);
   protected readonly searchInput: WritableSignal<string> = signal('');
+  protected readonly selectedMenuItemId: Signal<string | null> = injectDeepParams('nodeId');
+
   protected readonly sideMenuItems: Signal<MenuItem[]> = computed((): MenuItem[] => {
     return this.createSideMenu();
   });
-
   protected readonly filteredMenuItems: Signal<MenuItem[]> = computed((): MenuItem[] => {
     return this.filterMenuItems();
   });
@@ -97,11 +102,11 @@ export class SideMenuComponent implements OnInit {
       const subMenu: MenuItem[] = this.createSubMenu(node.id);
 
       menuItems.push({
+        id: node.id,
         label: node.name,
         expanded: true,
         items: subMenu,
         badge: `${subMenu.length}`,
-        automationId: node.id,
         button: `Create New ${node.name} Node`,
         isCategory: true,
       });
@@ -116,9 +121,10 @@ export class SideMenuComponent implements OnInit {
 
     return derivedNodes.map((derived: GNode): MenuItem => {
       return {
+        id: derived.id,
         label: derived.name,
-        automationId: derived.id,
         parentId: baseId,
+        isActive: this.selectedMenuItemId() === derived.id,
         hasErrors: this.nodeHasErrors(derived.id, errored),
       };
     });

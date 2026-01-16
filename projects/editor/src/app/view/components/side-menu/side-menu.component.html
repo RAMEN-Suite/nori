@@ -29,14 +29,20 @@
               </div>
             </div>
           } @else {
-            <div pRipple class="px-1 py-1.5" (contextmenu)="handleContextMenu($event, item)">
+            <div
+              pRipple
+              class="px-1 py-1.5"
+              [class.active]="item.isActive"
+              (contextmenu)="handleContextMenu($event, item)"
+              [routerLink]="[item.id]"
+            >
               @if (!item.hasErrors) {
-                <span class="flex items-center gap-3">
+                <span class="flex items-center gap-3 select-none">
                   <i class="pi pi-chevron-right" style="font-size: 8pt !important"></i>
                   {{ item.label }}
                 </span>
               } @else {
-                <span class="flex items-center gap-3 text-red-500">
+                <span class="flex items-center gap-3 text-red-500 select-none">
                   <i class="pi pi-exclamation-triangle" style="font-size: 8pt !important"></i>
                   {{ item.label }}
                 </span>

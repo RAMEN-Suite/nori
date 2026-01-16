@@ -1,3 +1,5 @@
 .active {
-  background: #000;
+  font-weight: bold;
+  background: var(--p-panelmenu-item-focus-background);
+  border-radius: var(--p-panelmenu-item-border-radius);
 }

@@ -8,7 +8,7 @@ import { Message } from 'primeng/message';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Textarea } from 'primeng/textarea';
 import { WorkspaceState } from '../../../../states/workspace.state';
-import { REGEXP } from '../../../../const/REGEXP';
+import { REGEXP } from '../../../../core/const/REGEXP';
 import { SuggestionHelper } from '../../../../core/validation/helper/SuggestionHelper';
 import { DynamicDialogRef } from 'primeng/dynamicdialog';
 

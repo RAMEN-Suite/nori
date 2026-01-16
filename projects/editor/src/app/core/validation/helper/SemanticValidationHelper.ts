@@ -1,6 +1,6 @@
 import { Bounds, GNode, GRelation } from '../../../models/GModel';
 import { QualifiedRefParts, Refs } from '../container/References';
-import { REGEXP } from '../../../const/REGEXP';
+import { REGEXP } from '../../const/REGEXP';
 
 export type BaseNode = { baseId: string; baseNodeId: string };
 

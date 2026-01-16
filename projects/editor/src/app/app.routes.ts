@@ -9,6 +9,11 @@ export const routes: Routes = [
   { path: '', component: HomeScreen },
   { path: 'start', component: StartScreen },
   { path: 'open', component: OpenScreen },
-  { path: 'ws/:pid', canActivate: [workspaceGuard], component: WorkspaceScreen },
+  {
+    path: 'ws/:pid',
+    canActivate: [workspaceGuard],
+    component: WorkspaceScreen,
+    children: [{ path: ':nodeId', component: WorkspaceScreen }],
+  },
   { path: '**', redirectTo: '' },
 ];

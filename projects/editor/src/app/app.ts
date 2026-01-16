@@ -17,6 +17,9 @@ export class App {
   protected readonly isElectronRuntime: boolean = !!window.electron;
 
   constructor() {
+    const titleBarHeight: string = this.isElectronRuntime ? '36px' : '0px';
+    this.document.documentElement.style.setProperty('--p-title-bar-h', titleBarHeight);
+
     effect((): void => {
       const html: HTMLElement = this.document.documentElement;
       const isDark: boolean = this.editorState.state().theme === EDITOR_THEME.DARK;

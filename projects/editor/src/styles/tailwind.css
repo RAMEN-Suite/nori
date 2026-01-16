@@ -5,7 +5,8 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --toolbar-h: 36px;
+  --p-title-bar-h: 0px;
+  --p-tool-bar-h: 0px;
 }
 
 html, body {
@@ -20,7 +21,7 @@ body {
 }
 
 .main-window {
-  height: calc(100dvh - var(--toolbar-h));
+  height: calc(100dvh - var(--p-title-bar-h) - var(--p-tool-bar-h));
   overflow: hidden;
 }
 
