@@ -8,4 +8,7 @@ export const REGEXP = {
 
   // GCore Identifier camelCase
   isValidId: /^[a-z_][A-Za-z0-9_.\\-]*$/,
+
+  // GCore Relation RELATION_WITH
+  isValidRelation: /^[A-Z][A-Z0-9_]*$/,
 };

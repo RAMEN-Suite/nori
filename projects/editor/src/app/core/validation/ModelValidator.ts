@@ -1,4 +1,4 @@
-import { StrictDomainValidator, StrictValidateOptions } from './StrictDomainValidator';
+import SemanticValidator, { ValidationOptions } from './SemanticValidator';
 import { Diagnostic, DiagnosticPath, DiagnosticReport, Diagnostics } from './container/Diagnostics';
 import { SchemaValidator } from './SchemaValidator';
 import { VALIDATION_ERROR } from '../const/VALIDATION_ERROR';
@@ -12,7 +12,7 @@ export interface ValidationResult {
 }
 
 export class ModelValidator {
-  private readonly strict: StrictDomainValidator = new StrictDomainValidator();
+  private readonly strict: SemanticValidator = new SemanticValidator();
 
   public validate(base: unknown, derived: unknown): ValidationResult {
     const diagnostics: Diagnostic[] = [];
@@ -21,7 +21,7 @@ export class ModelValidator {
     this.validateSchema('DERIVED', derived, diagnostics);
     if (diagnostics.length > 0) return { diagnostics, hasErrors: true };
 
-    const options: StrictValidateOptions = { baseId: base.id };
+    const options: ValidationOptions = { baseId: base.id };
     const strict: Diagnostic[] = this.strict.validate(base, derived, options);
 
     const all: Diagnostic[] = [...diagnostics, ...strict];

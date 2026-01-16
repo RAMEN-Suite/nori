@@ -1,7 +1,7 @@
 import { Bounds, GAttribute, GDataType, GModel, GNode, GRelation } from '../../../models/GModel';
 import { GModelIndex } from '../container/GModelIndex';
-import { BaseNode, StrictRules } from '../rules/StrictRules';
 import { Builtins, Refs } from '../container/References';
+import { BaseNode, SemanticValidationHelper } from './SemanticValidationHelper';
 
 export interface CreateNodeInput {
   readonly name: string;
@@ -22,12 +22,6 @@ export interface CreateAttributeInput {
 
 export interface CreateDataTypeInput {
   readonly name: string;
-}
-export interface RelationCandidate {
-  readonly baseRelationId: string;
-  readonly baseRelation: GRelation;
-  readonly fromNodeId: string;
-  readonly toNodeId: string;
 }
 
 export class SuggestionHelper {
@@ -57,7 +51,7 @@ export class SuggestionHelper {
     for (const id of Builtins.set.values()) {
       types.push({
         kind: 'GDataType',
-        id: id,
+        id,
         name: id,
         constraints: [],
         ext: {},
@@ -89,8 +83,8 @@ export class SuggestionHelper {
     if (!node) return new Set<string>();
 
     const forbidden: Set<string> = new Set<string>();
-    const superType: BaseNode | null = StrictRules.getSingleBaseSupertype(node, baseId);
 
+    const superType: BaseNode | null = SemanticValidationHelper.getBaseSuperType(node, baseId);
     if (superType) {
       const baseNode: GNode | undefined = baseIndex.nodesById.get(superType.baseNodeId);
       const baseAttributes: GAttribute[] = baseNode?.attributes ?? [];
@@ -115,19 +109,18 @@ export class SuggestionHelper {
     const fromNode: GNode | undefined = derivedIndex.nodesById.get(fromNodeId);
     if (!fromNode) return [];
 
-    const fromSuperType: BaseNode | null = StrictRules.getSingleBaseSupertype(fromNode, baseId);
+    const fromSuperType: BaseNode | null = SemanticValidationHelper.getBaseSuperType(
+      fromNode,
+      baseId,
+    );
     if (!fromSuperType) return [];
 
     const allowed: GRelation[] = [];
-
     for (const relation of baseIndex.relationsById.values()) {
-      if (relation.from.nodeId === fromSuperType.baseNodeId) {
-        allowed.push(relation);
-      }
+      if (relation.from.nodeId === fromSuperType.baseNodeId) allowed.push(relation);
     }
 
-    allowed.sort((a: GRelation, b: GRelation): number => a.name.localeCompare(b.name));
-    return allowed;
+    return allowed.sort((a: GRelation, b: GRelation): number => a.name.localeCompare(b.name));
   }
 
   public listToNodes(
@@ -146,13 +139,12 @@ export class SuggestionHelper {
     const allowed: GNode[] = [];
 
     for (const node of derivedIndex.nodesById.values()) {
-      const superType: BaseNode | null = StrictRules.getSingleBaseSupertype(node, baseId);
+      const superType: BaseNode | null = SemanticValidationHelper.getBaseSuperType(node, baseId);
       if (!superType) continue;
       if (superType.baseNodeId === expectedToBaseId) allowed.push(node);
     }
 
-    allowed.sort((a: GNode, b: GNode): number => a.name.localeCompare(b.name));
-    return allowed;
+    return allowed.sort((a: GNode, b: GNode): number => a.name.localeCompare(b.name));
   }
 
   public filterDerivedNodes(
@@ -164,7 +156,7 @@ export class SuggestionHelper {
     const nodes: GNode[] = [];
 
     for (const node of derivedIndex.nodesById.values()) {
-      const superType: BaseNode | null = StrictRules.getSingleBaseSupertype(node, base.id);
+      const superType: BaseNode | null = SemanticValidationHelper.getBaseSuperType(node, base.id);
       if (!superType) continue;
       if (superType.baseNodeId === baseNodeId) nodes.push(node);
     }
@@ -214,9 +206,38 @@ export class SuggestionHelper {
     const baseRelation: GRelation | undefined = baseIndex.relationsById.get(input.baseRelationId);
     if (!baseRelation) throw new Error(`Base relation not found: ${input.baseRelationId}`);
 
+    const temporaryRelationForIdentifier: GRelation = {
+      kind: 'GRelation',
+      id: '',
+      superTypes: [],
+      name: baseRelation.name,
+      from: {
+        nodeId: input.fromNodeId,
+        role: baseRelation.from.role,
+        bounds: { ...baseRelation.from.bounds },
+        constraints: [],
+        ext: {},
+      },
+      to: {
+        nodeId: input.toNodeId,
+        role: baseRelation.to.role,
+        bounds: { ...baseRelation.to.bounds },
+        constraints: [],
+        ext: {},
+      },
+      isBidirectional: baseRelation.isBidirectional,
+      constraints: [],
+      ext: {},
+    };
+
+    const derivedIdentifier: string =
+      SemanticValidationHelper.expectedRelationId(temporaryRelationForIdentifier) ??
+      `${input.fromNodeId}_${input.baseRelationId}_${input.toNodeId}`;
+
     return {
       kind: 'GRelation',
-      id: Refs.qualify(baseId, input.baseRelationId),
+      id: derivedIdentifier,
+      superTypes: [Refs.qualify(baseId, input.baseRelationId)],
       name: baseRelation.name,
       from: {
         nodeId: input.fromNodeId,
@@ -246,14 +267,18 @@ export class SuggestionHelper {
       .normalize('NFKD')
       .replace(/[\u0300-\u036f]/g, '')
       .split(/[^A-Za-z0-9]+/)
-      .filter(Boolean);
+      .filter((word: string): boolean => word.length > 0);
 
     if (words.length === 0) return '';
-    const [first, ...rest] = words;
+
+    const first: string = words[0].toLowerCase();
+    const rest: string[] = words.slice(1);
 
     return (
-      first.toLowerCase() +
-      rest.map((w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join('')
+      first +
+      rest
+        .map((word: string): string => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .join('')
     );
   }
 }
