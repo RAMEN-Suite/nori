@@ -18,11 +18,11 @@
   "additionalProperties": false,
 
   "properties": {
-    "$schema": { "type": "string", "minLength": 1 },
-    "$id": { "type": "string", "minLength": 1 },
+    "$schema": { "type": "string", "format": "uri" },
+    "$id": { "type": "string", "format": "uri" },
 
     "id": {
-      "type": "string",
+      "$ref": "#/$defs/Id",
       "$comment": "Stable model id (used for imports/versioning; independent of JSON Schema $id)."
     },
     "version": { "$ref": "#/$defs/Version" },
@@ -61,9 +61,9 @@
   "$defs": {
     "Id": {
       "type": "string",
-      "pattern": "^[a-z_][A-Za-z0-9_\\-.]*$",
-      "minLength": 1,
-      "$comment": "Stable local identifier (target of Ref)."
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "minLength": 16,
+      "$comment": "Stable local identifier (short unique id, min 16)."
     },
 
     "Version": {
@@ -72,16 +72,27 @@
       "$comment": "A semantic version number MAJOR.MINOR.PATCH"
     },
 
+    "BuiltinType": {
+      "type": "string",
+      "enum": ["string", "boolean", "number", "integer"],
+      "$comment": "Built-in scalar datatypes."
+    },
+
     "LocalRef": { "$ref": "#/$defs/Id" },
     "QualifiedRef": {
       "type": "string",
-      "pattern": "^[a-z_][A-Za-z0-9_\\-]*:[a-z_][A-Za-z0-9_\\-:.]*$",
-      "minLength": 3,
-      "$comment": "Reference into an imported model: 'modelId:id'."
+      "pattern": "^[A-Za-z0-9_-]{16,}:[A-Za-z0-9_-]{16,}$",
+      "minLength": 33,
+      "$comment": "Reference into an imported model: 'modelId:id' (both min 16)."
     },
+
     "Ref": {
       "oneOf": [{ "$ref": "#/$defs/LocalRef" }, { "$ref": "#/$defs/QualifiedRef" }],
       "$comment": "Reference to a local id or imported element."
+    },
+    "TypeRef": {
+      "oneOf": [{ "$ref": "#/$defs/BuiltinType" }, { "$ref": "#/$defs/Ref" }],
+      "$comment": "Datatype reference: either builtin scalar or model/import reference."
     },
 
     "Import": {
@@ -133,10 +144,11 @@
 
     "GConstraint": {
       "type": "object",
-      "required": ["language", "expression"],
+      "required": ["name", "id", "language", "expression"],
       "additionalProperties": false,
       "properties": {
         "id": { "$ref": "#/$defs/Id" },
+        "name": { "type": "string" },
 
         "language": { "$ref": "#/$defs/ConstraintLanguage" },
         "expression": {
@@ -213,7 +225,7 @@
       "required": ["kind", "id", "name"],
       "properties": {
         "kind": { "const": "GDataType" },
-        "id": { "$ref": "#/$defs/Ref" },
+        "id": { "$ref": "#/$defs/Id" },
         "name": { "type": "string", "minLength": 1 },
 
         "literals": {
@@ -274,7 +286,7 @@
         "name": { "type": "string", "minLength": 1 },
 
         "typeId": {
-          "$ref": "#/$defs/Ref",
+          "$ref": "#/$defs/TypeRef",
           "$comment": "Declared datatype reference (builtins handled by tool logic)."
         },
 

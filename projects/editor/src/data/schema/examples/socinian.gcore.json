@@ -2,7 +2,7 @@
   "$schema": "https://ramen-schema.org/gcore/1.0.0/schema.json",
   "$id": "https://sozinianer.de/schema.json",
 
-  "id": "socinian_correspondence",
+  "id": "H9vQ2mL7pR0sT6yK1nB3",
   "version": "1.0.0",
 
   "kind": "GModel",
@@ -11,127 +11,129 @@
   "imports": [
     {
       "schemaId": "https://ramen-schema.org/ramen/1.0.0/schema.json",
-      "modelId": "ramen"
+      "modelId": "lW611f30a2ky4276g3l8N"
     }
   ],
 
   "classifiers": [
     {
       "kind": "GNode",
-      "id": "corpus",
+      "id": "gH2k9Lm0Pq7Rs1Tu8Vw3",
       "name": "Corpus",
-      "superTypes": ["ramen:collection"],
+      "superTypes": ["lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"],
       "attributes": []
     },
     {
       "kind": "GNode",
-      "id": "communication",
+      "id": "pL8nV1qR6tY2uZ9wBaP3",
       "name": "Communication",
-      "superTypes": ["ramen:collection"],
+      "superTypes": ["lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"],
       "attributes": []
     },
     {
       "kind": "GNode",
-      "id": "letter",
+      "id": "sT6yK1nB3xV7pQ2L9mR0",
       "name": "Letter",
-      "superTypes": ["ramen:collection"],
+      "superTypes": ["lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"],
       "attributes": []
     },
     {
       "kind": "GNode",
-      "id": "abstract",
+      "id": "xQ4nZ6mR2s9pL1vK7tY0",
       "name": "Abstract",
-      "superTypes": ["ramen:collection"],
+      "superTypes": ["lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"],
       "attributes": []
     },
     {
       "kind": "GNode",
-      "id": "variant",
+      "id": "aL7vQ9pX4sN1cDzK0mT3",
       "name": "Variant",
-      "superTypes": ["ramen:collection"],
+      "superTypes": ["lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"],
       "attributes": []
     },
     {
       "kind": "GNode",
-      "id": "attachment",
+      "id": "vK0pX4sN1cDzK0mT3aL7",
       "name": "Attachment",
-      "superTypes": ["ramen:collection"],
+      "superTypes": ["lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"],
       "attributes": []
     },
     {
       "kind": "GNode",
-      "id": "document",
+      "id": "cDzK0mT3aL7vQ9pX4sN1",
       "name": "Document",
-      "superTypes": ["ramen:collection"],
+      "superTypes": ["lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"],
       "attributes": []
     },
     {
       "kind": "GNode",
-      "id": "figure",
+      "id": "mQ8vR5p0Yt7W2nK9xL1m",
       "name": "Figure",
-      "superTypes": ["ramen:collection"],
+      "superTypes": ["lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"],
       "attributes": []
     },
     {
       "kind": "GNode",
-      "id": "witness",
+      "id": "R5p0Yt7W2nK9xL1mQ8vR",
       "name": "Witness",
-      "superTypes": ["ramen:collection"],
+      "superTypes": ["lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"],
       "attributes": []
     },
+
     {
       "kind": "GNode",
-      "id": "place",
+      "id": "K9xL1mQ8vR5p0Yt7W2nK",
       "name": "Place",
-      "superTypes": ["ramen:entity"],
+      "superTypes": ["lW611f30a2ky4276g3l8N:n7Vb2Qx0Lm9P3sT6yK1h"],
       "attributes": [
         { "name": "geo", "typeId": "string", "bounds": { "lowerBound": 0, "upperBound": 1 } }
       ]
     },
     {
       "kind": "GNode",
-      "id": "organisation",
+      "id": "tN1yK7rB3m2Xv8qL0sP6",
       "name": "Organisation",
-      "superTypes": ["ramen:entity"],
+      "superTypes": ["lW611f30a2ky4276g3l8N:n7Vb2Qx0Lm9P3sT6yK1h"],
       "attributes": [
         { "name": "externalId", "typeId": "string", "bounds": { "lowerBound": 0, "upperBound": 1 } }
       ]
     },
     {
       "kind": "GNode",
-      "id": "person",
+      "id": "yK7rB3m2Xv8qL0sP6tN1",
       "name": "Person",
-      "superTypes": ["ramen:entity"],
+      "superTypes": ["lW611f30a2ky4276g3l8N:n7Vb2Qx0Lm9P3sT6yK1h"],
       "attributes": [
         { "name": "externalId", "typeId": "string", "bounds": { "lowerBound": 0, "upperBound": 1 } }
       ]
     },
+
     {
       "kind": "GNode",
-      "id": "annotation",
+      "id": "uZ9wBaP3xK8nV1qR6tY2",
       "name": "Annotation",
-      "superTypes": ["ramen:annotation"],
+      "superTypes": ["lW611f30a2ky4276g3l8N:m2Xv8qL0sP6tN1yK7rB3"],
       "attributes": []
     },
     {
       "kind": "GNode",
-      "id": "text",
+      "id": "bN3xV7pQ2xL9mR0sT6yK",
       "name": "Text",
-      "superTypes": ["ramen:text"],
+      "superTypes": ["lW611f30a2ky4276g3l8N:Z4kq1M8sV0bN2xR7pT6u"],
       "attributes": []
     },
     {
       "kind": "GNode",
-      "id": "postcard",
+      "id": "pX4sN1cDzK0mT3aL7vQ9",
       "name": "Postcard",
-      "superTypes": ["ramen:image"],
+      "superTypes": ["lW611f30a2ky4276g3l8N:cR5p0Yt7W2nK9xL1mQ8v"],
       "attributes": []
     },
     {
       "kind": "GNode",
-      "id": "image",
+      "id": "L1mQ8vR5p0Yt7W2nK9xL",
       "name": "Image",
-      "superTypes": ["ramen:image"],
+      "superTypes": ["lW611f30a2ky4276g3l8N:cR5p0Yt7W2nK9xL1mQ8v"],
       "attributes": []
     }
   ],
@@ -139,128 +141,80 @@
   "relations": [
     {
       "kind": "GRelation",
-      "id": "communication_partOf_corpus",
-      "superTypes": ["ramen:collection_partOf_collection"],
+      "id": "hQ8vR5p0Yt7W2nK9xL1m",
+      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
       "name": "PART_OF",
       "from": {
-        "nodeId": "communication",
+        "nodeId": "pL8nV1qR6tY2uZ9wBaP3",
         "role": "children",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       },
       "to": {
-        "nodeId": "corpus",
+        "nodeId": "gH2k9Lm0Pq7Rs1Tu8Vw3",
         "role": "parents",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       }
     },
     {
       "kind": "GRelation",
-      "id": "letter_partOf_communication",
-      "superTypes": ["ramen:collection_partOf_collection"],
+      "id": "mR2s9pL1vK7tY0xQ4nZ6",
+      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
       "name": "PART_OF",
       "from": {
-        "nodeId": "letter",
+        "nodeId": "sT6yK1nB3xV7pQ2L9mR0",
         "role": "children",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       },
       "to": {
-        "nodeId": "communication",
+        "nodeId": "pL8nV1qR6tY2uZ9wBaP3",
         "role": "parents",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       }
     },
     {
       "kind": "GRelation",
-      "id": "abstract_partOf_letter",
-      "superTypes": ["ramen:collection_partOf_collection"],
+      "id": "nB3xK8pQ2yT6vL9mR0s9",
+      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
       "name": "PART_OF",
       "from": {
-        "nodeId": "abstract",
+        "nodeId": "xQ4nZ6mR2s9pL1vK7tY0",
         "role": "children",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       },
       "to": {
-        "nodeId": "letter",
+        "nodeId": "sT6yK1nB3xV7pQ2L9mR0",
         "role": "parents",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       }
     },
     {
       "kind": "GRelation",
-      "id": "abstract_partOf_document",
-      "superTypes": ["ramen:collection_partOf_collection"],
+      "id": "pQ2xL9mR0sT6yK1nB3xV",
+      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
       "name": "PART_OF",
       "from": {
-        "nodeId": "abstract",
+        "nodeId": "xQ4nZ6mR2s9pL1vK7tY0",
         "role": "children",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       },
       "to": {
-        "nodeId": "document",
+        "nodeId": "cDzK0mT3aL7vQ9pX4sN1",
         "role": "parents",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       }
     },
     {
       "kind": "GRelation",
-      "id": "abstract_partOf_figure",
-      "superTypes": ["ramen:collection_partOf_collection"],
+      "id": "v8qL0sP6tN1yK7rB3m2X",
+      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
       "name": "PART_OF",
       "from": {
-        "nodeId": "abstract",
+        "nodeId": "xQ4nZ6mR2s9pL1vK7tY0",
         "role": "children",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       },
       "to": {
-        "nodeId": "figure",
-        "role": "parents",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      }
-    },
-    {
-      "kind": "GRelation",
-      "id": "attachment_partOf_communication",
-      "superTypes": ["ramen:collection_partOf_collection"],
-      "name": "PART_OF",
-      "from": {
-        "nodeId": "attachment",
-        "role": "children",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      },
-      "to": {
-        "nodeId": "communication",
-        "role": "parents",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      }
-    },
-    {
-      "kind": "GRelation",
-      "id": "document_partOf_attachment",
-      "superTypes": ["ramen:collection_partOf_collection"],
-      "name": "PART_OF",
-      "from": {
-        "nodeId": "document",
-        "role": "children",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      },
-      "to": {
-        "nodeId": "attachment",
-        "role": "parents",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      }
-    },
-    {
-      "kind": "GRelation",
-      "id": "figure_partOf_attachment",
-      "superTypes": ["ramen:collection_partOf_collection"],
-      "name": "PART_OF",
-      "from": {
-        "nodeId": "figure",
-        "role": "children",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      },
-      "to": {
-        "nodeId": "attachment",
+        "nodeId": "mQ8vR5p0Yt7W2nK9xL1m",
         "role": "parents",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       }
@@ -268,64 +222,48 @@
 
     {
       "kind": "GRelation",
-      "id": "witness_partOf_document",
-      "superTypes": ["ramen:collection_partOf_collection"],
+      "id": "K1nB3xV7pQ2L9mR0sT6y",
+      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
       "name": "PART_OF",
       "from": {
-        "nodeId": "witness",
+        "nodeId": "vK0pX4sN1cDzK0mT3aL7",
         "role": "children",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       },
       "to": {
-        "nodeId": "document",
+        "nodeId": "pL8nV1qR6tY2uZ9wBaP3",
         "role": "parents",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       }
     },
     {
       "kind": "GRelation",
-      "id": "witness_partOf_letter",
-      "superTypes": ["ramen:collection_partOf_collection"],
+      "id": "T6yK1nB3xV7pQ2L9mR0s",
+      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
       "name": "PART_OF",
       "from": {
-        "nodeId": "witness",
+        "nodeId": "cDzK0mT3aL7vQ9pX4sN1",
         "role": "children",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       },
       "to": {
-        "nodeId": "letter",
+        "nodeId": "vK0pX4sN1cDzK0mT3aL7",
         "role": "parents",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       }
     },
     {
       "kind": "GRelation",
-      "id": "witness_partOf_figure",
-      "superTypes": ["ramen:collection_partOf_collection"],
+      "id": "pL1vK7tY0xQ4nZ6mR2s9",
+      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
       "name": "PART_OF",
       "from": {
-        "nodeId": "witness",
+        "nodeId": "mQ8vR5p0Yt7W2nK9xL1m",
         "role": "children",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       },
       "to": {
-        "nodeId": "figure",
-        "role": "parents",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      }
-    },
-    {
-      "kind": "GRelation",
-      "id": "variant_partOf_witness",
-      "superTypes": ["ramen:collection_partOf_collection"],
-      "name": "PART_OF",
-      "from": {
-        "nodeId": "variant",
-        "role": "children",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      },
-      "to": {
-        "nodeId": "witness",
+        "nodeId": "vK0pX4sN1cDzK0mT3aL7",
         "role": "parents",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       }
@@ -333,64 +271,130 @@
 
     {
       "kind": "GRelation",
-      "id": "letter_partOf_attachment",
-      "superTypes": ["ramen:collection_partOf_collection"],
+      "id": "xL1mQ8vR5p0Yt7W2nK9",
+      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
       "name": "PART_OF",
       "from": {
-        "nodeId": "letter",
+        "nodeId": "R5p0Yt7W2nK9xL1mQ8vR",
         "role": "children",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       },
       "to": {
-        "nodeId": "attachment",
+        "nodeId": "cDzK0mT3aL7vQ9pX4sN1",
         "role": "parents",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       }
     },
     {
       "kind": "GRelation",
-      "id": "text_partOf_variant",
-      "superTypes": ["ramen:text_partOf_collection"],
+      "id": "mT3aL7vQ9pX4sN1cDzK0",
+      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
       "name": "PART_OF",
       "from": {
-        "nodeId": "text",
+        "nodeId": "R5p0Yt7W2nK9xL1mQ8vR",
+        "role": "children",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      },
+      "to": {
+        "nodeId": "sT6yK1nB3xV7pQ2L9mR0",
+        "role": "parents",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      }
+    },
+    {
+      "kind": "GRelation",
+      "id": "Q9pX4sN1cDzK0mT3aL7v",
+      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
+      "name": "PART_OF",
+      "from": {
+        "nodeId": "R5p0Yt7W2nK9xL1mQ8vR",
+        "role": "children",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      },
+      "to": {
+        "nodeId": "mQ8vR5p0Yt7W2nK9xL1m",
+        "role": "parents",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      }
+    },
+    {
+      "kind": "GRelation",
+      "id": "kL0sP6tN1yK7rB3m2Xv8",
+      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
+      "name": "PART_OF",
+      "from": {
+        "nodeId": "aL7vQ9pX4sN1cDzK0mT3",
+        "role": "children",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      },
+      "to": {
+        "nodeId": "R5p0Yt7W2nK9xL1mQ8vR",
+        "role": "parents",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      }
+    },
+
+    {
+      "kind": "GRelation",
+      "id": "rB3m2Xv8qL0sP6tN1yK7",
+      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
+      "name": "PART_OF",
+      "from": {
+        "nodeId": "sT6yK1nB3xV7pQ2L9mR0",
+        "role": "children",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      },
+      "to": {
+        "nodeId": "vK0pX4sN1cDzK0mT3aL7",
+        "role": "parents",
+        "bounds": { "lowerBound": 0, "upperBound": -1 }
+      }
+    },
+
+    {
+      "kind": "GRelation",
+      "id": "zK0mT3aL7vQ9pX4sN1cD",
+      "superTypes": ["lW611f30a2ky4276g3l8N:K0mT3aL7vQ9pX4sN1cDz"],
+      "name": "PART_OF",
+      "from": {
+        "nodeId": "bN3xV7pQ2xL9mR0sT6yK",
         "role": "texts",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       },
       "to": {
-        "nodeId": "variant",
+        "nodeId": "aL7vQ9pX4sN1cDzK0mT3",
         "role": "collections",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       }
     },
     {
       "kind": "GRelation",
-      "id": "text_partOf_abstract",
-      "superTypes": ["ramen:text_partOf_collection"],
+      "id": "cDzK0mT3aL7vQ9pX4sN9",
+      "superTypes": ["lW611f30a2ky4276g3l8N:K0mT3aL7vQ9pX4sN1cDz"],
       "name": "PART_OF",
       "from": {
-        "nodeId": "text",
+        "nodeId": "bN3xV7pQ2xL9mR0sT6yK",
         "role": "texts",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       },
       "to": {
-        "nodeId": "abstract",
+        "nodeId": "xQ4nZ6mR2s9pL1vK7tY0",
         "role": "collections",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       }
     },
     {
       "kind": "GRelation",
-      "id": "text_partOf_corpus",
-      "superTypes": ["ramen:text_partOf_collection"],
+      "id": "pX4sN1cDzK0mT3aL7vQ8",
+      "superTypes": ["lW611f30a2ky4276g3l8N:K0mT3aL7vQ9pX4sN1cDz"],
       "name": "PART_OF",
       "from": {
-        "nodeId": "text",
+        "nodeId": "bN3xV7pQ2xL9mR0sT6yK",
         "role": "texts",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       },
       "to": {
-        "nodeId": "corpus",
+        "nodeId": "gH2k9Lm0Pq7Rs1Tu8Vw3",
         "role": "collections",
         "bounds": { "lowerBound": 0, "upperBound": -1 }
       }
