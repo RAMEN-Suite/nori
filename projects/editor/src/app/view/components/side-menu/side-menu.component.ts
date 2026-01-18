@@ -5,7 +5,7 @@ import {
   OnInit,
   Signal,
   signal,
-  ViewChild,
+  viewChild,
   WritableSignal,
 } from '@angular/core';
 import { WorkspaceService } from '../../../services/workspace.service';
@@ -21,8 +21,7 @@ import { ContextMenu } from 'primeng/contextmenu';
 import { FormsModule } from '@angular/forms';
 import { ValidationResult } from '../../../core/validation/ModelValidator';
 import { MenuItem } from 'primeng/api';
-import { RouterLink } from '@angular/router';
-import { injectDeepParams } from '../../../utils/injectDeepParams';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-side-menu',
@@ -36,7 +35,6 @@ import { injectDeepParams } from '../../../utils/injectDeepParams';
     Tooltip,
     ContextMenu,
     FormsModule,
-    RouterLink,
   ],
   providers: [RouterLink],
   templateUrl: './side-menu.component.html',
@@ -44,14 +42,15 @@ import { injectDeepParams } from '../../../utils/injectDeepParams';
 })
 export class SideMenuComponent implements OnInit {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
-  private readonly routerLink: RouterLink = inject(RouterLink);
+  protected readonly router: Router = inject(Router);
+  protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
 
+  protected readonly searchInput: WritableSignal<string> = signal('');
   protected staticContextMenu: MenuItem[] = [];
-  protected selectedContextItem: MenuItem | undefined;
 
   protected readonly contextMenu: WritableSignal<MenuItem[]> = signal([]);
-  protected readonly searchInput: WritableSignal<string> = signal('');
-  protected readonly selectedMenuItemId: Signal<string | null> = injectDeepParams('nodeId');
+  protected readonly selectedContextItem: WritableSignal<MenuItem | null> = signal(null);
+  protected readonly contextMenuRef: Signal<ContextMenu | undefined> = viewChild('contextMenuRef');
 
   protected readonly sideMenuItems: Signal<MenuItem[]> = computed((): MenuItem[] => {
     return this.createSideMenu();
@@ -74,8 +73,6 @@ export class SideMenuComponent implements OnInit {
     return erroredSet;
   });
 
-  @ViewChild('contextMenuRef') contextMenuRef: ContextMenu | undefined;
-
   public ngOnInit(): void {
     this.staticContextMenu = [
       {
@@ -95,11 +92,12 @@ export class SideMenuComponent implements OnInit {
   }
 
   private createSideMenu(): MenuItem[] {
+    const errored: ReadonlySet<string> = this.erroredRefs();
     const baseNodes: GNode[] = this.workspace.baseNodes();
     const menuItems: MenuItem[] = [];
 
     for (const node of baseNodes) {
-      const subMenu: MenuItem[] = this.createSubMenu(node.id);
+      const subMenu: MenuItem[] = this.createSubMenu(node.id, errored);
 
       menuItems.push({
         id: node.id,
@@ -115,16 +113,16 @@ export class SideMenuComponent implements OnInit {
     return menuItems;
   }
 
-  private createSubMenu(baseId: string): MenuItem[] {
+  private createSubMenu(baseId: string, errored: ReadonlySet<string>): MenuItem[] {
     const derivedNodes: GNode[] = this.workspace.filterDerivedNodes(baseId)();
-    const errored: ReadonlySet<string> = this.erroredRefs();
+    const currentItemId: string | null = this.workspace.selectedDerivedNodeId();
 
     return derivedNodes.map((derived: GNode): MenuItem => {
       return {
         id: derived.id,
         label: derived.name,
         parentId: baseId,
-        isActive: this.selectedMenuItemId() === derived.id,
+        isActive: currentItemId && currentItemId === derived.id,
         hasErrors: this.nodeHasErrors(derived.id, errored),
       };
     });
@@ -160,8 +158,13 @@ export class SideMenuComponent implements OnInit {
     });
   }
 
+  protected async handleSelectPanelItem(item: MenuItem): Promise<void> {
+    this.workspace.setDerivedNodeId(item.id ?? '');
+    void this.router.navigate([item.id], { relativeTo: this.activatedRoute });
+  }
+
   protected handleContextMenu($event: Event, clickedItem: MenuItem): void {
-    this.selectedContextItem = clickedItem;
+    this.selectedContextItem.set(clickedItem);
 
     this.contextMenu.set(
       this.staticContextMenu.map(
@@ -172,6 +175,6 @@ export class SideMenuComponent implements OnInit {
       ),
     );
 
-    this.contextMenuRef?.show($event);
+    this.contextMenuRef()?.show($event);
   }
 }

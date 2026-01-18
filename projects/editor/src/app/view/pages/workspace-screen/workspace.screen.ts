@@ -4,20 +4,32 @@ import { ToolBarComponent } from '../../components/bars/tool-bar/tool-bar.compon
 import { StorageService } from '../../../services/storage.service';
 import { Manifest } from '../../../models/Manifest';
 import { SideMenuComponent } from '../../components/side-menu/side-menu.component';
+import { VisualizerComponent } from '../../components/visualizations/visualizer/visualizer.component';
+import { ActivatedRoute, ParamMap } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { WorkspaceService } from '../../../services/workspace.service';
 
 @Component({
   selector: 'app-workspace',
-  imports: [ToolBarComponent, SideMenuComponent],
+  imports: [ToolBarComponent, SideMenuComponent, VisualizerComponent],
   templateUrl: './workspace.screen.html',
   styleUrl: './workspace.screen.scss',
 })
 export class WorkspaceScreen implements OnInit {
-  private readonly windowState: WindowState = inject(WindowState);
-  private readonly storage: StorageService = inject(StorageService);
-  private readonly workspace: WorkspaceService = inject(WorkspaceService);
+  protected readonly workspace: WorkspaceService = inject(WorkspaceService);
+  protected readonly windowState: WindowState = inject(WindowState);
+  protected readonly storage: StorageService = inject(StorageService);
+
+  protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
+  protected readonly activatedRouteSubscription$: Subscription | undefined;
 
   constructor() {
+    this.activatedRouteSubscription$ = this.activatedRoute.firstChild?.paramMap.subscribe(
+      (map: ParamMap): void => {
+        this.workspace.setDerivedNodeId(map.get('nodeId') ?? '');
+      },
+    );
+
     effect((): void => {
       const manifest: Manifest | null = this.storage.selectedManifest();
       this.windowState.setTitle(manifest?.name ?? '', 'pi pi-pen-to-square');

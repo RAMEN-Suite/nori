@@ -31,10 +31,12 @@
           } @else {
             <div
               pRipple
+              tabindex="0"
               class="px-1 py-1.5"
               [class.active]="item.isActive"
               (contextmenu)="handleContextMenu($event, item)"
-              [routerLink]="[item.id]"
+              (click)="handleSelectPanelItem(item)"
+              (keydown.enter)="handleSelectPanelItem(item)"
             >
               @if (!item.hasErrors) {
                 <span class="flex items-center gap-3 select-none">

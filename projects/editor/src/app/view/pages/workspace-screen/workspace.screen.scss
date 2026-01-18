@@ -4,3 +4,17 @@
   animation-duration: 0.75s;
   animation-fill-mode: both;
 }
+
+.visualizer-entrance {
+  animation: slideInRight;
+  animation-delay: 0.5s;
+  animation-duration: 0.75s;
+  animation-fill-mode: both;
+}
+
+.content-entrance {
+  animation: fadeIn;
+  animation-delay: 1.25s;
+  animation-duration: 0.75s;
+  animation-fill-mode: both;
+}

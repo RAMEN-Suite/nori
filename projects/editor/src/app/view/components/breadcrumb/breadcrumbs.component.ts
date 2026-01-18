@@ -3,8 +3,9 @@ import {
   effect,
   inject,
   OnInit,
+  Signal,
   signal,
-  ViewChild,
+  viewChild,
   WritableSignal,
 } from '@angular/core';
 import { Breadcrumb } from 'primeng/breadcrumb';
@@ -33,10 +34,10 @@ export class BreadcrumbsComponent implements OnInit {
   protected dialogRef: DynamicDialogRef | null = inject(DynamicDialogRef);
 
   protected breadcrumb: WritableSignal<MenuItem[]> = signal([]);
-  protected contextMenu: MenuItem[] = [];
-  protected selectedItem: MenuItem | undefined;
+  protected selectedMenuItem: WritableSignal<MenuItem | null> = signal(null);
 
-  @ViewChild('contextMenuRef') contextMenuRef: ContextMenu | undefined;
+  protected contextMenuRef: Signal<ContextMenu | undefined> = viewChild('contextMenuRef');
+  protected contextMenu: MenuItem[] = [];
 
   constructor() {
     effect((): void => {
@@ -79,7 +80,7 @@ export class BreadcrumbsComponent implements OnInit {
     const lastItem: MenuItem = { icon: 'pi pi-plus', isFirst: false, isLast: true };
 
     const modelLayers: MenuItem[] = [];
-    for (const [slot, model] of models) {
+    for (const [slot, _] of models) {
       if (slot === 0) continue;
 
       modelLayers.push({
@@ -103,18 +104,18 @@ export class BreadcrumbsComponent implements OnInit {
   }
 
   protected handleChangeModelSlot(slot: number): void {
-    this.workspace.selectDerivedSlot(slot);
+    this.workspace.setDerivedSlot(slot);
   }
 
   protected handleContextMenu($event: Event, item: MenuItem): void {
-    this.selectedItem = item;
-    this.contextMenuRef?.show($event);
+    this.selectedMenuItem.set(item);
+    this.contextMenuRef()?.show($event);
   }
 
   protected async handleDeleteModel(): Promise<void> {
     const projectId: string | null = this.storage.selectedProjectId();
     if (!projectId) return;
 
-    await this.storage.deleteSlot(projectId, this.selectedItem?.automationId);
+    await this.storage.deleteSlot(projectId, this.selectedMenuItem()?.automationId);
   }
 }

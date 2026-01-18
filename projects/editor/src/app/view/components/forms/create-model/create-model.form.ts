@@ -30,7 +30,7 @@ import { DynamicDialogRef } from 'primeng/dynamicdialog';
 export class CreateModelForm {
   protected readonly workspaceState: WorkspaceState = inject(WorkspaceState);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
-  private readonly dialogRef: DynamicDialogRef = inject(DynamicDialogRef);
+  protected readonly dialogRef: DynamicDialogRef = inject(DynamicDialogRef);
 
   protected newModel: CreateModelInput;
   protected isSubmitted: boolean = false;

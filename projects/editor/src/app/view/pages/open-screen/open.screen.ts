@@ -34,9 +34,9 @@ import { DatePipe } from '@angular/common';
   styleUrl: './open.screen.scss',
 })
 export class OpenScreen implements OnInit {
-  private readonly windowState: WindowState = inject(WindowState);
-  private readonly storage: StorageService = inject(StorageService);
-  private readonly confirmation: ConfirmationService = inject(ConfirmationService);
+  protected readonly windowState: WindowState = inject(WindowState);
+  protected readonly storage: StorageService = inject(StorageService);
+  protected readonly confirmation: ConfirmationService = inject(ConfirmationService);
 
   protected readonly searchInput: WritableSignal<string> = signal('');
   protected readonly filteredManifest: Signal<Manifest[]> = computed((): Manifest[] => {
@@ -67,12 +67,12 @@ export class OpenScreen implements OnInit {
         label: 'Cancel',
         size: 'small',
         variant: 'outlined',
-        severity: 'danger',
       },
       acceptButtonProps: {
         label: 'Yes, I want to delete my project',
         size: 'small',
         variant: 'outlined',
+        severity: 'danger',
       },
       accept: (): void => void this.storage.deleteProject(manifest.projectId),
     });

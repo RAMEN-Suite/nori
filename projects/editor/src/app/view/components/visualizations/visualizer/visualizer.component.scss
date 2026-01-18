@@ -1,0 +1,17 @@
+p-menubar {
+  border-radius: 0;
+  border-left: 0;
+  border-right: 0;
+  border-bottom: 0;
+  border-top: 1px solid var(--p-menubar-border-color);
+
+  font-size: 10pt !important;
+
+  i {
+    font-size: 9pt !important;
+  }
+}
+
+p-divider {
+  padding: 0;
+}

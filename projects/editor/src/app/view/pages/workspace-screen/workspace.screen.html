@@ -7,8 +7,13 @@
   >
     <app-side-menu class="basis-full" />
   </div>
-  <div class="flex flex-5 border-(--p-menubar-border-color)">
-    <div class="basis-full"></div>
+  <div class="flex flex-5 items-center justify-center" animate.enter="content-entrance">
+    <div class="text-center">sample text</div>
   </div>
-  <div class="flex flex-4"></div>
+  <div
+    class="flex flex-5 border-l border-(--p-menubar-border-color) bg-(--p-menubar-background)/40"
+    animate.enter="visualizer-entrance"
+  >
+    <app-visualizer class="basis-full" />
+  </div>
 </main>

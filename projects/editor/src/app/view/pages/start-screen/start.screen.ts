@@ -32,9 +32,9 @@ import { CreateManifest, StorageService } from '../../../services/storage.servic
   styleUrl: './start.screen.scss',
 })
 export class StartScreen {
-  private readonly windowState: WindowState = inject(WindowState);
-  private readonly storage: StorageService = inject(StorageService);
-  private readonly router: Router = inject(Router);
+  protected readonly windowState: WindowState = inject(WindowState);
+  protected readonly storage: StorageService = inject(StorageService);
+  protected readonly router: Router = inject(Router);
 
   protected readonly manifest: CreateManifest;
   protected readonly metamodels: GModel[] = CATALOG;
@@ -77,7 +77,7 @@ export class StartScreen {
     try {
       const example: GModel | undefined = this.isCreatingExample ? EXAMPLES[0] : undefined;
       await this.storage.createProject(this.manifest, this.selectedMetamodel, example);
-      await this.router.navigate(['/ws', this.storage.selectedProjectId()]);
+      void this.router.navigate(['/ws', this.storage.selectedProjectId()]);
     } catch (error: unknown) {
       console.error(error);
       // ToDo: Toast Message

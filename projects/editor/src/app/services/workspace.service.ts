@@ -35,6 +35,7 @@ export class WorkspaceService {
   private readonly suggest: SuggestionHelper = new SuggestionHelper();
   private readonly validator: ModelValidator = new ModelValidator();
 
+  public readonly selectedDerivedNodeId: WritableSignal<string> = signal('');
   public readonly selectedDerivedSlot: WritableSignal<number> = signal(1);
   public readonly activeDraft: WritableSignal<GModel | null> = signal(null);
 
@@ -101,7 +102,7 @@ export class WorkspaceService {
       if (modelsBySlot.size === 0) return;
 
       const slot: number = this.selectedDerivedSlot();
-      if (!modelsBySlot.has(slot)) this.selectDerivedSlot(1);
+      if (!modelsBySlot.has(slot)) this.setDerivedSlot(1);
     });
 
     effect((): void => {
@@ -115,7 +116,11 @@ export class WorkspaceService {
     });
   }
 
-  public selectDerivedSlot(slot: number): void {
+  public setDerivedNodeId(nodeId: string): void {
+    this.selectedDerivedNodeId.set(nodeId);
+  }
+
+  public setDerivedSlot(slot: number): void {
     this.selectedDerivedSlot.set(slot);
   }
 

@@ -15,7 +15,7 @@ export class HomeScreen implements OnInit {
   protected readonly environment = environment;
   protected readonly EDITOR_THEME = EDITOR_THEME;
 
-  private readonly windowState: WindowState = inject(WindowState);
+  protected readonly windowState: WindowState = inject(WindowState);
   protected readonly editorState: EditorState = inject(EditorState);
 
   public ngOnInit(): void {
