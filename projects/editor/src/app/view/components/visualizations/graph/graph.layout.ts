@@ -24,17 +24,17 @@ export function buildRenderModel(input: GraphInputModel): RenderModel {
     nodes.map((node: PositionedNode): [string, PositionedNode] => [node.id, node]),
   );
 
-  const visible: { nodes: PositionedNode[]; links: ResolvedLink[] } = applyVisibility(
+  const visibleModel: { nodes: PositionedNode[]; links: ResolvedLink[] } = applyVisibility(
     nodes,
     links,
     input.settings,
   );
 
-  applyLayout(visible.nodes, visible.links, input.viewport, input.settings);
+  applyLayout(visibleModel.nodes, visibleModel.links, input.viewport, input.settings);
 
   return {
-    nodes: visible.nodes,
-    links: visible.links,
+    nodes: visibleModel.nodes,
+    links: visibleModel.links,
     nodesById,
   };
 }
@@ -89,13 +89,13 @@ function applyVisibility(
 
   const degreesByNodeId: Map<string, number> = computeDegrees(nodes, links);
   const visibleNodes: PositionedNode[] = nodes.filter(
-    (node: PositionedNode) => (degreesByNodeId.get(node.id) ?? 0) > 0,
+    (node: PositionedNode): boolean => (degreesByNodeId.get(node.id) ?? 0) > 0,
   );
-
-  const visibleNodeIds: Set<string> = new Set(visibleNodes.map((node: PositionedNode) => node.id));
-
+  const visibleNodeIds: Set<string> = new Set(
+    visibleNodes.map((node: PositionedNode): string => node.id),
+  );
   const visibleLinks: ResolvedLink[] = links.filter(
-    (link: ResolvedLink) =>
+    (link: ResolvedLink): boolean =>
       visibleNodeIds.has(link.source.id) && visibleNodeIds.has(link.target.id),
   );
 
@@ -110,13 +110,14 @@ function applyLayout(
 ): void {
   const degreesByNodeId: Map<string, number> = computeDegrees(nodes, links);
 
-  const isolatedNodes: PositionedNode[] = nodes.filter(
-    (node: PositionedNode) => (degreesByNodeId.get(node.id) ?? 0) === 0,
-  );
+  const connectedNodes: PositionedNode[] = [];
+  const isolatedNodes: PositionedNode[] = [];
 
-  const connectedNodes: PositionedNode[] = nodes.filter(
-    (node: PositionedNode) => (degreesByNodeId.get(node.id) ?? 0) > 0,
-  );
+  for (const node of nodes) {
+    const degree: number = degreesByNodeId.get(node.id) ?? 0;
+    if (degree > 0) connectedNodes.push(node);
+    else isolatedNodes.push(node);
+  }
 
   const isolatedArea: { reservedHeight: number } = computeIsolatedArea(
     isolatedNodes.length,
@@ -125,10 +126,8 @@ function applyLayout(
   );
 
   applyConnectedLayout(connectedNodes, links, viewport, settings, isolatedArea);
-
-  if (!settings.areIsolatedNodesHidden) {
-    applyIsolatedLayout(isolatedNodes, viewport, settings, isolatedArea);
-  }
+  if (settings.areIsolatedNodesHidden) return;
+  applyIsolatedLayout(isolatedNodes, viewport, settings, isolatedArea);
 }
 
 function computeIsolatedArea(
@@ -158,7 +157,6 @@ function applyConnectedLayout(
   const hierarchyRoot: d3.HierarchyNode<HierarchyDatum> = buildHierarchyForest(nodes, links);
 
   const padding = settings.padding;
-
   const innerWidth: number = Math.max(1, viewport.width - padding.left - padding.right);
   const innerHeight: number = Math.max(
     1,
@@ -166,7 +164,6 @@ function applyConnectedLayout(
   );
 
   const layout = mode === 'treeTopDown' ? d3.tree<HierarchyDatum>() : d3.cluster<HierarchyDatum>();
-
   layout.nodeSize([settings.nodeSeparation, settings.layerGap]);
 
   const positionedRoot: d3.HierarchyPointNode<HierarchyDatum> = layout(hierarchyRoot as any) as any;
@@ -175,11 +172,9 @@ function applyConnectedLayout(
   const realNodes: d3.HierarchyPointNode<HierarchyDatum>[] = descendants.filter(
     (item: d3.HierarchyPointNode<HierarchyDatum>) => Boolean(item.data.node),
   );
-
   if (realNodes.length === 0) return;
 
   const bounds = computeHierarchyBounds(realNodes);
-
   const offsetX: number = padding.left + (innerWidth - bounds.width) / 2 - bounds.minX;
   const offsetY: number = padding.top + (innerHeight - bounds.height) / 2 - bounds.minY;
 
@@ -198,7 +193,6 @@ function applyIsolatedLayout(
   if (nodes.length === 0) return;
 
   const padding = settings.padding;
-
   const innerWidth: number = Math.max(1, viewport.width - padding.left - padding.right);
   const innerHeight: number = Math.max(1, viewport.height - padding.top - padding.bottom);
 
@@ -210,7 +204,6 @@ function applyIsolatedLayout(
 
   const startY: number =
     padding.top + innerHeight - isolatedArea.reservedHeight + settings.isolatedAreaGap;
-
   const sortedNodes: PositionedNode[] = [...nodes].sort((a: PositionedNode, b: PositionedNode) =>
     (a.label ?? a.id).localeCompare(b.label ?? b.id),
   );
@@ -244,15 +237,13 @@ function buildHierarchyForest(
   links: ResolvedLink[],
 ): d3.HierarchyNode<HierarchyDatum> {
   const nodesById: Map<string, PositionedNode> = new Map(
-    nodes.map((node: PositionedNode) => [node.id, node]),
+    nodes.map((node: PositionedNode): [string, PositionedNode] => [node.id, node]),
   );
-
   const childrenById: Map<string, string[]> = new Map(
-    nodes.map((node: PositionedNode) => [node.id, []]),
+    nodes.map((node: PositionedNode): [string, never[]] => [node.id, []]),
   );
-
   const indegreeById: Map<string, number> = new Map(
-    nodes.map((node: PositionedNode) => [node.id, 0]),
+    nodes.map((node: PositionedNode): [string, number] => [node.id, 0]),
   );
 
   for (const link of links) {
@@ -260,7 +251,6 @@ function buildHierarchyForest(
     const targetId: string = link.target.id;
 
     if (!nodesById.has(sourceId) || !nodesById.has(targetId)) continue;
-
     childrenById.get(sourceId)!.push(targetId);
     indegreeById.set(targetId, (indegreeById.get(targetId) ?? 0) + 1);
   }
@@ -271,12 +261,14 @@ function buildHierarchyForest(
   }
 
   const sortedFallback: PositionedNode | undefined = [...nodes].sort(
-    (a: PositionedNode, b: PositionedNode) => (a.label ?? a.id).localeCompare(b.label ?? b.id),
+    (a: PositionedNode, b: PositionedNode): number =>
+      (a.label ?? a.id).localeCompare(b.label ?? b.id),
   )[0];
-
   const visited: Set<string> = new Set<string>();
 
-  const buildSubtree = (nodeId: string): HierarchyDatum | null => {
+  const buildSubtree: (nodeId: string) => HierarchyDatum | null = (
+    nodeId: string,
+  ): HierarchyDatum | null => {
     if (visited.has(nodeId)) return null;
     visited.add(nodeId);
 

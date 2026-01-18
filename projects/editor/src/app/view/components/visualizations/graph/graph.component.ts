@@ -14,7 +14,7 @@ import {
 } from '@angular/core';
 import * as d3 from 'd3';
 import { D3ZoomEvent, Selection, ZoomBehavior } from 'd3';
-import { GraphData, GraphNode } from '../../../../core/GModelGraph';
+import { GraphData } from '../../../../core/GModelGraph';
 import {
   DEFAULT_GRAPH_LAYOUT_SETTINGS,
   GraphLayoutSettings,
@@ -49,7 +49,6 @@ export class GraphComponent implements AfterViewInit, OnChanges {
   protected nodeSelection?: d3.Selection<SVGGElement, PositionedNode, SVGGElement, unknown>;
   protected linkSelection?: d3.Selection<SVGLineElement, ResolvedLink, SVGGElement, unknown>;
 
-  protected animationFrameId: number | null = null;
   protected renderModel?: RenderModel;
   protected resizeObserver?: ResizeObserver;
 
@@ -100,6 +99,7 @@ export class GraphComponent implements AfterViewInit, OnChanges {
       .attr('height', '100%')
       .style('user-select', 'none');
     this.rootGroupSelection = this.svgSelection.append('g');
+    this.drawArrowMarker();
 
     this.zoomBehavior = d3
       .zoom<SVGSVGElement, unknown>()
@@ -152,7 +152,12 @@ export class GraphComponent implements AfterViewInit, OnChanges {
         .data(links, (link: ResolvedLink): string => link.id);
     selection.exit().remove();
 
-    return selection.enter().append('line').attr('class', 'link').merge(selection);
+    return selection
+      .enter()
+      .append('line')
+      .attr('class', 'link')
+      .attr('marker-end', 'url(#g-arrow)')
+      .merge(selection);
   }
 
   private drawNodes(
@@ -197,17 +202,101 @@ export class GraphComponent implements AfterViewInit, OnChanges {
     return mergedSelection;
   }
 
-  private getNodeColor(node: GraphNode): string {
+  private drawArrowMarker(): void {
+    if (!this.svgSelection) return;
+
+    const defsSelection: d3.Selection<SVGDefsElement, unknown, null, undefined> = this.svgSelection
+      .select<SVGDefsElement>('defs')
+      .empty()
+      ? this.svgSelection.append('defs')
+      : this.svgSelection.select<SVGDefsElement>('defs');
+
+    const markerSelection: d3.Selection<SVGMarkerElement, unknown, null, undefined> = defsSelection
+      .select<SVGMarkerElement>('marker#g-arrow')
+      .empty()
+      ? defsSelection.append('marker').attr('id', 'g-arrow')
+      : defsSelection.select<SVGMarkerElement>('marker#g-arrow');
+
+    markerSelection
+      .attr('viewBox', '0 0 10 10')
+      .attr('refX', 8)
+      .attr('refY', 5)
+      .attr('markerUnits', 'userSpaceOnUse')
+      .attr('markerWidth', 10)
+      .attr('markerHeight', 10)
+      .attr('orient', 'auto');
+
+    markerSelection
+      .selectAll<SVGPathElement, unknown>('path')
+      .data([0])
+      .join('path')
+      .attr('d', 'M 0 0 L 10 5 L 0 10 z')
+      .attr('fill', 'var(--g-link-stroke)');
+  }
+
+  private getNodeColor(node: PositionedNode): string {
     const superType: string = node.superType;
     return this.superTypeColors()[superType] ?? this.fallbackColor();
   }
 
+  private getHostElement(): HTMLDivElement {
+    const element: HTMLDivElement | undefined = this.host()?.nativeElement;
+    if (!element) throw new Error('Cannot render graph without host element.');
+    return element;
+  }
+
+  private computeShortenedTarget(
+    sourceX: number,
+    sourceY: number,
+    targetX: number,
+    targetY: number,
+    targetRadius: number,
+  ): { x2: number; y2: number } {
+    const deltaX: number = targetX - sourceX;
+    const deltaY: number = targetY - sourceY;
+    const length: number = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
+
+    const unitX: number = deltaX / length;
+    const unitY: number = deltaY / length;
+
+    return {
+      x2: targetX - unitX * targetRadius,
+      y2: targetY - unitY * targetRadius,
+    };
+  }
+
+  private updateViewBox(): void {
+    if (!this.svgSelection) return;
+    const viewport: ViewportSize = getViewportSize(this.getHostElement());
+    this.svgSelection.attr('viewBox', `0 0 ${viewport.width} ${viewport.height}`);
+  }
+
   private updateLinkPositions(): void {
-    this.linkSelection
-      ?.attr('x1', (link: ResolvedLink): number => link.source.x)
-      ?.attr('y1', (link: ResolvedLink): number => link.source.y)
-      ?.attr('x2', (link: ResolvedLink): number => link.target.x)
-      ?.attr('y2', (link: ResolvedLink): number => link.target.y);
+    const nodeRadius: number = this.settings().nodeRadius;
+    const arrowPaddingPixels: number = 4;
+
+    this.linkSelection?.each(
+      (
+        link: ResolvedLink,
+        index: number,
+        nodes: SVGLineElement[] | ArrayLike<SVGLineElement>,
+      ): void => {
+        const lineElement: SVGLineElement = nodes[index];
+
+        const shortened: { x2: number; y2: number } = this.computeShortenedTarget(
+          link.source.x,
+          link.source.y,
+          link.target.x,
+          link.target.y,
+          nodeRadius + arrowPaddingPixels,
+        );
+
+        lineElement.setAttribute('x1', String(link.source.x));
+        lineElement.setAttribute('y1', String(link.source.y));
+        lineElement.setAttribute('x2', String(shortened.x2));
+        lineElement.setAttribute('y2', String(shortened.y2));
+      },
+    );
   }
 
   private updateNodePositions(): void {
@@ -314,24 +403,7 @@ export class GraphComponent implements AfterViewInit, OnChanges {
     this.svgSelection.call(this.zoomBehavior.transform, transform);
   }
 
-  private updateViewBox(): void {
-    if (!this.svgSelection) return;
-    const viewport: ViewportSize = getViewportSize(this.getHostElement());
-    this.svgSelection.attr('viewBox', `0 0 ${viewport.width} ${viewport.height}`);
-  }
-
-  private getHostElement(): HTMLDivElement {
-    const element: HTMLDivElement | undefined = this.host()?.nativeElement;
-    if (!element) throw new Error('Cannot render graph without host element.');
-    return element;
-  }
-
   private cleanup(): void {
-    if (this.animationFrameId !== null) {
-      window.cancelAnimationFrame(this.animationFrameId);
-      this.animationFrameId = null;
-    }
-
     this.resizeObserver?.disconnect();
     this.resizeObserver = undefined;
 
