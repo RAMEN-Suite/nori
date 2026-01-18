@@ -1,4 +1,4 @@
-import { GDataType, GModel, GNode, GRelation, Ref } from '../models/GModel';
+import { GDataType, GModel, GNode, GRelation, Ref } from './models/GModel';
 import { Refs } from './validation/container/References';
 
 export interface GraphNode {

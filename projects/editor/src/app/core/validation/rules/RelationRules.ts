@@ -1,4 +1,4 @@
-import { GNode, GRelation } from '../../../models/GModel';
+import { GNode, GRelation, Id } from '../../models/GModel';
 import {
   Diagnostic,
   DiagnosticPath,
@@ -21,7 +21,7 @@ export class RelationRules {
         .property('relations')
         .index(relationIndex);
 
-      const baseRelationId: string | null = SemanticValidationHelper.getBaseRelationSuperTypeId(
+      const baseRelationId: Id | null = SemanticValidationHelper.getBaseRelationSuperTypeId(
         relation,
         validationContext.baseId,
       );
@@ -67,7 +67,6 @@ export class RelationRules {
       );
       diagnostics.push(...this.validateRolesMatch(relation, baseRelation, relationPath));
       diagnostics.push(...this.validateBoundsMatch(relation, baseRelation, relationPath));
-      diagnostics.push(...this.validateIdentifier(relation, relationPath));
     });
 
     return diagnostics;
@@ -75,10 +74,10 @@ export class RelationRules {
 
   private validateUniqueIdentifiers(relations: GRelation[]): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
-    const firstIndexByIdentifier: Map<string, number> = new Map<string, number>();
+    const firstIndexByIdentifier: Map<Id, number> = new Map<Id, number>();
 
     relations.forEach((relation: GRelation, relationIndex: number): void => {
-      const relationIdentifier: string = relation.id;
+      const relationIdentifier: Id = relation.id;
       const previousIndex: number | undefined = firstIndexByIdentifier.get(relationIdentifier);
 
       if (previousIndex !== undefined) {
@@ -269,25 +268,6 @@ export class RelationRules {
         message: `to.bounds must specialize base bounds.`,
         path: relationPath.property('to').property('bounds'),
         ref: derivedRelation.id,
-      };
-      diagnostics.push(Diagnostics.error(report));
-    }
-
-    return diagnostics;
-  }
-
-  private validateIdentifier(relation: GRelation, relationPath: DiagnosticPath): Diagnostic[] {
-    const diagnostics: Diagnostic[] = [];
-
-    const expectedIdentifier: string | null = SemanticValidationHelper.expectedRelationId(relation);
-    if (!expectedIdentifier) return diagnostics;
-
-    if (relation.id !== expectedIdentifier) {
-      const report: DiagnosticReport = {
-        code: VALIDATION_ERROR.RELATION_ID_SHAPE_INVALID,
-        message: `Relation id must be '${expectedIdentifier}'.`,
-        path: relationPath.property('id'),
-        ref: relation.id,
       };
       diagnostics.push(Diagnostics.error(report));
     }

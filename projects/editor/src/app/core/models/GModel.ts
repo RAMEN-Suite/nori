@@ -4,11 +4,13 @@ export type Ref = Id | QualifiedRef;
 export type QualifiedRef = string;
 export type ConstraintLanguage = string;
 export type ConstraintSeverity = 'error' | 'warn' | 'info';
+export type BuiltinType = 'string' | 'boolean' | 'number' | 'integer';
+export type TypeRef = BuiltinType | Ref;
 
 export interface GModel {
   $schema: string;
   $id: string;
-  id: string;
+  id: Id;
   version: string;
   kind: 'GModel';
   name: string;
@@ -35,7 +37,7 @@ export interface GNode {
 
 export interface GAttribute {
   name: string;
-  typeId: Ref;
+  typeId: TypeRef;
   bounds: Bounds;
   defaultValue?: unknown;
   isKey?: boolean;
@@ -50,7 +52,8 @@ export interface Bounds {
 }
 
 export interface GConstraint {
-  id?: Id;
+  id: Id;
+  name: string;
   language: ConstraintLanguage;
   expression: string | Record<string, unknown>;
   params?: Record<string, unknown>;
@@ -63,7 +66,7 @@ export interface GConstraint {
 
 export interface GDataType {
   kind: 'GDataType';
-  id: Ref;
+  id: Id;
   name: string;
   literals?: [GLiteral, ...GLiteral[]];
   constraints?: GConstraint[];

@@ -73,7 +73,7 @@ export class CreateModelForm {
     if (!this.isFormValid()) return;
 
     try {
-      this.newModel.slug = SuggestionHelper.createIdentifier(this.newModel.name);
+      this.newModel.slug = SuggestionHelper.createIdentifier();
 
       if (this.workspaceState.state().isDirty) {
         await this.workspace.saveDraftToActiveSlot();

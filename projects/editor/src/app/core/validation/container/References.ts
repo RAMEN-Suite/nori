@@ -1,4 +1,5 @@
-export type BuiltinScalarType = 'string' | 'boolean' | 'number' | 'integer';
+import { REGEXP } from '../../const/REGEXP';
+import { BuiltinType } from '../../models/GModel';
 
 export interface QualifiedRefParts {
   readonly modelId: string;
@@ -13,17 +14,21 @@ export class Builtins {
     'integer',
   ]);
 
-  public static isBuiltin(ref: string): ref is BuiltinScalarType {
+  public static isBuiltin(ref: string): ref is BuiltinType {
     return Builtins.set.has(ref);
   }
 }
 
 export class Refs {
   public static isQualified(ref: string): boolean {
-    return ref.includes(':');
+    return REGEXP.isQualifiedRef.test(ref);
   }
 
   public static splitQualified(ref: string): QualifiedRefParts {
+    if (!Refs.isQualified(ref)) {
+      throw new Error(`Invalid QualifiedRef: '${ref}'`);
+    }
+
     const index: number = ref.indexOf(':');
     return { modelId: ref.slice(0, index), nodeId: ref.slice(index + 1) };
   }

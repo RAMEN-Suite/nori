@@ -2,7 +2,7 @@ import SemanticValidator, { ValidationOptions } from './SemanticValidator';
 import { Diagnostic, DiagnosticPath, DiagnosticReport, Diagnostics } from './container/Diagnostics';
 import { SchemaValidator } from './SchemaValidator';
 import { VALIDATION_ERROR } from '../const/VALIDATION_ERROR';
-import { GModel } from '../../models/GModel';
+import { GModel } from '../models/GModel';
 
 export type SchemaKind = 'BASE' | 'DERIVED';
 

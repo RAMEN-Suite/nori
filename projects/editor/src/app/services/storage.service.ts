@@ -4,7 +4,7 @@ import { Model } from '../models/Model';
 import { database } from '../app.database';
 import { environment } from '../../environments/environment';
 import ShortUniqueId from 'short-unique-id';
-import { GModel } from '../models/GModel';
+import { GModel } from '../core/models/GModel';
 
 export type CreateManifest = Pick<Manifest, 'name' | 'description' | 'metamodelId' | 'metaVersion'>;
 export type UpdateManifest = Pick<Manifest, 'name' | 'description'>;

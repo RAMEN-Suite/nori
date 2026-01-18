@@ -1,9 +1,9 @@
-import { GModel } from '../../models/GModel';
+import { GModel } from '../models/GModel';
 import { GModelIndex } from './container/GModelIndex';
 import { Diagnostic, DiagnosticPath, DiagnosticReport, Diagnostics } from './container/Diagnostics';
 import { VALIDATION_ERROR } from '../const/VALIDATION_ERROR';
-import ClassifierRules from './rules/ClassifierRules';
 import { RelationRules } from './rules/RelationRules';
+import { ClassifierRules } from './rules/ClassifierRules';
 
 export interface ValidationOptions {
   readonly baseId: string;

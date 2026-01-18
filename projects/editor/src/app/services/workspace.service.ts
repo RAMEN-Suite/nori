@@ -8,7 +8,7 @@ import {
   untracked,
   WritableSignal,
 } from '@angular/core';
-import { Bounds, GAttribute, GDataType, GModel, GNode, GRelation } from '../models/GModel';
+import { Bounds, GAttribute, GDataType, GModel, GNode, GRelation } from '../core/models/GModel';
 import { SuggestionHelper } from '../core/validation/helper/SuggestionHelper';
 import { ModelValidator, ValidationResult } from '../core/validation/ModelValidator';
 import { StorageService } from './storage.service';

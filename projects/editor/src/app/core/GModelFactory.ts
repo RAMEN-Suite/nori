@@ -1,4 +1,4 @@
-import { GModel } from '../models/GModel';
+import { GModel } from './models/GModel';
 import { SchemaValidator } from './validation/SchemaValidator';
 
 export interface CreateDerivedModelInput {

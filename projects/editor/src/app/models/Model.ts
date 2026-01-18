@@ -1,4 +1,4 @@
-import { GModel } from './GModel';
+import { GModel } from '../core/models/GModel';
 
 export interface Model {
   projectId: string;

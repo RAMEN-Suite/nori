@@ -1,8 +1,7 @@
-import { Bounds, GNode, GRelation } from '../../../models/GModel';
+import { Bounds, GNode, GRelation, Id } from '../../models/GModel';
 import { QualifiedRefParts, Refs } from '../container/References';
-import { REGEXP } from '../../const/REGEXP';
 
-export type BaseNode = { baseId: string; baseNodeId: string };
+export type BaseNode = { baseId: Id; baseNodeId: Id };
 
 export class SemanticValidationHelper {
   public static getBaseSuperType(node: GNode, baseId: string): BaseNode | null {
@@ -54,41 +53,5 @@ export class SemanticValidationHelper {
     if (parts.modelId !== baseId) return null;
 
     return parts.nodeId;
-  }
-
-  public static createRelationName(name: string): string | null {
-    if (!name || !REGEXP.isValidRelation.test(name)) return null;
-
-    const parts: string[] = name.split('_').filter((part: string): boolean => part.length > 0);
-    if (parts.length === 0) return null;
-
-    const firstPart: string = parts[0].toLowerCase();
-    const remainingParts: string[] = parts.slice(1);
-
-    return (
-      firstPart +
-      remainingParts
-        .map((part: string): string => part.toLowerCase())
-        .map((part: string): string => part.charAt(0).toUpperCase() + part.slice(1))
-        .join('')
-    );
-  }
-
-  public static expectedRelationIdFromParts(
-    name: string,
-    fromNodeId: string,
-    toNodeId: string,
-  ): string | null {
-    const camel: string | null = SemanticValidationHelper.createRelationName(name);
-    if (!camel) return null;
-    return `${fromNodeId}_${camel}_${toNodeId}`;
-  }
-
-  public static expectedRelationId(relation: GRelation): string | null {
-    return SemanticValidationHelper.expectedRelationIdFromParts(
-      relation.name,
-      relation.from.nodeId,
-      relation.to.nodeId,
-    );
   }
 }

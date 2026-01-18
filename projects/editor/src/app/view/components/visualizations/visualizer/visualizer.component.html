@@ -1,9 +1,9 @@
 <div class="grid h-full grid-rows-[1fr_auto]">
   <div class="min-h-0 overflow-hidden">
-    <app-graph [graphData]="graphData()" />
+    <app-graph [graphData]="graphData()" [settings]="settings()" />
   </div>
 
   <div class="min-h-12.5">
-    <p-menubar [model]="menuItems" />
+    <p-menubar></p-menubar>
   </div>
 </div>

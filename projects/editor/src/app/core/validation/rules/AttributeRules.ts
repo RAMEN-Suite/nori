@@ -1,4 +1,4 @@
-import { Bounds, GAttribute, GNode } from '../../../models/GModel';
+import { Bounds, GAttribute, GNode, TypeRef } from '../../models/GModel';
 import {
   Diagnostic,
   DiagnosticPath,
@@ -108,9 +108,8 @@ export class AttributeRules {
     return names;
   }
 
-  private attributeTypeExists(validationContext: ValidationContext, typeId: string): boolean {
+  private attributeTypeExists(validationContext: ValidationContext, typeId: TypeRef): boolean {
     if (Builtins.isBuiltin(typeId)) return true;
-
     if (validationContext.derivedIndex.dataTypesById.has(typeId)) return true;
 
     const baseTypeId: string | null = SemanticValidationHelper.getBaseQualifiedId(

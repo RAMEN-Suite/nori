@@ -1,4 +1,4 @@
-import { GClassifier } from '../../../models/GModel';
+import { GClassifier, Id } from '../../models/GModel';
 import {
   Diagnostic,
   DiagnosticPath,
@@ -11,7 +11,7 @@ import { NodeRules } from './NodeRules';
 import { DataTypeRules } from './DataTypeRules';
 import { AttributeRules } from './AttributeRules';
 
-class ClassifierRules {
+export class ClassifierRules {
   private readonly nodeRules: NodeRules = new NodeRules();
   private readonly dataTypeRules: DataTypeRules = new DataTypeRules();
   private readonly attributeRules: AttributeRules = new AttributeRules();
@@ -44,7 +44,6 @@ class ClassifierRules {
 
       if (classifier.kind === 'GDataType') {
         const dataTypeValidation: Diagnostic[] = this.dataTypeRules.validate(
-          validationContext,
           classifier,
           classifierPath,
         );
@@ -58,7 +57,7 @@ class ClassifierRules {
 
   private validateUniqueIdentifiers(classifiers: GClassifier[]): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
-    const firstIndexByIdentifier: Map<string, number> = new Map<string, number>();
+    const firstIndexByIdentifier: Map<Id, number> = new Map<string, number>();
 
     classifiers.forEach((classifier: GClassifier, classifierIndex: number): void => {
       const classifierIdentifier: string = classifier.id;
@@ -81,5 +80,3 @@ class ClassifierRules {
     return diagnostics;
   }
 }
-
-export default ClassifierRules;

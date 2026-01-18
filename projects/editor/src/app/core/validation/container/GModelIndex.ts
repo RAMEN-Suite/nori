@@ -1,10 +1,10 @@
-import { GDataType, GModel, GNode, GRelation } from '../../../models/GModel';
+import { GDataType, GModel, GNode, GRelation, Id } from '../../models/GModel';
 
 export class GModelIndex {
-  public readonly importsByModelId: ReadonlyMap<string, string>;
-  public readonly nodesById: ReadonlyMap<string, GNode>;
-  public readonly dataTypesById: ReadonlyMap<string, GDataType>;
-  public readonly relationsById: ReadonlyMap<string, GRelation>;
+  public readonly importsByModelId: ReadonlyMap<Id, string>;
+  public readonly nodesById: ReadonlyMap<Id, GNode>;
+  public readonly dataTypesById: ReadonlyMap<Id, GDataType>;
+  public readonly relationsById: ReadonlyMap<Id, GRelation>;
 
   constructor(public readonly model: GModel) {
     const imports: Map<string, string> = new Map<string, string>();

@@ -6,8 +6,11 @@ export const REGEXP = {
   // URI validation (RFC 3986-style)
   isValidURITemplate: /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^\s/$.?#].[^\s]*$/,
 
-  // GCore Identifier camelCase
-  isValidId: /^[a-z_][A-Za-z0-9_.\\-]*$/,
+  // GCore Identifier short unique id (min 16)
+  isValidId: /^[A-Za-z0-9_-]{16,}$/,
+
+  // Qualified Ref: modelId:id (both min 16)
+  isQualifiedRef: /^[A-Za-z0-9_-]{16,}:[A-Za-z0-9_-]{16,}$/,
 
   // GCore Relation RELATION_WITH
   isValidRelation: /^[A-Z][A-Z0-9_]*$/,

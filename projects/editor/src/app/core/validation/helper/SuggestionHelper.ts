@@ -1,7 +1,16 @@
-import { Bounds, GAttribute, GDataType, GModel, GNode, GRelation } from '../../../models/GModel';
+import {
+  Bounds,
+  GAttribute,
+  GDataType,
+  GModel,
+  GNode,
+  GRelation,
+  TypeRef,
+} from '../../models/GModel';
 import { GModelIndex } from '../container/GModelIndex';
-import { Builtins, Refs } from '../container/References';
+import { Refs } from '../container/References';
 import { BaseNode, SemanticValidationHelper } from './SemanticValidationHelper';
+import ShortUniqueId from 'short-unique-id';
 
 export interface CreateNodeInput {
   readonly name: string;
@@ -16,7 +25,7 @@ export interface CreateRelationInput {
 
 export interface CreateAttributeInput {
   readonly name: string;
-  readonly typeId: string;
+  readonly typeId: TypeRef;
   readonly bounds?: Bounds;
 }
 
@@ -47,16 +56,6 @@ export class SuggestionHelper {
     const baseIndex: GModelIndex = new GModelIndex(base);
     const derivedIndex: GModelIndex = new GModelIndex(derived);
     const types: GDataType[] = [...Array.from(derivedIndex.dataTypesById.values())];
-
-    for (const id of Builtins.set.values()) {
-      types.push({
-        kind: 'GDataType',
-        id,
-        name: id,
-        constraints: [],
-        ext: {},
-      });
-    }
 
     for (const dataType of baseIndex.dataTypesById.values()) {
       types.push({
@@ -167,7 +166,7 @@ export class SuggestionHelper {
   public createDerivedNode(baseId: string, input: CreateNodeInput): GNode {
     return {
       kind: 'GNode',
-      id: SuggestionHelper.createIdentifier(input.name),
+      id: SuggestionHelper.createIdentifier(),
       name: input.name,
       superTypes: [Refs.qualify(baseId, input.baseNodeId)],
       attributes: [],
@@ -189,7 +188,7 @@ export class SuggestionHelper {
   public createDataType(input: CreateDataTypeInput): GDataType {
     return {
       kind: 'GDataType',
-      id: SuggestionHelper.createIdentifier(input.name),
+      id: SuggestionHelper.createIdentifier(),
       name: input.name,
       literals: undefined,
       constraints: [],
@@ -206,37 +205,9 @@ export class SuggestionHelper {
     const baseRelation: GRelation | undefined = baseIndex.relationsById.get(input.baseRelationId);
     if (!baseRelation) throw new Error(`Base relation not found: ${input.baseRelationId}`);
 
-    const temporaryRelationForIdentifier: GRelation = {
-      kind: 'GRelation',
-      id: '',
-      superTypes: [],
-      name: baseRelation.name,
-      from: {
-        nodeId: input.fromNodeId,
-        role: baseRelation.from.role,
-        bounds: { ...baseRelation.from.bounds },
-        constraints: [],
-        ext: {},
-      },
-      to: {
-        nodeId: input.toNodeId,
-        role: baseRelation.to.role,
-        bounds: { ...baseRelation.to.bounds },
-        constraints: [],
-        ext: {},
-      },
-      isBidirectional: baseRelation.isBidirectional,
-      constraints: [],
-      ext: {},
-    };
-
-    const derivedIdentifier: string =
-      SemanticValidationHelper.expectedRelationId(temporaryRelationForIdentifier) ??
-      `${input.fromNodeId}_${input.baseRelationId}_${input.toNodeId}`;
-
     return {
       kind: 'GRelation',
-      id: derivedIdentifier,
+      id: SuggestionHelper.createIdentifier(),
       superTypes: [Refs.qualify(baseId, input.baseRelationId)],
       name: baseRelation.name,
       from: {
@@ -259,26 +230,7 @@ export class SuggestionHelper {
     };
   }
 
-  public static createIdentifier(name: string): string {
-    if (!name) return '';
-
-    const words: string[] = name
-      .trim()
-      .normalize('NFKD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .split(/[^A-Za-z0-9]+/)
-      .filter((word: string): boolean => word.length > 0);
-
-    if (words.length === 0) return '';
-
-    const first: string = words[0].toLowerCase();
-    const rest: string[] = words.slice(1);
-
-    return (
-      first +
-      rest
-        .map((word: string): string => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join('')
-    );
+  public static createIdentifier(): string {
+    return new ShortUniqueId({ length: 16 }).rnd();
   }
 }
