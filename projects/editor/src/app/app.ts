@@ -1,6 +1,6 @@
 import { Component, DOCUMENT, effect, inject } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
-import { TitleBarComponent } from './view/components/bars/title-bar/title-bar.component';
+import { TitleBarComponent } from './view/components/window/title-bar/title-bar.component';
 import { RouterOutlet } from '@angular/router';
 import { EDITOR_THEME, EditorState } from './states/editor.state';
 

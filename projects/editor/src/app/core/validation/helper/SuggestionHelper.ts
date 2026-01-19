@@ -1,12 +1,4 @@
-import {
-  Bounds,
-  GAttribute,
-  GDataType,
-  GModel,
-  GNode,
-  GRelation,
-  TypeRef,
-} from '../../models/GModel';
+import { GAttribute, GDataType, GModel, GNode, GRelation } from '../../models/GModel';
 import { GModelIndex } from '../container/GModelIndex';
 import { Refs } from '../container/References';
 import { BaseNode, SemanticValidationHelper } from './SemanticValidationHelper';
@@ -21,12 +13,6 @@ export interface CreateRelationInput {
   readonly baseRelationId: string;
   readonly fromNodeId: string;
   readonly toNodeId: string;
-}
-
-export interface CreateAttributeInput {
-  readonly name: string;
-  readonly typeId: TypeRef;
-  readonly bounds?: Bounds;
 }
 
 export interface CreateDataTypeInput {
@@ -170,16 +156,6 @@ export class SuggestionHelper {
       name: input.name,
       superTypes: [Refs.qualify(baseId, input.baseNodeId)],
       attributes: [],
-      constraints: [],
-      ext: {},
-    };
-  }
-
-  public createAttribute(input: CreateAttributeInput): GAttribute {
-    return {
-      name: input.name,
-      typeId: input.typeId,
-      bounds: input.bounds ?? { lowerBound: 0, upperBound: 1 },
       constraints: [],
       ext: {},
     };

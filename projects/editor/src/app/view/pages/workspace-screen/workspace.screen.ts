@@ -1,6 +1,6 @@
-import { Component, effect, inject, OnInit } from '@angular/core';
+import { Component, effect, inject, OnDestroy, OnInit } from '@angular/core';
 import { WindowState } from '../../../states/window.state';
-import { ToolBarComponent } from '../../components/bars/tool-bar/tool-bar.component';
+import { ToolBarComponent } from '../../components/workspace/tool-bar/tool-bar.component';
 import { StorageService } from '../../../services/storage.service';
 import { Manifest } from '../../../models/Manifest';
 import { SideMenuComponent } from '../../components/workspace/side-menu/side-menu.component';
@@ -16,7 +16,7 @@ import { NodeEditorComponent } from '../../components/workspace/node-editor/node
   templateUrl: './workspace.screen.html',
   styleUrl: './workspace.screen.scss',
 })
-export class WorkspaceScreen implements OnInit {
+export class WorkspaceScreen implements OnInit, OnDestroy {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   protected readonly windowState: WindowState = inject(WindowState);
   protected readonly storage: StorageService = inject(StorageService);
@@ -27,18 +27,24 @@ export class WorkspaceScreen implements OnInit {
   constructor() {
     this.activatedRouteSubscription$ = this.activatedRoute.firstChild?.paramMap.subscribe(
       (map: ParamMap): void => {
-        this.workspace.setDerivedNodeId(map.get('nodeId') ?? '');
+        const currentNodeId: string | null = map.get('nodeId');
+        if (currentNodeId === null) return;
+
+        this.workspace.setSelectedDerivedNodeId(currentNodeId);
       },
     );
 
     effect((): void => {
       const manifest: Manifest | null = this.storage.selectedManifest();
       this.windowState.setTitle(manifest?.name ?? '', 'pi pi-pen-to-square');
-      console.log(this.workspace.validation());
     });
   }
 
   public async ngOnInit(): Promise<void> {
     void this.storage.refreshManifests();
+  }
+
+  public ngOnDestroy(): void {
+    this.workspace.resetSelections();
   }
 }

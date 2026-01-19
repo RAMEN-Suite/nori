@@ -7,8 +7,12 @@
   >
     <app-side-menu class="basis-full" />
   </div>
-  <div class="flex flex-5">
-    <app-node-editor class="basis-full" animate.enter="node-editor-entrance" />
+  <div class="flex flex-5" animate.enter="node-editor-entrance">
+    @if (workspace.selectedDerivedNodeId()) {
+      <app-node-editor class="basis-full" />
+    } @else {
+      <div class="flex">sample text</div>
+    }
   </div>
   <div
     class="flex flex-5 border-l border-(--p-menubar-border-color) bg-(--p-menubar-background)/40"

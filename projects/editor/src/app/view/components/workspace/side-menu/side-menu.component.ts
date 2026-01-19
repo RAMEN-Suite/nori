@@ -19,9 +19,9 @@ import { Ripple } from 'primeng/ripple';
 import { Tooltip } from 'primeng/tooltip';
 import { ContextMenu } from 'primeng/contextmenu';
 import { FormsModule } from '@angular/forms';
-import { ValidationResult } from '../../../../core/validation/ModelValidator';
-import { MenuItem } from 'primeng/api';
+import { ConfirmationService, MenuItem } from 'primeng/api';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ConfirmDialog } from 'primeng/confirmdialog';
 
 @Component({
   selector: 'app-side-menu',
@@ -35,15 +35,17 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
     Tooltip,
     ContextMenu,
     FormsModule,
+    ConfirmDialog,
   ],
-  providers: [RouterLink],
+  providers: [RouterLink, ConfirmationService],
   templateUrl: './side-menu.component.html',
   styleUrl: './side-menu.component.scss',
 })
 export class SideMenuComponent implements OnInit {
+  protected readonly confirmation: ConfirmationService = inject(ConfirmationService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
-  protected readonly router: Router = inject(Router);
   protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
+  protected readonly router: Router = inject(Router);
 
   protected readonly searchInput: WritableSignal<string> = signal('');
   protected staticContextMenu: MenuItem[] = [];
@@ -59,20 +61,6 @@ export class SideMenuComponent implements OnInit {
     return this.filterMenuItems();
   });
 
-  protected readonly erroredRefs: Signal<ReadonlySet<string>> = computed(() => {
-    const validation: ValidationResult = this.workspace.validation();
-    if (!validation.hasErrors) return new Set<string>();
-
-    const erroredSet = new Set<string>();
-    for (const diagnostic of validation.diagnostics) {
-      if (diagnostic.severity !== 'error') continue;
-      if (!diagnostic.ref) continue;
-      erroredSet.add(diagnostic.ref);
-    }
-
-    return erroredSet;
-  });
-
   public ngOnInit(): void {
     this.staticContextMenu = [
       {
@@ -86,18 +74,17 @@ export class SideMenuComponent implements OnInit {
         label: 'Delete %s',
         icon: 'pi pi-trash',
         severity: 'error',
-        command: (): void => {},
+        command: (): Promise<void> => this.handleDeleteNode(),
       },
     ];
   }
 
   private createSideMenu(): MenuItem[] {
-    const errored: ReadonlySet<string> = this.erroredRefs();
     const baseNodes: GNode[] = this.workspace.baseNodes();
     const menuItems: MenuItem[] = [];
 
     for (const node of baseNodes) {
-      const subMenu: MenuItem[] = this.createSubMenu(node.id, errored);
+      const subMenu: MenuItem[] = this.createSubMenu(node.id);
 
       menuItems.push({
         id: node.id,
@@ -113,8 +100,8 @@ export class SideMenuComponent implements OnInit {
     return menuItems;
   }
 
-  private createSubMenu(baseId: string, errored: ReadonlySet<string>): MenuItem[] {
-    const derivedNodes: GNode[] = this.workspace.filterDerivedNodes(baseId)();
+  private createSubMenu(baseId: string): MenuItem[] {
+    const derivedNodes: GNode[] = this.workspace.filteredDraftNodes(baseId)();
     const currentItemId: string | null = this.workspace.selectedDerivedNodeId();
 
     return derivedNodes.map((derived: GNode): MenuItem => {
@@ -123,18 +110,8 @@ export class SideMenuComponent implements OnInit {
         label: derived.name,
         parentId: baseId,
         isActive: currentItemId && currentItemId === derived.id,
-        hasErrors: this.nodeHasErrors(derived.id, errored),
       };
     });
-  }
-
-  private nodeHasErrors(nodeId: string, erroredRefs: ReadonlySet<string>): boolean {
-    for (const ref of erroredRefs) {
-      if (ref === nodeId) return true;
-      const parts: string[] = ref.split('_');
-      if (parts.includes(nodeId)) return true;
-    }
-    return false;
   }
 
   private filterMenuItems(): MenuItem[] {
@@ -158,8 +135,46 @@ export class SideMenuComponent implements OnInit {
     });
   }
 
-  protected async handleSelectPanelItem(item: MenuItem): Promise<void> {
-    this.workspace.setDerivedNodeId(item.id ?? '');
+  protected async handleCreateNode(baseNodeId: string): Promise<void> {
+    const newNode: GNode = await this.workspace.createNode('Untitled', baseNodeId);
+    void this.router.navigate([newNode.id], { relativeTo: this.activatedRoute });
+    this.workspace.setSelectedDerivedNodeId(newNode.id);
+  }
+
+  protected async handleDuplicateNode(): Promise<void> {
+    const nodeId: string | undefined = this.selectedContextItem()?.id;
+    if (!nodeId) return;
+  }
+
+  protected async handleDeleteNode(): Promise<void> {
+    const selectedMenuItem: MenuItem | null = this.selectedContextItem();
+    if (!selectedMenuItem) return;
+
+    this.confirmation.confirm({
+      message: `Do you really want to delete "${selectedMenuItem.label}"?`,
+      header: 'Delete Node',
+      key: 'side-menu',
+      dismissableMask: true,
+      rejectButtonProps: {
+        label: 'Cancel',
+        size: 'small',
+        variant: 'outlined',
+      },
+      acceptButtonProps: {
+        label: 'Yes, I want to delete my node',
+        size: 'small',
+        variant: 'outlined',
+        severity: 'danger',
+      },
+      accept: async (): Promise<void> => {
+        await this.workspace.deleteNode(selectedMenuItem.id!);
+        void this.router.navigate([], { relativeTo: this.activatedRoute });
+      },
+    });
+  }
+
+  protected handleSelectPanelItem(item: MenuItem): void {
+    this.workspace.setSelectedDerivedNodeId(item.id ?? '');
     void this.router.navigate([item.id], { relativeTo: this.activatedRoute });
   }
 
