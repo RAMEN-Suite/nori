@@ -1,8 +1,8 @@
 import { Component, effect, inject, OnInit, signal, WritableSignal } from '@angular/core';
 import { GraphComponent } from '../graph/graph.component';
-import { GModel } from '../../../../core/models/GModel';
-import { GModelGraph, GraphData } from '../../../../core/GModelGraph';
-import { WorkspaceService } from '../../../../services/workspace.service';
+import { GModel } from '../../../../../core/models/GModel';
+import { GModelGraph, GraphData } from '../../../../../core/GModelGraph';
+import { WorkspaceService } from '../../../../../services/workspace.service';
 import { FormsModule } from '@angular/forms';
 import { Menubar } from 'primeng/menubar';
 import {
@@ -51,7 +51,6 @@ export class VisualizerComponent implements OnInit {
   constructor() {
     effect((): void => {
       const model: GModel | null = this.workspace.derivedModel();
-      if (!model) return;
       this.graphData.set(new GModelGraph().build(model));
     });
   }

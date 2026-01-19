@@ -3,15 +3,16 @@ import { WindowState } from '../../../states/window.state';
 import { ToolBarComponent } from '../../components/bars/tool-bar/tool-bar.component';
 import { StorageService } from '../../../services/storage.service';
 import { Manifest } from '../../../models/Manifest';
-import { SideMenuComponent } from '../../components/side-menu/side-menu.component';
-import { VisualizerComponent } from '../../components/visualizations/visualizer/visualizer.component';
+import { SideMenuComponent } from '../../components/workspace/side-menu/side-menu.component';
+import { VisualizerComponent } from '../../components/workspace/visualizations/visualizer/visualizer.component';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { WorkspaceService } from '../../../services/workspace.service';
+import { NodeEditorComponent } from '../../components/workspace/node-editor/node-editor.component';
 
 @Component({
   selector: 'app-workspace',
-  imports: [ToolBarComponent, SideMenuComponent, VisualizerComponent],
+  imports: [ToolBarComponent, SideMenuComponent, VisualizerComponent, NodeEditorComponent],
   templateUrl: './workspace.screen.html',
   styleUrl: './workspace.screen.scss',
 })

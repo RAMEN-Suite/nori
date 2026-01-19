@@ -1,4 +1,4 @@
-import { GraphData, GraphLink, GraphNode } from '../../../../core/GModelGraph';
+import { GraphData, GraphLink, GraphNode } from '../../../../../core/GModelGraph';
 
 export type NodeColorMap = Readonly<Record<string, string>>;
 
@@ -38,7 +38,7 @@ export const DEFAULT_GRAPH_LAYOUT_SETTINGS: GraphLayoutSettings = {
   layoutMode: 'clusterTopDown',
   padding: DEFAULT_GRAPH_PADDING,
 
-  areIsolatedNodesHidden: true,
+  areIsolatedNodesHidden: false,
 
   nodeRadius: 15,
   layerGap: 70,

@@ -29,9 +29,10 @@ export interface ClassifierIndex {
 }
 
 export class GModelGraph {
-  public build(model: GModel): GraphData {
+  public build(model: GModel | null): GraphData {
     const nodes: GraphNode[] = [];
     const links: GraphLink[] = [];
+    if (!model) return { nodes, links };
 
     const existingNodeIds: Set<string> = new Set<string>();
     const index: ClassifierIndex = this.indexClassifiers(model);
