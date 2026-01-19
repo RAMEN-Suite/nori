@@ -3,8 +3,9 @@ export interface Manifest {
   name: string;
   description: string;
 
+  metamodelName: string;
   metamodelId: string;
-  metaVersion: string;
+  metamodelVersion: string;
 
   createdAt: string;
   updatedAt: string;

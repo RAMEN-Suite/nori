@@ -13,7 +13,7 @@
               optionLabel="label"
               optionValue="mode"
               [ngModel]="settings().layoutMode"
-              (ngModelChange)="handleSelectMode($event)"
+              (ngModelChange)="handleSelectLayoutMode($event)"
               [allowEmpty]="false"
             >
               <ng-template #item let-option>
@@ -44,6 +44,9 @@
             </div>
           }
         </div>
+      </ng-template>
+      <ng-template #end>
+        <p-button variant="outlined" icon="pi pi-refresh" (click)="handleReset()" />
       </ng-template>
     </p-menubar>
   </div>

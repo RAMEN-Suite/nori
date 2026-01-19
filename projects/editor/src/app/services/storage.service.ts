@@ -6,7 +6,10 @@ import { environment } from '../../environments/environment';
 import ShortUniqueId from 'short-unique-id';
 import { GModel } from '../core/models/GModel';
 
-export type CreateManifest = Pick<Manifest, 'name' | 'description' | 'metamodelId' | 'metaVersion'>;
+export type CreateManifest = Pick<
+  Manifest,
+  'name' | 'description' | 'metamodelName' | 'metamodelId' | 'metamodelVersion'
+>;
 export type UpdateManifest = Pick<Manifest, 'name' | 'description'>;
 
 type CreateModelInput = Pick<Model, 'projectId' | 'gmodel' | 'name' | 'description'>;

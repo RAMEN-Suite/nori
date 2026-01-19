@@ -13,6 +13,7 @@ import {
 import { SelectButton } from 'primeng/selectbutton';
 import { ToggleButton } from 'primeng/togglebutton';
 import { Tooltip } from 'primeng/tooltip';
+import { Button } from 'primeng/button';
 
 type LayoutToggleOption = 'areIsolatedNodesHidden';
 
@@ -31,7 +32,7 @@ interface LayoutOption {
 
 @Component({
   selector: 'app-visualizer',
-  imports: [GraphComponent, FormsModule, Menubar, SelectButton, ToggleButton, Tooltip],
+  imports: [GraphComponent, FormsModule, Menubar, SelectButton, ToggleButton, Tooltip, Button],
   templateUrl: './visualizer.component.html',
   styleUrl: './visualizer.component.scss',
 })
@@ -71,7 +72,7 @@ export class VisualizerComponent implements OnInit {
     ];
   }
 
-  public handleSelectMode(layoutMode: GraphLayoutMode): void {
+  public handleSelectLayoutMode(layoutMode: GraphLayoutMode): void {
     this.settings.update((s: GraphLayoutSettings): GraphLayoutSettings => ({ ...s, layoutMode }));
   }
 
@@ -79,5 +80,9 @@ export class VisualizerComponent implements OnInit {
     this.settings.update(
       (s: GraphLayoutSettings): GraphLayoutSettings => ({ ...s, [option]: !s[option] }),
     );
+  }
+
+  public handleReset(): void {
+    this.handleSelectLayoutMode(this.settings().layoutMode);
   }
 }

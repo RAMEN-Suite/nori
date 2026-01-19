@@ -45,7 +45,13 @@ export class StartScreen {
 
   constructor() {
     this.windowState.setTitle('Create Project', 'pi pi-folder-plus');
-    this.manifest = { name: '', description: '', metamodelId: '', metaVersion: '' };
+    this.manifest = {
+      name: '',
+      description: '',
+      metamodelName: '',
+      metamodelId: '',
+      metamodelVersion: '',
+    };
     this.selectedMetamodel = CATALOG[0];
   }
 
@@ -70,9 +76,10 @@ export class StartScreen {
     this.isSubmitted = true;
     if (!this.isFormValid()) return;
 
-    const { id, version } = this.selectedMetamodel;
+    const { id, version, name } = this.selectedMetamodel;
     this.manifest.metamodelId = id;
-    this.manifest.metaVersion = version;
+    this.manifest.metamodelVersion = version;
+    this.manifest.metamodelName = name;
 
     try {
       const example: GModel | undefined = this.isCreatingExample ? EXAMPLES[0] : undefined;
