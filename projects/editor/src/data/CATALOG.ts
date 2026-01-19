@@ -6,5 +6,5 @@ import { GModel } from '../app/core/models/GModel';
 SchemaValidator.assertValid(ramen);
 SchemaValidator.assertValid(example);
 
-export const CATALOG: GModel[] = [ramen];
-export const EXAMPLES: GModel[] = [example];
+export const CATALOG: [GModel] = [ramen];
+export const EXAMPLES: [GModel] = [example];

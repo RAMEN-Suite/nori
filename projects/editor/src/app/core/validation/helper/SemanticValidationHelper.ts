@@ -6,7 +6,7 @@ export type BaseNode = { baseId: Id; baseNodeId: Id };
 export class SemanticValidationHelper {
   public static getBaseSuperType(node: GNode, baseId: string): BaseNode | null {
     const superTypes: string[] = node.superTypes ?? [];
-    if (superTypes.length !== 1) return null;
+    if (superTypes.length !== 1 || !superTypes[0]) return null;
 
     const superType: string = superTypes[0];
     if (!Refs.isQualified(superType)) return null;
@@ -44,7 +44,7 @@ export class SemanticValidationHelper {
 
   public static getBaseRelationSuperTypeId(relation: GRelation, baseId: string): string | null {
     const superTypes: string[] = relation.superTypes ?? [];
-    if (superTypes.length !== 1) return null;
+    if (superTypes.length !== 1 || !superTypes[0]) return null;
 
     const superType: string = superTypes[0];
     if (!Refs.isQualified(superType)) return null;
