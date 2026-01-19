@@ -8,7 +8,7 @@ import {
   untracked,
   WritableSignal,
 } from '@angular/core';
-import { GDataType, GModel, GNode, GRelation } from '../core/models/GModel';
+import { GClassifier, GDataType, GModel, GNode, GRelation } from '../core/models/GModel';
 import { SuggestionHelper } from '../core/validation/helper/SuggestionHelper';
 import { ModelValidator, ValidationResult } from '../core/validation/ModelValidator';
 import { StorageService } from './storage.service';
@@ -131,6 +131,21 @@ export class WorkspaceService {
     this.apply((m: GModel): GModel => GModelMutations.addClassifier(m, node));
     await this.saveDraftToActiveSlot();
     return node;
+  }
+
+  public async duplicateNode(sourceNodeId: string): Promise<GNode> {
+    const draft: GModel | null = this.activeDraft();
+    if (!draft) throw new Error('No draft loaded.');
+
+    const source: GNode | undefined = draft.classifiers.find(
+      (c: GClassifier): c is GNode => c.kind === 'GNode' && c.id === sourceNodeId,
+    );
+    if (!source) throw new Error(`Node not found: ${sourceNodeId}`);
+    const cloned: GNode = this.suggest.duplicateDerivedNode(source);
+
+    this.apply((m: GModel): GModel => GModelMutations.addClassifier(m, cloned));
+    await this.saveDraftToActiveSlot();
+    return cloned;
   }
 
   public async deleteNode(nodeId: string): Promise<void> {

@@ -1,4 +1,4 @@
-import { GAttribute, GDataType, GModel, GNode, GRelation } from '../../models/GModel';
+import { GAttribute, GConstraint, GDataType, GModel, GNode, GRelation } from '../../models/GModel';
 import { GModelIndex } from '../container/GModelIndex';
 import { Refs } from '../container/References';
 import { BaseNode, SemanticValidationHelper } from './SemanticValidationHelper';
@@ -204,6 +204,22 @@ export class SuggestionHelper {
       constraints: [],
       ext: {},
     };
+  }
+
+  public duplicateDerivedNode(source: GNode): GNode {
+    const cloned: GNode = structuredClone(source);
+    cloned.id = SuggestionHelper.createIdentifier();
+    cloned.name = `${source.name} (copy)`;
+
+    const constraintFn: (c: GConstraint) => GConstraint = (c: GConstraint): GConstraint => {
+      return { ...c, id: SuggestionHelper.createIdentifier() };
+    };
+    cloned.constraints = cloned.constraints?.map(constraintFn);
+    cloned.attributes = cloned.attributes.map((a: GAttribute): GAttribute => {
+      return { ...a, constraints: a.constraints?.map(constraintFn) };
+    });
+
+    return cloned;
   }
 
   public static createIdentifier(): string {

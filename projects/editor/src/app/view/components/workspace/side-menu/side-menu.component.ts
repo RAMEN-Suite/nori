@@ -66,7 +66,7 @@ export class SideMenuComponent implements OnInit {
       {
         label: 'Duplicate %s',
         icon: 'pi pi-copy',
-        command: (): void => {},
+        command: (): Promise<void> => this.handleDuplicateNode(),
         hasErrors: true,
       },
       { separator: true },
@@ -144,6 +144,10 @@ export class SideMenuComponent implements OnInit {
   protected async handleDuplicateNode(): Promise<void> {
     const nodeId: string | undefined = this.selectedContextItem()?.id;
     if (!nodeId) return;
+
+    const newNode: GNode = await this.workspace.duplicateNode(nodeId);
+    void this.router.navigate([newNode.id], { relativeTo: this.activatedRoute });
+    this.workspace.setSelectedDerivedNodeId(newNode.id);
   }
 
   protected async handleDeleteNode(): Promise<void> {
