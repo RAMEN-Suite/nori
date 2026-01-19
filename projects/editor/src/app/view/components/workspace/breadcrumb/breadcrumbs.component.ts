@@ -12,12 +12,12 @@ import { Breadcrumb } from 'primeng/breadcrumb';
 import { Chip } from 'primeng/chip';
 import { ContextMenu } from 'primeng/contextmenu';
 import { MenuItem } from 'primeng/api';
-import { WorkspaceService } from '../../../services/workspace.service';
-import { StorageService } from '../../../services/storage.service';
-import { Model } from '../../../models/Model';
+import { WorkspaceService } from '../../../../services/workspace.service';
+import { StorageService } from '../../../../services/storage.service';
+import { Model } from '../../../../models/Model';
 import { Ripple } from 'primeng/ripple';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { CreateModelForm } from '../forms/create-model/create-model.form';
+import { CreateModelDialog } from '../../dialogs/create-model/create-model.dialog';
 
 @Component({
   selector: 'app-breadcrumbs',
@@ -95,7 +95,7 @@ export class BreadcrumbsComponent implements OnInit {
   }
 
   protected handleOpenCreateModal(): void {
-    this.dialogRef = this.dialogService.open(CreateModelForm, {
+    this.dialogRef = this.dialogService.open(CreateModelDialog, {
       header: 'Create Domain Model',
       closeOnEscape: true,
       draggable: true,
@@ -104,7 +104,7 @@ export class BreadcrumbsComponent implements OnInit {
   }
 
   protected handleChangeModelSlot(slot: number): void {
-    this.workspace.setDerivedSlot(slot);
+    this.workspace.setSelectedSlot(slot);
   }
 
   protected handleContextMenu($event: Event, item: MenuItem): void {

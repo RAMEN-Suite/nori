@@ -1,13 +1,4 @@
-@let isDirty = workspaceState.state().isDirty;
-
 <div class="flex max-w-140 min-w-140 flex-col gap-2">
-  @if (isDirty) {
-    <p-message severity="warn" class="mt-1">
-      Your current changes haven't been applied yet. By creating a new model your changes will be
-      saved. Do you want to proceed?
-    </p-message>
-  }
-
   <p-fieldset legend="Basics">
     <div class="flex flex-col gap-3">
       <div class="flex flex-col gap-2">
@@ -108,7 +99,7 @@
   <div class="mt-4 flex flex-row justify-between gap-2">
     <p-button label="Cancel" outlined (click)="handleCloseModal()" />
     <p-button
-      [label]="isDirty ? 'Yes, Create Domain Model' : 'Create Domain Model'"
+      label="Create Domain Model"
       outlined
       (click)="handleCreateModel()"
       [disabled]="!isFormValid()"

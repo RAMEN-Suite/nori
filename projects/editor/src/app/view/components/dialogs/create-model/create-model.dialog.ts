@@ -7,7 +7,6 @@ import { IftaLabel } from 'primeng/iftalabel';
 import { Message } from 'primeng/message';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Textarea } from 'primeng/textarea';
-import { WorkspaceState } from '../../../../states/workspace.state';
 import { REGEXP } from '../../../../core/const/REGEXP';
 import { SuggestionHelper } from '../../../../core/validation/helper/SuggestionHelper';
 import { DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -24,11 +23,10 @@ import { DynamicDialogRef } from 'primeng/dynamicdialog';
     Textarea,
     FormsModule,
   ],
-  templateUrl: './create-model.form.html',
-  styleUrl: './create-model.form.scss',
+  templateUrl: './create-model.dialog.html',
+  styleUrl: './create-model.dialog.scss',
 })
-export class CreateModelForm {
-  protected readonly workspaceState: WorkspaceState = inject(WorkspaceState);
+export class CreateModelDialog {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   protected readonly dialogRef: DynamicDialogRef = inject(DynamicDialogRef);
 
@@ -74,11 +72,6 @@ export class CreateModelForm {
 
     try {
       this.newModel.slug = SuggestionHelper.createIdentifier();
-
-      if (this.workspaceState.state().isDirty) {
-        await this.workspace.saveDraftToActiveSlot();
-      }
-
       await this.workspace.createModel(this.newModel);
       this.dialogRef.close();
     } catch (error: unknown) {
