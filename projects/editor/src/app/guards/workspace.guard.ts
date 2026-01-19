@@ -2,7 +2,7 @@ import { ActivatedRouteSnapshot, CanActivateFn, Router, UrlTree } from '@angular
 import { inject } from '@angular/core';
 import { StorageService } from '../services/storage.service';
 
-export const workspaceGuard: CanActivateFn = async (
+export const hasWorkspace: CanActivateFn = async (
   route: ActivatedRouteSnapshot,
 ): Promise<boolean | UrlTree> => {
   const router: Router = inject(Router);

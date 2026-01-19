@@ -3,7 +3,7 @@ import { HomeScreen } from './view/pages/home-screen/home.screen';
 import { WorkspaceScreen } from './view/pages/workspace-screen/workspace.screen';
 import { StartScreen } from './view/pages/start-screen/start.screen';
 import { OpenScreen } from './view/pages/open-screen/open.screen';
-import { workspaceGuard } from './guards/workspace.guard';
+import { hasWorkspace } from './guards/workspace.guard';
 
 export const routes: Routes = [
   { path: '', component: HomeScreen },
@@ -11,7 +11,7 @@ export const routes: Routes = [
   { path: 'open', component: OpenScreen },
   {
     path: 'ws/:pid',
-    canActivate: [workspaceGuard],
+    canActivate: [hasWorkspace],
     component: WorkspaceScreen,
     children: [{ path: ':nodeId', component: WorkspaceScreen }],
   },
