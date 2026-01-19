@@ -1,18 +1,7 @@
-import {
-  Bounds,
-  GAttribute,
-  GClassifier,
-  GDataType,
-  GModel,
-  GNode,
-  GRelation,
-} from './models/GModel';
+import { GClassifier, GDataType, GModel, GNode, GRelation } from './models/GModel';
 
 export type PatchNode = Partial<Pick<GNode, 'name' | 'superTypes' | 'attributes'>>;
 export type PatchDataType = Partial<Pick<GDataType, 'name' | 'literals'>>;
-export type PatchAttribute = Partial<
-  Pick<GAttribute, 'name' | 'typeId' | 'bounds' | 'defaultValue' | 'isKey' | 'isDerived'>
->;
 export type PatchRelation = Partial<Pick<GRelation, 'name' | 'from' | 'to' | 'isBidirectional'>>;
 
 export class GModelMutations {
@@ -65,49 +54,6 @@ export class GModelMutations {
     return { ...model, classifiers: patched };
   }
 
-  public static addAttribute(model: GModel, nodeId: string, attribute: GAttribute): GModel {
-    return this.updateNode(model, nodeId, {
-      attributes: [...(this.getNode(model, nodeId).attributes ?? []), attribute],
-    });
-  }
-
-  public static updateAttribute(
-    model: GModel,
-    nodeId: string,
-    attributeName: string,
-    patch: PatchAttribute,
-  ): GModel {
-    const node: GNode = this.getNode(model, nodeId);
-    const attributes: GAttribute[] = node.attributes ?? [];
-    const index: number = attributes.findIndex((attribute: GAttribute): boolean => {
-      return attribute.name === attributeName;
-    });
-
-    if (index < 0) throw new Error(`Attribute not found: ${nodeId}.${attributeName}`);
-    const patched: GAttribute[] = attributes.map(
-      (attribute: GAttribute, index: number): GAttribute => {
-        if (index !== index) return attribute;
-        return { ...attribute, ...patch };
-      },
-    );
-
-    return this.updateNode(model, nodeId, { attributes: patched });
-  }
-
-  public static removeAttribute(model: GModel, nodeId: string, attributeName: string): GModel {
-    const node: GNode = this.getNode(model, nodeId);
-    const attributes: GAttribute[] = node.attributes ?? [];
-
-    const filtered: GAttribute[] = attributes.filter((a: GAttribute): boolean => {
-      return a.name !== attributeName;
-    });
-    if (filtered.length === attributes.length) {
-      throw new Error(`Attribute not found: ${nodeId}.${attributeName}`);
-    }
-
-    return this.updateNode(model, nodeId, { attributes: filtered });
-  }
-
   public static addRelation(model: GModel, relation: GRelation): GModel {
     return { ...model, relations: [...(model.relations ?? []), relation] };
   }
@@ -136,38 +82,5 @@ export class GModelMutations {
 
     if (!found) throw new Error(`Relation not found: ${relationId}`);
     return { ...model, relations: patched };
-  }
-
-  public static updateRelationBounds(
-    model: GModel,
-    relationId: string,
-    relationEnd: 'from' | 'to',
-    bounds: Bounds,
-  ): GModel {
-    const relations: GRelation[] = model.relations ?? [];
-    const relation: GRelation | undefined = relations.find((rel: GRelation): boolean => {
-      return rel.id === relationId;
-    });
-
-    if (!relation) throw new Error(`Relation not found: ${relationId}`);
-    const patched: GRelation = {
-      ...relation,
-      [relationEnd]: {
-        ...relation[relationEnd],
-        bounds,
-      },
-    };
-
-    return this.updateRelation(model, relationId, patched);
-  }
-
-  public static getNode(model: GModel, nodeId: string): GNode {
-    const classifiers: GClassifier[] = model.classifiers ?? [];
-    const node: GClassifier | undefined = classifiers.find((classifier: GClassifier): boolean => {
-      return classifier.kind === 'GNode' && classifier.id === nodeId;
-    });
-
-    if (!node || node.kind !== 'GNode') throw new Error(`Node not found: ${nodeId}`);
-    return node;
   }
 }
