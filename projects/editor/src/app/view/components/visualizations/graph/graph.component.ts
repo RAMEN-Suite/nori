@@ -245,23 +245,30 @@ export class GraphComponent implements AfterViewInit, OnChanges {
     return element;
   }
 
-  private computeShortenedTarget(
+  private computeTrimmedEnds(
     sourceX: number,
     sourceY: number,
     targetX: number,
     targetY: number,
-    targetRadius: number,
-  ): { x2: number; y2: number } {
+    sourceTrimPixels: number,
+    targetTrimPixels: number,
+  ): { x1: number; y1: number; x2: number; y2: number } {
     const deltaX: number = targetX - sourceX;
     const deltaY: number = targetY - sourceY;
-    const length: number = Math.sqrt(deltaX * deltaX + deltaY * deltaY) || 1;
+    const length: number = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
+    if (!Number.isFinite(length) || length <= 0.0001) {
+      return { x1: sourceX, y1: sourceY, x2: targetX, y2: targetY };
+    }
 
     const unitX: number = deltaX / length;
     const unitY: number = deltaY / length;
 
     return {
-      x2: targetX - unitX * targetRadius,
-      y2: targetY - unitY * targetRadius,
+      x1: sourceX + unitX * sourceTrimPixels,
+      y1: sourceY + unitY * sourceTrimPixels,
+      x2: targetX - unitX * targetTrimPixels,
+      y2: targetY - unitY * targetTrimPixels,
     };
   }
 
@@ -273,30 +280,53 @@ export class GraphComponent implements AfterViewInit, OnChanges {
 
   private updateLinkPositions(): void {
     const nodeRadius: number = this.settings().nodeRadius;
-    const arrowPaddingPixels: number = 4;
+    const arrowTrimPixels: number = 5;
 
-    this.linkSelection?.each(
-      (
-        link: ResolvedLink,
-        index: number,
-        nodes: SVGLineElement[] | ArrayLike<SVGLineElement>,
-      ): void => {
-        const lineElement: SVGLineElement = nodes[index];
-
-        const shortened: { x2: number; y2: number } = this.computeShortenedTarget(
+    this.linkSelection
+      ?.attr('x1', (link: ResolvedLink): number => {
+        const trimmed = this.computeTrimmedEnds(
           link.source.x,
           link.source.y,
           link.target.x,
           link.target.y,
-          nodeRadius + arrowPaddingPixels,
+          nodeRadius + 1,
+          nodeRadius + arrowTrimPixels,
         );
-
-        lineElement.setAttribute('x1', String(link.source.x));
-        lineElement.setAttribute('y1', String(link.source.y));
-        lineElement.setAttribute('x2', String(shortened.x2));
-        lineElement.setAttribute('y2', String(shortened.y2));
-      },
-    );
+        return trimmed.x1;
+      })
+      ?.attr('y1', (link: ResolvedLink): number => {
+        const trimmed = this.computeTrimmedEnds(
+          link.source.x,
+          link.source.y,
+          link.target.x,
+          link.target.y,
+          nodeRadius + 1,
+          nodeRadius + arrowTrimPixels,
+        );
+        return trimmed.y1;
+      })
+      ?.attr('x2', (link: ResolvedLink): number => {
+        const trimmed = this.computeTrimmedEnds(
+          link.source.x,
+          link.source.y,
+          link.target.x,
+          link.target.y,
+          nodeRadius,
+          nodeRadius + arrowTrimPixels,
+        );
+        return trimmed.x2;
+      })
+      ?.attr('y2', (link: ResolvedLink): number => {
+        const trimmed = this.computeTrimmedEnds(
+          link.source.x,
+          link.source.y,
+          link.target.x,
+          link.target.y,
+          nodeRadius,
+          nodeRadius + arrowTrimPixels,
+        );
+        return trimmed.y2;
+      });
   }
 
   private updateNodePositions(): void {
