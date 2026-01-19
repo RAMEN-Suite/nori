@@ -16,7 +16,6 @@ export type GraphLayoutSettings = Readonly<{
   padding: GraphPadding;
 
   areIsolatedNodesHidden: boolean;
-  isSelectedNodeHighlighted: boolean;
 
   nodeRadius: number;
   layerGap: number;
@@ -39,8 +38,7 @@ export const DEFAULT_GRAPH_LAYOUT_SETTINGS: GraphLayoutSettings = {
   layoutMode: 'clusterTopDown',
   padding: DEFAULT_GRAPH_PADDING,
 
-  isSelectedNodeHighlighted: true,
-  areIsolatedNodesHidden: false,
+  areIsolatedNodesHidden: true,
 
   nodeRadius: 15,
   layerGap: 70,

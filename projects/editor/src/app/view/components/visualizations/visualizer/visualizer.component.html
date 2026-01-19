@@ -4,6 +4,47 @@
   </div>
 
   <div class="min-h-12.5">
-    <p-menubar></p-menubar>
+    <p-menubar>
+      <ng-template #start>
+        <div class="flex flex-row gap-2">
+          <div class="flex">
+            <p-select-button
+              [options]="layoutOptions"
+              optionLabel="label"
+              optionValue="mode"
+              [ngModel]="settings().layoutMode"
+              (ngModelChange)="handleSelectMode($event)"
+              [allowEmpty]="false"
+            >
+              <ng-template #item let-option>
+                <div class="flex flex-row items-center justify-center gap-2">
+                  <i [class]="option.icon"></i>
+                  <span>{{ option.label }}</span>
+                </div>
+              </ng-template>
+            </p-select-button>
+          </div>
+
+          @for (item of toggleOptions; track item.option) {
+            <div class="flex">
+              <p-toggle-button
+                [ngModel]="settings()[item.option]"
+                (ngModelChange)="handleToggleOption(item.option)"
+                [pTooltip]="item.tooltip"
+                tooltipPosition="top"
+              >
+                <ng-template #content let-isChecked>
+                  @if (isChecked) {
+                    <i [class]="item.onIcon"></i>
+                  } @else {
+                    <i [class]="item.offIcon"></i>
+                  }
+                </ng-template>
+              </p-toggle-button>
+            </div>
+          }
+        </div>
+      </ng-template>
+    </p-menubar>
   </div>
 </div>

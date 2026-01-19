@@ -78,6 +78,7 @@ export class GraphComponent implements AfterViewInit, OnChanges {
       changes['settings']
     ) {
       this.render(this.graphData());
+      this.clearHoverHighlight();
       this.applyHoverHighlight(this.workspace.selectedDerivedNodeId());
     }
   }
@@ -137,7 +138,7 @@ export class GraphComponent implements AfterViewInit, OnChanges {
 
     window.requestAnimationFrame((): void => {
       window.requestAnimationFrame((): void => {
-        this.fitToLayout();
+        this.fitToLayoutAnimated(180);
       });
     });
   }
@@ -395,7 +396,7 @@ export class GraphComponent implements AfterViewInit, OnChanges {
     this.linkSelection?.classed('is-dimmed', false).classed('is-highlighted', false);
   }
 
-  private fitToLayout(): void {
+  private fitToLayoutAnimated(durationMilliseconds: number = 180): void {
     if (!this.svgSelection || !this.zoomBehavior || !this.rootGroupSelection) return;
 
     const rootGroupElement: SVGGElement | null = this.rootGroupSelection.node();
@@ -426,11 +427,15 @@ export class GraphComponent implements AfterViewInit, OnChanges {
       (availableHeight - contentBox.height * clampedScale) / 2 -
       contentBox.y * clampedScale;
 
-    const transform: d3.ZoomTransform = d3.zoomIdentity
+    const targetTransform: d3.ZoomTransform = d3.zoomIdentity
       .translate(translateX, translateY)
       .scale(clampedScale);
 
-    this.svgSelection.call(this.zoomBehavior.transform, transform);
+    this.svgSelection
+      .transition()
+      .duration(durationMilliseconds)
+      .ease(d3.easeCubicInOut)
+      .call(this.zoomBehavior.transform, targetTransform);
   }
 
   private cleanup(): void {
@@ -454,7 +459,6 @@ export class GraphComponent implements AfterViewInit, OnChanges {
 
   protected handleNodeLeave(): void {
     this.clearHoverHighlight();
-    if (!this.settings().isSelectedNodeHighlighted) return;
     this.applyHoverHighlight(this.workspace.selectedDerivedNodeId());
   }
 
