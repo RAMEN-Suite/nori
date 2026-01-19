@@ -368,9 +368,9 @@ export class GraphComponent implements AfterViewInit, OnChanges {
 
   private applyHoverHighlight(nodeId: string): void {
     const model: RenderModel | undefined = this.renderModel;
-    if (!model) return;
+    if (!model || nodeId === '') return;
+    if (!model.nodesById.has(nodeId)) return;
 
-    if (nodeId === '') return;
     const relatedNodeIds: Set<string> = new Set<string>([nodeId]);
     const relatedLinkIds: Set<string> = new Set<string>();
 
@@ -463,7 +463,7 @@ export class GraphComponent implements AfterViewInit, OnChanges {
   }
 
   protected handleNodeClick(_: MouseEvent, node: PositionedNode): void {
-    this.workspace.setDerivedNodeId(node.id);
+    this.workspace.setSelectedDerivedNodeId(node.id);
     void this.router.navigate([node.id], { relativeTo: this.activatedRoute });
   }
 }

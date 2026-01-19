@@ -44,10 +44,10 @@ export const DEFAULT_GRAPH_LAYOUT_SETTINGS: GraphLayoutSettings = {
   layerGap: 70,
   nodeSeparation: 60,
 
-  isolatedColumns: 3,
+  isolatedColumns: 4,
   isolatedRowGap: 80,
   isolatedColumnGap: 120,
-  isolatedAreaGap: 80,
+  isolatedAreaGap: 100,
 };
 
 export type PositionedNode = GraphNode & {
