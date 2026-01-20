@@ -1,4 +1,4 @@
-import { GAttribute, GClassifier, GDataType, GModel, GNode, GRelation, Id } from './models/GModel';
+import { GAttribute, GClassifier, GDataType, GModel, GNode, GRelation, Id } from '../models/GModel';
 import { GModelMutations } from './GModelMutations';
 
 export class GModelOperations {

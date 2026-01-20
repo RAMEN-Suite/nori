@@ -1,18 +1,18 @@
 import { Component, effect, inject, OnDestroy, OnInit } from '@angular/core';
 import { WindowState } from '../../../states/window.state';
-import { ToolBarComponent } from '../../components/workspace/tool-bar/tool-bar.component';
+import { ToolBarComponent } from '../../components/header/tool-bar/tool-bar.component';
 import { StorageService } from '../../../services/storage.service';
 import { Manifest } from '../../../models/Manifest';
-import { SideMenuComponent } from '../../components/workspace/side-menu/side-menu.component';
-import { VisualizerComponent } from '../../components/workspace/visualizations/visualizer/visualizer.component';
+import { SideMenuComponent } from '../../components/side-menu/side-menu.component';
+import { GraphMenuComponent } from '../../components/visualization/graph-menu/graph-menu.component';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { WorkspaceService } from '../../../services/workspace.service';
-import { NodeEditorComponent } from '../../components/workspace/node-editor/node-editor.component';
+import { NodeEditorComponent } from '../../components/node-editor/node-editor.component';
 
 @Component({
   selector: 'app-workspace',
-  imports: [ToolBarComponent, SideMenuComponent, VisualizerComponent, NodeEditorComponent],
+  imports: [ToolBarComponent, SideMenuComponent, GraphMenuComponent, NodeEditorComponent],
   templateUrl: './workspace.screen.html',
   styleUrl: './workspace.screen.scss',
 })

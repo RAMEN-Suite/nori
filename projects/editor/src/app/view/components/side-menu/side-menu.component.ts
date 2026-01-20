@@ -7,9 +7,9 @@ import {
   viewChild,
   WritableSignal,
 } from '@angular/core';
-import { WorkspaceService } from '../../../../services/workspace.service';
+import { WorkspaceService } from '../../../services/workspace.service';
 import { PanelMenu } from 'primeng/panelmenu';
-import { GNode } from '../../../../core/models/GModel';
+import { GNode } from '../../../core/models/GModel';
 import { IftaLabel } from 'primeng/iftalabel';
 import { InputText } from 'primeng/inputtext';
 import { ScrollPanel } from 'primeng/scrollpanel';

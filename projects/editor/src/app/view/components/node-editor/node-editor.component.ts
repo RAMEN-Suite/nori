@@ -1,5 +1,5 @@
 import { Component, effect, inject, signal, WritableSignal } from '@angular/core';
-import { WorkspaceService } from '../../../../services/workspace.service';
+import { WorkspaceService } from '../../../services/workspace.service';
 import { ScrollPanel } from 'primeng/scrollpanel';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
@@ -10,7 +10,7 @@ import { Chip } from 'primeng/chip';
 import { Tooltip } from 'primeng/tooltip';
 import { Inplace } from 'primeng/inplace';
 import { InputText } from 'primeng/inputtext';
-import { WorkspaceState } from '../../../../states/workspace.state';
+import { WorkspaceState } from '../../../states/workspace.state';
 
 @Component({
   selector: 'app-node-editor',

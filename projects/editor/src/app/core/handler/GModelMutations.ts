@@ -1,4 +1,4 @@
-import { GClassifier, GDataType, GModel, GNode, GRelation } from './models/GModel';
+import { GClassifier, GDataType, GModel, GNode, GRelation } from '../models/GModel';
 
 export type PatchNode = Partial<Pick<GNode, 'name' | 'superTypes' | 'attributes'>>;
 export type PatchDataType = Partial<Pick<GDataType, 'name' | 'literals'>>;

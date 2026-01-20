@@ -8,7 +8,7 @@ import { Model } from '../../models/Model';
 import { BaseNode, SemanticHelper } from '../../core/validation/helper/SemanticHelper';
 
 @Injectable({ providedIn: 'root' })
-export class WorkspaceView {
+export class WorkspaceViewModel {
   private readonly storage: StorageService = inject(StorageService);
   private readonly store: WorkspaceStore = inject(WorkspaceStore);
 

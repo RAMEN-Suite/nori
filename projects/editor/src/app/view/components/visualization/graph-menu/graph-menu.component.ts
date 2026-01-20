@@ -1,8 +1,8 @@
 import { Component, computed, inject, Signal, signal, WritableSignal } from '@angular/core';
 import { GraphComponent } from '../graph/graph.component';
-import { GModel } from '../../../../../core/models/GModel';
-import { GModelGraph, GraphData } from '../../../../../core/GModelGraph';
-import { WorkspaceService } from '../../../../../services/workspace.service';
+import { GModel } from '../../../../core/models/GModel';
+import { GModelGraph, GraphData } from '../../../../core/GModelGraph';
+import { WorkspaceService } from '../../../../services/workspace.service';
 import { FormsModule } from '@angular/forms';
 import { Menubar } from 'primeng/menubar';
 import {
@@ -33,10 +33,10 @@ interface LayoutOption {
 @Component({
   selector: 'app-visualizer',
   imports: [GraphComponent, FormsModule, Menubar, SelectButton, ToggleButton, Tooltip, Button],
-  templateUrl: './visualizer.component.html',
-  styleUrl: './visualizer.component.scss',
+  templateUrl: './graph-menu.component.html',
+  styleUrl: './graph-menu.component.scss',
 })
-export class VisualizerComponent {
+export class GraphMenuComponent {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
 
   protected layoutOptions: LayoutOption[] = [

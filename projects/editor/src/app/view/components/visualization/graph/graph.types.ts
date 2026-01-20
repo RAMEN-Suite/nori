@@ -1,4 +1,4 @@
-import { GraphData, GraphLink, GraphNode } from '../../../../../core/GModelGraph';
+import { GraphData, GraphLink, GraphNode } from '../../../../core/GModelGraph';
 
 export type NodeColorMap = Readonly<Record<string, string>>;
 

@@ -14,7 +14,7 @@ import {
 } from '@angular/core';
 import * as d3 from 'd3';
 import { D3ZoomEvent, Selection, ZoomBehavior } from 'd3';
-import { GraphData } from '../../../../../core/GModelGraph';
+import { GraphData } from '../../../../core/GModelGraph';
 import {
   DEFAULT_GRAPH_LAYOUT_SETTINGS,
   GraphLayoutSettings,
@@ -26,7 +26,7 @@ import {
   ViewportSize,
 } from './graph.types';
 import { buildRenderModel, getViewportSize } from './graph.layout';
-import { WorkspaceService } from '../../../../../services/workspace.service';
+import { WorkspaceService } from '../../../../services/workspace.service';
 import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({

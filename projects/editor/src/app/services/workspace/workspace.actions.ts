@@ -1,7 +1,7 @@
 import { effect, inject, Injectable } from '@angular/core';
 import { StorageService } from '../storage.service';
 import { WorkspaceStore } from './workspace.store';
-import { WorkspaceView } from './workspace.view';
+import { WorkspaceViewModel } from './workspace.model';
 import { CreateNodeInput, SuggestionHelper } from '../../core/validation/helper/SuggestionHelper';
 import { Model } from '../../models/Model';
 import { GClassifier, GDataType, GModel, GNode, GRelation, Id } from '../../core/models/GModel';
@@ -10,8 +10,8 @@ import {
   PatchDataType,
   PatchNode,
   PatchRelation,
-} from '../../core/GModelMutations';
-import { GModelOperations } from '../../core/GModelOperations';
+} from '../../core/handler/GModelMutations';
+import { GModelOperations } from '../../core/handler/GModelOperations';
 import { GModelFactory } from '../../core/GModelFactory';
 
 export type CreateSlotInput = {
@@ -25,7 +25,7 @@ export type CreateSlotInput = {
 export class WorkspaceActions {
   private readonly storage: StorageService = inject(StorageService);
   private readonly store: WorkspaceStore = inject(WorkspaceStore);
-  private readonly view: WorkspaceView = inject(WorkspaceView);
+  private readonly view: WorkspaceViewModel = inject(WorkspaceViewModel);
 
   private readonly helper: SuggestionHelper = new SuggestionHelper();
 
