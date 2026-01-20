@@ -65,7 +65,8 @@ export class GraphComponent implements AfterViewInit, OnChanges {
 
   constructor() {
     effect((): void => {
-      this.applyHoverHighlight(this.workspace.selectedNodeId());
+      this.clearHoverHighlight();
+      this.applyHoverHighlight(this.workspace.store.selectedNodeId());
     });
   }
 
@@ -80,7 +81,7 @@ export class GraphComponent implements AfterViewInit, OnChanges {
     ) {
       this.render(this.graphData());
       this.clearHoverHighlight();
-      this.applyHoverHighlight(this.workspace.selectedNodeId());
+      this.applyHoverHighlight(this.workspace.store.selectedNodeId());
     }
   }
 
@@ -129,6 +130,9 @@ export class GraphComponent implements AfterViewInit, OnChanges {
   private render(data: GraphData): void {
     if (!this.rootGroupSelection) return;
     const viewport: ViewportSize = getViewportSize(this.getHostElement());
+
+    this.svgSelection?.interrupt();
+    this.svgSelection?.call(this.zoomBehavior!.transform, d3.zoomIdentity);
 
     const model: RenderModel = buildRenderModel({
       data,
@@ -443,11 +447,11 @@ export class GraphComponent implements AfterViewInit, OnChanges {
 
   protected handleNodeLeave(): void {
     this.clearHoverHighlight();
-    this.applyHoverHighlight(this.workspace.selectedNodeId());
+    this.applyHoverHighlight(this.workspace.store.selectedNodeId());
   }
 
   protected handleNodeClick(_: MouseEvent, node: PositionedNode): void {
-    this.workspace.setSelectedNodeId(node.id);
+    this.workspace.store.setSelectedNodeId(node.id);
     void this.router.navigate([node.id], { relativeTo: this.activatedRoute });
   }
 }
