@@ -12,7 +12,7 @@ export class DataTypeRules {
     const diagnostics: Diagnostic[] = [];
 
     const literals: GLiteral[] | undefined = dataType.literals;
-    if (!literals || literals.length === 0) return diagnostics;
+    if (!literals) return diagnostics;
 
     diagnostics.push(
       ...this.validateUniqueLiteralNames(literals, classifierPath),

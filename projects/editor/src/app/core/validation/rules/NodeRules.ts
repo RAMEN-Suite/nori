@@ -7,7 +7,7 @@ import {
 } from '../container/Diagnostics';
 import { VALIDATION_ERROR } from '../../const/VALIDATION_ERROR';
 import { ValidationContext } from '../SemanticValidator';
-import { BaseNode, SemanticValidationHelper } from '../helper/SemanticValidationHelper';
+import { BaseNode, SemanticHelper } from '../helper/SemanticHelper';
 
 export class NodeRules {
   public validate(
@@ -17,7 +17,7 @@ export class NodeRules {
   ): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
 
-    const baseNode: BaseNode | null = SemanticValidationHelper.getBaseSuperType(
+    const baseNode: BaseNode | null = SemanticHelper.getBaseSuperType(
       node,
       validationContext.baseId,
     );
@@ -37,7 +37,7 @@ export class NodeRules {
         code: VALIDATION_ERROR.BASE_NODE_NOT_FOUND,
         message: `Base node '${baseNode.baseNodeId}' not found.`,
         path: classifierPath.property('superTypes').index(0),
-        ref: node.id,
+        ref: baseNode.baseNodeId,
       };
       diagnostics.push(Diagnostics.error(report));
     }

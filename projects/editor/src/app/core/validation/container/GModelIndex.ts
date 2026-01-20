@@ -7,20 +7,20 @@ export class GModelIndex {
   public readonly relationsById: ReadonlyMap<Id, GRelation>;
 
   constructor(public readonly model: GModel) {
-    const imports: Map<string, string> = new Map<string, string>();
+    const imports: Map<Id, string> = new Map<Id, string>();
     for (const imp of this.model.imports) {
       imports.set(imp.modelId, imp.schemaId);
     }
 
-    const nodes: Map<string, GNode> = new Map<string, GNode>();
-    const dataTypes: Map<string, GDataType> = new Map<string, GDataType>();
-    for (const classifier of model.classifiers) {
+    const nodes: Map<Id, GNode> = new Map<Id, GNode>();
+    const dataTypes: Map<Id, GDataType> = new Map<Id, GDataType>();
+    for (const classifier of this.model.classifiers) {
       if (classifier.kind === 'GNode') nodes.set(classifier.id, classifier);
       else if (classifier.kind === 'GDataType') dataTypes.set(classifier.id, classifier);
     }
 
-    const relations: Map<string, GRelation> = new Map<string, GRelation>();
-    for (const relation of model.relations) {
+    const relations: Map<Id, GRelation> = new Map<Id, GRelation>();
+    for (const relation of this.model.relations) {
       relations.set(relation.id, relation);
     }
 

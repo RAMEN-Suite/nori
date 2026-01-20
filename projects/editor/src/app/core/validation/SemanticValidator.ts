@@ -1,4 +1,4 @@
-import { GModel } from '../models/GModel';
+import { GModel, Id } from '../models/GModel';
 import { GModelIndex } from './container/GModelIndex';
 import { Diagnostic, DiagnosticPath, DiagnosticReport, Diagnostics } from './container/Diagnostics';
 import { VALIDATION_ERROR } from '../const/VALIDATION_ERROR';
@@ -14,10 +14,10 @@ export interface ValidationContext {
   readonly derivedModel: GModel;
   readonly baseIndex: GModelIndex;
   readonly derivedIndex: GModelIndex;
-  readonly baseId: string;
+  readonly baseId: Id;
 }
 
-class SemanticValidator {
+export class SemanticValidator {
   private readonly classifierRules: ClassifierRules = new ClassifierRules();
   private readonly relationRules: RelationRules = new RelationRules();
 
@@ -49,5 +49,3 @@ class SemanticValidator {
     return diagnostics;
   }
 }
-
-export default SemanticValidator;

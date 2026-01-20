@@ -9,11 +9,14 @@ export const hasWorkspace: CanActivateFn = async (
   const storage: StorageService = inject(StorageService);
 
   const projectId: string | null = route.paramMap.get('pid');
-  if (!projectId) return router.parseUrl('/');
+  if (!projectId) return router.createUrlTree(['/']);
 
   const isProjectExisting: boolean = await storage.isProjectExisting(projectId);
-  if (!isProjectExisting) return router.parseUrl('/');
+  if (!isProjectExisting) return router.createUrlTree(['/']);
 
-  storage.selectProject(projectId);
+  if (storage.selectedProjectId() !== projectId) {
+    storage.selectProject(projectId);
+  }
+
   return true;
 };

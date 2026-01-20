@@ -1,4 +1,4 @@
-import { Component, effect, inject, OnInit, signal, WritableSignal } from '@angular/core';
+import { Component, computed, inject, Signal, signal, WritableSignal } from '@angular/core';
 import { GraphComponent } from '../graph/graph.component';
 import { GModel } from '../../../../../core/models/GModel';
 import { GModelGraph, GraphData } from '../../../../../core/GModelGraph';
@@ -36,40 +36,32 @@ interface LayoutOption {
   templateUrl: './visualizer.component.html',
   styleUrl: './visualizer.component.scss',
 })
-export class VisualizerComponent implements OnInit {
+export class VisualizerComponent {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
-  protected graphData: WritableSignal<GraphData> = signal({ nodes: [], links: [] });
+
+  protected layoutOptions: LayoutOption[] = [
+    { label: 'Cluster', icon: 'pi pi-share-alt', mode: 'clusterTopDown' },
+    { label: 'Tree', icon: 'pi pi-sitemap', mode: 'treeTopDown' },
+  ];
+
+  protected toggleOptions: ToggleOption[] = [
+    {
+      onIcon: 'pi pi-eye-slash',
+      offIcon: 'pi pi-eye',
+      tooltip: 'Toggle Isolated Nodes',
+      option: 'areIsolatedNodesHidden',
+    },
+  ];
 
   protected settings: WritableSignal<GraphLayoutSettings> = signal({
     ...DEFAULT_GRAPH_LAYOUT_SETTINGS,
     padding: { ...DEFAULT_GRAPH_LAYOUT_SETTINGS.padding },
   });
 
-  protected layoutOptions: LayoutOption[] = [];
-  protected toggleOptions: ToggleOption[] = [];
-
-  constructor() {
-    effect((): void => {
-      const model: GModel | null = this.workspace.derivedModel();
-      this.graphData.set(new GModelGraph().build(model));
-    });
-  }
-
-  public ngOnInit(): void {
-    this.layoutOptions = [
-      { label: 'Cluster', icon: 'pi pi-share-alt', mode: 'clusterTopDown' },
-      { label: 'Tree', icon: 'pi pi-sitemap', mode: 'treeTopDown' },
-    ];
-
-    this.toggleOptions = [
-      {
-        onIcon: 'pi pi-eye-slash',
-        offIcon: 'pi pi-eye',
-        tooltip: 'Toggle Isolated Nodes',
-        option: 'areIsolatedNodesHidden',
-      },
-    ];
-  }
+  protected graphData: Signal<GraphData> = computed((): GraphData => {
+    const model: GModel | null = this.workspace.slotModel();
+    return new GModelGraph().build(model);
+  });
 
   public handleSelectLayoutMode(layoutMode: GraphLayoutMode): void {
     this.settings.update((s: GraphLayoutSettings): GraphLayoutSettings => ({ ...s, layoutMode }));
@@ -81,7 +73,7 @@ export class VisualizerComponent implements OnInit {
     );
   }
 
-  public handleReset(): void {
+  public handleLayoutReset(): void {
     this.handleSelectLayoutMode(this.settings().layoutMode);
   }
 }

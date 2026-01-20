@@ -7,7 +7,7 @@
           role="button"
           [label]="item.label"
           class="justify-center py-1! text-sm select-none"
-          [class.active]="workspace.selectedDerivedSlot() === item.automationId"
+          [class.active]="workspace.selectedSlot() === item.automationId"
           [class.cursor-pointer]="!item.isFirst"
           [disabled]="item.isFirst"
           (keydown.enter)="handleChangeModelSlot(item.automationId)"

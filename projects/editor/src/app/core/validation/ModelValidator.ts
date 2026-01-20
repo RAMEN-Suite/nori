@@ -1,4 +1,4 @@
-import SemanticValidator, { ValidationOptions } from './SemanticValidator';
+import { SemanticValidator, ValidationOptions } from './SemanticValidator';
 import { Diagnostic, DiagnosticPath, DiagnosticReport, Diagnostics } from './container/Diagnostics';
 import { SchemaValidator } from './SchemaValidator';
 import { VALIDATION_ERROR } from '../const/VALIDATION_ERROR';
@@ -19,13 +19,15 @@ export class ModelValidator {
 
     this.validateSchema('BASE', base, diagnostics);
     this.validateSchema('DERIVED', derived, diagnostics);
-    if (diagnostics.length > 0) return { diagnostics, hasErrors: true };
+
+    let hasErrors: boolean = diagnostics.some((d: Diagnostic): boolean => d.severity === 'error');
+    if (diagnostics.length > 0) return { diagnostics, hasErrors };
 
     const options: ValidationOptions = { baseId: base.id };
     const strict: Diagnostic[] = this.strict.validate(base, derived, options);
-
     const all: Diagnostic[] = [...diagnostics, ...strict];
-    const hasErrors: boolean = all.some((d: Diagnostic): boolean => d.severity === 'error');
+
+    hasErrors = all.some((d: Diagnostic): boolean => d.severity === 'error');
     return { diagnostics: all, hasErrors };
   }
 
@@ -36,10 +38,12 @@ export class ModelValidator {
   ): asserts input is GModel {
     try {
       SchemaValidator.assertValid(input);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message: string = error instanceof Error ? error.message : String(error);
+
       const report: DiagnosticReport = {
         code: VALIDATION_ERROR.SCHEMA_INVALID,
-        message: `${kind} - ${error.message}`,
+        message: `${kind} - ${message}`,
         path: DiagnosticPath.root(),
       };
       diags.push(Diagnostics.error(report));

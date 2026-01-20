@@ -55,12 +55,12 @@ export class ClassifierRules {
     return diagnostics;
   }
 
-  private validateUniqueIdentifiers(classifiers: GClassifier[]): Diagnostic[] {
+  private validateUniqueIdentifiers(classifiers: ReadonlyArray<GClassifier>): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
-    const firstIndexByIdentifier: Map<Id, number> = new Map<string, number>();
+    const firstIndexByIdentifier: Map<Id, number> = new Map<Id, number>();
 
     classifiers.forEach((classifier: GClassifier, classifierIndex: number): void => {
-      const classifierIdentifier: string = classifier.id;
+      const classifierIdentifier: Id = classifier.id;
       const previousIndex: number | undefined = firstIndexByIdentifier.get(classifierIdentifier);
 
       if (previousIndex !== undefined) {

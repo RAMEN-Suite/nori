@@ -18,18 +18,12 @@ type HierarchyDatum = Readonly<{
 
 export function buildRenderModel(input: GraphInputModel): RenderModel {
   const nodes: PositionedNode[] = createNodes(input.data);
-  const links: ResolvedLink[] = createLinks(input.data, nodes);
-
   const nodesById: Map<string, PositionedNode> = new Map<string, PositionedNode>(
     nodes.map((node: PositionedNode): [string, PositionedNode] => [node.id, node]),
   );
 
-  const visibleModel: { nodes: PositionedNode[]; links: ResolvedLink[] } = applyVisibility(
-    nodes,
-    links,
-    input.settings,
-  );
-
+  const links: ResolvedLink[] = createLinks(input.data, nodesById);
+  const visibleModel = applyVisibility(nodes, links, input.settings);
   applyLayout(visibleModel.nodes, visibleModel.links, input.viewport, input.settings);
 
   return {
@@ -65,15 +59,11 @@ function createNodes(data: GraphData): PositionedNode[] {
   );
 }
 
-function createLinks(data: GraphData, nodes: PositionedNode[]): ResolvedLink[] {
-  const nodesById: Map<string, PositionedNode> = new Map<string, PositionedNode>(
-    nodes.map((node: PositionedNode): [string, PositionedNode] => [node.id, node]),
-  );
-
+function createLinks(data: GraphData, nodesById: Map<string, PositionedNode>): ResolvedLink[] {
   return data.links
     .map((link: GraphLink): ResolvedLink | null => {
-      const sourceNode: PositionedNode | undefined = nodesById.get(String(link.source));
-      const targetNode: PositionedNode | undefined = nodesById.get(String(link.target));
+      const sourceNode: PositionedNode | undefined = nodesById.get(link.source);
+      const targetNode: PositionedNode | undefined = nodesById.get(link.target);
       if (!sourceNode || !targetNode) return null;
       return { ...link, source: sourceNode, target: targetNode };
     })

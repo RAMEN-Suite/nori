@@ -5,23 +5,20 @@ import {
   Injectable,
   Signal,
   signal,
-  untracked,
   WritableSignal,
 } from '@angular/core';
-import { GClassifier, GDataType, GModel, GNode, GRelation } from '../core/models/GModel';
+import { GClassifier, GDataType, GModel, GNode, GRelation, Id } from '../core/models/GModel';
 import { SuggestionHelper } from '../core/validation/helper/SuggestionHelper';
 import { ModelValidator, ValidationResult } from '../core/validation/ModelValidator';
 import { StorageService } from './storage.service';
 import { Model } from '../models/Model';
 import { GModelFactory } from '../core/GModelFactory';
-import { WorkspaceState } from '../states/workspace.state';
 import { GModelOperations } from '../core/GModelOperations';
 import { GModelMutations, PatchDataType, PatchNode, PatchRelation } from '../core/GModelMutations';
 
-export type CreateModelInput = {
+export type CreateSlotInput = {
   uri: string;
   name: string;
-  slug: string;
   version: string;
   description: string;
 };
@@ -29,36 +26,34 @@ export type CreateModelInput = {
 @Injectable({ providedIn: 'root' })
 export class WorkspaceService {
   private readonly storage: StorageService = inject(StorageService);
-  private readonly workspaceState: WorkspaceState = inject(WorkspaceState);
-
   private readonly suggest: SuggestionHelper = new SuggestionHelper();
   private readonly validator: ModelValidator = new ModelValidator();
 
-  public readonly selectedDerivedNodeId: WritableSignal<string> = signal('');
-  public readonly selectedDerivedSlot: WritableSignal<number> = signal(1);
-  public readonly activeDraft: WritableSignal<GModel | null> = signal(null);
+  public readonly selectedNodeId: WritableSignal<Id | null> = signal(null);
+  public readonly selectedSlot: WritableSignal<number> = signal(1);
+  public readonly workingModel: WritableSignal<GModel | null> = signal(null);
 
-  private readonly baseSlot: Signal<number> = computed(
-    (): number => this.selectedDerivedSlot() - 1,
+  private readonly baseSlot: Signal<number> = computed((): number =>
+    Math.max(0, this.selectedSlot() - 1),
   );
 
   public readonly baseModel: Signal<GModel | null> = computed((): GModel | null => {
-    const model: Model | undefined = this.storage.modelsBySlot().get(this.baseSlot());
-    return model?.gmodel ?? null;
+    const work: Model | undefined = this.storage.modelsBySlot().get(this.baseSlot());
+    return work?.gmodel ?? null;
   });
 
-  public readonly derivedModel: Signal<GModel | null> = computed((): GModel | null => {
-    const model: Model | undefined = this.storage.modelsBySlot().get(this.selectedDerivedSlot());
-    return model?.gmodel ?? null;
+  public readonly slotModel: Signal<GModel | null> = computed((): GModel | null => {
+    const work: Model | undefined = this.storage.modelsBySlot().get(this.selectedSlot());
+    return work?.gmodel ?? null;
   });
 
-  public readonly baseId: Signal<string> = computed((): string => this.baseModel()?.id ?? '');
+  public readonly baseId: Signal<Id> = computed((): Id => this.baseModel()?.id ?? '');
 
   public readonly validation: Signal<ValidationResult> = computed((): ValidationResult => {
     const base: GModel | null = this.baseModel();
-    const draft: GModel | null = this.activeDraft();
-    if (!base || !draft) return { diagnostics: [], hasErrors: false };
-    return this.validator.validate(base, draft);
+    const work: GModel | null = this.workingModel();
+    if (!base || !work) return { diagnostics: [], hasErrors: false };
+    return this.validator.validate(base, work);
   });
 
   public readonly baseNodes: Signal<GNode[]> = computed((): GNode[] => {
@@ -66,10 +61,20 @@ export class WorkspaceService {
     return base ? Array.from(this.suggest.listNodes(base)) : [];
   });
 
-  public readonly draftNodes: Signal<GNode[]> = computed((): GNode[] => {
-    const draft: GModel | null = this.activeDraft();
-    return draft ? Array.from(this.suggest.listNodes(draft)) : [];
+  public readonly workNodes: Signal<GNode[]> = computed((): GNode[] => {
+    const work: GModel | null = this.workingModel();
+    return work ? Array.from(this.suggest.listNodes(work)) : [];
   });
+
+  public readonly workNodesByBaseId: Signal<ReadonlyMap<Id, ReadonlyArray<GNode>>> = computed(
+    (): ReadonlyMap<Id, ReadonlyArray<GNode>> => {
+      const base: GModel | null = this.baseModel();
+      const work: GModel | null = this.workingModel();
+      if (!base || !work) return new Map<Id, ReadonlyArray<GNode>>();
+
+      return this.suggest.groupDerivedNodesByBaseId(base, work);
+    },
+  );
 
   public readonly baseRelations: Signal<GRelation[]> = computed((): GRelation[] => {
     const base: GModel | null = this.baseModel();
@@ -78,14 +83,14 @@ export class WorkspaceService {
 
   public readonly dataTypes: Signal<GDataType[]> = computed((): GDataType[] => {
     const base: GModel | null = this.baseModel();
-    const draft: GModel | null = this.activeDraft();
-    if (!base || !draft) return [];
-    return Array.from(this.suggest.listAllDataTypes(base, draft, this.baseId()));
+    const work: GModel | null = this.workingModel();
+    if (!base || !work) return [];
+    return Array.from(this.suggest.listAllDataTypes(base, work));
   });
 
-  public readonly draftTypes: Signal<GDataType[]> = computed((): GDataType[] => {
-    const draft: GModel | null = this.activeDraft();
-    return draft ? Array.from(this.suggest.listDataTypes(draft)) : [];
+  public readonly workTypes: Signal<GDataType[]> = computed((): GDataType[] => {
+    const work: GModel | null = this.workingModel();
+    return work ? Array.from(this.suggest.listDataTypes(work)) : [];
   });
 
   constructor() {
@@ -93,162 +98,159 @@ export class WorkspaceService {
       const modelsBySlot: Map<number, Model> = this.storage.modelsBySlot();
       if (modelsBySlot.size === 0) return;
 
-      const slot: number = this.selectedDerivedSlot();
+      const slot: number = this.selectedSlot();
       if (!modelsBySlot.has(slot)) this.setSelectedSlot(1);
     });
 
     effect((): void => {
-      const derived: GModel | null = this.derivedModel();
-      const isDirty: boolean = untracked((): boolean => this.workspaceState.state().isDirty);
-      if (isDirty) return;
-
-      this.activeDraft.set(derived ? structuredClone(derived) : null);
-      this.workspaceState.isDirty(false);
+      const slotModel: GModel | null = this.slotModel();
+      this.workingModel.set(slotModel ? structuredClone(slotModel) : null);
     });
   }
 
-  public setSelectedDerivedNodeId(nodeId: string): void {
-    this.selectedDerivedNodeId.set(nodeId);
+  public setSelectedNodeId(nodeId: Id | null): void {
+    this.selectedNodeId.set(nodeId);
   }
 
   public setSelectedSlot(slot: number): void {
-    this.selectedDerivedSlot.set(slot);
+    this.selectedSlot.set(Math.max(1, slot));
   }
 
   public resetSelections(): void {
-    this.selectedDerivedNodeId.set('');
-    this.selectedDerivedSlot.set(1);
+    this.setSelectedNodeId(null);
+    this.setSelectedSlot(1);
   }
 
-  public resetDraft(): void {
-    const derived: GModel | null = this.derivedModel();
-    this.activeDraft.set(derived ? structuredClone(derived) : null);
-    this.workspaceState.isDirty(false);
+  public resetWork(): void {
+    const slotModel: GModel | null = this.slotModel();
+    this.workingModel.set(slotModel ? structuredClone(slotModel) : null);
   }
 
-  public async createNode(name: string, baseNodeId: string): Promise<GNode> {
+  public async createNode(name: string, baseNodeId: Id): Promise<GNode> {
     const node: GNode = this.suggest.createDerivedNode(this.baseId(), { name, baseNodeId });
-    this.apply((m: GModel): GModel => GModelMutations.addClassifier(m, node));
-    await this.saveDraftToActiveSlot();
+    this.apply((w: GModel): GModel => GModelMutations.addClassifier(w, node));
+    await this.saveWorkToSelectedSlot();
     return node;
   }
 
-  public async duplicateNode(sourceNodeId: string): Promise<GNode> {
-    const draft: GModel | null = this.activeDraft();
-    if (!draft) throw new Error('No draft loaded.');
+  public async duplicateNode(sourceNodeId: Id): Promise<GNode> {
+    const work: GModel | null = this.workingModel();
+    if (!work) throw new Error('No work loaded.');
 
-    const source: GNode | undefined = draft.classifiers.find(
+    const source: GNode | undefined = work.classifiers.find(
       (c: GClassifier): c is GNode => c.kind === 'GNode' && c.id === sourceNodeId,
     );
     if (!source) throw new Error(`Node not found: ${sourceNodeId}`);
     const cloned: GNode = this.suggest.duplicateDerivedNode(source);
 
-    this.apply((m: GModel): GModel => GModelMutations.addClassifier(m, cloned));
-    await this.saveDraftToActiveSlot();
+    this.apply((w: GModel): GModel => GModelMutations.addClassifier(w, cloned));
+    await this.saveWorkToSelectedSlot();
     return cloned;
   }
 
-  public async deleteNode(nodeId: string): Promise<void> {
-    this.apply((m: GModel): GModel => GModelOperations.deleteNode(m, nodeId));
-    await this.saveDraftToActiveSlot();
+  public async deleteNode(nodeId: Id): Promise<void> {
+    this.apply((w: GModel): GModel => GModelOperations.deleteNode(w, nodeId));
+    await this.saveWorkToSelectedSlot();
 
-    if (this.selectedDerivedNodeId() === nodeId) {
-      this.selectedDerivedNodeId.set('');
+    if (this.selectedNodeId() === nodeId) {
+      this.selectedNodeId.set('');
     }
   }
 
-  public updateNode(nodeId: string, patch: PatchNode): void {
-    this.apply((m: GModel): GModel => GModelMutations.updateNode(m, nodeId, patch));
+  public async updateNode(nodeId: Id, patch: PatchNode): Promise<void> {
+    this.apply((w: GModel): GModel => GModelMutations.updateNode(w, nodeId, patch));
+    await this.saveWorkToSelectedSlot();
   }
 
   public async createDataType(name: string): Promise<GDataType> {
     const dataType: GDataType = this.suggest.createDataType({ name });
-    this.apply((m: GModel): GModel => GModelMutations.addClassifier(m, dataType));
-    await this.saveDraftToActiveSlot();
+    this.apply((w: GModel): GModel => GModelMutations.addClassifier(w, dataType));
+    await this.saveWorkToSelectedSlot();
     return dataType;
   }
 
-  public deleteDataType(dataTypeId: string): void {
-    this.apply((m: GModel): GModel => GModelOperations.deleteDataType(m, dataTypeId));
+  public async deleteDataType(dataTypeId: Id): Promise<void> {
+    this.apply((w: GModel): GModel => GModelOperations.deleteDataType(w, dataTypeId));
+    await this.saveWorkToSelectedSlot();
   }
 
-  public updateDataType(dataTypeId: string, patch: PatchDataType): void {
-    this.apply((m: GModel): GModel => GModelMutations.updateDataType(m, dataTypeId, patch));
+  public async updateDataType(dataTypeId: Id, patch: PatchDataType): Promise<void> {
+    this.apply((w: GModel): GModel => GModelMutations.updateDataType(w, dataTypeId, patch));
+    await this.saveWorkToSelectedSlot();
   }
 
-  public createRelation(baseRelationId: string, fromNodeId: string, toNodeId: string): GRelation {
+  public async createRelation(
+    baseRelationId: Id,
+    fromNodeId: Id,
+    toNodeId: Id,
+  ): Promise<GRelation> {
     const base: GModel | null = this.baseModel();
     if (!base) throw new Error('No base loaded.');
 
-    const relation: GRelation = this.suggest.createDerivedRelation(base, this.baseId(), {
+    const relation: GRelation = this.suggest.createDerivedRelation(base, base.id, {
       baseRelationId,
       fromNodeId,
       toNodeId,
     });
 
-    this.apply((m: GModel): GModel => GModelMutations.addRelation(m, relation));
+    this.apply((w: GModel): GModel => GModelMutations.addRelation(w, relation));
+    await this.saveWorkToSelectedSlot();
     return relation;
   }
 
-  public updateRelation(relationId: string, patch: PatchRelation): void {
-    this.apply((m: GModel): GModel => GModelMutations.updateRelation(m, relationId, patch));
+  public async updateRelation(relationId: Id, patch: PatchRelation): Promise<void> {
+    this.apply((w: GModel): GModel => GModelMutations.updateRelation(w, relationId, patch));
+    await this.saveWorkToSelectedSlot();
   }
 
-  public deleteRelation(relationId: string): void {
-    this.apply((m: GModel): GModel => GModelMutations.removeRelationById(m, relationId));
+  public async deleteRelation(relationId: Id): Promise<void> {
+    this.apply((w: GModel): GModel => GModelMutations.removeRelationById(w, relationId));
+    await this.saveWorkToSelectedSlot();
   }
 
-  public apply(mutator: (draft: GModel) => GModel): void {
-    const draft: GModel | null = this.activeDraft();
-    if (!draft) throw new Error('No draft loaded.');
+  private apply(mutator: (work: GModel) => GModel): void {
+    const current: GModel | null = this.workingModel();
+    if (!current) throw new Error('No work loaded.');
 
-    const updated: GModel = mutator(draft);
-    this.activeDraft.set(updated);
-    this.workspaceState.isDirty(true);
+    const updated: GModel = mutator(current);
+    this.workingModel.set(updated);
   }
 
-  public listFromRelations(fromNodeId: string): GRelation[] {
+  public listFromRelations(fromNodeId: Id): GRelation[] {
     const base: GModel | null = this.baseModel();
-    const draft: GModel | null = this.activeDraft();
-    if (!base || !draft) return [];
-    return Array.from(this.suggest.listFromRelations(base, draft, this.baseId(), fromNodeId));
+    const work: GModel | null = this.workingModel();
+    if (!base || !work) return [];
+    return Array.from(this.suggest.listFromRelations(base, work, fromNodeId));
   }
 
-  public listToNodes(baseRelationId: string): GNode[] {
+  public listToNodes(baseRelationId: Id): GNode[] {
     const base: GModel | null = this.baseModel();
-    const draft: GModel | null = this.activeDraft();
-    if (!base || !draft) return [];
-    return Array.from(this.suggest.listToNodes(base, draft, this.baseId(), baseRelationId));
+    const work: GModel | null = this.workingModel();
+    if (!base || !work) return [];
+    return Array.from(this.suggest.listToNodes(base, work, baseRelationId));
   }
 
-  public listForbiddenAttributes(nodeId: string): Set<string> {
+  public listForbiddenAttributes(nodeId: Id): Set<string> {
     const base: GModel | null = this.baseModel();
-    const draft: GModel | null = this.activeDraft();
-    if (!base || !draft) return new Set<string>();
-    return new Set(this.suggest.listForbiddenAttributes(base, draft, this.baseId(), nodeId));
+    const work: GModel | null = this.workingModel();
+    if (!base || !work) return new Set<string>();
+    return new Set(this.suggest.listForbiddenAttributes(base, work, nodeId));
   }
 
-  public filteredDraftNodes(baseNodeId: string): Signal<GNode[]> {
-    return computed((): GNode[] => {
-      const draft: GModel | null = this.activeDraft();
-      const base: GModel | null = this.baseModel();
-      if (!base || !draft) return [];
-      return Array.from(this.suggest.filterDerivedNodes(base, draft, baseNodeId));
-    });
+  public filteredWorkNodes(baseNodeId: Id): ReadonlyArray<GNode> {
+    return this.workNodesByBaseId().get(baseNodeId) ?? [];
   }
 
-  public async updateModelMeta(patch: Pick<CreateModelInput, 'name' | 'version'>): Promise<void> {
-    this.apply((draft: GModel) => ({
-      ...draft,
-      name: patch.name ?? draft.name,
-      version: patch.version ?? draft.version,
+  public async updateModelMeta(patch: Pick<CreateSlotInput, 'name' | 'version'>): Promise<void> {
+    this.apply((work: GModel) => ({
+      ...work,
+      name: patch.name ?? work.name,
+      version: patch.version ?? work.version,
     }));
-    await this.saveDraftToActiveSlot();
+    await this.saveWorkToSelectedSlot();
   }
 
-  public async createModel(input: CreateModelInput): Promise<void> {
-    if (this.workspaceState.state().isDirty) return;
-
+  public async createModel(input: CreateSlotInput): Promise<void> {
     const pid: string | null = this.storage.selectedProjectId();
     if (!pid) throw new Error('No active project selected.');
 
@@ -258,7 +260,7 @@ export class WorkspaceService {
 
     const gmodel: GModel = GModelFactory.deriveModel(base, {
       schemaId: input.uri,
-      id: input.slug,
+      id: SuggestionHelper.createIdentifier(),
       name: input.name,
       version: input.version,
     });
@@ -270,24 +272,21 @@ export class WorkspaceService {
       description: input.description,
     });
 
-    this.selectedDerivedSlot.set(slot + 1);
-    this.workspaceState.isDirty(false);
+    this.setSelectedSlot(slot + 1);
   }
 
-  public async saveDraftToActiveSlot(): Promise<void> {
+  public async saveWorkToSelectedSlot(): Promise<void> {
     const pid: string | null = this.storage.selectedProjectId();
-    const slot: number = this.selectedDerivedSlot();
-    const draft: GModel | null = this.activeDraft();
+    const slot: number = this.selectedSlot();
+    const work: GModel | null = this.workingModel();
     const row: Model | undefined = this.storage.modelsBySlot().get(slot);
 
-    if (!pid || !draft || !row) throw new Error('Cannot save (missing state).');
+    if (!pid || !work || !row) throw new Error('Cannot save (missing state).');
 
     await this.storage.updateModel(row.modelId, {
-      gmodel: draft,
+      gmodel: work,
       name: row.name,
       description: row.description,
     });
-
-    this.workspaceState.isDirty(false);
   }
 }

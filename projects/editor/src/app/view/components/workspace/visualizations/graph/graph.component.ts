@@ -51,6 +51,7 @@ export class GraphComponent implements AfterViewInit, OnChanges {
 
   protected renderModel?: RenderModel;
   protected resizeObserver?: ResizeObserver;
+  protected pendingResizeRender: boolean = false;
 
   protected readonly host: Signal<ElementRef<HTMLDivElement> | undefined> = viewChild('host');
 
@@ -64,7 +65,7 @@ export class GraphComponent implements AfterViewInit, OnChanges {
 
   constructor() {
     effect((): void => {
-      this.applyHoverHighlight(this.workspace.selectedDerivedNodeId());
+      this.applyHoverHighlight(this.workspace.selectedNodeId());
     });
   }
 
@@ -79,7 +80,7 @@ export class GraphComponent implements AfterViewInit, OnChanges {
     ) {
       this.render(this.graphData());
       this.clearHoverHighlight();
-      this.applyHoverHighlight(this.workspace.selectedDerivedNodeId());
+      this.applyHoverHighlight(this.workspace.selectedNodeId());
     }
   }
 
@@ -111,8 +112,14 @@ export class GraphComponent implements AfterViewInit, OnChanges {
     this.svgSelection.call(this.zoomBehavior);
 
     this.resizeObserver = new ResizeObserver((): void => {
-      this.updateViewBox();
-      this.render(this.graphData());
+      if (this.pendingResizeRender) return;
+      this.pendingResizeRender = true;
+
+      window.requestAnimationFrame((): void => {
+        this.pendingResizeRender = false;
+        this.updateViewBox();
+        this.render(this.graphData());
+      });
     });
     this.resizeObserver.observe(hostElement);
 
@@ -182,7 +189,7 @@ export class GraphComponent implements AfterViewInit, OnChanges {
 
     enterSelection
       .append('circle')
-      .attr('r', DEFAULT_GRAPH_LAYOUT_SETTINGS.nodeRadius)
+      .attr('r', this.settings().nodeRadius)
       .style('--g-node-fill', (node: PositionedNode): string => this.getNodeColor(node));
 
     enterSelection
@@ -198,6 +205,7 @@ export class GraphComponent implements AfterViewInit, OnChanges {
       enterSelection.merge(selection);
     mergedSelection
       .select('circle')
+      .attr('r', this.settings().nodeRadius)
       .style('--g-node-fill', (node: PositionedNode) => this.getNodeColor(node));
 
     return mergedSelection;
@@ -283,9 +291,9 @@ export class GraphComponent implements AfterViewInit, OnChanges {
     const nodeRadius: number = this.settings().nodeRadius;
     const arrowTrimPixels: number = 5;
 
-    this.linkSelection
-      ?.attr('x1', (link: ResolvedLink): number => {
-        const trimmed = this.computeTrimmedEnds(
+    this.linkSelection?.each(
+      (link: ResolvedLink, index: number, elements: ArrayLike<SVGLineElement>): void => {
+        const trimmed: { x1: number; y1: number; x2: number; y2: number } = this.computeTrimmedEnds(
           link.source.x,
           link.source.y,
           link.target.x,
@@ -293,41 +301,17 @@ export class GraphComponent implements AfterViewInit, OnChanges {
           nodeRadius + 1,
           nodeRadius + arrowTrimPixels,
         );
-        return trimmed.x1;
-      })
-      ?.attr('y1', (link: ResolvedLink): number => {
-        const trimmed = this.computeTrimmedEnds(
-          link.source.x,
-          link.source.y,
-          link.target.x,
-          link.target.y,
-          nodeRadius + 1,
-          nodeRadius + arrowTrimPixels,
-        );
-        return trimmed.y1;
-      })
-      ?.attr('x2', (link: ResolvedLink): number => {
-        const trimmed = this.computeTrimmedEnds(
-          link.source.x,
-          link.source.y,
-          link.target.x,
-          link.target.y,
-          nodeRadius,
-          nodeRadius + arrowTrimPixels,
-        );
-        return trimmed.x2;
-      })
-      ?.attr('y2', (link: ResolvedLink): number => {
-        const trimmed = this.computeTrimmedEnds(
-          link.source.x,
-          link.source.y,
-          link.target.x,
-          link.target.y,
-          nodeRadius,
-          nodeRadius + arrowTrimPixels,
-        );
-        return trimmed.y2;
-      });
+
+        const element: SVGLineElement | undefined = elements[index];
+        if (!element) return;
+
+        d3.select<SVGLineElement, ResolvedLink>(element)
+          .attr('x1', trimmed.x1)
+          .attr('y1', trimmed.y1)
+          .attr('x2', trimmed.x2)
+          .attr('y2', trimmed.y2);
+      },
+    );
   }
 
   private updateNodePositions(): void {
@@ -366,9 +350,9 @@ export class GraphComponent implements AfterViewInit, OnChanges {
       );
   }
 
-  private applyHoverHighlight(nodeId: string): void {
+  private applyHoverHighlight(nodeId: string | null): void {
     const model: RenderModel | undefined = this.renderModel;
-    if (!model || nodeId === '') return;
+    if (!model || !nodeId) return;
     if (!model.nodesById.has(nodeId)) return;
 
     const relatedNodeIds: Set<string> = new Set<string>([nodeId]);
@@ -459,11 +443,11 @@ export class GraphComponent implements AfterViewInit, OnChanges {
 
   protected handleNodeLeave(): void {
     this.clearHoverHighlight();
-    this.applyHoverHighlight(this.workspace.selectedDerivedNodeId());
+    this.applyHoverHighlight(this.workspace.selectedNodeId());
   }
 
   protected handleNodeClick(_: MouseEvent, node: PositionedNode): void {
-    this.workspace.setSelectedDerivedNodeId(node.id);
+    this.workspace.setSelectedNodeId(node.id);
     void this.router.navigate([node.id], { relativeTo: this.activatedRoute });
   }
 }

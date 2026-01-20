@@ -1,5 +1,2 @@
-@if (isElectronRuntime) {
-  <app-title-bar />
-}
-
+<app-title-bar [hidden]="!isElectronRuntime" />
 <router-outlet />

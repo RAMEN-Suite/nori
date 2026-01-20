@@ -17,8 +17,9 @@ import { NodeEditorComponent } from '../../components/workspace/node-editor/node
   styleUrl: './workspace.screen.scss',
 })
 export class WorkspaceScreen implements OnInit, OnDestroy {
-  protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   protected readonly windowState: WindowState = inject(WindowState);
+
+  protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   protected readonly storage: StorageService = inject(StorageService);
 
   protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
@@ -29,8 +30,7 @@ export class WorkspaceScreen implements OnInit, OnDestroy {
       (map: ParamMap): void => {
         const currentNodeId: string | null = map.get('nodeId');
         if (currentNodeId === null) return;
-
-        this.workspace.setSelectedDerivedNodeId(currentNodeId);
+        this.workspace.setSelectedNodeId(currentNodeId);
       },
     );
 

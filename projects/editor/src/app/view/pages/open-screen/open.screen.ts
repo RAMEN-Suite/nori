@@ -2,7 +2,7 @@ import { Component, computed, inject, OnInit, Signal, signal, WritableSignal } f
 import { StorageService } from '../../../services/storage.service';
 import { WindowState } from '../../../states/window.state';
 import { InputText } from 'primeng/inputtext';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { RouterLink } from '@angular/router';
 import { InputGroup } from 'primeng/inputgroup';
@@ -18,7 +18,6 @@ import { DatePipe } from '@angular/common';
   selector: 'app-open-screen',
   imports: [
     InputText,
-    ReactiveFormsModule,
     Button,
     RouterLink,
     InputGroup,
@@ -42,7 +41,6 @@ export class OpenScreen implements OnInit {
   protected readonly filteredManifest: Signal<Manifest[]> = computed((): Manifest[] => {
     const query: string = this.searchInput().trim().toLowerCase();
     const list: Manifest[] = this.storage.manifests();
-
     if (!query) return list;
 
     return list.filter(

@@ -66,7 +66,7 @@ export type ResolvedLink = Omit<GraphLink, 'source' | 'target'> & {
 export type RenderModel = Readonly<{
   nodes: PositionedNode[];
   links: ResolvedLink[];
-  nodesById: Map<string, PositionedNode>;
+  nodesById: ReadonlyMap<string, PositionedNode>;
 }>;
 
 export type ViewportSize = Readonly<{ width: number; height: number }>;

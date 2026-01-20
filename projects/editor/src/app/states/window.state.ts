@@ -16,7 +16,7 @@ const defaultState: State = {
 })
 export class WindowState {
   private readonly titleService: Title = inject(Title);
-  public readonly state: WritableSignal<State> = signal(defaultState);
+  public readonly state: WritableSignal<State> = signal({ ...defaultState });
 
   constructor() {
     effect((): void => this.titleService.setTitle(this.state().title));

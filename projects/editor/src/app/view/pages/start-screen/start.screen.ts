@@ -81,13 +81,8 @@ export class StartScreen {
     this.manifest.metamodelVersion = version;
     this.manifest.metamodelName = name;
 
-    try {
-      const example: GModel | undefined = this.isCreatingExample ? EXAMPLES[0] : undefined;
-      await this.storage.createProject(this.manifest, this.selectedMetamodel, example);
-      void this.router.navigate(['/ws', this.storage.selectedProjectId()]);
-    } catch (error: unknown) {
-      console.error(error);
-      // ToDo: Toast Message
-    }
+    const example: GModel | undefined = this.isCreatingExample ? EXAMPLES[0] : undefined;
+    await this.storage.createProject(this.manifest, this.selectedMetamodel, example);
+    void this.router.navigate(['/ws', this.storage.selectedProjectId()]);
   }
 }

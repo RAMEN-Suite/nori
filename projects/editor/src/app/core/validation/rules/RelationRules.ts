@@ -7,7 +7,7 @@ import {
 } from '../container/Diagnostics';
 import { VALIDATION_ERROR } from '../../const/VALIDATION_ERROR';
 import { ValidationContext } from '../SemanticValidator';
-import { BaseNode, SemanticValidationHelper } from '../helper/SemanticValidationHelper';
+import { BaseNode, SemanticHelper } from '../helper/SemanticHelper';
 
 export class RelationRules {
   public validate(validationContext: ValidationContext): Diagnostic[] {
@@ -21,7 +21,7 @@ export class RelationRules {
         .property('relations')
         .index(relationIndex);
 
-      const baseRelationId: Id | null = SemanticValidationHelper.getBaseRelationSuperTypeId(
+      const baseRelationId: Id | null = SemanticHelper.getBaseRelationSuperTypeId(
         relation,
         validationContext.baseId,
       );
@@ -44,24 +44,27 @@ export class RelationRules {
           code: VALIDATION_ERROR.BASE_RELATION_NOT_FOUND,
           message: `Base relation '${baseRelationId}' not found.`,
           path: relationPath.property('superTypes').index(0),
-          ref: relation.id,
+          ref: baseRelationId,
         };
         diagnostics.push(Diagnostics.error(report));
         return;
       }
 
-      if (!SemanticValidationHelper.areRelationEndsLocal(relation)) {
+      if (!SemanticHelper.areRelationEndsLocal(relation)) {
         const report: DiagnosticReport = {
           code: VALIDATION_ERROR.RELATION_ENDS_NOT_LOCAL,
           message: `Relation ends must reference local nodes.`,
-          path: relationPath,
+          path: relationPath.property('from').property('nodeId'),
           ref: relation.id,
         };
         diagnostics.push(Diagnostics.error(report));
         return;
       }
 
-      diagnostics.push(...this.validateEndNodes(validationContext, relation, relationPath));
+      const eDiags: Diagnostic[] = this.validateEndNodes(validationContext, relation, relationPath);
+      diagnostics.push(...eDiags);
+      if (eDiags.length > 0) return;
+
       diagnostics.push(
         ...this.validateEndCompatibility(validationContext, relation, baseRelation, relationPath),
       );
@@ -104,8 +107,8 @@ export class RelationRules {
   ): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
 
-    const fromNodeId: string = relation.from.nodeId;
-    const toNodeId: string = relation.to.nodeId;
+    const fromNodeId: Id = relation.from.nodeId;
+    const toNodeId: Id = relation.to.nodeId;
 
     const fromNode: GNode | undefined = validationContext.derivedIndex.nodesById.get(fromNodeId);
     if (!fromNode) {
@@ -149,7 +152,7 @@ export class RelationRules {
 
     if (!fromNode || !toNode) return diagnostics;
 
-    const fromBaseNode: BaseNode | null = SemanticValidationHelper.getBaseSuperType(
+    const fromBaseNode: BaseNode | null = SemanticHelper.getBaseSuperType(
       fromNode,
       validationContext.baseId,
     );
@@ -164,7 +167,7 @@ export class RelationRules {
       return diagnostics;
     }
 
-    const toBaseNode: BaseNode | null = SemanticValidationHelper.getBaseSuperType(
+    const toBaseNode: BaseNode | null = SemanticHelper.getBaseSuperType(
       toNode,
       validationContext.baseId,
     );
@@ -243,7 +246,7 @@ export class RelationRules {
     const diagnostics: Diagnostic[] = [];
 
     if (
-      !SemanticValidationHelper.isDerivedBoundsCompatible(
+      !SemanticHelper.isDerivedBoundsCompatible(
         baseRelation.from.bounds,
         derivedRelation.from.bounds,
       )
@@ -258,10 +261,7 @@ export class RelationRules {
     }
 
     if (
-      !SemanticValidationHelper.isDerivedBoundsCompatible(
-        baseRelation.to.bounds,
-        derivedRelation.to.bounds,
-      )
+      !SemanticHelper.isDerivedBoundsCompatible(baseRelation.to.bounds, derivedRelation.to.bounds)
     ) {
       const report: DiagnosticReport = {
         code: VALIDATION_ERROR.RELATION_TO_BOUNDS_INVALID,

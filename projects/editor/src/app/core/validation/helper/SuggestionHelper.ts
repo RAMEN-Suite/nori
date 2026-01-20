@@ -1,18 +1,26 @@
-import { GAttribute, GConstraint, GDataType, GModel, GNode, GRelation } from '../../models/GModel';
+import {
+  GAttribute,
+  GConstraint,
+  GDataType,
+  GModel,
+  GNode,
+  GRelation,
+  Id,
+} from '../../models/GModel';
 import { GModelIndex } from '../container/GModelIndex';
 import { Refs } from '../container/References';
-import { BaseNode, SemanticValidationHelper } from './SemanticValidationHelper';
+import { BaseNode, SemanticHelper } from './SemanticHelper';
 import ShortUniqueId from 'short-unique-id';
 
 export interface CreateNodeInput {
   readonly name: string;
-  readonly baseNodeId: string;
+  readonly baseNodeId: Id;
 }
 
 export interface CreateRelationInput {
-  readonly baseRelationId: string;
-  readonly fromNodeId: string;
-  readonly toNodeId: string;
+  readonly baseRelationId: Id;
+  readonly fromNodeId: Id;
+  readonly toNodeId: Id;
 }
 
 export interface CreateDataTypeInput {
@@ -38,29 +46,19 @@ export class SuggestionHelper {
     return types.sort((a: GDataType, b: GDataType): number => a.name.localeCompare(b.name));
   }
 
-  public listAllDataTypes(base: GModel, derived: GModel, baseId: string): ReadonlyArray<GDataType> {
-    const baseIndex: GModelIndex = new GModelIndex(base);
-    const derivedIndex: GModelIndex = new GModelIndex(derived);
-    const types: GDataType[] = [...Array.from(derivedIndex.dataTypesById.values())];
+  public listAllDataTypes(base: GModel, derived: GModel): ReadonlyArray<GDataType> {
+    const baseIndex = new GModelIndex(base);
+    const derivedIndex = new GModelIndex(derived);
+    const types: GDataType[] = [...derivedIndex.dataTypesById.values()];
 
     for (const dataType of baseIndex.dataTypesById.values()) {
-      types.push({
-        ...dataType,
-        id: Refs.qualify(baseId, dataType.id),
-        name: dataType.name,
-      });
+      types.push({ ...dataType, id: Refs.qualify(base.id, dataType.id) });
     }
 
-    types.sort((a: GDataType, b: GDataType): number => a.name.localeCompare(b.name));
-    return types;
+    return types.sort((a: GDataType, b: GDataType): number => a.name.localeCompare(b.name));
   }
 
-  public listForbiddenAttributes(
-    base: GModel,
-    derived: GModel,
-    baseId: string,
-    nodeId: string,
-  ): ReadonlySet<string> {
+  public listForbiddenAttributes(base: GModel, derived: GModel, nodeId: Id): ReadonlySet<string> {
     const baseIndex: GModelIndex = new GModelIndex(base);
     const derivedIndex: GModelIndex = new GModelIndex(derived);
 
@@ -68,8 +66,8 @@ export class SuggestionHelper {
     if (!node) return new Set<string>();
 
     const forbidden: Set<string> = new Set<string>();
+    const superType: BaseNode | null = SemanticHelper.getBaseSuperType(node, base.id);
 
-    const superType: BaseNode | null = SemanticValidationHelper.getBaseSuperType(node, baseId);
     if (superType) {
       const baseNode: GNode | undefined = baseIndex.nodesById.get(superType.baseNodeId);
       const baseAttributes: GAttribute[] = baseNode?.attributes ?? [];
@@ -85,8 +83,7 @@ export class SuggestionHelper {
   public listFromRelations(
     base: GModel,
     derived: GModel,
-    baseId: string,
-    fromNodeId: string,
+    fromNodeId: Id,
   ): ReadonlyArray<GRelation> {
     const baseIndex: GModelIndex = new GModelIndex(base);
     const derivedIndex: GModelIndex = new GModelIndex(derived);
@@ -94,37 +91,29 @@ export class SuggestionHelper {
     const fromNode: GNode | undefined = derivedIndex.nodesById.get(fromNodeId);
     if (!fromNode) return [];
 
-    const fromSuperType: BaseNode | null = SemanticValidationHelper.getBaseSuperType(
-      fromNode,
-      baseId,
-    );
-    if (!fromSuperType) return [];
+    const superType: BaseNode | null = SemanticHelper.getBaseSuperType(fromNode, base.id);
+    if (!superType) return [];
 
     const allowed: GRelation[] = [];
     for (const relation of baseIndex.relationsById.values()) {
-      if (relation.from.nodeId === fromSuperType.baseNodeId) allowed.push(relation);
+      if (relation.from.nodeId === superType.baseNodeId) allowed.push(relation);
     }
 
     return allowed.sort((a: GRelation, b: GRelation): number => a.name.localeCompare(b.name));
   }
 
-  public listToNodes(
-    base: GModel,
-    derived: GModel,
-    baseId: string,
-    baseRelationId: string,
-  ): ReadonlyArray<GNode> {
+  public listToNodes(base: GModel, derived: GModel, baseRelationId: Id): ReadonlyArray<GNode> {
     const baseIndex: GModelIndex = new GModelIndex(base);
     const derivedIndex: GModelIndex = new GModelIndex(derived);
 
     const baseRelation: GRelation | undefined = baseIndex.relationsById.get(baseRelationId);
     if (!baseRelation) return [];
 
-    const expectedToBaseId: string = baseRelation.to.nodeId;
+    const expectedToBaseId: Id = baseRelation.to.nodeId;
     const allowed: GNode[] = [];
 
     for (const node of derivedIndex.nodesById.values()) {
-      const superType: BaseNode | null = SemanticValidationHelper.getBaseSuperType(node, baseId);
+      const superType: BaseNode | null = SemanticHelper.getBaseSuperType(node, base.id);
       if (!superType) continue;
       if (superType.baseNodeId === expectedToBaseId) allowed.push(node);
     }
@@ -132,24 +121,35 @@ export class SuggestionHelper {
     return allowed.sort((a: GNode, b: GNode): number => a.name.localeCompare(b.name));
   }
 
-  public filterDerivedNodes(
+  public groupDerivedNodesByBaseId(
     base: GModel,
     derived: GModel,
-    baseNodeId: string,
-  ): ReadonlyArray<GNode> {
+  ): ReadonlyMap<Id, ReadonlyArray<GNode>> {
     const derivedIndex: GModelIndex = new GModelIndex(derived);
-    const nodes: GNode[] = [];
+    const grouped: Map<Id, GNode[]> = new Map<Id, GNode[]>();
 
     for (const node of derivedIndex.nodesById.values()) {
-      const superType: BaseNode | null = SemanticValidationHelper.getBaseSuperType(node, base.id);
+      const superType: BaseNode | null = SemanticHelper.getBaseSuperType(node, base.id);
       if (!superType) continue;
-      if (superType.baseNodeId === baseNodeId) nodes.push(node);
+
+      const baseNodeId: Id = superType.baseNodeId;
+
+      const list: GNode[] | undefined = grouped.get(baseNodeId);
+      if (list) list.push(node);
+      else grouped.set(baseNodeId, [node]);
     }
 
-    return nodes.sort((a: GNode, b: GNode): number => a.name.localeCompare(b.name));
+    for (const [baseNodeId, list] of grouped.entries()) {
+      grouped.set(
+        baseNodeId,
+        list.sort((a: GNode, b: GNode): number => a.name.localeCompare(b.name)),
+      );
+    }
+
+    return grouped;
   }
 
-  public createDerivedNode(baseId: string, input: CreateNodeInput): GNode {
+  public createDerivedNode(baseId: Id, input: CreateNodeInput): GNode {
     return {
       kind: 'GNode',
       id: SuggestionHelper.createIdentifier(),
@@ -172,11 +172,7 @@ export class SuggestionHelper {
     };
   }
 
-  public createDerivedRelation(
-    base: GModel,
-    baseId: string,
-    input: CreateRelationInput,
-  ): GRelation {
+  public createDerivedRelation(base: GModel, baseId: Id, input: CreateRelationInput): GRelation {
     const baseIndex: GModelIndex = new GModelIndex(base);
     const baseRelation: GRelation | undefined = baseIndex.relationsById.get(input.baseRelationId);
     if (!baseRelation) throw new Error(`Base relation not found: ${input.baseRelationId}`);

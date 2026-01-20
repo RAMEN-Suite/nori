@@ -1,28 +1,18 @@
 import { Component, inject } from '@angular/core';
 import { InputText } from 'primeng/inputtext';
 import { Button } from 'primeng/button';
-import { CreateModelInput, WorkspaceService } from '../../../../services/workspace.service';
+import { CreateSlotInput, WorkspaceService } from '../../../../services/workspace.service';
 import { Fieldset } from 'primeng/fieldset';
 import { IftaLabel } from 'primeng/iftalabel';
 import { Message } from 'primeng/message';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { Textarea } from 'primeng/textarea';
 import { REGEXP } from '../../../../core/const/REGEXP';
-import { SuggestionHelper } from '../../../../core/validation/helper/SuggestionHelper';
 import { DynamicDialogRef } from 'primeng/dynamicdialog';
 
 @Component({
   selector: 'app-modal-create-model',
-  imports: [
-    InputText,
-    Button,
-    Fieldset,
-    IftaLabel,
-    Message,
-    ReactiveFormsModule,
-    Textarea,
-    FormsModule,
-  ],
+  imports: [InputText, Button, Fieldset, IftaLabel, Message, Textarea, FormsModule],
   templateUrl: './create-model.dialog.html',
   styleUrl: './create-model.dialog.scss',
 })
@@ -30,7 +20,7 @@ export class CreateModelDialog {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   protected readonly dialogRef: DynamicDialogRef = inject(DynamicDialogRef);
 
-  protected newModel: CreateModelInput;
+  protected newModel: CreateSlotInput;
   protected isSubmitted: boolean = false;
 
   constructor() {
@@ -39,7 +29,6 @@ export class CreateModelDialog {
       description: '',
       version: '1.0.0',
       uri: 'https://example.com/',
-      slug: '',
     };
   }
 
@@ -55,7 +44,7 @@ export class CreateModelDialog {
 
   protected isUriValid(): boolean {
     const uri: string = this.newModel.uri.trim();
-    return uri !== '' && REGEXP.isValidURITemplate.test(uri);
+    return uri !== '' && REGEXP.isValidURI.test(uri);
   }
 
   protected isFormValid(): boolean {
@@ -70,13 +59,7 @@ export class CreateModelDialog {
     this.isSubmitted = true;
     if (!this.isFormValid()) return;
 
-    try {
-      this.newModel.slug = SuggestionHelper.createIdentifier();
-      await this.workspace.createModel(this.newModel);
-      this.dialogRef.close();
-    } catch (error: unknown) {
-      console.error(error);
-      // TODO: Add error handling
-    }
+    await this.workspace.createModel(this.newModel);
+    this.dialogRef.close();
   }
 }

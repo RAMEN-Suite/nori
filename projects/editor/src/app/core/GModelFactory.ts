@@ -13,10 +13,8 @@ export class GModelFactory {
     return {
       $schema: SchemaValidator.getSchemaNode().$id!,
       $id: input.schemaId,
-
       id: input.id,
       version: input.version,
-
       kind: 'GModel',
       name: input.name,
 

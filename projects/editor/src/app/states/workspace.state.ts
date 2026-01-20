@@ -12,9 +12,9 @@ const defaultState: State = {
   providedIn: 'root',
 })
 export class WorkspaceState {
-  public readonly state: WritableSignal<State> = signal(defaultState);
+  public readonly state: WritableSignal<State> = signal({ ...defaultState });
 
-  public isDirty(isDirty: boolean): void {
+  public setDirty(isDirty: boolean): void {
     this.state.update((s: State): State => ({ ...s, isDirty }));
   }
 }

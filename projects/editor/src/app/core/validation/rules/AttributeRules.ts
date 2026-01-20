@@ -1,4 +1,4 @@
-import { Bounds, GAttribute, GNode, TypeRef } from '../../models/GModel';
+import { GAttribute, GNode, Id, TypeRef } from '../../models/GModel';
 import {
   Diagnostic,
   DiagnosticPath,
@@ -6,9 +6,9 @@ import {
   Diagnostics,
 } from '../container/Diagnostics';
 import { VALIDATION_ERROR } from '../../const/VALIDATION_ERROR';
-import { Builtins } from '../container/References';
+import { Builtins, Refs } from '../container/References';
 import { ValidationContext } from '../SemanticValidator';
-import { BaseNode, SemanticValidationHelper } from '../helper/SemanticValidationHelper';
+import { BaseNode, SemanticHelper } from '../helper/SemanticHelper';
 
 export class AttributeRules {
   public validate(
@@ -54,12 +54,7 @@ export class AttributeRules {
         diagnostics.push(Diagnostics.error(report));
       }
 
-      const bounds: Bounds = attribute.bounds;
-      const boundsAreValid: boolean =
-        bounds.lowerBound >= 0 &&
-        (bounds.upperBound === -1 || bounds.upperBound >= bounds.lowerBound);
-
-      if (!boundsAreValid) {
+      if (!SemanticHelper.areBoundsCoherent(attribute.bounds)) {
         const report: DiagnosticReport = {
           code: VALIDATION_ERROR.ATTRIBUTE_BOUNDS_INVALID,
           message: `Invalid bounds for attribute '${attribute.name}' in node '${node.id}'.`,
@@ -88,7 +83,7 @@ export class AttributeRules {
     validationContext: ValidationContext,
     node: GNode,
   ): ReadonlySet<string> {
-    const baseNode: BaseNode | null = SemanticValidationHelper.getBaseSuperType(
+    const baseNode: BaseNode | null = SemanticHelper.getBaseSuperType(
       node,
       validationContext.baseId,
     );
@@ -110,14 +105,13 @@ export class AttributeRules {
 
   private attributeTypeExists(validationContext: ValidationContext, typeId: TypeRef): boolean {
     if (Builtins.isBuiltin(typeId)) return true;
-    if (validationContext.derivedIndex.dataTypesById.has(typeId)) return true;
+    const { baseId, baseIndex, derivedIndex } = validationContext;
 
-    const baseTypeId: string | null = SemanticValidationHelper.getBaseQualifiedId(
-      typeId,
-      validationContext.baseId,
-    );
-    if (!baseTypeId) return false;
+    if (Refs.isQualified(typeId)) {
+      const baseTypeId: Id | null = SemanticHelper.getBaseQualifiedId(typeId, baseId);
+      return !!baseTypeId && baseIndex.dataTypesById.has(baseTypeId);
+    }
 
-    return validationContext.baseIndex.dataTypesById.has(baseTypeId);
+    return derivedIndex.dataTypesById.has(typeId);
   }
 }

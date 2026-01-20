@@ -1,9 +1,9 @@
 import { REGEXP } from '../../const/REGEXP';
-import { BuiltinType } from '../../models/GModel';
+import { BuiltinType, Id, QualifiedRef, Ref, TypeRef } from '../../models/GModel';
 
 export interface QualifiedRefParts {
-  readonly modelId: string;
-  readonly nodeId: string;
+  readonly modelId: Id;
+  readonly nodeId: Id;
 }
 
 export class Builtins {
@@ -14,17 +14,17 @@ export class Builtins {
     'integer',
   ]);
 
-  public static isBuiltin(ref: string): ref is BuiltinType {
+  public static isBuiltin(ref: TypeRef): ref is BuiltinType {
     return Builtins.set.has(ref);
   }
 }
 
 export class Refs {
-  public static isQualified(ref: string): boolean {
+  public static isQualified(ref: Ref): ref is QualifiedRef {
     return REGEXP.isQualifiedRef.test(ref);
   }
 
-  public static splitQualified(ref: string): QualifiedRefParts {
+  public static splitQualified(ref: QualifiedRef): QualifiedRefParts {
     if (!Refs.isQualified(ref)) {
       throw new Error(`Invalid QualifiedRef: '${ref}'`);
     }
@@ -33,7 +33,7 @@ export class Refs {
     return { modelId: ref.slice(0, index), nodeId: ref.slice(index + 1) };
   }
 
-  public static qualify(baseId: string, nodeId: string): string {
+  public static qualify(baseId: Id, nodeId: Id): QualifiedRef {
     return `${baseId}:${nodeId}`;
   }
 }

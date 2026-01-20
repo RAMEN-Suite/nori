@@ -15,5 +15,6 @@ export const routes: Routes = [
     component: WorkspaceScreen,
     children: [{ path: ':nodeId', component: WorkspaceScreen }],
   },
+  // todo, add not found screen.
   { path: '**', redirectTo: '' },
 ];
