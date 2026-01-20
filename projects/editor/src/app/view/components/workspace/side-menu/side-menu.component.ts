@@ -84,7 +84,7 @@ export class SideMenuComponent {
   );
 
   private createSideMenu(): SideMenuItem[] {
-    const baseNodes: GNode[] = this.workspace.baseNodes();
+    const baseNodes: GNode[] = this.workspace.view.baseNodes();
     const menuItems: SideMenuItem[] = [];
 
     for (const node of baseNodes) {
@@ -105,10 +105,10 @@ export class SideMenuComponent {
   }
 
   private createSubMenu(baseId: string): SideMenuItem[] {
-    const draftNodes: ReadonlyArray<GNode> = this.workspace.filteredWorkNodes(baseId);
-    const currentItemId: string | null = this.workspace.selectedNodeId();
+    const nodes: ReadonlyArray<GNode> = this.workspace.view.workNodesByBaseId().get(baseId) ?? [];
+    const currentItemId: string | null = this.workspace.store.selectedNodeId();
 
-    return draftNodes.map((derived: GNode): SideMenuItem => {
+    return nodes.map((derived: GNode): SideMenuItem => {
       return {
         id: derived.id,
         label: derived.name,
@@ -144,18 +144,18 @@ export class SideMenuComponent {
   }
 
   protected async handleCreateNode(baseNodeId: string): Promise<void> {
-    const newNode: GNode = await this.workspace.createNode('Untitled', baseNodeId);
+    const newNode: GNode = await this.workspace.actions.createNode('Untitled', baseNodeId);
     void this.router.navigate([newNode.id], { relativeTo: this.activatedRoute });
-    this.workspace.setSelectedNodeId(newNode.id);
+    this.workspace.store.setSelectedNodeId(newNode.id);
   }
 
   protected async handleDuplicateNode(): Promise<void> {
     const nodeId: string | undefined = this.selectedContextItem()?.id;
     if (!nodeId) return;
 
-    const newNode: GNode = await this.workspace.duplicateNode(nodeId);
+    const newNode: GNode = await this.workspace.actions.duplicateNode(nodeId);
     void this.router.navigate([newNode.id], { relativeTo: this.activatedRoute });
-    this.workspace.setSelectedNodeId(newNode.id);
+    this.workspace.store.setSelectedNodeId(newNode.id);
   }
 
   protected async handleDeleteNode(): Promise<void> {
@@ -180,7 +180,7 @@ export class SideMenuComponent {
       },
       accept: async (): Promise<void> => {
         if (!selectedMenuItem.id) return;
-        await this.workspace.deleteNode(selectedMenuItem.id);
+        await this.workspace.actions.deleteNode(selectedMenuItem.id);
         void this.router.navigate([], { relativeTo: this.activatedRoute });
       },
     });
@@ -188,7 +188,7 @@ export class SideMenuComponent {
 
   protected handleSelectPanelItem(item: SideMenuItem): void {
     if (item.isCategory) return;
-    this.workspace.setSelectedNodeId(item.id ?? null);
+    this.workspace.store.setSelectedNodeId(item.id ?? null);
     void this.router.navigate([item.id], { relativeTo: this.activatedRoute });
   }
 

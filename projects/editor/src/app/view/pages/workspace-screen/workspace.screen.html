@@ -1,4 +1,4 @@
-@let isNodeSelected = !!workspace.selectedNodeId();
+@let isNodeSelected = !!workspace.store.selectedNodeId();
 
 <app-tool-bar />
 
@@ -12,7 +12,12 @@
 
   <div class="flex flex-5" animate.enter="node-editor-entrance">
     <app-node-editor class="basis-full" [hidden]="!isNodeSelected" />
-    <div class="flex" [hidden]="isNodeSelected">sample text</div>
+
+    @if (!isNodeSelected) {
+      <div class="flex flex-col" animate.enter="welcome-entrance">
+        <div class="flex">sample text</div>
+      </div>
+    }
   </div>
 
   <div

@@ -18,16 +18,17 @@ import { Model } from '../../../../models/Model';
 import { Ripple } from 'primeng/ripple';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { CreateModelDialog } from '../../dialogs/create-model/create-model.dialog';
+import { Tooltip } from 'primeng/tooltip';
 
 type BreadcrumbItem = Omit<MenuItem, 'items'> & {
   isFirst?: boolean;
   isLast?: boolean;
-  automationId?: number;
+  slot?: number;
 };
 
 @Component({
   selector: 'app-breadcrumbs',
-  imports: [Breadcrumb, Chip, ContextMenu, Ripple],
+  imports: [Breadcrumb, Chip, ContextMenu, Ripple, Tooltip],
   providers: [DialogService],
   templateUrl: './breadcrumbs.component.html',
   styleUrl: './breadcrumbs.component.scss',
@@ -95,7 +96,7 @@ export class BreadcrumbsComponent {
         label: `Model ${slot}`,
         isFirst: false,
         isLast: false,
-        automationId: slot,
+        slot: slot,
       });
     }
 
@@ -113,7 +114,7 @@ export class BreadcrumbsComponent {
   }
 
   protected handleChangeModelSlot(slot: number): void {
-    this.workspace.setSelectedSlot(slot);
+    this.workspace.store.setSelectedSlot(slot);
   }
 
   protected handleContextMenu($event: MouseEvent, item: BreadcrumbItem): void {
@@ -125,7 +126,7 @@ export class BreadcrumbsComponent {
     const projectId: string | null = this.storage.selectedProjectId();
     if (!projectId) return;
 
-    const slot: number | undefined = this.selectedMenuItem()?.automationId;
+    const slot: number | undefined = this.selectedMenuItem()?.slot;
     if (slot === undefined) return;
 
     await this.storage.deleteSlot(projectId, slot);

@@ -3,7 +3,7 @@
     <app-graph [graphData]="graphData()" [settings]="settings()" />
   </div>
 
-  <div class="min-h-12.5">
+  <div class="min-h-15">
     <p-menubar>
       <ng-template #start>
         <div class="flex flex-row gap-2">
@@ -32,6 +32,7 @@
                 (ngModelChange)="handleToggleOption(item.option)"
                 [pTooltip]="item.tooltip"
                 tooltipPosition="top"
+                positionTop="-5"
               >
                 <ng-template #content let-isChecked>
                   @if (isChecked) {
@@ -46,7 +47,25 @@
         </div>
       </ng-template>
       <ng-template #end>
-        <p-button variant="outlined" icon="pi pi-refresh" (click)="handleLayoutReset()" />
+        <div class="flex flex-row gap-3">
+          <p-button
+            variant="outlined"
+            icon="pi pi-palette"
+            styleClass="px-5! py-2!"
+            pTooltip="Change Colors"
+            tooltipPosition="top"
+            positionTop="-5"
+          />
+          <p-button
+            variant="outlined"
+            icon="pi pi-refresh"
+            styleClass="px-5! py-2!"
+            pTooltip="Reset"
+            tooltipPosition="top"
+            positionTop="-5"
+            (click)="handleLayoutReset()"
+          />
+        </div>
       </ng-template>
     </p-menubar>
   </div>

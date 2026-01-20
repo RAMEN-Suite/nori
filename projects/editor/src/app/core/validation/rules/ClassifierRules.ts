@@ -24,7 +24,7 @@ export class ClassifierRules {
 
     classifiers.forEach((classifier: GClassifier, classifierIndex: number): void => {
       const classifierPath: DiagnosticPath = DiagnosticPath.root()
-        .property('classifiers')
+        .property(`c:${classifier.id}`)
         .index(classifierIndex);
 
       if (classifier.kind === 'GNode') {
@@ -60,21 +60,24 @@ export class ClassifierRules {
     const firstIndexByIdentifier: Map<Id, number> = new Map<Id, number>();
 
     classifiers.forEach((classifier: GClassifier, classifierIndex: number): void => {
-      const classifierIdentifier: Id = classifier.id;
-      const previousIndex: number | undefined = firstIndexByIdentifier.get(classifierIdentifier);
+      const classifierId: Id = classifier.id;
+      const previousIndex: number | undefined = firstIndexByIdentifier.get(classifierId);
 
       if (previousIndex !== undefined) {
         const report: DiagnosticReport = {
           code: VALIDATION_ERROR.CLASSIFIER_ID_DUPLICATE,
-          message: `Duplicate classifier id '${classifierIdentifier}' (also at index ${previousIndex}).`,
-          path: DiagnosticPath.root().property('classifiers').index(classifierIndex).property('id'),
-          ref: classifierIdentifier,
+          message: `Duplicate classifier id '${classifierId}' (also at index ${previousIndex}).`,
+          path: DiagnosticPath.root()
+            .property(`c:${classifier.id}`)
+            .index(classifierIndex)
+            .property('id'),
+          ref: classifierId,
         };
         diagnostics.push(Diagnostics.error(report));
         return;
       }
 
-      firstIndexByIdentifier.set(classifierIdentifier, classifierIndex);
+      firstIndexByIdentifier.set(classifierId, classifierIndex);
     });
 
     return diagnostics;

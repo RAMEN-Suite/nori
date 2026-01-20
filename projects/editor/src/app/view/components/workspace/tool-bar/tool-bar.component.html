@@ -15,13 +15,35 @@
     <ng-template #end>
       <div class="ml-2 flex items-center gap-2">
         <p-button
-          [icon]="isDark ? 'pi pi-moon' : 'pi pi-sun'"
-          severity="primary"
+          pTooltip="Export JSON"
+          tooltipPosition="bottom"
+          positionTop="15"
+          icon="pi pi-download"
+          size="small"
           variant="text"
-          fluid="true"
+          fluid
+        />
+        <p-divider layout="vertical"></p-divider>
+        <p-button
+          [icon]="isDark ? 'pi pi-moon' : 'pi pi-sun'"
+          pTooltip="Toggle Theme"
+          tooltipPosition="bottom"
+          positionTop="15"
+          variant="text"
+          size="small"
+          fluid
           (click)="editorState.setTheme(isDark ? EDITOR_THEME.LIGHT : EDITOR_THEME.DARK)"
         />
-        <p-button icon="pi pi-cog" severity="primary" variant="text" fluid="true" />
+        <p-button
+          icon="pi pi-cog"
+          variant="text"
+          fluid
+          size="small"
+          pTooltip="Settings"
+          tooltipPosition="bottom"
+          positionLeft="-10"
+          positionTop="15"
+        />
       </div>
     </ng-template>
   </p-menubar>

@@ -7,15 +7,18 @@
           role="button"
           [label]="item.label"
           class="justify-center py-1! text-sm select-none"
-          [class.active]="workspace.selectedSlot() === item.automationId"
-          [class.cursor-pointer]="!item.isFirst"
+          [class.active]="workspace.store.selectedSlot() === item.slot"
+          [class.cursor-pointer]="!item.isFirst && item.slot !== workspace.store.selectedSlot()"
           [disabled]="item.isFirst"
-          (keydown.enter)="handleChangeModelSlot(item.automationId)"
-          (click)="handleChangeModelSlot(item.automationId)"
+          (keydown.enter)="handleChangeModelSlot(item.slot)"
+          (click)="handleChangeModelSlot(item.slot)"
           (contextmenu)="handleContextMenu($event, item)"
         />
       } @else {
         <p-chip
+          pTooltip="Create Model"
+          tooltipPosition="bottom"
+          positionTop="15"
           tabindex="0"
           role="button"
           [icon]="item.icon"

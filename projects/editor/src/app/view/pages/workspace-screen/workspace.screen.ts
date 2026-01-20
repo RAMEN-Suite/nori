@@ -30,7 +30,7 @@ export class WorkspaceScreen implements OnInit, OnDestroy {
       (map: ParamMap): void => {
         const currentNodeId: string | null = map.get('nodeId');
         if (currentNodeId === null) return;
-        this.workspace.setSelectedNodeId(currentNodeId);
+        this.workspace.store.setSelectedNodeId(currentNodeId);
       },
     );
 
@@ -45,6 +45,6 @@ export class WorkspaceScreen implements OnInit, OnDestroy {
   }
 
   public ngOnDestroy(): void {
-    this.workspace.resetSelections();
+    this.workspace.store.resetSelections();
   }
 }

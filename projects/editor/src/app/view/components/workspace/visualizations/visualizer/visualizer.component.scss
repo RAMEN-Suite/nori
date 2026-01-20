@@ -1,4 +1,4 @@
-::ng-deep .p-menubar-submenu {
+:host::ng-deep .p-menubar-submenu {
   display: none;
   position: absolute;
   top: auto;
@@ -8,6 +8,7 @@
 
 p-menubar {
   height: 100%;
+  padding: 8px 20px;
 
   border-radius: 0;
   border-left: 0;
@@ -21,8 +22,4 @@ p-menubar {
   i {
     font-size: 9pt !important;
   }
-}
-
-p-divider {
-  padding: 0;
 }

@@ -59,7 +59,7 @@ export class VisualizerComponent {
   });
 
   protected graphData: Signal<GraphData> = computed((): GraphData => {
-    const model: GModel | null = this.workspace.slotModel();
+    const model: GModel | null = this.workspace.view.slotModel();
     return new GModelGraph().build(model);
   });
 

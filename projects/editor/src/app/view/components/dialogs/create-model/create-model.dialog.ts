@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { InputText } from 'primeng/inputtext';
 import { Button } from 'primeng/button';
-import { CreateSlotInput, WorkspaceService } from '../../../../services/workspace.service';
+import { WorkspaceService } from '../../../../services/workspace.service';
 import { Fieldset } from 'primeng/fieldset';
 import { IftaLabel } from 'primeng/iftalabel';
 import { Message } from 'primeng/message';
@@ -9,6 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { Textarea } from 'primeng/textarea';
 import { REGEXP } from '../../../../core/const/REGEXP';
 import { DynamicDialogRef } from 'primeng/dynamicdialog';
+import { CreateSlotInput } from '../../../../services/workspace/workspace.actions';
 
 @Component({
   selector: 'app-modal-create-model',
@@ -59,7 +60,7 @@ export class CreateModelDialog {
     this.isSubmitted = true;
     if (!this.isFormValid()) return;
 
-    await this.workspace.createModel(this.newModel);
+    await this.workspace.actions.createModel(this.newModel);
     this.dialogRef.close();
   }
 }
