@@ -1,6 +1,6 @@
 import { computed, inject, Injectable, Signal } from '@angular/core';
 import { StorageService } from '../storage.service';
-import { WorkspaceStore } from './workspace.store';
+import { WorkspaceStoreService } from './workspace-store.service';
 import { SuggestionHelper } from '../../core/validation/helper/SuggestionHelper';
 import { ModelValidator, ValidationResult } from '../../core/validation/ModelValidator';
 import { GDataType, GModel, GNode, GRelation, Id } from '../../core/models/GModel';
@@ -8,9 +8,9 @@ import { Model } from '../../models/Model';
 import { BaseNode, SemanticHelper } from '../../core/validation/helper/SemanticHelper';
 
 @Injectable({ providedIn: 'root' })
-export class WorkspaceViewModel {
+export class WorkspaceViewService {
   private readonly storage: StorageService = inject(StorageService);
-  private readonly store: WorkspaceStore = inject(WorkspaceStore);
+  private readonly store: WorkspaceStoreService = inject(WorkspaceStoreService);
 
   private readonly helper: SuggestionHelper = new SuggestionHelper();
   private readonly validator: ModelValidator = new ModelValidator();

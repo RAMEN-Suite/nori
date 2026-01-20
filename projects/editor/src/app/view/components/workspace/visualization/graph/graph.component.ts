@@ -14,7 +14,7 @@ import {
 } from '@angular/core';
 import * as d3 from 'd3';
 import { D3ZoomEvent, Selection, ZoomBehavior } from 'd3';
-import { GraphData } from '../../../../core/GModelGraph';
+import { GraphData } from '../../../../../core/GModelGraph';
 import {
   DEFAULT_GRAPH_LAYOUT_SETTINGS,
   GraphLayoutSettings,
@@ -26,7 +26,7 @@ import {
   ViewportSize,
 } from './graph.types';
 import { buildRenderModel, getViewportSize } from './graph.layout';
-import { WorkspaceService } from '../../../../services/workspace.service';
+import { WorkspaceService } from '../../../../../services/workspace.service';
 import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
@@ -72,6 +72,11 @@ export class GraphComponent implements AfterViewInit, OnChanges {
 
   public ngOnChanges(changes: SimpleChanges): void {
     if (!this.rootGroupSelection) return;
+
+    if (changes['graphData']) {
+      this.svgSelection?.interrupt();
+      this.svgSelection?.call(this.zoomBehavior!.transform, d3.zoomIdentity);
+    }
 
     if (
       changes['graphData'] ||
@@ -129,11 +134,8 @@ export class GraphComponent implements AfterViewInit, OnChanges {
 
   private render(data: GraphData): void {
     if (!this.rootGroupSelection) return;
+
     const viewport: ViewportSize = getViewportSize(this.getHostElement());
-
-    this.svgSelection?.interrupt();
-    this.svgSelection?.call(this.zoomBehavior!.transform, d3.zoomIdentity);
-
     const model: RenderModel = buildRenderModel({
       data,
       settings: this.settings(),

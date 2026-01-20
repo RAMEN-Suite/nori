@@ -2,7 +2,7 @@ import { GModel, Id } from '../../core/models/GModel';
 import { Injectable, signal, WritableSignal } from '@angular/core';
 
 @Injectable({ providedIn: 'root' })
-export class WorkspaceStore {
+export class WorkspaceStoreService {
   public readonly workingModel: WritableSignal<GModel | null> = signal<GModel | null>(null);
   public readonly selectedNodeId: WritableSignal<Id | null> = signal<Id | null>(null);
   public readonly selectedSlot: WritableSignal<number> = signal<number>(1);
@@ -12,6 +12,7 @@ export class WorkspaceStore {
   }
 
   public setSelectedSlot(selectedSlot: number): void {
+    this.setSelectedNodeId(null);
     this.selectedSlot.set(Math.max(1, selectedSlot));
   }
 

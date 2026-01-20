@@ -9,7 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { Textarea } from 'primeng/textarea';
 import { REGEXP } from '../../../../core/const/REGEXP';
 import { DynamicDialogRef } from 'primeng/dynamicdialog';
-import { CreateSlotInput } from '../../../../services/workspace/workspace.actions';
+import { CreateSlotInput } from '../../../../services/workspace/workspace-action.service';
 
 @Component({
   selector: 'app-modal-create-model',
