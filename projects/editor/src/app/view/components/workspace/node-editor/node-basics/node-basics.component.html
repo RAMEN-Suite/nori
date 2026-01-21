@@ -7,7 +7,15 @@
             <span class="cursor-pointer text-4xl">{{ draftNode().name }}</span>
           </ng-template>
           <ng-template #content>
-            <input pInputText id="nodeName" name="nodeName" [(ngModel)]="draftNode().name" fluid />
+            <input
+              [pAutoFocus]="isNameActive()"
+              pInputText
+              id="nodeName"
+              name="nodeName"
+              [(ngModel)]="draftNode().name"
+              (keydown.enter)="handleEditNodeName()"
+              fluid
+            />
           </ng-template>
         </p-inplace>
 
@@ -44,7 +52,7 @@
       </div>
     </ng-template>
     <div class="flex flex-row items-center gap-2">
-      <span class="text-md font-light">Inherits from:</span>
+      <span class="text-md font-light select-none">Inherits from:</span>
       @for (baseNode of [workspace.view.selectedBaseNode()]; track baseNode?.id) {
         <p-chip class="cursor-pointer px-4! py-1! text-xs select-none" (click)="handleOpenColorsDialog()">
           <div class="flex flex-row items-center gap-2">

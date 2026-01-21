@@ -16,10 +16,23 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { NodeColorsDialog } from '../../../dialogs/node-colors/node-colors.dialog';
+import { AutoFocus } from 'primeng/autofocus';
 
 @Component({
   selector: 'app-node-basics',
-  imports: [Button, Chip, Inplace, InputText, Panel, ReactiveFormsModule, Tooltip, FormsModule, NgStyle, ConfirmDialog],
+  imports: [
+    Button,
+    Chip,
+    Inplace,
+    InputText,
+    Panel,
+    ReactiveFormsModule,
+    Tooltip,
+    FormsModule,
+    NgStyle,
+    ConfirmDialog,
+    AutoFocus,
+  ],
   providers: [ConfirmationService, DialogService, DynamicDialogRef],
   templateUrl: './node-basics.component.html',
   styleUrl: './node-basics.component.scss',

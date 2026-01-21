@@ -1,0 +1,16 @@
+<div class="flex flex-col gap-3">
+  @for (item of workspace.view.selectedWorkNodeChain(); track item.node.id) {
+    @let inheritedAttributes = workspace.view.inheritedAttributes().get(item.node.id);
+
+    @if (inheritedAttributes && inheritedAttributes.length > 0) {
+      <p-fieldset>
+        <ng-template #header>
+          Defined by <span class="font-extrabold">{{ item.node.name }}</span>
+        </ng-template>
+        @for (item of inheritedAttributes; track item.attribute.name) {
+          {{ item.attribute.name }}
+        }
+      </p-fieldset>
+    }
+  }
+</div>

@@ -9,10 +9,24 @@ import { NodeBasicsComponent } from './node-basics/node-basics.component';
 import { GNode } from '../../../../core/models/GModel';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
 import { ScrollPanel } from 'primeng/scrollpanel';
+import { NodeAttributesComponent } from './node-attributes/node-attributes.component';
+import { NodeRelationsComponent } from './node-relations/node-relations.component';
 
 @Component({
   selector: 'app-node-editor',
-  imports: [FormsModule, Button, NodeBasicsComponent, Tab, TabList, TabPanel, TabPanels, Tabs, ScrollPanel],
+  imports: [
+    FormsModule,
+    Button,
+    NodeBasicsComponent,
+    Tab,
+    TabList,
+    TabPanel,
+    TabPanels,
+    Tabs,
+    ScrollPanel,
+    NodeAttributesComponent,
+    NodeRelationsComponent,
+  ],
   providers: [],
   templateUrl: './node-editor.component.html',
   styleUrl: './node-editor.component.scss',
@@ -27,15 +41,24 @@ export class NodeEditorComponent {
   protected readonly draftNode: WritableSignal<PatchNode> = signal({});
 
   constructor() {
-    effect((): void => {
-      const selectedNode: GNode | null = this.workspace.view.selectedWorkNode();
-      if (!selectedNode) return;
-      this.draftNode.set(structuredClone(selectedNode));
-    });
+    effect((): void => this.handleResetView());
   }
 
   protected handleCloseView(): void {
     this.workspace.store.setSelectedNodeId(null);
     void this.router.navigate([], { relativeTo: this.activatedRoute });
+  }
+
+  protected async handleSaveView(): Promise<void> {
+    const selectedNodeId: string | null = this.workspace.store.selectedNodeId();
+    if (!selectedNodeId) return;
+    await this.workspace.actions.updateNode(selectedNodeId, this.draftNode());
+  }
+
+  protected handleResetView(): void {
+    const selectedNode: GNode | null = this.workspace.view.selectedWorkNode();
+    if (!selectedNode) return;
+    this.draftNode.set(structuredClone(selectedNode));
+    this.workspaceState.setDirty(false);
   }
 }
