@@ -206,11 +206,11 @@ export class GraphComponent implements AfterViewInit, OnChanges {
       .attr('dy', 35)
       .attr('text-anchor', 'middle')
       .attr('font-size', 12)
-      .attr('pointer-events', 'none')
-      .text((node: PositionedNode): string => node.label ?? node.refId ?? node.id);
+      .attr('pointer-events', 'none');
 
     const merged: d3.Selection<SVGGElement, PositionedNode, SVGGElement, unknown> = enterSelection.merge(selection);
     merged.select('circle').attr('r', this.settings().nodeRadius);
+    merged.select('text').text((node: PositionedNode): string => node.label ?? node.refId ?? node.id);
     return merged;
   }
 
