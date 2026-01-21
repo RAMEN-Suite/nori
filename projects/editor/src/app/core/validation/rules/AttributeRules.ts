@@ -1,35 +1,21 @@
 import { GAttribute, GNode, Id, TypeRef } from '../../models/GModel';
-import {
-  Diagnostic,
-  DiagnosticPath,
-  DiagnosticReport,
-  Diagnostics,
-} from '../container/Diagnostics';
+import { Diagnostic, DiagnosticPath, DiagnosticReport, Diagnostics } from '../container/Diagnostics';
 import { VALIDATION_ERROR } from '../../const/VALIDATION_ERROR';
 import { Builtins, Refs } from '../container/References';
 import { ValidationContext } from '../SemanticValidator';
-import { BaseNode, SemanticHelper } from '../helper/SemanticHelper';
+import { BaseNode, SemanticHelper } from '../../helper/SemanticHelper';
 
 export class AttributeRules {
-  public validate(
-    validationContext: ValidationContext,
-    node: GNode,
-    classifierPath: DiagnosticPath,
-  ): Diagnostic[] {
+  public validate(validationContext: ValidationContext, node: GNode, classifierPath: DiagnosticPath): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
 
     const attributes: GAttribute[] = node.attributes ?? [];
-    const inheritedAttributeNames: ReadonlySet<string> = this.getInheritedAttributeNames(
-      validationContext,
-      node,
-    );
+    const inheritedAttributeNames: ReadonlySet<string> = this.getInheritedAttributeNames(validationContext, node);
 
     const firstIndexByName: Map<string, number> = new Map<string, number>();
 
     attributes.forEach((attribute: GAttribute, attributeIndex: number): void => {
-      const attributePath: DiagnosticPath = classifierPath
-        .property('attributes')
-        .index(attributeIndex);
+      const attributePath: DiagnosticPath = classifierPath.property('attributes').index(attributeIndex);
 
       const previousIndex: number | undefined = firstIndexByName.get(attribute.name);
       if (previousIndex !== undefined) {
@@ -79,19 +65,11 @@ export class AttributeRules {
     return diagnostics;
   }
 
-  private getInheritedAttributeNames(
-    validationContext: ValidationContext,
-    node: GNode,
-  ): ReadonlySet<string> {
-    const baseNode: BaseNode | null = SemanticHelper.getBaseSuperType(
-      node,
-      validationContext.baseId,
-    );
+  private getInheritedAttributeNames(validationContext: ValidationContext, node: GNode): ReadonlySet<string> {
+    const baseNode: BaseNode | null = SemanticHelper.getBaseSuperType(node, validationContext.baseId);
     if (!baseNode) return new Set<string>();
 
-    const baseNodeDefinition: GNode | undefined = validationContext.baseIndex.nodesById.get(
-      baseNode.baseNodeId,
-    );
+    const baseNodeDefinition: GNode | undefined = validationContext.baseIndex.nodesById.get(baseNode.baseNodeId);
     if (!baseNodeDefinition) return new Set<string>();
 
     const names: Set<string> = new Set<string>();
