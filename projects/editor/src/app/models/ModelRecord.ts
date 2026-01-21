@@ -1,6 +1,12 @@
 import { GModel } from '../core/models/GModel';
 
-export interface Model {
+export type NodeColors = Record<string, string>;
+
+export interface ViewSettings {
+  nodeColors: NodeColors;
+}
+
+export interface ModelRecord {
   projectId: string;
   modelId: string;
 
@@ -9,6 +15,7 @@ export interface Model {
 
   name: string;
   description: string;
+  view?: ViewSettings;
 
   createdAt: string;
   updatedAt: string;

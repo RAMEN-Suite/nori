@@ -2,7 +2,7 @@ import { Component, DOCUMENT, effect, inject } from '@angular/core';
 import { ButtonModule } from 'primeng/button';
 import { TitleBarComponent } from './view/components/window/title-bar/title-bar.component';
 import { RouterOutlet } from '@angular/router';
-import { EDITOR_THEME, EditorState } from './states/editor.state';
+import { APP_THEME, ApplicationState } from './states/application.state';
 
 @Component({
   selector: 'app-root',
@@ -12,7 +12,7 @@ import { EDITOR_THEME, EditorState } from './states/editor.state';
   styleUrl: './app.scss',
 })
 export class App {
-  private readonly editorState: EditorState = inject(EditorState);
+  private readonly editorState: ApplicationState = inject(ApplicationState);
   private readonly document: Document = inject(DOCUMENT);
   protected readonly isElectronRuntime: boolean = !!window.electron;
 
@@ -22,7 +22,7 @@ export class App {
 
     effect((): void => {
       const html: HTMLElement = this.document.documentElement;
-      const isDark: boolean = this.editorState.state().theme === EDITOR_THEME.DARK;
+      const isDark: boolean = this.editorState.state().theme === APP_THEME.DARK;
       html.classList.toggle('dark', isDark);
     });
   }

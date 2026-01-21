@@ -1,0 +1,37 @@
+@let nodeColors = workspace.store.selectedNodeColors;
+
+<p-scroll-panel class="max-h-100 min-w-90 py-2">
+  <div class="flex flex-col gap-3 px-5">
+    @for (option of nodeColorOptions(); track option.id) {
+      <div class="flex flex-row gap-4">
+        <div class="flex items-center">
+          <div class="flex flex-col gap-2">
+            <p-color-picker
+              format="hex"
+              [ngModel]="nodeColors()[option.id]"
+              (ngModelChange)="handleColorChange(option.id, $event)"
+              defaultColor="#000"
+              class="rounded border border-(--p-inputtext-border-color)"
+              appendTo="body"
+            />
+          </div>
+        </div>
+        <p-ifta-label class="flex basis-full">
+          <input
+            pInputText
+            [id]="option.id"
+            [ngModel]="nodeColors()[option.id]"
+            (ngModelChange)="handleColorChange(option.id, $event)"
+            fluid
+          />
+          <label [for]="option.id">{{ option.name }}</label>
+        </p-ifta-label>
+      </div>
+    }
+  </div>
+</p-scroll-panel>
+
+<div class="flex flex-row justify-center gap-3">
+  <p-button label="Save Selection" outlined (click)="handleSaveChanges()" />
+  <p-button pTooltip="Reset Colors" tooltipPosition="bottom" positionTop="10" icon="pi pi-refresh" outlined (click)="handleReset()" />
+</div>

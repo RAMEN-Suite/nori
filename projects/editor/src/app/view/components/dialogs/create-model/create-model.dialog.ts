@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { InputText } from 'primeng/inputtext';
 import { Button } from 'primeng/button';
-import { WorkspaceService } from '../../../../services/workspace.service';
+import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { Fieldset } from 'primeng/fieldset';
 import { IftaLabel } from 'primeng/iftalabel';
 import { Message } from 'primeng/message';
@@ -9,7 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { Textarea } from 'primeng/textarea';
 import { REGEXP } from '../../../../core/const/REGEXP';
 import { DynamicDialogRef } from 'primeng/dynamicdialog';
-import { CreateSlotInput } from '../../../../services/workspace/workspace-action.service';
+import { CreateSlotInput } from '../../../../services/workspace/workspace.actions';
 
 @Component({
   selector: 'app-modal-create-model',

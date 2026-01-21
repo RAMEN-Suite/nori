@@ -4,17 +4,15 @@ import {
   GraphInputModel,
   GraphLayoutMode,
   GraphLayoutSettings,
+  GraphPadding,
   PositionedNode,
   RenderModel,
   ResolvedLink,
   ViewportSize,
 } from './graph.types';
 
-type HierarchyDatum = Readonly<{
-  id: string;
-  node?: PositionedNode;
-  children?: HierarchyDatum[];
-}>;
+type Hierarchy = Readonly<{ id: string; node?: PositionedNode; children?: Hierarchy[] }>;
+type Bounds = { minX: number; maxX: number; minY: number; maxY: number; width: number; height: number };
 
 export function buildRenderModel(input: GraphInputModel): RenderModel {
   const nodes: PositionedNode[] = createNodes(input.data);
@@ -23,21 +21,14 @@ export function buildRenderModel(input: GraphInputModel): RenderModel {
   );
 
   const links: ResolvedLink[] = createLinks(input.data, nodesById);
-  const visibleModel = applyVisibility(nodes, links, input.settings);
-  applyLayout(visibleModel.nodes, visibleModel.links, input.viewport, input.settings);
+  const visible: { nodes: PositionedNode[]; links: ResolvedLink[] } = applyVisibility(nodes, links, input.settings);
+  applyLayout(visible.nodes, visible.links, input.viewport, input.settings);
 
-  return {
-    nodes: visibleModel.nodes,
-    links: visibleModel.links,
-    nodesById,
-  };
+  return { nodes: visible.nodes, links: visible.links, nodesById };
 }
 
 export function getViewportSize(hostElement: HTMLDivElement): ViewportSize {
-  return {
-    width: hostElement.clientWidth || 800,
-    height: hostElement.clientHeight || 500,
-  };
+  return { width: hostElement.clientWidth || 800, height: hostElement.clientHeight || 500 };
 }
 
 export function setNodePosition(node: PositionedNode, x: number, y: number): void {
@@ -48,15 +39,7 @@ export function setNodePosition(node: PositionedNode, x: number, y: number): voi
 }
 
 function createNodes(data: GraphData): PositionedNode[] {
-  return data.nodes.map(
-    (node: GraphNode): PositionedNode => ({
-      ...node,
-      x: 0,
-      y: 0,
-      baseX: 0,
-      baseY: 0,
-    }),
-  );
+  return data.nodes.map((node: GraphNode): PositionedNode => ({ ...node, x: 0, y: 0, baseX: 0, baseY: 0 }));
 }
 
 function createLinks(data: GraphData, nodesById: Map<string, PositionedNode>): ResolvedLink[] {
@@ -64,6 +47,7 @@ function createLinks(data: GraphData, nodesById: Map<string, PositionedNode>): R
     .map((link: GraphLink): ResolvedLink | null => {
       const sourceNode: PositionedNode | undefined = nodesById.get(link.source);
       const targetNode: PositionedNode | undefined = nodesById.get(link.target);
+
       if (!sourceNode || !targetNode) return null;
       return { ...link, source: sourceNode, target: targetNode };
     })
@@ -77,19 +61,17 @@ function applyVisibility(
 ): { nodes: PositionedNode[]; links: ResolvedLink[] } {
   if (!settings.areIsolatedNodesHidden) return { nodes, links };
 
-  const degreesByNodeId: Map<string, number> = computeDegrees(nodes, links);
-  const visibleNodes: PositionedNode[] = nodes.filter(
-    (node: PositionedNode): boolean => (degreesByNodeId.get(node.id) ?? 0) > 0,
-  );
-  const visibleNodeIds: Set<string> = new Set<string>(
-    visibleNodes.map((node: PositionedNode): string => node.id),
-  );
-  const visibleLinks: ResolvedLink[] = links.filter(
-    (link: ResolvedLink): boolean =>
-      visibleNodeIds.has(link.source.id) && visibleNodeIds.has(link.target.id),
-  );
+  const degrees: Map<string, number> = computeDegrees(nodes, links);
+  const visible: PositionedNode[] = nodes.filter((node: PositionedNode): boolean => (degrees.get(node.id) ?? 0) > 0);
 
-  return { nodes: visibleNodes, links: visibleLinks };
+  const visibleNodeIds: Set<string> = new Set<string>(visible.map((node: PositionedNode): string => node.id));
+  const visibleLinks: ResolvedLink[] = links.filter((link: ResolvedLink): boolean => {
+    const nodeHasSource: boolean = visibleNodeIds.has(link.source.id);
+    const nodeHasTarget: boolean = visibleNodeIds.has(link.target.id);
+    return nodeHasSource && nodeHasTarget;
+  });
+
+  return { nodes: visible, links: visibleLinks };
 }
 
 function applyLayout(
@@ -98,22 +80,17 @@ function applyLayout(
   viewport: ViewportSize,
   settings: GraphLayoutSettings,
 ): void {
-  const degreesByNodeId: Map<string, number> = computeDegrees(nodes, links);
-
+  const degrees: Map<string, number> = computeDegrees(nodes, links);
   const connectedNodes: PositionedNode[] = [];
   const isolatedNodes: PositionedNode[] = [];
 
   for (const node of nodes) {
-    const degree: number = degreesByNodeId.get(node.id) ?? 0;
+    const degree: number = degrees.get(node.id) ?? 0;
     if (degree > 0) connectedNodes.push(node);
     else isolatedNodes.push(node);
   }
 
-  const isolatedArea: { reservedHeight: number } = computeIsolatedArea(
-    isolatedNodes.length,
-    viewport,
-    settings,
-  );
+  const isolatedArea: { reservedHeight: number } = computeIsolatedArea(isolatedNodes.length, viewport, settings);
 
   applyConnectedLayout(connectedNodes, links, viewport, settings, isolatedArea);
   if (settings.areIsolatedNodesHidden) return;
@@ -121,14 +98,14 @@ function applyLayout(
 }
 
 function computeIsolatedArea(
-  isolatedCount: number,
+  amount: number,
   viewport: ViewportSize,
   settings: GraphLayoutSettings,
 ): { reservedHeight: number } {
-  if (isolatedCount === 0 || settings.areIsolatedNodesHidden) return { reservedHeight: 0 };
+  if (amount === 0 || settings.areIsolatedNodesHidden) return { reservedHeight: 0 };
 
   const columns: number = Math.max(1, settings.isolatedColumns);
-  const rowCount: number = Math.ceil(isolatedCount / columns);
+  const rowCount: number = Math.ceil(amount / columns);
 
   const reservedHeight: number = rowCount * settings.isolatedRowGap + settings.isolatedAreaGap;
   return { reservedHeight: Math.min(reservedHeight, Math.max(0, viewport.height * 0.5)) };
@@ -144,40 +121,28 @@ function applyConnectedLayout(
   if (nodes.length === 0) return;
 
   const mode: GraphLayoutMode = settings.layoutMode;
-  const hierarchyRoot: d3.HierarchyNode<HierarchyDatum> = buildHierarchyForest(nodes, links);
+  const hierarchyRoot: d3.HierarchyNode<Hierarchy> = buildHierarchy(nodes, links);
 
-  const padding = settings.padding;
+  const padding: Readonly<GraphPadding> = settings.padding;
   const innerWidth: number = Math.max(1, viewport.width - padding.left - padding.right);
   const innerHeightTotal: number = Math.max(1, viewport.height - padding.top - padding.bottom);
 
-  const layout: d3.TreeLayout<HierarchyDatum> | d3.ClusterLayout<HierarchyDatum> =
-    mode === 'treeTopDown' ? d3.tree<HierarchyDatum>() : d3.cluster<HierarchyDatum>();
+  const layout: d3.TreeLayout<Hierarchy> | d3.ClusterLayout<Hierarchy> =
+    mode === 'treeTopDown' ? d3.tree<Hierarchy>() : d3.cluster<Hierarchy>();
   layout.nodeSize([settings.nodeSeparation, settings.layerGap]);
 
-  const positionedRoot: d3.HierarchyPointNode<HierarchyDatum> = layout(
-    hierarchyRoot as unknown as d3.HierarchyNode<HierarchyDatum>,
-  ) as unknown as d3.HierarchyPointNode<HierarchyDatum>;
+  const positionedRoot: d3.HierarchyPointNode<Hierarchy> = layout(hierarchyRoot);
+  const descendants: d3.HierarchyPointNode<Hierarchy>[] = positionedRoot.descendants();
 
-  const descendants: d3.HierarchyPointNode<HierarchyDatum>[] = positionedRoot.descendants();
-
-  const realNodes: d3.HierarchyPointNode<HierarchyDatum>[] = descendants.filter(
-    (item: d3.HierarchyPointNode<HierarchyDatum>): boolean => Boolean(item.data.node),
+  const realNodes: d3.HierarchyPointNode<Hierarchy>[] = descendants.filter(
+    (item: d3.HierarchyPointNode<Hierarchy>): boolean => Boolean(item.data.node),
   );
   if (realNodes.length === 0) return;
 
-  const bounds: {
-    minX: number;
-    maxX: number;
-    minY: number;
-    maxY: number;
-    width: number;
-    height: number;
-  } = computeHierarchyBounds(realNodes);
+  const bounds: Bounds = computeBounds(realNodes);
 
-  const isolatedStartY: number =
-    padding.top + innerHeightTotal - isolatedArea.reservedHeight + settings.isolatedAreaGap;
-
-  const connectedBottomLimitY: number = isolatedStartY - settings.isolatedAreaGap;
+  const startY: number = padding.top + innerHeightTotal - isolatedArea.reservedHeight + settings.isolatedAreaGap;
+  const connectedBottomLimitY: number = startY - settings.isolatedAreaGap;
 
   const offsetX: number = padding.left + (innerWidth - bounds.width) / 2 - bounds.minX;
   const offsetY: number = connectedBottomLimitY - bounds.maxY;
@@ -196,7 +161,7 @@ function applyIsolatedLayout(
 ): void {
   if (nodes.length === 0) return;
 
-  const padding = settings.padding;
+  const padding: Readonly<GraphPadding> = settings.padding;
   const innerWidth: number = Math.max(1, viewport.width - padding.left - padding.right);
   const innerHeight: number = Math.max(1, viewport.height - padding.top - padding.bottom);
 
@@ -206,13 +171,10 @@ function applyIsolatedLayout(
   const gridWidth: number = (usedColumns - 1) * settings.isolatedColumnGap;
   const startX: number = padding.left + (innerWidth - gridWidth) / 2;
 
-  const startY: number =
-    padding.top + innerHeight - isolatedArea.reservedHeight + settings.isolatedAreaGap;
-
-  const sortedNodes: PositionedNode[] = [...nodes].sort(
-    (a: PositionedNode, b: PositionedNode): number =>
-      (a.label ?? a.id).localeCompare(b.label ?? b.id),
-  );
+  const startY: number = padding.top + innerHeight - isolatedArea.reservedHeight + settings.isolatedAreaGap;
+  const sortedNodes: PositionedNode[] = [...nodes].sort((a: PositionedNode, b: PositionedNode): number => {
+    return a.label.localeCompare(b.label);
+  });
 
   sortedNodes.forEach((node: PositionedNode, index: number): void => {
     const columnIndex: number = index % columns;
@@ -238,10 +200,7 @@ function computeDegrees(nodes: PositionedNode[], links: ResolvedLink[]): Map<str
   return degreesByNodeId;
 }
 
-function buildHierarchyForest(
-  nodes: PositionedNode[],
-  links: ResolvedLink[],
-): d3.HierarchyNode<HierarchyDatum> {
+function buildHierarchy(nodes: PositionedNode[], links: ResolvedLink[]): d3.HierarchyNode<Hierarchy> {
   const nodesById: Map<string, PositionedNode> = new Map<string, PositionedNode>(
     nodes.map((node: PositionedNode): [string, PositionedNode] => [node.id, node]),
   );
@@ -266,69 +225,55 @@ function buildHierarchyForest(
     if (indegree === 0) rootIds.push(nodeId);
   }
 
-  const sortedFallback: PositionedNode | undefined = [...nodes].sort(
-    (a: PositionedNode, b: PositionedNode): number =>
-      (a.label ?? a.id).localeCompare(b.label ?? b.id),
-  )[0];
+  const sortedFallback: PositionedNode | undefined = [...nodes].sort((a: PositionedNode, b: PositionedNode): number => {
+    return a.label.localeCompare(b.label);
+  })[0];
   const visited: Set<string> = new Set<string>();
 
-  const buildSubtree: (nodeId: string) => HierarchyDatum | null = (
-    nodeId: string,
-  ): HierarchyDatum | null => {
+  const buildSubtree: (nodeId: string) => Hierarchy | null = (nodeId: string): Hierarchy | null => {
     if (visited.has(nodeId)) return null;
     visited.add(nodeId);
 
     const node: PositionedNode | undefined = nodesById.get(nodeId);
     if (!node) return null;
 
-    const childItems: HierarchyDatum[] = [];
+    const childItems: Hierarchy[] = [];
     for (const childId of childrenById.get(nodeId) ?? []) {
-      const childTree: HierarchyDatum | null = buildSubtree(childId);
+      const childTree: Hierarchy | null = buildSubtree(childId);
       if (childTree) childItems.push(childTree);
     }
 
-    return {
-      id: nodeId,
-      node,
-      children: childItems.length ? childItems : undefined,
-    };
+    return { id: nodeId, node, children: childItems.length ? childItems : undefined };
   };
 
-  const forestChildren: HierarchyDatum[] = [];
+  const forestChildren: Hierarchy[] = [];
 
   for (const rootId of rootIds) {
-    const rootTree: HierarchyDatum | null = buildSubtree(rootId);
+    const rootTree: Hierarchy | null = buildSubtree(rootId);
     if (rootTree) forestChildren.push(rootTree);
   }
 
   if (forestChildren.length === 0 && sortedFallback) {
-    const rootTree: HierarchyDatum | null = buildSubtree(sortedFallback.id);
+    const rootTree: Hierarchy | null = buildSubtree(sortedFallback.id);
     if (rootTree) forestChildren.push(rootTree);
   }
 
   for (const node of nodes) {
     if (!visited.has(node.id)) {
-      const remainderTree: HierarchyDatum | null = buildSubtree(node.id);
+      const remainderTree: Hierarchy | null = buildSubtree(node.id);
       if (remainderTree) forestChildren.push(remainderTree);
     }
   }
 
-  const virtualRoot: HierarchyDatum = {
+  const virtualRoot: Hierarchy = {
     id: '__virtual_root__',
     children: forestChildren.length ? forestChildren : undefined,
   };
 
-  return d3.hierarchy<HierarchyDatum>(virtualRoot, (datum: HierarchyDatum) => datum.children);
+  return d3.hierarchy<Hierarchy>(virtualRoot, (datum: Hierarchy) => datum.children);
 }
 
-function computeHierarchyBounds(nodes: Array<d3.HierarchyPointNode<HierarchyDatum>>): {
-  minX: number;
-  maxX: number;
-  minY: number;
-  maxY: number;
-  width: number;
-  height: number;
-} {
+function computeBounds(nodes: Array<d3.HierarchyPointNode<Hierarchy>>): Bounds {
   let minX: number = Number.POSITIVE_INFINITY;
   let maxX: number = Number.NEGATIVE_INFINITY;
   let minY: number = Number.POSITIVE_INFINITY;
@@ -341,12 +286,5 @@ function computeHierarchyBounds(nodes: Array<d3.HierarchyPointNode<HierarchyDatu
     maxY = Math.max(maxY, node.y);
   }
 
-  return {
-    minX,
-    maxX,
-    minY,
-    maxY,
-    width: Math.max(1, maxX - minX),
-    height: Math.max(1, maxY - minY),
-  };
+  return { minX, maxX, minY, maxY, width: Math.max(1, maxX - minX), height: Math.max(1, maxY - minY) };
 }

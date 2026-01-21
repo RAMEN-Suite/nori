@@ -1,6 +1,6 @@
 import { computed, effect, Injectable, Signal, signal, WritableSignal } from '@angular/core';
 import { Manifest } from '../models/Manifest';
-import { Model } from '../models/Model';
+import { ModelRecord } from '../models/ModelRecord';
 import { database } from '../app.database';
 import { environment } from '../../environments/environment';
 import ShortUniqueId from 'short-unique-id';
@@ -12,24 +12,22 @@ export type CreateManifest = Pick<
 >;
 export type UpdateManifest = Pick<Manifest, 'name' | 'description'>;
 
-type CreateModelInput = Pick<Model, 'projectId' | 'gmodel' | 'name' | 'description'>;
-type UpdateModelInput = Pick<Model, 'gmodel' | 'name' | 'description'>;
+export type CreateRecordInput = Pick<ModelRecord, 'projectId' | 'gmodel' | 'name' | 'description'>;
+export type UpdateRecordInput = Partial<Pick<ModelRecord, 'gmodel' | 'name' | 'description' | 'view'>>;
 
 @Injectable({
   providedIn: 'root',
 })
 export class StorageService {
   public readonly manifests: WritableSignal<Manifest[]> = signal([]);
-  public readonly models: WritableSignal<Model[]> = signal([]);
+  public readonly records: WritableSignal<ModelRecord[]> = signal([]);
 
   public readonly selectedProjectId: WritableSignal<string | null> = signal(null);
   public readonly selectedManifest: WritableSignal<Manifest | null> = signal(null);
 
-  public readonly modelsBySlot: Signal<Map<number, Model>> = computed((): Map<number, Model> => {
-    const map: Map<number, Model> = new Map<number, Model>();
-    for (const model of this.models()) {
-      map.set(model.slot, model);
-    }
+  public readonly recordsBySlot: Signal<Map<number, ModelRecord>> = computed((): Map<number, ModelRecord> => {
+    const map: Map<number, ModelRecord> = new Map<number, ModelRecord>();
+    for (const record of this.records()) map.set(record.slot, record);
     return map;
   });
 
@@ -39,7 +37,7 @@ export class StorageService {
 
       if (!pid) {
         this.selectedManifest.set(null);
-        this.models.set([]);
+        this.records.set([]);
         return;
       }
 
@@ -60,11 +58,7 @@ export class StorageService {
     this.manifests.set(list);
   }
 
-  public async createProject(
-    input: CreateManifest,
-    metamodel: GModel,
-    example?: GModel,
-  ): Promise<void> {
+  public async createProject(input: CreateManifest, metamodel: GModel, example?: GModel): Promise<void> {
     const timestamp: string = new Date().toISOString();
     const projectId: string = new ShortUniqueId({ length: 18 }).randomUUID();
 
@@ -82,7 +76,7 @@ export class StorageService {
 
     await database.transaction('rw', database.manifests, database.models, async () => {
       await database.manifests.add(manifest);
-      await this.createModel({
+      await this.createRecord({
         projectId,
         name: metamodel.name,
         description: '',
@@ -90,7 +84,7 @@ export class StorageService {
       });
 
       if (example) {
-        await this.createModel({
+        await this.createRecord({
           projectId,
           name: example.name,
           description: '',
@@ -118,10 +112,7 @@ export class StorageService {
     const sourceManifest: Manifest | undefined = await database.manifests.get(projectId);
     if (!sourceManifest) throw new Error(`Project not found: ${projectId}`);
 
-    const sourceModels: Model[] = await database.models
-      .where('projectId')
-      .equals(projectId)
-      .toArray();
+    const sourceRecords: ModelRecord[] = await database.models.where('projectId').equals(projectId).toArray();
 
     const timestamp: string = new Date().toISOString();
     const newProjectId: string = new ShortUniqueId({ length: 18 }).randomUUID();
@@ -134,8 +125,8 @@ export class StorageService {
       updatedAt: timestamp,
     };
 
-    const clonedModels: Model[] = sourceModels.map(
-      (existingModel: Model): Model => ({
+    const clonedRecords: ModelRecord[] = sourceRecords.map(
+      (existingModel: ModelRecord): ModelRecord => ({
         ...existingModel,
         modelId: new ShortUniqueId({ length: 18 }).randomUUID(),
         projectId: newProjectId,
@@ -147,7 +138,7 @@ export class StorageService {
 
     await database.transaction('rw', database.manifests, database.models, async () => {
       await database.manifests.add(manifest);
-      await database.models.bulkAdd(clonedModels);
+      await database.models.bulkAdd(clonedRecords);
     });
 
     await this.refreshManifests();
@@ -163,23 +154,23 @@ export class StorageService {
   }
 
   public async initProject(projectId: string): Promise<void> {
-    const [manifest, models]: [Manifest | undefined, Model[]] = await Promise.all([
+    const [manifest, records]: [Manifest | undefined, ModelRecord[]] = await Promise.all([
       database.manifests.get(projectId),
       database.models.where('projectId').equals(projectId).toArray(),
     ]);
 
     this.selectedManifest.set(manifest ?? null);
-    models.sort((a: Model, b: Model): number => a.slot - b.slot);
-    this.models.set(models);
+    records.sort((a: ModelRecord, b: ModelRecord): number => a.slot - b.slot);
+    this.records.set(records);
   }
 
-  public async createModel(input: CreateModelInput): Promise<void> {
+  public async createRecord(input: CreateRecordInput): Promise<void> {
     const timestamp: string = new Date().toISOString();
     const modelId: string = new ShortUniqueId({ length: 18 }).randomUUID();
     const slot: number = (await this.getLastSlot(input.projectId)) + 1;
     const revision: number = 1;
 
-    const model: Model = {
+    const record: ModelRecord = {
       modelId,
       slot,
       ...input,
@@ -189,7 +180,7 @@ export class StorageService {
     };
 
     await database.transaction('rw', database.manifests, database.models, async () => {
-      await database.models.add(model);
+      await database.models.add(record);
       await database.manifests.update(input.projectId, { updatedAt: timestamp });
     });
 
@@ -200,12 +191,17 @@ export class StorageService {
     await this.refreshManifests();
   }
 
-  public async updateModel(modelId: string, patch: UpdateModelInput): Promise<void> {
-    const existing: Model | undefined = await database.models.get(modelId);
+  public async updateRecord(modelId: string, patch: UpdateRecordInput): Promise<void> {
+    const existing: ModelRecord | undefined = await database.models.get(modelId);
     if (!existing) throw new Error(`Model not found: ${modelId}`);
 
     const updatedAt: string = new Date().toISOString();
-    const updated: Model = { ...existing, ...patch, updatedAt, revision: existing.revision + 1 };
+    const updated: ModelRecord = {
+      ...existing,
+      ...patch,
+      updatedAt,
+      revision: existing.revision + 1,
+    };
 
     await database.transaction('rw', database.manifests, database.models, async () => {
       await database.models.put(updated);
@@ -220,16 +216,16 @@ export class StorageService {
   }
 
   public async deleteSlot(projectId: string, slot: number): Promise<void> {
-    const model: Model | undefined = await this.getModelBySlot(projectId, slot);
-    if (!model) return;
+    const record: ModelRecord | undefined = await this.getRecordBySlot(projectId, slot);
+    if (!record) return;
 
     const isAllowed: boolean = await this.canDeleteSlot(projectId, slot);
     if (!isAllowed) throw new Error(`Cannot delete slot ${slot}: higher slots exist.`);
-    await this.deleteModel(model.modelId);
+    await this.deleteRecord(record.modelId);
   }
 
-  private async deleteModel(modelId: string): Promise<void> {
-    const existing: Model | undefined = await database.models.get(modelId);
+  private async deleteRecord(modelId: string): Promise<void> {
+    const existing: ModelRecord | undefined = await database.models.get(modelId);
     if (!existing) return;
 
     const updatedAt: string = new Date().toISOString();
@@ -246,21 +242,18 @@ export class StorageService {
   }
 
   public async canDeleteSlot(projectId: string, slot: number): Promise<boolean> {
-    const models: Model[] = await database.models.where('projectId').equals(projectId).toArray();
-    const maxSlot: number = models.reduce((max: number, m: Model) => Math.max(max, m.slot), -1);
+    const records: ModelRecord[] = await database.models.where('projectId').equals(projectId).toArray();
+    const maxSlot: number = records.reduce((max: number, m: ModelRecord): number => Math.max(max, m.slot), -1);
     return maxSlot <= slot;
   }
 
-  public async getModelBySlot(projectId: string, slot: number): Promise<Model | undefined> {
+  public async getRecordBySlot(projectId: string, slot: number): Promise<ModelRecord | undefined> {
     return database.models.where('[projectId+slot]').equals([projectId, slot]).first();
   }
 
   public async getLastSlot(projectId: string): Promise<number> {
-    const models: Model[] = await database.models
-      .where('projectId')
-      .equals(projectId)
-      .sortBy('slot');
+    const records: ModelRecord[] = await database.models.where('projectId').equals(projectId).sortBy('slot');
 
-    return models[models.length - 1]?.slot ?? -1;
+    return records[records.length - 1]?.slot ?? -1;
   }
 }

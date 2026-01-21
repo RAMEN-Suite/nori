@@ -1,13 +1,5 @@
-import {
-  Component,
-  computed,
-  inject,
-  Signal,
-  signal,
-  viewChild,
-  WritableSignal,
-} from '@angular/core';
-import { WorkspaceService } from '../../../../services/workspace.service';
+import { Component, computed, inject, Signal, signal, viewChild, WritableSignal } from '@angular/core';
+import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { PanelMenu } from 'primeng/panelmenu';
 import { GNode } from '../../../../core/models/GModel';
 import { IftaLabel } from 'primeng/iftalabel';
@@ -76,12 +68,8 @@ export class SideMenuComponent {
     },
   ];
 
-  protected readonly sideMenuItems: Signal<SideMenuItem[]> = computed((): SideMenuItem[] =>
-    this.createSideMenu(),
-  );
-  protected readonly filteredMenuItems: Signal<SideMenuItem[]> = computed((): SideMenuItem[] =>
-    this.filterMenuItems(),
-  );
+  protected readonly sideMenuItems: Signal<SideMenuItem[]> = computed((): SideMenuItem[] => this.createSideMenu());
+  protected readonly filteredMenuItems: Signal<SideMenuItem[]> = computed((): SideMenuItem[] => this.filterMenuItems());
 
   private createSideMenu(): SideMenuItem[] {
     const baseNodes: GNode[] = this.workspace.view.baseNodes();
@@ -129,11 +117,9 @@ export class SideMenuComponent {
         const draftItems: SideMenuItem[] = baseNode.items ?? [];
 
         if (baseLabel.includes(query)) return baseNode;
-        const filteredDraft: SideMenuItem[] = draftItems.filter(
-          (draftItem: SideMenuItem): boolean => {
-            return (draftItem.label ?? '').toLowerCase().includes(query);
-          },
-        );
+        const filteredDraft: SideMenuItem[] = draftItems.filter((draftItem: SideMenuItem): boolean => {
+          return (draftItem.label ?? '').toLowerCase().includes(query);
+        });
 
         return { ...baseNode, items: filteredDraft };
       })

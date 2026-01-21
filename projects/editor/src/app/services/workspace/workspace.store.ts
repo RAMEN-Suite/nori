@@ -1,11 +1,23 @@
 import { GModel, Id } from '../../core/models/GModel';
 import { Injectable, signal, WritableSignal } from '@angular/core';
+import { NodeColors } from '../../models/ModelRecord';
 
 @Injectable({ providedIn: 'root' })
-export class WorkspaceStoreService {
+export class WorkspaceStore {
   public readonly workingModel: WritableSignal<GModel | null> = signal<GModel | null>(null);
+
   public readonly selectedNodeId: WritableSignal<Id | null> = signal<Id | null>(null);
   public readonly selectedSlot: WritableSignal<number> = signal<number>(1);
+
+  public readonly selectedNodeColors: WritableSignal<NodeColors> = signal<NodeColors>({});
+
+  public setSelectedNodeColors(nodeColors: NodeColors): void {
+    this.selectedNodeColors.set(nodeColors);
+  }
+
+  public updateSelectedNodeColor(baseId: Id, hexColor: string): void {
+    this.selectedNodeColors.update((c: NodeColors): NodeColors => ({ ...c, [baseId]: hexColor }));
+  }
 
   public setSelectedNodeId(selectedNodeId: Id | null): void {
     this.selectedNodeId.set(selectedNodeId);
@@ -21,7 +33,8 @@ export class WorkspaceStoreService {
   }
 
   public resetSelections(): void {
-    this.selectedNodeId.set(null);
-    this.selectedSlot.set(1);
+    this.setSelectedNodeColors({});
+    this.setSelectedNodeId(null);
+    this.setSelectedSlot(1);
   }
 }

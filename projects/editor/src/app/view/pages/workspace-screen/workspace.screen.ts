@@ -7,7 +7,7 @@ import { SideMenuComponent } from '../../components/workspace/side-menu/side-men
 import { GraphMenuComponent } from '../../components/workspace/visualization/graph-menu/graph-menu.component';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { WorkspaceService } from '../../../services/workspace.service';
+import { WorkspaceService } from '../../../services/workspace/workspace.service';
 import { NodeEditorComponent } from '../../components/workspace/node-editor/node-editor.component';
 
 @Component({
@@ -26,13 +26,11 @@ export class WorkspaceScreen implements OnInit, OnDestroy {
   protected readonly activatedRouteSubscription$: Subscription | undefined;
 
   constructor() {
-    this.activatedRouteSubscription$ = this.activatedRoute.firstChild?.paramMap.subscribe(
-      (map: ParamMap): void => {
-        const currentNodeId: string | null = map.get('nodeId');
-        if (currentNodeId === null) return;
-        this.workspace.store.setSelectedNodeId(currentNodeId);
-      },
-    );
+    this.activatedRouteSubscription$ = this.activatedRoute.firstChild?.paramMap.subscribe((map: ParamMap): void => {
+      const currentNodeId: string | null = map.get('nodeId');
+      if (currentNodeId === null) return;
+      this.workspace.store.setSelectedNodeId(currentNodeId);
+    });
 
     effect((): void => {
       const manifest: Manifest | null = this.storage.selectedManifest();

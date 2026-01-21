@@ -1,10 +1,10 @@
 import Dexie, { Table } from 'dexie';
 import { Manifest } from './models/Manifest';
-import { Model } from './models/Model';
+import { ModelRecord } from './models/ModelRecord';
 
 export class AppDatabase extends Dexie {
   public readonly manifests!: Table<Manifest, string>;
-  public readonly models!: Table<Model, string>;
+  public readonly models!: Table<ModelRecord, string>;
 
   constructor() {
     super('nori');

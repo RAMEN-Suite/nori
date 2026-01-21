@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { Menubar } from 'primeng/menubar';
 import { Divider } from 'primeng/divider';
 import { Button } from 'primeng/button';
-import { EDITOR_THEME, EditorState } from '../../../../states/editor.state';
+import { APP_THEME, ApplicationState } from '../../../../states/application.state';
 import { BreadcrumbsComponent } from '../breadcrumb/breadcrumbs.component';
 import { RouterLink } from '@angular/router';
 import { Tooltip } from 'primeng/tooltip';
@@ -14,6 +14,6 @@ import { Tooltip } from 'primeng/tooltip';
   styleUrl: './tool-bar.component.scss',
 })
 export class ToolBarComponent {
-  protected readonly EDITOR_THEME: typeof EDITOR_THEME = EDITOR_THEME;
-  protected readonly editorState: EditorState = inject(EditorState);
+  protected readonly EDITOR_THEME: typeof APP_THEME = APP_THEME;
+  protected readonly editorState: ApplicationState = inject(ApplicationState);
 }

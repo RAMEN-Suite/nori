@@ -1,23 +1,11 @@
-import {
-  Component,
-  computed,
-  DestroyRef,
-  inject,
-  Signal,
-  signal,
-  WritableSignal,
-} from '@angular/core';
+import { Component, computed, DestroyRef, inject, Signal, signal, WritableSignal } from '@angular/core';
 import { GraphComponent } from '../graph/graph.component';
 import { GModel } from '../../../../../core/models/GModel';
 import { GModelGraph, GraphData } from '../../../../../core/GModelGraph';
-import { WorkspaceService } from '../../../../../services/workspace.service';
+import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
 import { FormsModule } from '@angular/forms';
 import { Menubar } from 'primeng/menubar';
-import {
-  DEFAULT_GRAPH_LAYOUT_SETTINGS,
-  GraphLayoutMode,
-  GraphLayoutSettings,
-} from '../graph/graph.types';
+import { DEFAULT_GRAPH_LAYOUT_SETTINGS, GraphLayoutMode, GraphLayoutSettings } from '../graph/graph.types';
 import { SelectButton } from 'primeng/selectbutton';
 import { ToggleButton } from 'primeng/togglebutton';
 import { Tooltip } from 'primeng/tooltip';
@@ -90,9 +78,7 @@ export class GraphMenuComponent {
   }
 
   public handleToggleOption(option: LayoutToggleOption): void {
-    this.settings.update(
-      (s: GraphLayoutSettings): GraphLayoutSettings => ({ ...s, [option]: !s[option] }),
-    );
+    this.settings.update((s: GraphLayoutSettings): GraphLayoutSettings => ({ ...s, [option]: !s[option] }));
   }
 
   public handleOpenColorsDialog(): void {

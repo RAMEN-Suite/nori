@@ -1,5 +1,5 @@
 import { Component, effect, inject, signal, WritableSignal } from '@angular/core';
-import { WorkspaceService } from '../../../../services/workspace.service';
+import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { ScrollPanel } from 'primeng/scrollpanel';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';

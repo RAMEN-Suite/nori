@@ -1,20 +1,11 @@
-import {
-  Component,
-  DestroyRef,
-  effect,
-  inject,
-  Signal,
-  signal,
-  viewChild,
-  WritableSignal,
-} from '@angular/core';
+import { Component, DestroyRef, effect, inject, Signal, signal, viewChild, WritableSignal } from '@angular/core';
 import { Breadcrumb } from 'primeng/breadcrumb';
 import { Chip } from 'primeng/chip';
 import { ContextMenu } from 'primeng/contextmenu';
 import { MenuItem } from 'primeng/api';
-import { WorkspaceService } from '../../../../services/workspace.service';
+import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { StorageService } from '../../../../services/storage.service';
-import { Model } from '../../../../models/Model';
+import { ModelRecord } from '../../../../models/ModelRecord';
 import { Ripple } from 'primeng/ripple';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { CreateModelDialog } from '../../dialogs/create-model/create-model.dialog';
@@ -84,7 +75,7 @@ export class BreadcrumbsComponent {
   }
 
   private createBreadcrumb(): BreadcrumbItem[] {
-    const models: Map<number, Model> = this.storage.modelsBySlot();
+    const models: Map<number, ModelRecord> = this.storage.recordsBySlot();
     const firstItem: BreadcrumbItem = { label: 'Metamodel', isFirst: true, isLast: false };
     const lastItem: BreadcrumbItem = { icon: 'pi pi-plus', isFirst: false, isLast: true };
 
@@ -114,6 +105,7 @@ export class BreadcrumbsComponent {
   }
 
   protected handleChangeModelSlot(slot: number): void {
+    if (this.workspace.store.selectedSlot() === slot) return;
     this.workspace.store.setSelectedSlot(slot);
   }
 
