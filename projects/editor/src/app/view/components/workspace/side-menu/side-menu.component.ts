@@ -11,7 +11,6 @@ import { Tooltip } from 'primeng/tooltip';
 import { ContextMenu } from 'primeng/contextmenu';
 import { FormsModule } from '@angular/forms';
 import { ConfirmationService, MenuItem } from 'primeng/api';
-import { ActivatedRoute, Router } from '@angular/router';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 
 type SideMenuItem = MenuItem & {
@@ -43,9 +42,6 @@ type SideMenuItem = MenuItem & {
 export class SideMenuComponent {
   protected readonly confirmation: ConfirmationService = inject(ConfirmationService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
-
-  protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
-  protected readonly router: Router = inject(Router);
 
   protected readonly selectedContextItem: WritableSignal<SideMenuItem | null> = signal(null);
   protected readonly contextMenu: WritableSignal<SideMenuItem[]> = signal([]);
@@ -131,7 +127,6 @@ export class SideMenuComponent {
 
   protected async handleCreateNode(baseNodeId: string): Promise<void> {
     const newNode: GNode = await this.workspace.actions.createNode('Untitled', baseNodeId);
-    void this.router.navigate([newNode.id], { relativeTo: this.activatedRoute });
     this.workspace.store.setSelectedNodeId(newNode.id);
   }
 
@@ -140,7 +135,6 @@ export class SideMenuComponent {
     if (!nodeId) return;
 
     const newNode: GNode = await this.workspace.actions.duplicateNode(nodeId);
-    void this.router.navigate([newNode.id], { relativeTo: this.activatedRoute });
     this.workspace.store.setSelectedNodeId(newNode.id);
   }
 
@@ -167,7 +161,6 @@ export class SideMenuComponent {
       accept: async (): Promise<void> => {
         if (!selectedMenuItem.id) return;
         await this.workspace.actions.deleteNode(selectedMenuItem.id);
-        void this.router.navigate([], { relativeTo: this.activatedRoute });
       },
     });
   }
@@ -175,7 +168,6 @@ export class SideMenuComponent {
   protected handleSelectPanelItem(item: SideMenuItem): void {
     if (item.isCategory) return;
     this.workspace.store.setSelectedNodeId(item.id ?? null);
-    void this.router.navigate([item.id], { relativeTo: this.activatedRoute });
   }
 
   protected handleContextMenu($event: MouseEvent, clickedItem: SideMenuItem): void {

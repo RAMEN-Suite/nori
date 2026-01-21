@@ -13,7 +13,10 @@ export const routes: Routes = [
     path: 'ws/:pid',
     canActivate: [hasWorkspace],
     component: WorkspaceScreen,
-    children: [{ path: ':nodeId', component: WorkspaceScreen }],
+    children: [
+      { path: ':slot', component: WorkspaceScreen },
+      { path: ':slot/:nodeId', component: WorkspaceScreen },
+    ],
   },
   // todo, add not found screen.
   { path: '**', redirectTo: '' },

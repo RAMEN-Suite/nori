@@ -1,4 +1,4 @@
-import { Component, effect, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, effect, inject, OnDestroy, OnInit, untracked } from '@angular/core';
 import { WindowState } from '../../../states/window.state';
 import { ToolBarComponent } from '../../components/workspace/tool-bar/tool-bar.component';
 import { StorageService } from '../../../services/storage.service';
@@ -28,13 +28,22 @@ export class WorkspaceScreen implements OnInit, OnDestroy {
   constructor() {
     this.activatedRouteSubscription$ = this.activatedRoute.firstChild?.paramMap.subscribe((map: ParamMap): void => {
       const currentNodeId: string | null = map.get('nodeId');
-      if (currentNodeId === null) return;
-      this.workspace.store.setSelectedNodeId(currentNodeId);
+      const currentSlot: string | null = map.get('slot');
+
+      if (currentNodeId) this.workspace.store.setSelectedNodeId(currentNodeId);
+      if (currentSlot) this.workspace.store.setSelectedSlot(Number(currentSlot));
     });
 
     effect((): void => {
       const manifest: Manifest | null = this.storage.selectedManifest();
       this.windowState.setTitle(manifest?.name ?? '', 'pi pi-pen-to-square');
+    });
+
+    effect((): void => {
+      const selectedSlot: number | null = this.workspace.store.selectedSlot() ?? 1;
+      const selectedNodeId: string | null = this.workspace.store.selectedNodeId();
+      const target: Array<string | number> = selectedNodeId ? [selectedSlot, selectedNodeId] : [selectedSlot];
+      untracked((): void => void this.workspace.utils.navigate(this.activatedRoute, target));
     });
   }
 

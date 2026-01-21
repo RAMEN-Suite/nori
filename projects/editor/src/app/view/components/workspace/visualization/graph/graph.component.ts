@@ -29,7 +29,6 @@ import {
 } from './graph.types';
 import { buildRenderModel, getViewportSize } from './graph.layout';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
-import { ActivatedRoute, Router } from '@angular/router';
 import { NodeColors } from '../../../../../models/ModelRecord';
 
 @Component({
@@ -40,8 +39,6 @@ import { NodeColors } from '../../../../../models/ModelRecord';
 })
 export class GraphComponent implements AfterViewInit, OnChanges {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
-  protected readonly router: Router = inject(Router);
-  protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
   protected readonly destroyRef: DestroyRef = inject(DestroyRef);
 
   protected svgSelection?: d3.Selection<SVGSVGElement, unknown, null, undefined>;
@@ -423,6 +420,5 @@ export class GraphComponent implements AfterViewInit, OnChanges {
 
   protected handleNodeClick(_: MouseEvent, node: PositionedNode): void {
     this.workspace.store.setSelectedNodeId(node.id);
-    void this.router.navigate([node.id], { relativeTo: this.activatedRoute });
   }
 }

@@ -2,7 +2,6 @@ import { Component, effect, inject, signal, WritableSignal } from '@angular/core
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
-import { ActivatedRoute, Router } from '@angular/router';
 import { WorkspaceState } from '../../../../states/workspace.state';
 import { PatchNode } from '../../../../core/handler/GModelMutations';
 import { NodeBasicsComponent } from './node-basics/node-basics.component';
@@ -35,9 +34,6 @@ export class NodeEditorComponent {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   protected readonly workspaceState: WorkspaceState = inject(WorkspaceState);
 
-  protected readonly router: Router = inject(Router);
-  protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
-
   protected readonly draftNode: WritableSignal<PatchNode> = signal({});
 
   constructor() {
@@ -46,7 +42,6 @@ export class NodeEditorComponent {
 
   protected handleCloseView(): void {
     this.workspace.store.setSelectedNodeId(null);
-    void this.router.navigate([], { relativeTo: this.activatedRoute });
   }
 
   protected async handleSaveView(): Promise<void> {

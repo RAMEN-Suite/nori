@@ -12,7 +12,6 @@ import { NgStyle } from '@angular/common';
 import { PatchNode } from '../../../../../core/handler/GModelMutations';
 import { ConfirmationService } from 'primeng/api';
 import { GNode } from '../../../../../core/models/GModel';
-import { ActivatedRoute, Router } from '@angular/router';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { NodeColorsDialog } from '../../../dialogs/node-colors/node-colors.dialog';
@@ -40,11 +39,8 @@ import { AutoFocus } from 'primeng/autofocus';
 export class NodeBasicsComponent {
   protected readonly destroyRef: DestroyRef = inject(DestroyRef);
   protected readonly dialogService: DialogService = inject(DialogService);
-  protected dialogRef: DynamicDialogRef | null = null;
-
-  protected readonly router: Router = inject(Router);
-  protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
   protected readonly confirmation: ConfirmationService = inject(ConfirmationService);
+  protected dialogRef: DynamicDialogRef | null = null;
 
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   protected readonly workspaceState: WorkspaceState = inject(WorkspaceState);
@@ -57,6 +53,11 @@ export class NodeBasicsComponent {
     effect((): void => {
       this.workspace.store.selectedNodeId();
       this.isNameActive.set(false);
+    });
+
+    this.destroyRef.onDestroy((): void => {
+      this.dialogRef?.close();
+      this.dialogRef = null;
     });
   }
 
@@ -105,7 +106,6 @@ export class NodeBasicsComponent {
       accept: async (): Promise<void> => {
         if (!selectedNode.id) return;
         await this.workspace.actions.deleteNode(selectedNode.id);
-        void this.router.navigate([], { relativeTo: this.activatedRoute });
       },
     });
   }
