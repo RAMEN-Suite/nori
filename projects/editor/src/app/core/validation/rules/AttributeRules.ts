@@ -3,7 +3,7 @@ import { Diagnostic, DiagnosticPath, DiagnosticReport, Diagnostics } from '../co
 import { VALIDATION_ERROR } from '../../const/VALIDATION_ERROR';
 import { Builtins, Refs } from '../container/References';
 import { ValidationContext } from '../SemanticValidator';
-import { BaseNode, SemanticHelper } from '../../helper/SemanticHelper';
+import { SemanticHelper, SuperTypeChainItem } from '../../helper/SemanticHelper';
 
 export class AttributeRules {
   public validate(validationContext: ValidationContext, node: GNode, classifierPath: DiagnosticPath): Diagnostic[] {
@@ -66,17 +66,19 @@ export class AttributeRules {
   }
 
   private getInheritedAttributeNames(validationContext: ValidationContext, node: GNode): ReadonlySet<string> {
-    const baseNode: BaseNode | null = SemanticHelper.getBaseSuperType(node, validationContext.baseId);
-    if (!baseNode) return new Set<string>();
-
-    const baseNodeDefinition: GNode | undefined = validationContext.baseIndex.nodesById.get(baseNode.baseNodeId);
-    if (!baseNodeDefinition) return new Set<string>();
-
     const names: Set<string> = new Set<string>();
-    const baseAttributes: GAttribute[] = baseNodeDefinition.attributes ?? [];
-    baseAttributes.forEach((attribute: GAttribute): void => {
-      names.add(attribute.name);
-    });
+
+    const startModel: Id = validationContext.derivedIndex.model.id;
+    const startNode: Id = node.id;
+    const { models } = validationContext;
+
+    const chain: ReadonlyArray<SuperTypeChainItem> = SemanticHelper.getSuperTypeChain(startModel, startNode, models);
+    if (chain.length === 0) return names;
+
+    for (const item of chain) {
+      const attributes: ReadonlyArray<GAttribute> = item.node.attributes ?? [];
+      for (const attribute of attributes) names.add(attribute.name);
+    }
 
     return names;
   }

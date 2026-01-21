@@ -2,7 +2,7 @@ import { SemanticValidator, ValidationOptions } from './SemanticValidator';
 import { Diagnostic, DiagnosticPath, DiagnosticReport, Diagnostics } from './container/Diagnostics';
 import { SchemaValidator } from './SchemaValidator';
 import { VALIDATION_ERROR } from '../const/VALIDATION_ERROR';
-import { GModel } from '../models/GModel';
+import { GModel, Id } from '../models/GModel';
 
 export type SchemaKind = 'BASE' | 'DERIVED';
 
@@ -14,7 +14,7 @@ export interface ValidationResult {
 export class ModelValidator {
   private readonly strict: SemanticValidator = new SemanticValidator();
 
-  public validate(base: unknown, derived: unknown): ValidationResult {
+  public validate(base: unknown, derived: unknown, models: ReadonlyMap<Id, GModel>): ValidationResult {
     const diagnostics: Diagnostic[] = [];
 
     this.validateSchema('BASE', base, diagnostics);
@@ -24,18 +24,14 @@ export class ModelValidator {
     if (diagnostics.length > 0) return { diagnostics, hasErrors };
 
     const options: ValidationOptions = { baseId: base.id };
-    const strict: Diagnostic[] = this.strict.validate(base, derived, options);
+    const strict: Diagnostic[] = this.strict.validate(base, derived, models, options);
     const all: Diagnostic[] = [...diagnostics, ...strict];
 
     hasErrors = all.some((d: Diagnostic): boolean => d.severity === 'error');
     return { diagnostics: all, hasErrors };
   }
 
-  private validateSchema(
-    kind: SchemaKind,
-    input: unknown,
-    diags: Diagnostic[],
-  ): asserts input is GModel {
+  private validateSchema(kind: SchemaKind, input: unknown, diags: Diagnostic[]): asserts input is GModel {
     try {
       SchemaValidator.assertValid(input);
     } catch (error: unknown) {

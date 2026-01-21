@@ -10,20 +10,26 @@ export interface ValidationOptions {
 }
 
 export interface ValidationContext {
-  readonly baseModel: GModel;
-  readonly derivedModel: GModel;
+  readonly baseId: Id;
   readonly baseIndex: GModelIndex;
   readonly derivedIndex: GModelIndex;
-  readonly baseId: Id;
+  readonly baseModel: GModel;
+  readonly derivedModel: GModel;
+  readonly models: ReadonlyMap<Id, GModel>;
 }
 
 export class SemanticValidator {
   private readonly classifierRules: ClassifierRules = new ClassifierRules();
   private readonly relationRules: RelationRules = new RelationRules();
 
-  public validate(base: GModel, derived: GModel, options: ValidationOptions): Diagnostic[] {
-    const baseIndex: GModelIndex = new GModelIndex(base);
-    const derivedIndex: GModelIndex = new GModelIndex(derived);
+  public validate(
+    baseModel: GModel,
+    derivedModel: GModel,
+    models: ReadonlyMap<Id, GModel>,
+    options: ValidationOptions,
+  ): Diagnostic[] {
+    const baseIndex: GModelIndex = new GModelIndex(baseModel);
+    const derivedIndex: GModelIndex = new GModelIndex(derivedModel);
 
     if (!derivedIndex.importsByModelId.has(options.baseId)) {
       const report: DiagnosticReport = {
@@ -36,11 +42,12 @@ export class SemanticValidator {
     }
 
     const validationContext: ValidationContext = {
-      baseModel: base,
-      derivedModel: derived,
-      baseIndex,
-      derivedIndex,
       baseId: options.baseId,
+      baseIndex: baseIndex,
+      derivedIndex: derivedIndex,
+      baseModel: baseModel,
+      derivedModel: derivedModel,
+      models: models,
     };
 
     const diagnostics: Diagnostic[] = [];

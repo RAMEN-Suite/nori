@@ -49,7 +49,7 @@ export class WorkspaceQueries {
     const work: GModel | null = this.store.workingModel();
 
     if (!base || !work) return { diagnostics: [], hasErrors: false };
-    return this.validator.validate(base, work);
+    return this.validator.validate(base, work, this.storage.modelsById());
   });
 
   public readonly baseNodes: Signal<GNode[]> = computed((): GNode[] => {
