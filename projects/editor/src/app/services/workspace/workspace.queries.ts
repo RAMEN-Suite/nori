@@ -1,11 +1,19 @@
 import { computed, inject, Injectable, Signal } from '@angular/core';
 import { StorageService } from '../storage.service';
 import { WorkspaceStore } from './workspace.store';
-import { SuggestionHelper } from '../../core/validation/helper/SuggestionHelper';
+import { SuggestionHelper } from '../../core/helper/SuggestionHelper';
 import { ModelValidator, ValidationResult } from '../../core/validation/ModelValidator';
-import { GDataType, GModel, GNode, GRelation, Id } from '../../core/models/GModel';
+import { GAttribute, GDataType, GModel, GNode, GRelation, Id } from '../../core/models/GModel';
 import { ModelRecord } from '../../models/ModelRecord';
-import { BaseNode, SemanticHelper } from '../../core/validation/helper/SemanticHelper';
+import { BaseNode, SemanticHelper, SuperTypeChainItem } from '../../core/helper/SemanticHelper';
+
+export interface InheritedAttribute {
+  readonly slot: number;
+  readonly modelId: Id;
+  readonly nodeId: Id;
+  readonly nodeName: string;
+  readonly attribute: GAttribute;
+}
 
 @Injectable({ providedIn: 'root' })
 export class WorkspaceQueries {
@@ -69,6 +77,30 @@ export class WorkspaceQueries {
     return work ? Array.from(this.helper.listDataTypes(work)) : [];
   });
 
+  public readonly inheritedAttributes: Signal<ReadonlyMap<Id, ReadonlyArray<InheritedAttribute>>> = computed(
+    (): ReadonlyMap<Id, ReadonlyArray<InheritedAttribute>> => {
+      const map: Map<Id, InheritedAttribute[]> = new Map<Id, InheritedAttribute[]>();
+
+      this.selectedWorkNodeChain().forEach((item: SuperTypeChainItem, index: number): void => {
+        if (item.node.attributes.length === 0) return;
+
+        const list: InheritedAttribute[] = item.node.attributes.map((attribute: GAttribute): InheritedAttribute => {
+          return {
+            slot: index,
+            modelId: item.modelId,
+            nodeId: item.node.id,
+            nodeName: item.node.name,
+            attribute: attribute,
+          };
+        });
+
+        map.set(item.node.id, list);
+      });
+
+      return map;
+    },
+  );
+
   public readonly baseNodesById: Signal<ReadonlyMap<Id, GNode>> = computed((): ReadonlyMap<Id, GNode> => {
     const model: GModel | null = this.baseModel();
     if (!model) return new Map<Id, GNode>();
@@ -106,6 +138,17 @@ export class WorkspaceQueries {
     const workNodesById: ReadonlyMap<Id, GNode> = this.workNodesById();
     return workNodesById.get(selectedNodeId) ?? null;
   });
+
+  public readonly selectedWorkNodeChain: Signal<ReadonlyArray<SuperTypeChainItem>> = computed(
+    (): ReadonlyArray<SuperTypeChainItem> => {
+      const slotModel: GModel | null = this.slotModel();
+      const selectedNode: GNode | null = this.selectedWorkNode();
+      if (!slotModel || !selectedNode) return [];
+
+      const modelsById: ReadonlyMap<Id, GModel> = this.storage.modelsById();
+      return SemanticHelper.getSuperTypeChain(slotModel.id, selectedNode.id, modelsById);
+    },
+  );
 
   public readonly selectedBaseNode: Signal<GNode | null> = computed((): GNode | null => {
     const base: GModel | null = this.baseModel();

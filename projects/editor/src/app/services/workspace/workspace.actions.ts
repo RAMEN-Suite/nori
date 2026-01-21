@@ -2,7 +2,7 @@ import { effect, inject, Injectable } from '@angular/core';
 import { StorageService, UpdateRecordInput } from '../storage.service';
 import { WorkspaceStore } from './workspace.store';
 import { WorkspaceQueries } from './workspace.queries';
-import { CreateNodeInput, CreateRelationInput, SuggestionHelper } from '../../core/validation/helper/SuggestionHelper';
+import { CreateNodeInput, CreateRelationInput, SuggestionHelper } from '../../core/helper/SuggestionHelper';
 import { ModelRecord, NodeColors, ViewSettings } from '../../models/ModelRecord';
 import { GClassifier, GDataType, GModel, GNode, GRelation, Id } from '../../core/models/GModel';
 import { GModelMutations, PatchDataType, PatchNode, PatchRelation } from '../../core/handler/GModelMutations';

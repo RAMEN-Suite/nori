@@ -5,7 +5,6 @@ import { NodeColors } from '../../models/ModelRecord';
 @Injectable({ providedIn: 'root' })
 export class WorkspaceStore {
   public readonly workingModel: WritableSignal<GModel | null> = signal<GModel | null>(null);
-
   public readonly selectedNodeId: WritableSignal<Id | null> = signal<Id | null>(null);
   public readonly selectedSlot: WritableSignal<number> = signal<number>(1);
 
@@ -36,5 +35,6 @@ export class WorkspaceStore {
     this.setSelectedNodeColors({});
     this.setSelectedNodeId(null);
     this.setSelectedSlot(1);
+    this.setWorkingModel(null);
   }
 }

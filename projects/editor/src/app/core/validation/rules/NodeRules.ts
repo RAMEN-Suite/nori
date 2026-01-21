@@ -1,26 +1,14 @@
 import { GNode } from '../../models/GModel';
-import {
-  Diagnostic,
-  DiagnosticPath,
-  DiagnosticReport,
-  Diagnostics,
-} from '../container/Diagnostics';
+import { Diagnostic, DiagnosticPath, DiagnosticReport, Diagnostics } from '../container/Diagnostics';
 import { VALIDATION_ERROR } from '../../const/VALIDATION_ERROR';
 import { ValidationContext } from '../SemanticValidator';
-import { BaseNode, SemanticHelper } from '../helper/SemanticHelper';
+import { BaseNode, SemanticHelper } from '../../helper/SemanticHelper';
 
 export class NodeRules {
-  public validate(
-    validationContext: ValidationContext,
-    node: GNode,
-    classifierPath: DiagnosticPath,
-  ): Diagnostic[] {
+  public validate(validationContext: ValidationContext, node: GNode, classifierPath: DiagnosticPath): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
 
-    const baseNode: BaseNode | null = SemanticHelper.getBaseSuperType(
-      node,
-      validationContext.baseId,
-    );
+    const baseNode: BaseNode | null = SemanticHelper.getBaseSuperType(node, validationContext.baseId);
     if (!baseNode) {
       const report: DiagnosticReport = {
         code: VALIDATION_ERROR.NODE_SUPERTYPE_INVALID,

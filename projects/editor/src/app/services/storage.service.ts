@@ -4,7 +4,7 @@ import { ModelRecord } from '../models/ModelRecord';
 import { database } from '../app.database';
 import { environment } from '../../environments/environment';
 import ShortUniqueId from 'short-unique-id';
-import { GModel } from '../core/models/GModel';
+import { GModel, Id } from '../core/models/GModel';
 
 export type CreateManifest = Pick<
   Manifest,
@@ -28,6 +28,12 @@ export class StorageService {
   public readonly recordsBySlot: Signal<Map<number, ModelRecord>> = computed((): Map<number, ModelRecord> => {
     const map: Map<number, ModelRecord> = new Map<number, ModelRecord>();
     for (const record of this.records()) map.set(record.slot, record);
+    return map;
+  });
+
+  public readonly modelsById: Signal<ReadonlyMap<Id, GModel>> = computed((): ReadonlyMap<Id, GModel> => {
+    const map: Map<Id, GModel> = new Map<Id, GModel>();
+    for (const record of this.records()) map.set(record.gmodel.id, record.gmodel);
     return map;
   });
 

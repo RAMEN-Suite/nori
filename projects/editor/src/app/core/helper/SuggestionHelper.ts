@@ -1,14 +1,6 @@
-import {
-  GAttribute,
-  GConstraint,
-  GDataType,
-  GModel,
-  GNode,
-  GRelation,
-  Id,
-} from '../../models/GModel';
-import { GModelIndex } from '../container/GModelIndex';
-import { Refs } from '../container/References';
+import { GAttribute, GConstraint, GDataType, GModel, GNode, GRelation, Id } from '../models/GModel';
+import { GModelIndex } from '../validation/container/GModelIndex';
+import { Refs } from '../validation/container/References';
 import { BaseNode, SemanticHelper } from './SemanticHelper';
 import ShortUniqueId from 'short-unique-id';
 
@@ -80,11 +72,7 @@ export class SuggestionHelper {
     return forbidden;
   }
 
-  public listFromRelations(
-    base: GModel,
-    derived: GModel,
-    fromNodeId: Id,
-  ): ReadonlyArray<GRelation> {
+  public listFromRelations(base: GModel, derived: GModel, fromNodeId: Id): ReadonlyArray<GRelation> {
     const baseIndex: GModelIndex = new GModelIndex(base);
     const derivedIndex: GModelIndex = new GModelIndex(derived);
 
@@ -121,10 +109,7 @@ export class SuggestionHelper {
     return allowed.sort((a: GNode, b: GNode): number => a.name.localeCompare(b.name));
   }
 
-  public groupDerivedNodesByBaseId(
-    base: GModel,
-    derived: GModel,
-  ): ReadonlyMap<Id, ReadonlyArray<GNode>> {
+  public groupDerivedNodesByBaseId(base: GModel, derived: GModel): ReadonlyMap<Id, ReadonlyArray<GNode>> {
     const derivedIndex: GModelIndex = new GModelIndex(derived);
     const grouped: Map<Id, GNode[]> = new Map<Id, GNode[]>();
 
