@@ -4,7 +4,6 @@ import { WorkspaceStore } from './workspace.store';
 import { SuggestionHelper } from '../../core/helper/SuggestionHelper';
 import { ModelValidator, ValidationResult } from '../../core/validation/ModelValidator';
 import { GAttribute, GDataType, GModel, GNode, GRelation, Id } from '../../core/models/GModel';
-import { ModelRecord } from '../../models/ModelRecord';
 import { BaseNode, SemanticHelper, SuperTypeChainItem } from '../../core/helper/SemanticHelper';
 
 export interface InheritedAttribute {
@@ -23,18 +22,22 @@ export class WorkspaceQueries {
   private readonly helper: SuggestionHelper = new SuggestionHelper();
   private readonly validator: ModelValidator = new ModelValidator();
 
-  private readonly baseSlot: Signal<number> = computed((): number => {
-    return Math.max(0, this.store.selectedSlot() - 1);
+  private readonly baseSlot: Signal<number | null> = computed((): number | null => {
+    const selectedSlot: number | null = this.store.selectedSlot();
+    if (selectedSlot === null) return null;
+    return Math.max(0, selectedSlot - 1);
   });
 
   public readonly baseModel: Signal<GModel | null> = computed((): GModel | null => {
-    const model: ModelRecord | undefined = this.storage.recordsBySlot().get(this.baseSlot());
-    return model?.gmodel ?? null;
+    const baseSlot: number | null = this.baseSlot();
+    if (baseSlot === null) return null;
+    return this.storage.recordsBySlot().get(baseSlot)?.gmodel ?? null;
   });
 
   public readonly slotModel: Signal<GModel | null> = computed((): GModel | null => {
-    const model: ModelRecord | undefined = this.storage.recordsBySlot().get(this.store.selectedSlot());
-    return model?.gmodel ?? null;
+    const selectedSlot: number | null = this.store.selectedSlot();
+    if (selectedSlot === null) return null;
+    return this.storage.recordsBySlot().get(selectedSlot)?.gmodel ?? null;
   });
 
   public readonly baseId: Signal<Id> = computed((): Id => {

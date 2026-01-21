@@ -259,7 +259,6 @@ export class StorageService {
 
   public async getLastSlot(projectId: string): Promise<number> {
     const records: ModelRecord[] = await database.models.where('projectId').equals(projectId).sortBy('slot');
-
     return records[records.length - 1]?.slot ?? -1;
   }
 }

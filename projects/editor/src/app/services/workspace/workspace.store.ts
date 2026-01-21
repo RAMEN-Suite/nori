@@ -6,7 +6,7 @@ import { NodeColors } from '../../models/ModelRecord';
 export class WorkspaceStore {
   public readonly workingModel: WritableSignal<GModel | null> = signal<GModel | null>(null);
   public readonly selectedNodeId: WritableSignal<Id | null> = signal<Id | null>(null);
-  public readonly selectedSlot: WritableSignal<number> = signal<number>(1);
+  public readonly selectedSlot: WritableSignal<number | null> = signal<number | null>(null);
 
   public readonly selectedNodeColors: WritableSignal<NodeColors> = signal<NodeColors>({});
 
@@ -22,8 +22,8 @@ export class WorkspaceStore {
     this.selectedNodeId.set(selectedNodeId);
   }
 
-  public setSelectedSlot(selectedSlot: number): void {
-    this.setSelectedNodeId(null);
+  public setSelectedSlot(selectedSlot: number | null): void {
+    if (selectedSlot === null) return this.selectedSlot.set(null);
     this.selectedSlot.set(Math.max(1, selectedSlot));
   }
 
@@ -34,7 +34,6 @@ export class WorkspaceStore {
   public resetSelections(): void {
     this.setSelectedNodeColors({});
     this.setSelectedNodeId(null);
-    this.setSelectedSlot(1);
-    this.setWorkingModel(null);
+    this.setSelectedSlot(null);
   }
 }

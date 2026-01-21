@@ -115,12 +115,7 @@ export class BreadcrumbsComponent {
   }
 
   protected async handleDeleteModel(): Promise<void> {
-    const projectId: string | null = this.storage.selectedProjectId();
-    if (!projectId) return;
-
     const slot: number | undefined = this.selectedMenuItem()?.slot;
-    if (slot === undefined) return;
-
-    await this.storage.deleteSlot(projectId, slot);
+    if (slot) await this.workspace.actions.deleteSlot(slot);
   }
 }

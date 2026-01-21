@@ -25,23 +25,34 @@ export class WorkspaceActions {
   private readonly helper: SuggestionHelper = new SuggestionHelper();
 
   constructor() {
+    this.registerInitialEffect();
+    this.registerSlotChangesEffect();
+    this.registerNodeColorsEffect();
+  }
+
+  private registerInitialEffect(): void {
     effect((): void => {
       const records: Map<number, ModelRecord> = this.storage.recordsBySlot();
-      if (records.size === 0) return;
-
-      const slot: number = this.store.selectedSlot();
-      if (!records.has(slot)) this.store.setSelectedSlot(1);
+      const selectedSlot: number | null = this.store.selectedSlot();
+      if (records.size === 0 || selectedSlot !== null) return;
+      this.store.setSelectedSlot(1);
     });
+  }
 
+  private registerSlotChangesEffect(): void {
     effect((): void => {
       const derived: GModel | null = this.view.slotModel();
       const work: GModel | null = derived ? structuredClone(derived) : null;
       this.store.setWorkingModel(work);
     });
+  }
 
+  private registerNodeColorsEffect(): void {
     effect((): void => {
-      const slot: number = this.store.selectedSlot();
-      const record: ModelRecord | undefined = this.storage.recordsBySlot().get(slot);
+      const selectedSlot: number | null = this.store.selectedSlot();
+      if (selectedSlot === null) return this.store.setSelectedNodeColors({});
+
+      const record: ModelRecord | undefined = this.storage.recordsBySlot().get(selectedSlot);
       const nodeColors: NodeColors = record?.view?.nodeColors ?? {};
       this.store.setSelectedNodeColors(nodeColors);
     });
@@ -138,7 +149,7 @@ export class WorkspaceActions {
     await this.saveSelectedWork();
   }
 
-  public async createModel(input: CreateSlotInput): Promise<void> {
+  public async createSlot(input: CreateSlotInput): Promise<void> {
     const projectId: string | null = this.storage.selectedProjectId();
     if (!projectId) throw new Error('No active project selected.');
 
@@ -161,6 +172,15 @@ export class WorkspaceActions {
     });
 
     this.store.setSelectedSlot(lastSlot + 1);
+  }
+
+  public async deleteSlot(slot: number): Promise<void> {
+    const projectId: string | null = this.storage.selectedProjectId();
+    if (!projectId) throw new Error('No active project selected.');
+    await this.storage.deleteSlot(projectId, slot);
+
+    const selectedSlot: number | null = this.store.selectedSlot();
+    if (slot === selectedSlot) this.store.setSelectedSlot(slot - 1);
   }
 
   public async updateModelInformation(name: string | null, version: string | null): Promise<void> {
@@ -198,9 +218,12 @@ export class WorkspaceActions {
   }
 
   private getSelectedRecord(): ModelRecord {
-    const selectedSlot: number = this.store.selectedSlot();
+    const selectedSlot: number | null = this.store.selectedSlot();
+    if (selectedSlot === null) throw new Error('Cannot persist: no selected slot to persist.');
+
     const existing: ModelRecord | undefined = this.storage.recordsBySlot().get(selectedSlot);
     if (!existing) throw new Error(`Cannot persist: no model for slot ${selectedSlot}.`);
+
     return existing;
   }
 }

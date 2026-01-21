@@ -60,7 +60,7 @@ export class CreateModelDialog {
     this.isSubmitted = true;
     if (!this.isFormValid()) return;
 
-    await this.workspace.actions.createModel(this.newModel);
+    await this.workspace.actions.createSlot(this.newModel);
     this.dialogRef.close();
   }
 }
