@@ -1,34 +1,18 @@
 import { Component, effect, inject, signal, WritableSignal } from '@angular/core';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
-import { ScrollPanel } from 'primeng/scrollpanel';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
-import { Panel } from 'primeng/panel';
-import { Chip } from 'primeng/chip';
-import { Tooltip } from 'primeng/tooltip';
-import { Inplace } from 'primeng/inplace';
-import { InputText } from 'primeng/inputtext';
 import { WorkspaceState } from '../../../../states/workspace.state';
+import { PatchNode } from '../../../../core/handler/GModelMutations';
+import { NodeBasicsComponent } from './node-basics/node-basics.component';
+import { GNode } from '../../../../core/models/GModel';
+import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
+import { ScrollPanel } from 'primeng/scrollpanel';
 
 @Component({
   selector: 'app-node-editor',
-  imports: [
-    ScrollPanel,
-    FormsModule,
-    Button,
-    Tabs,
-    TabList,
-    Tab,
-    TabPanels,
-    TabPanel,
-    Panel,
-    Chip,
-    Tooltip,
-    Inplace,
-    InputText,
-  ],
+  imports: [FormsModule, Button, NodeBasicsComponent, Tab, TabList, TabPanel, TabPanels, Tabs, ScrollPanel],
   providers: [],
   templateUrl: './node-editor.component.html',
   styleUrl: './node-editor.component.scss',
@@ -40,18 +24,14 @@ export class NodeEditorComponent {
   protected readonly router: Router = inject(Router);
   protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
 
-  protected readonly isNodeNameActive: WritableSignal<boolean> = signal(false);
+  protected readonly draftNode: WritableSignal<PatchNode> = signal({});
 
   constructor() {
     effect((): void => {
-      this.workspace.store.selectedNodeId();
-      this.isNodeNameActive.set(false);
+      const selectedNode: GNode | null = this.workspace.view.selectedWorkNode();
+      if (!selectedNode) return;
+      this.draftNode.set(structuredClone(selectedNode));
     });
-  }
-
-  protected handleEditNodeName(): void {
-    this.isNodeNameActive.set(!this.isNodeNameActive());
-    this.workspaceState.setDirty(true);
   }
 
   protected handleCloseView(): void {

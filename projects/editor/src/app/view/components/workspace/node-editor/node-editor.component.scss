@@ -10,14 +10,6 @@
   animation-fill-mode: both;
 }
 
-:host::ng-deep .p-panel-header {
-  padding: 10px 18px 8px 18px;
-}
-
-:host::ng-deep.p-panel-content {
-  padding: 0 18px 10px 18px;
-}
-
-:host::ng-deep.p-inplace-display {
-  padding: 0;
+:host::ng-deep .p-tablist-active-bar {
+  width: unset !important;
 }
