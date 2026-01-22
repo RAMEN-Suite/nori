@@ -50,8 +50,8 @@ export class AttributeRules {
         diagnostics.push(Diagnostics.error(report));
       }
 
-      const typeExists: boolean = this.attributeTypeExists(validationContext, attribute.typeId);
-      if (!typeExists) {
+      const isTypeExisting: boolean = this.attributeTypeExists(validationContext, attribute.typeId);
+      if (!isTypeExisting) {
         const report: DiagnosticReport = {
           code: VALIDATION_ERROR.ATTRIBUTE_TYPE_NOT_FOUND,
           message: `Attribute '${attribute.name}' in node '${node.id}' references unknown type '${attribute.typeId}'.`,

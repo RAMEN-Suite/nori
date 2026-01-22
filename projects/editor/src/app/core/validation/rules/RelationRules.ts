@@ -189,10 +189,10 @@ export class RelationRules {
   ): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
 
-    const fromRoleMatches: boolean = derivedRelation.from.role === baseRelation.from.role;
-    const toRoleMatches: boolean = derivedRelation.to.role === baseRelation.to.role;
+    const isFromRoleMatching: boolean = derivedRelation.from.role === baseRelation.from.role;
+    const isToRoleMatching: boolean = derivedRelation.to.role === baseRelation.to.role;
 
-    if (!fromRoleMatches) {
+    if (!isFromRoleMatching) {
       const report: DiagnosticReport = {
         code: VALIDATION_ERROR.RELATION_ROLE_MISMATCH,
         message: `from.role must be '${baseRelation.from.role}'.`,
@@ -202,7 +202,7 @@ export class RelationRules {
       diagnostics.push(Diagnostics.error(report));
     }
 
-    if (!toRoleMatches) {
+    if (!isToRoleMatching) {
       const report: DiagnosticReport = {
         code: VALIDATION_ERROR.RELATION_ROLE_MISMATCH,
         message: `to.role must be '${baseRelation.to.role}'.`,
