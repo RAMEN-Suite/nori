@@ -7,17 +7,23 @@ import {
   inject,
   input,
   InputSignal,
-  OnChanges,
   signal,
   Signal,
-  SimpleChanges,
   untracked,
   viewChild,
   WritableSignal,
 } from '@angular/core';
 import * as d3 from 'd3';
-import { D3ZoomEvent, Selection, ZoomBehavior } from 'd3';
 import { GraphData } from '../../../../../core/GModelGraph';
+import type {
+  LinkSelection,
+  NodeDrag,
+  NodeSelection,
+  RootSelection,
+  SVGSelection,
+  ZoomBehaviour,
+  ZoomEvent,
+} from './graph.types';
 import {
   DEFAULT_GRAPH_LAYOUT_SETTINGS,
   GraphLayoutSettings,
@@ -37,16 +43,16 @@ import { NodeColors } from '../../../../../models/ModelRecord';
   templateUrl: './graph.component.html',
   styleUrl: './graph.component.scss',
 })
-export class GraphComponent implements AfterViewInit, OnChanges {
+export class GraphComponent implements AfterViewInit {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   protected readonly destroyRef: DestroyRef = inject(DestroyRef);
 
-  protected svgSelection?: d3.Selection<SVGSVGElement, unknown, null, undefined>;
-  protected rootGroupSelection?: d3.Selection<SVGGElement, unknown, null, undefined>;
-  protected zoomBehavior?: ZoomBehavior<SVGSVGElement, unknown>;
+  protected svgSelection?: SVGSelection;
+  protected rootGroupSelection?: RootSelection;
+  protected zoomBehavior?: ZoomBehaviour;
 
-  protected nodeSelection?: d3.Selection<SVGGElement, PositionedNode, SVGGElement, unknown>;
-  protected linkSelection?: d3.Selection<SVGLineElement, ResolvedLink, SVGGElement, unknown>;
+  protected nodeSelection?: NodeSelection;
+  protected linkSelection?: LinkSelection;
 
   protected renderModel?: RenderModel;
   protected resizeObserver?: ResizeObserver;
@@ -61,14 +67,48 @@ export class GraphComponent implements AfterViewInit, OnChanges {
     padding: { ...DEFAULT_GRAPH_LAYOUT_SETTINGS.padding },
   });
 
-  constructor() {
-    effect((): void => {
-      this.refreshHover();
-    });
+  private lastGraphDataRef?: GraphData;
+  private lastSettingsRef?: GraphLayoutSettings;
 
+  constructor() {
+    this.registerHoverEffect();
+    this.registerColorChangesEffect();
+    this.registerGraphChangesEffect();
+  }
+
+  private registerHoverEffect(): void {
+    effect((): void => this.refreshHover());
+  }
+
+  private registerColorChangesEffect(): void {
     effect((): void => {
       this.superTypeColors.set(this.workspace.store.selectedNodeColors());
       untracked((): void => this.updateNodeColorsOnly());
+    });
+  }
+
+  private registerGraphChangesEffect(): void {
+    effect((): void => {
+      const data: GraphData = this.graphData();
+      const settings: GraphLayoutSettings = this.settings();
+
+      if (!this.rootGroupSelection) return;
+
+      const graphDataChanged: boolean = this.lastGraphDataRef !== data;
+      const settingsChanged: boolean = this.lastSettingsRef !== settings;
+
+      if (!graphDataChanged && !settingsChanged) return;
+
+      this.lastGraphDataRef = data;
+      this.lastSettingsRef = settings;
+
+      if (graphDataChanged) {
+        this.svgSelection?.interrupt();
+        this.svgSelection?.call(this.zoomBehavior!.transform, d3.zoomIdentity);
+      }
+
+      this.render(data, true);
+      this.refreshHover();
     });
   }
 
@@ -76,21 +116,6 @@ export class GraphComponent implements AfterViewInit, OnChanges {
     this.mountSvg();
     this.render(this.graphData(), true);
     this.destroyRef.onDestroy((): void => this.cleanup());
-  }
-
-  public ngOnChanges(changes: SimpleChanges): void {
-    if (!this.rootGroupSelection) return;
-
-    const mustRender: boolean = !!(changes['graphData'] || changes['settings']);
-    if (!mustRender) return;
-
-    if (changes['graphData']) {
-      this.svgSelection?.interrupt();
-      this.svgSelection?.call(this.zoomBehavior!.transform, d3.zoomIdentity);
-    }
-
-    this.render(this.graphData(), true);
-    this.refreshHover();
   }
 
   private mountSvg(): void {
@@ -110,7 +135,7 @@ export class GraphComponent implements AfterViewInit, OnChanges {
     this.zoomBehavior = d3
       .zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.2, 4])
-      .on('zoom', (event: D3ZoomEvent<SVGSVGElement, unknown>): void => {
+      .on('zoom', (event: ZoomEvent): void => {
         this.rootGroupSelection?.attr('transform', event.transform.toString());
       });
 
@@ -144,6 +169,7 @@ export class GraphComponent implements AfterViewInit, OnChanges {
     this.updateLinkPositions();
     this.updateNodePositions();
     this.updateNodeColorsOnly();
+
     if (!fit) return;
 
     window.requestAnimationFrame((): void => {
@@ -164,69 +190,62 @@ export class GraphComponent implements AfterViewInit, OnChanges {
     this.applyHoverHighlight(this.workspace.store.selectedNodeId());
   }
 
-  private drawLinks(
-    rootGroupSelection: d3.Selection<SVGGElement, unknown, null, undefined>,
-    links: ResolvedLink[],
-  ): d3.Selection<SVGLineElement, ResolvedLink, SVGGElement, unknown> {
-    const selection: Selection<SVGLineElement, ResolvedLink, SVGGElement, unknown> = rootGroupSelection
+  private drawLinks(rootGroupSelection: RootSelection, links: ResolvedLink[]): LinkSelection {
+    return rootGroupSelection
       .selectAll<SVGLineElement, ResolvedLink>('line.link')
-      .data(links, (link: ResolvedLink): string => link.id);
-
-    selection.exit().remove();
-    return selection.enter().append('line').attr('class', 'link').attr('marker-end', 'url(#g-arrow)').merge(selection);
+      .data(links, (link: ResolvedLink): string => link.id)
+      .join(
+        (enter) => enter.append('line').attr('class', 'link').attr('marker-end', 'url(#g-arrow)'),
+        (update) => update,
+        (exit) => exit.remove(),
+      );
   }
 
-  private drawNodes(
-    rootGroupSelection: d3.Selection<SVGGElement, unknown, null, undefined>,
-    nodes: PositionedNode[],
-  ): d3.Selection<SVGGElement, PositionedNode, SVGGElement, unknown> {
-    const selection: Selection<SVGGElement, PositionedNode, SVGGElement, unknown> = rootGroupSelection
+  private drawNodes(rootGroupSelection: RootSelection, nodes: PositionedNode[]): NodeSelection {
+    const merged: NodeSelection = rootGroupSelection
       .selectAll<SVGGElement, PositionedNode>('g.node')
-      .data(nodes, (node: PositionedNode): string => node.id);
+      .data(nodes, (node: PositionedNode): string => node.id)
+      .join(
+        (enter) => {
+          const g = enter
+            .append('g')
+            .attr('class', 'node')
+            .call(this.createDragBehavior())
+            .on('mouseenter', this.handleNodeHover.bind(this))
+            .on('mouseleave', this.handleNodeLeave.bind(this))
+            .on('click', this.handleNodeClick.bind(this));
 
-    selection.exit().remove();
+          g.append('circle');
 
-    const enterSelection: Selection<SVGGElement, PositionedNode, SVGGElement, unknown> = selection
-      .enter()
-      .append('g')
-      .attr('class', 'node')
-      .call(this.createDragBehavior())
-      .on('mouseenter', this.handleNodeHover.bind(this))
-      .on('mouseleave', this.handleNodeLeave.bind(this))
-      .on('click', this.handleNodeClick.bind(this));
+          g.append('text')
+            .attr('dx', 0)
+            .attr('dy', 35)
+            .attr('text-anchor', 'middle')
+            .attr('font-size', 12)
+            .attr('pointer-events', 'none');
 
-    enterSelection.append('circle').attr('r', this.settings().nodeRadius);
+          return g;
+        },
+        (update) => update,
+        (exit) => exit.remove(),
+      );
 
-    enterSelection
-      .append('text')
-      .attr('dx', 0)
-      .attr('dy', 35)
-      .attr('text-anchor', 'middle')
-      .attr('font-size', 12)
-      .attr('pointer-events', 'none');
-
-    const merged: d3.Selection<SVGGElement, PositionedNode, SVGGElement, unknown> = enterSelection.merge(selection);
     merged.select('circle').attr('r', this.settings().nodeRadius);
     merged.select('text').text((node: PositionedNode): string => node.label ?? node.refId ?? node.id);
+
     return merged;
   }
 
   private drawArrowMarker(): void {
     if (!this.svgSelection) return;
 
-    const defsSelection: d3.Selection<SVGDefsElement, unknown, null, undefined> = this.svgSelection
-      .select<SVGDefsElement>('defs')
-      .empty()
-      ? this.svgSelection.append('defs')
-      : this.svgSelection.select<SVGDefsElement>('defs');
+    const defs = this.svgSelection.selectAll<SVGDefsElement, unknown>('defs').data([0]).join('defs');
 
-    const markerSelection: d3.Selection<SVGMarkerElement, unknown, null, undefined> = defsSelection
-      .select<SVGMarkerElement>('marker#g-arrow')
-      .empty()
-      ? defsSelection.append('marker').attr('id', 'g-arrow')
-      : defsSelection.select<SVGMarkerElement>('marker#g-arrow');
-
-    markerSelection
+    const marker = defs
+      .selectAll<SVGMarkerElement, unknown>('marker#g-arrow')
+      .data([0])
+      .join('marker')
+      .attr('id', 'g-arrow')
       .attr('viewBox', '0 0 10 10')
       .attr('refX', 8)
       .attr('refY', 5)
@@ -235,7 +254,7 @@ export class GraphComponent implements AfterViewInit, OnChanges {
       .attr('markerHeight', 10)
       .attr('orient', 'auto');
 
-    markerSelection
+    marker
       .selectAll<SVGPathElement, unknown>('path')
       .data([0])
       .join('path')
@@ -290,8 +309,10 @@ export class GraphComponent implements AfterViewInit, OnChanges {
     const nodeRadius: number = this.settings().nodeRadius;
     const arrowTrimPixels: number = 5;
 
-    this.linkSelection?.each((link: ResolvedLink, index: number, elements: ArrayLike<SVGLineElement>): void => {
-      const trimmed: { x1: number; y1: number; x2: number; y2: number } = this.computeTrimmedEnds(
+    const computeTrimmedEnds = this.computeTrimmedEnds.bind(this);
+
+    this.linkSelection?.each(function (this: SVGLineElement, link: ResolvedLink): void {
+      const trimmed = computeTrimmedEnds(
         link.source.x,
         link.source.y,
         link.target.x,
@@ -300,10 +321,7 @@ export class GraphComponent implements AfterViewInit, OnChanges {
         nodeRadius + arrowTrimPixels,
       );
 
-      const element: SVGLineElement | undefined = elements[index];
-      if (!element) return;
-
-      d3.select<SVGLineElement, ResolvedLink>(element)
+      d3.select<SVGLineElement, ResolvedLink>(this)
         .attr('x1', trimmed.x1)
         .attr('y1', trimmed.y1)
         .attr('x2', trimmed.x2)
@@ -315,7 +333,7 @@ export class GraphComponent implements AfterViewInit, OnChanges {
     this.nodeSelection?.attr('transform', (node: PositionedNode): string => `translate(${node.x}, ${node.y})`);
   }
 
-  private createDragBehavior(): d3.DragBehavior<SVGGElement, PositionedNode, unknown> {
+  private createDragBehavior(): NodeDrag {
     return d3
       .drag<SVGGElement, PositionedNode>()
       .on('drag', (event: d3.D3DragEvent<SVGGElement, PositionedNode, unknown>, node: PositionedNode) => {
