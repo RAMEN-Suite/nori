@@ -2,9 +2,14 @@ import { effect, inject, Injectable } from '@angular/core';
 import { StorageService, UpdateRecordInput } from '../storage.service';
 import { WorkspaceStore } from './workspace.store';
 import { WorkspaceQueries } from './workspace.queries';
-import { CreateNodeInput, CreateRelationInput, SuggestionHelper } from '../../core/helper/SuggestionHelper';
+import {
+  ConnectedNode,
+  CreateNodeInput,
+  CreateRelationInput,
+  SuggestionHelper,
+} from '../../core/helper/SuggestionHelper';
 import { ModelRecord, NodeColors, ViewSettings } from '../../models/ModelRecord';
-import { GClassifier, GDataType, GModel, GNode, GRelation, Id } from '../../core/models/GModel';
+import { GDataType, GModel, GNode, GRelation, Id } from '../../core/models/GModel';
 import { GModelMutations, PatchDataType, PatchNode, PatchRelation } from '../../core/handler/GModelMutations';
 import { GModelOperations } from '../../core/handler/GModelOperations';
 import { GModelFactory } from '../../core/GModelFactory';
@@ -81,18 +86,18 @@ export class WorkspaceActions {
     const work: GModel | null = this.store.workingModel();
     if (!work) throw new Error('No working model loaded.');
 
-    const source: GNode | undefined = work.classifiers.find((classifier: GClassifier): classifier is GNode => {
-      const isNode: boolean = classifier.kind === 'GNode';
-      const isSourceNode: boolean = classifier.id === nodeId;
-      return isNode && isSourceNode;
+    const cloned: ConnectedNode = this.helper.duplicateConnectedNode(work, nodeId);
+
+    this.apply((model: GModel): GModel => {
+      let updated: GModel = GModelMutations.addClassifier(model, cloned.node);
+      for (const relation of cloned.relations) {
+        updated = GModelMutations.addRelation(updated, relation);
+      }
+      return updated;
     });
-    if (!source) throw new Error(`Node not found: ${nodeId}`);
 
-    const cloned: GNode = this.helper.duplicateDerivedNode(source);
-    this.apply((model: GModel): GModel => GModelMutations.addClassifier(model, cloned));
     await this.saveSelectedWork();
-
-    return cloned;
+    return cloned.node;
   }
 
   public async deleteNode(nodeId: Id): Promise<void> {

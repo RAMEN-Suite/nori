@@ -19,6 +19,11 @@ export interface CreateDataTypeInput {
   readonly name: string;
 }
 
+export type ConnectedNode = {
+  readonly node: GNode;
+  readonly relations: ReadonlyArray<GRelation>;
+};
+
 export class SuggestionHelper {
   public listNodes(model: GModel): ReadonlyArray<GNode> {
     const modelIndex: GModelIndex = new GModelIndex(model);
@@ -192,15 +197,47 @@ export class SuggestionHelper {
     cloned.id = SuggestionHelper.createIdentifier();
     cloned.name = `${source.name} (copy)`;
 
-    const constraintFn: (c: GConstraint) => GConstraint = (c: GConstraint): GConstraint => {
-      return { ...c, id: SuggestionHelper.createIdentifier() };
+    const constraintFn: (constraint: GConstraint) => GConstraint = (constraint: GConstraint): GConstraint => {
+      return { ...constraint, id: SuggestionHelper.createIdentifier() };
     };
     cloned.constraints = cloned.constraints?.map(constraintFn);
-    cloned.attributes = cloned.attributes.map((a: GAttribute): GAttribute => {
-      return { ...a, constraints: a.constraints?.map(constraintFn) };
+    cloned.attributes = cloned.attributes.map((attribute: GAttribute): GAttribute => {
+      return { ...attribute, constraints: attribute.constraints?.map(constraintFn) };
     });
 
     return cloned;
+  }
+
+  public duplicateConnectedNode(model: GModel, sourceNodeId: Id): ConnectedNode {
+    const index: GModelIndex = new GModelIndex(model);
+    const source: GNode | undefined = index.nodesById.get(sourceNodeId);
+    if (!source) throw new Error(`Node not found: ${sourceNodeId}`);
+
+    const clonedNode: GNode = this.duplicateDerivedNode(source);
+    const related: GRelation[] = [];
+
+    for (const relation of model.relations) {
+      const isRelevant: boolean = relation.from.nodeId === sourceNodeId || relation.to.nodeId === sourceNodeId;
+      if (!isRelevant) continue;
+
+      const clonedRelation: GRelation = structuredClone(relation);
+      clonedRelation.id = SuggestionHelper.createIdentifier();
+
+      if (clonedRelation.from.nodeId === sourceNodeId) clonedRelation.from.nodeId = clonedNode.id;
+      if (clonedRelation.to.nodeId === sourceNodeId) clonedRelation.to.nodeId = clonedNode.id;
+
+      const constraintFn: (constraint: GConstraint) => GConstraint = (constraint: GConstraint): GConstraint => {
+        return { ...constraint, id: SuggestionHelper.createIdentifier() };
+      };
+
+      clonedRelation.constraints = clonedRelation.constraints?.map(constraintFn);
+      clonedRelation.from.constraints = clonedRelation.from.constraints?.map(constraintFn);
+      clonedRelation.to.constraints = clonedRelation.to.constraints?.map(constraintFn);
+
+      related.push(clonedRelation);
+    }
+
+    return { node: clonedNode, relations: related };
   }
 
   public static createIdentifier(): string {
