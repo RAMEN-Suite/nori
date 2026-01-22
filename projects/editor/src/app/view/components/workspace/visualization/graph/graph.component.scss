@@ -15,6 +15,9 @@
   --g-node-dim-opacity: 0.25;
   --g-node-hover-stroke-width: 2.25;
 
+  --g-node-selected-ring-color: var(--p-primary-color);
+  --g-node-selected-ring-size: 4px;
+
   display: block;
   width: 100%;
   height: 100%;
@@ -52,6 +55,11 @@
 
 :host ::ng-deep g.node.is-highlighted circle {
   stroke-width: var(--g-node-hover-stroke-width);
+}
+
+:host ::ng-deep g.node.is-selected circle {
+  stroke-width: calc(var(--g-node-selected-ring-size));
+  stroke: var(--g-node-selected-ring-color);
 }
 
 .host {

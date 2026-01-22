@@ -63,8 +63,19 @@ export class GraphMenuComponent {
 
   protected graphData: Signal<GraphData> = computed((): GraphData => {
     const model: GModel | null = this.workspace.view.slotModel();
-    return new GModelGraph().build(model);
+    const graphData: GraphData = new GModelGraph().build(model);
+
+    const key: string = this.computeGraphKey(graphData);
+    if (key === this.previousKey) return this.previousData;
+
+    this.previousKey = key;
+    this.previousData = graphData;
+
+    return graphData;
   });
+
+  private previousKey: string = '';
+  private previousData: GraphData = { nodes: [], links: [] };
 
   constructor() {
     this.destroyRef.onDestroy((): void => {
@@ -94,5 +105,19 @@ export class GraphMenuComponent {
 
   public handleLayoutReset(): void {
     this.handleSelectLayoutMode(this.settings().layoutMode);
+  }
+
+  private computeGraphKey(data: GraphData): string {
+    const nodePart: string = [...data.nodes]
+      .map((n) => `${n.id}|${n.refId ?? ''}|${n.superType ?? ''}`)
+      .sort()
+      .join(',');
+
+    const linkPart: string = [...data.links]
+      .map((l) => `${l.id}|${l.source}->${l.target}`)
+      .sort()
+      .join(',');
+
+    return `n:${data.nodes.length}:${nodePart}#l:${data.links.length}:${linkPart}`;
   }
 }

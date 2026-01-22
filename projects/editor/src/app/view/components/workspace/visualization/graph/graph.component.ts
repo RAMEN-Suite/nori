@@ -14,6 +14,7 @@ import {
   WritableSignal,
 } from '@angular/core';
 import * as d3 from 'd3';
+import { ZoomTransform } from 'd3';
 import { GraphData } from '../../../../../core/GModelGraph';
 import type {
   LinkSelection,
@@ -56,7 +57,7 @@ export class GraphComponent implements AfterViewInit {
 
   protected renderModel?: RenderModel;
   protected resizeObserver?: ResizeObserver;
-  protected pendingResizeRender: boolean = false;
+  protected isResizeRenderPending: boolean = false;
 
   protected readonly host: Signal<ElementRef<HTMLDivElement> | undefined> = viewChild('host');
   protected readonly superTypeColors: WritableSignal<NodeColors> = signal({});
@@ -69,6 +70,7 @@ export class GraphComponent implements AfterViewInit {
 
   private lastGraphDataRef?: GraphData;
   private lastSettingsRef?: GraphLayoutSettings;
+  private currentTransform: ZoomTransform = d3.zoomIdentity;
 
   constructor() {
     this.registerHoverEffect();
@@ -94,15 +96,14 @@ export class GraphComponent implements AfterViewInit {
 
       if (!this.rootGroupSelection) return;
 
-      const graphDataChanged: boolean = this.lastGraphDataRef !== data;
-      const settingsChanged: boolean = this.lastSettingsRef !== settings;
-
-      if (!graphDataChanged && !settingsChanged) return;
+      const hasGraphChanged: boolean = this.lastGraphDataRef !== data;
+      const haveSettingsChanged: boolean = this.lastSettingsRef !== settings;
+      if (!hasGraphChanged && !haveSettingsChanged) return;
 
       this.lastGraphDataRef = data;
       this.lastSettingsRef = settings;
 
-      if (graphDataChanged) {
+      if (hasGraphChanged) {
         this.svgSelection?.interrupt();
         this.svgSelection?.call(this.zoomBehavior!.transform, d3.zoomIdentity);
       }
@@ -136,19 +137,20 @@ export class GraphComponent implements AfterViewInit {
       .zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.2, 4])
       .on('zoom', (event: ZoomEvent): void => {
+        this.currentTransform = event.transform;
         this.rootGroupSelection?.attr('transform', event.transform.toString());
       });
 
     this.svgSelection.call(this.zoomBehavior);
 
     this.resizeObserver = new ResizeObserver((): void => {
-      if (this.pendingResizeRender) return;
-      this.pendingResizeRender = true;
+      if (this.isResizeRenderPending) return;
+      this.isResizeRenderPending = true;
 
       window.requestAnimationFrame((): void => {
-        this.pendingResizeRender = false;
+        this.isResizeRenderPending = false;
         this.updateViewBox();
-        this.render(this.graphData(), true);
+        this.render(this.graphData(), false);
       });
     });
 
@@ -156,7 +158,7 @@ export class GraphComponent implements AfterViewInit {
     this.updateViewBox();
   }
 
-  private render(data: GraphData, fit: boolean): void {
+  private render(data: GraphData, shouldFit: boolean): void {
     if (!this.rootGroupSelection) return;
 
     const viewport: ViewportSize = getViewportSize(this.getHostElement());
@@ -170,7 +172,8 @@ export class GraphComponent implements AfterViewInit {
     this.updateNodePositions();
     this.updateNodeColorsOnly();
 
-    if (!fit) return;
+    this.rootGroupSelection.attr('transform', this.currentTransform.toString());
+    if (!shouldFit) return;
 
     window.requestAnimationFrame((): void => {
       window.requestAnimationFrame((): void => {
@@ -186,8 +189,10 @@ export class GraphComponent implements AfterViewInit {
   }
 
   private refreshHover(): void {
+    const selectedId: string | null = this.workspace.store.selectedNodeId();
     this.clearHoverHighlight();
-    this.applyHoverHighlight(this.workspace.store.selectedNodeId());
+    this.applyHoverHighlight(selectedId);
+    this.applySelectedHighlight(selectedId);
   }
 
   private drawLinks(rootGroupSelection: RootSelection, links: ResolvedLink[]): LinkSelection {
@@ -348,6 +353,10 @@ export class GraphComponent implements AfterViewInit {
         node.baseX = node.x;
         node.baseY = node.y;
       });
+  }
+
+  private applySelectedHighlight(nodeId: string | null): void {
+    this.nodeSelection?.classed('is-selected', (node: PositionedNode): boolean => node.id === nodeId);
   }
 
   private applyHoverHighlight(nodeId: string | null): void {
