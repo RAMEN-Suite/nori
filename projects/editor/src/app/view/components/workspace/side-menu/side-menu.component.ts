@@ -132,7 +132,7 @@ export class SideMenuComponent {
 
   protected async handleCreateNode(baseNodeId: string): Promise<void> {
     const newNode: GNode = await this.workspace.actions.createNode('Untitled', baseNodeId);
-    const selectedSlot: number | null = this.workspace.store.selectedSlot();
+    const selectedSlot: number = this.workspace.store.selectedSlot();
     void this.navigation.navigateToNode(this.activatedRoute, selectedSlot, newNode.id);
   }
 
@@ -141,7 +141,7 @@ export class SideMenuComponent {
     if (!nodeId) return;
 
     const newNode: GNode = await this.workspace.actions.duplicateNode(nodeId);
-    const selectedSlot: number | null = this.workspace.store.selectedSlot();
+    const selectedSlot: number = this.workspace.store.selectedSlot();
     void this.navigation.navigateToNode(this.activatedRoute, selectedSlot, newNode.id);
   }
 
@@ -172,7 +172,7 @@ export class SideMenuComponent {
         const selectedNodeId: string | null = this.workspace.store.selectedNodeId();
         if (selectedMenuItem.id !== selectedNodeId) return;
 
-        const selectedSlot: number | null = this.workspace.store.selectedSlot();
+        const selectedSlot: number = this.workspace.store.selectedSlot();
         void this.navigation.navigateToSlot(this.activatedRoute, selectedSlot);
       },
     });
@@ -180,7 +180,7 @@ export class SideMenuComponent {
 
   protected handleSelectPanelItem(item: SideMenuItem): void {
     if (item.isCategory) return;
-    const selectedSlot: number | null = this.workspace.store.selectedSlot();
+    const selectedSlot: number = this.workspace.store.selectedSlot();
     void this.navigation.navigateToNode(this.activatedRoute, selectedSlot, item.id ?? null);
   }
 

@@ -6,7 +6,7 @@ import { NodeColors } from '../../models/ModelRecord';
 export class WorkspaceStore {
   public readonly workingModel: WritableSignal<GModel | null> = signal<GModel | null>(null);
   public readonly selectedNodeId: WritableSignal<Id | null> = signal<Id | null>(null);
-  public readonly selectedSlot: WritableSignal<number | null> = signal<number | null>(null);
+  public readonly selectedSlot: WritableSignal<number> = signal<number>(1);
 
   public readonly selectedNodeColors: WritableSignal<NodeColors> = signal<NodeColors>({});
 

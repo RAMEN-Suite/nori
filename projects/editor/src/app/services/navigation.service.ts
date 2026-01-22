@@ -10,17 +10,16 @@ export class NavigationService {
     await this.navigateTo(['/ws', projectId]);
   }
 
-  public async navigateToSlot(route: ActivatedRoute, slot: number | null): Promise<void> {
+  public async navigateToSlot(route: ActivatedRoute, slot: number): Promise<void> {
     await this.navigateToNode(route, slot, null);
   }
 
-  public async navigateToNode(route: ActivatedRoute, slot: number | null, nodeId: string | null): Promise<void> {
+  public async navigateToNode(route: ActivatedRoute, slot: number, nodeId: string | null): Promise<void> {
     const projectId: string | null = this.getRouteParameter(route, PARAMETERS.PROJECT);
     if (!projectId) return;
 
-    const commands: string[] = ['/ws', projectId];
-    if (slot !== null) commands.push(String(slot));
-    if (slot !== null && nodeId !== null) commands.push(nodeId);
+    const commands: string[] = ['/ws', projectId, String(slot)];
+    if (nodeId !== null) commands.push(nodeId);
 
     await this.navigateTo(commands);
   }

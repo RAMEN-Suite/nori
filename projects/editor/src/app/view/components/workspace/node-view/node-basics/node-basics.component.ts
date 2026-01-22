@@ -111,7 +111,7 @@ export class NodeBasicsComponent {
         if (!selectedNode.id) return;
 
         await this.workspace.actions.deleteNode(selectedNode.id);
-        const selectedSlot: number | null = this.workspace.store.selectedSlot();
+        const selectedSlot: number = this.workspace.store.selectedSlot();
         void this.navigation.navigateToSlot(this.activatedRoute, selectedSlot);
       },
     });

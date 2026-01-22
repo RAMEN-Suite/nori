@@ -451,7 +451,7 @@ export class GraphComponent implements AfterViewInit {
   }
 
   protected handleNodeClick(_: MouseEvent, node: PositionedNode): void {
-    const selectedSlot: number | null = this.workspace.store.selectedSlot();
+    const selectedSlot: number = this.workspace.store.selectedSlot();
     void this.navigation.navigateToNode(this.activatedRoute, selectedSlot, node.id);
   }
 }

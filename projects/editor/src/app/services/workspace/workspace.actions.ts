@@ -44,9 +44,7 @@ export class WorkspaceActions {
 
   private registerNodeColorsEffect(): void {
     effect((): void => {
-      const selectedSlot: number | null = this.store.selectedSlot();
-      if (selectedSlot === null) return this.store.setSelectedNodeColors({});
-
+      const selectedSlot: number = this.store.selectedSlot();
       const record: ModelRecord | undefined = this.storage.recordsBySlot().get(selectedSlot);
       const nodeColors: NodeColors = record?.view?.nodeColors ?? {};
       this.store.setSelectedNodeColors(nodeColors);
@@ -206,9 +204,7 @@ export class WorkspaceActions {
   }
 
   private getSelectedRecord(): ModelRecord {
-    const selectedSlot: number | null = this.store.selectedSlot();
-    if (selectedSlot === null) throw new Error('Cannot persist: no selected slot to persist.');
-
+    const selectedSlot: number = this.store.selectedSlot();
     const existing: ModelRecord | undefined = this.storage.recordsBySlot().get(selectedSlot);
     if (!existing) throw new Error(`Cannot persist: no model for slot ${selectedSlot}.`);
 

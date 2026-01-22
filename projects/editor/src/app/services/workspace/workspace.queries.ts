@@ -23,8 +23,7 @@ export class WorkspaceQueries {
   private readonly validator: ModelValidator = new ModelValidator();
 
   private readonly baseSlot: Signal<number | null> = computed((): number | null => {
-    const selectedSlot: number | null = this.store.selectedSlot();
-    if (selectedSlot === null) return null;
+    const selectedSlot: number = this.store.selectedSlot();
     return Math.max(0, selectedSlot - 1);
   });
 
@@ -35,8 +34,7 @@ export class WorkspaceQueries {
   });
 
   public readonly slotModel: Signal<GModel | null> = computed((): GModel | null => {
-    const selectedSlot: number | null = this.store.selectedSlot();
-    if (selectedSlot === null) return null;
+    const selectedSlot: number = this.store.selectedSlot();
     return this.storage.recordsBySlot().get(selectedSlot)?.gmodel ?? null;
   });
 

@@ -124,8 +124,7 @@ export class BreadcrumbsComponent {
     if (!slotToDelete) return;
     await this.workspace.actions.deleteSlot(slotToDelete);
 
-    const currentSlot: number | null = this.workspace.store.selectedSlot();
-    if (!currentSlot || currentSlot !== slotToDelete) return;
-    void this.navigation.navigateToSlot(this.activatedRoute, currentSlot - 1);
+    const currentSlot: number = this.workspace.store.selectedSlot();
+    if (currentSlot === slotToDelete) void this.navigation.navigateToSlot(this.activatedRoute, currentSlot - 1);
   }
 }
