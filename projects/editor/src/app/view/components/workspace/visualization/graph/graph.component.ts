@@ -236,7 +236,7 @@ export class GraphComponent implements AfterViewInit {
       );
 
     merged.select('circle').attr('r', this.settings().nodeRadius);
-    merged.select('text').text((node: PositionedNode): string => node.label ?? node.refId ?? node.id);
+    merged.select('text').text((node: PositionedNode): string => node.label ?? node.id);
 
     return merged;
   }

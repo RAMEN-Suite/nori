@@ -1,7 +1,7 @@
 import { Component, computed, DestroyRef, inject, Signal, signal, WritableSignal } from '@angular/core';
 import { GraphComponent } from '../graph/graph.component';
 import { GModel } from '../../../../../core/models/GModel';
-import { GModelGraph, GraphData } from '../../../../../core/GModelGraph';
+import { GModelGraph, GraphData, GraphLink, GraphNode } from '../../../../../core/GModelGraph';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
 import { FormsModule } from '@angular/forms';
 import { Menubar } from 'primeng/menubar';
@@ -108,16 +108,12 @@ export class GraphMenuComponent {
   }
 
   private computeGraphKey(data: GraphData): string {
-    const nodePart: string = [...data.nodes]
-      .map((n) => `${n.id}|${n.refId ?? ''}|${n.superType ?? ''}`)
-      .sort()
-      .join(',');
+    const nodeKeyParts: string[] = [...data.nodes].map((n: GraphNode): string => `${n.id}|${n.label}`);
+    const nodeKey: string = nodeKeyParts.sort().join(',');
 
-    const linkPart: string = [...data.links]
-      .map((l) => `${l.id}|${l.source}->${l.target}`)
-      .sort()
-      .join(',');
+    const linkKeyParts: string[] = [...data.links].map((l: GraphLink): string => `${l.id}|${l.source}->${l.target}`);
+    const linkKey: string = linkKeyParts.sort().join(',');
 
-    return `n:${data.nodes.length}:${nodePart}#l:${data.links.length}:${linkPart}`;
+    return `n:${data.nodes.length}:${nodeKey}#l:${data.links.length}:${linkKey}`;
   }
 }
