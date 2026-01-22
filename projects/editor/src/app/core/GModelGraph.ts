@@ -3,7 +3,6 @@ import { Refs } from './validation/container/References';
 
 export interface GraphNode {
   readonly id: string;
-  readonly refId: string;
   readonly kind: 'GNode';
   readonly label: string;
   readonly superType: string;
@@ -15,7 +14,6 @@ export interface GraphLink {
   readonly target: string;
   readonly kind: 'GRelation';
   readonly label: string;
-  readonly refId: string;
 }
 
 export interface GraphData {
@@ -55,18 +53,13 @@ export class GModelGraph {
     return { nodeById, dataTypeById };
   }
 
-  private appendNodeNodes(
-    index: ClassifierIndex,
-    nodes: GraphNode[],
-    existingNodeIds: Set<string>,
-  ): void {
+  private appendNodeNodes(index: ClassifierIndex, nodes: GraphNode[], existingNodeIds: Set<string>): void {
     for (const node of index.nodeById.values()) {
       const superType: string | undefined = node.superTypes[0];
       if (!superType) continue;
 
       const graphNode: GraphNode = {
         id: node.id,
-        refId: node.id,
         kind: 'GNode',
         label: node.name,
         superType: Refs.splitQualified(superType).nodeId,
@@ -88,7 +81,6 @@ export class GModelGraph {
         target: toRef,
         kind: 'GRelation',
         label: this.formatRelationLabel(relation),
-        refId: relation.id,
       };
 
       links.push(link);
