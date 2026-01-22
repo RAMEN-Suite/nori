@@ -8,14 +8,12 @@
             @for (manifest of filteredManifest(); track manifest.projectId) {
               <div class="me-4 flex flex-row gap-1">
                 <div class="grow">
-                  <p-button fluid variant="outlined" [routerLink]="['/ws', manifest.projectId]">
+                  <p-button fluid variant="outlined" (click)="handleOpenProject(manifest.projectId)">
                     <ng-template #content>
                       <div class="flex w-full flex-col gap-1 px-1 py-2 text-left">
                         <div class="flex flex-row items-center">
                           <span class="text-sm font-bold">{{ manifest.name }}</span>
-                          <span class="ml-2 text-xs uppercase">
-                            ({{ manifest.metamodelName }}, v.{{ manifest.metamodelVersion }})
-                          </span>
+                          <span class="ml-2 text-xs uppercase"> ({{ manifest.metamodelName }}, v.{{ manifest.metamodelVersion }}) </span>
                         </div>
                         <div class="flex flex-row items-center">
                           <span class="text-sm">
@@ -27,31 +25,17 @@
                           </span>
                         </div>
                         <div class="mt-3 flex flex-row items-center">
-                          <span class="text-xs font-stretch-semi-condensed">
-                            Last Updated: {{ manifest.updatedAt | date }}
-                          </span>
+                          <span class="text-xs font-stretch-semi-condensed"> Last Updated: {{ manifest.updatedAt | date }} </span>
                         </div>
                       </div>
                     </ng-template>
                   </p-button>
                 </div>
                 <div class="self-stretch">
-                  <p-button
-                    fluid
-                    icon="pi pi-clone"
-                    outlined
-                    styleClass="h-full"
-                    (click)="handleDuplicateProject(manifest)"
-                  />
+                  <p-button fluid icon="pi pi-clone" outlined styleClass="h-full" (click)="handleDuplicateProject(manifest)" />
                 </div>
                 <div class="self-stretch">
-                  <p-button
-                    fluid
-                    icon="pi pi-trash"
-                    outlined
-                    styleClass="h-full"
-                    (click)="handleDeleteProject(manifest)"
-                  />
+                  <p-button fluid icon="pi pi-trash" outlined styleClass="h-full" (click)="handleDeleteProject(manifest)" />
                 </div>
               </div>
             } @empty {

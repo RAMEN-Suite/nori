@@ -2,14 +2,16 @@ import { Component, effect, inject, signal, WritableSignal } from '@angular/core
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
-import { WorkspaceState } from '../../../../states/workspace.state';
-import { PatchNode } from '../../../../core/handler/GModelMutations';
 import { NodeBasicsComponent } from './node-basics/node-basics.component';
 import { GNode } from '../../../../core/models/GModel';
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
 import { ScrollPanel } from 'primeng/scrollpanel';
 import { NodeAttributesComponent } from './node-attributes/node-attributes.component';
 import { NodeRelationsComponent } from './node-relations/node-relations.component';
+import { PatchNode } from '../../../../core/handler/GModelMutations';
+import { OnDeactivate } from '../../../../guards/workspace.guard';
+import { ActivatedRoute } from '@angular/router';
+import { NavigationService } from '../../../../services/navigation.service';
 
 @Component({
   selector: 'app-node-editor',
@@ -27,14 +29,17 @@ import { NodeRelationsComponent } from './node-relations/node-relations.componen
     NodeRelationsComponent,
   ],
   providers: [],
-  templateUrl: './node-editor.component.html',
-  styleUrl: './node-editor.component.scss',
+  templateUrl: './node-view.component.html',
+  styleUrl: './node-view.component.scss',
 })
-export class NodeEditorComponent {
+export class NodeViewComponent implements OnDeactivate {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
-  protected readonly workspaceState: WorkspaceState = inject(WorkspaceState);
+  protected readonly navigation: NavigationService = inject(NavigationService);
+  protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
 
   protected readonly draftNode: WritableSignal<PatchNode> = signal({});
+  protected readonly isDraftDirty: WritableSignal<boolean> = signal(false);
+
   protected currentId: string | null = null;
 
   constructor() {
@@ -45,8 +50,15 @@ export class NodeEditorComponent {
     });
   }
 
+  public ngOnDeactivate(): boolean {
+    console.log(this.isDraftDirty());
+    if (!this.isDraftDirty()) return true;
+    return false;
+  }
+
   protected handleCloseView(): void {
-    this.workspace.store.setSelectedNodeId(null);
+    const selectedSlot: number | null = this.workspace.store.selectedSlot();
+    void this.navigation.navigateToSlot(this.activatedRoute, selectedSlot);
   }
 
   protected async handleSaveView(): Promise<void> {
@@ -59,8 +71,12 @@ export class NodeEditorComponent {
     const selectedNode: GNode | null = this.workspace.view.selectedWorkNode();
     if (!selectedNode) return;
 
-    this.draftNode.set(structuredClone(selectedNode));
+    this.draftNode.set({
+      name: selectedNode.name,
+      attributes: structuredClone(selectedNode.attributes),
+      superTypes: structuredClone(selectedNode.superTypes),
+    });
+
     this.currentId = selectedNode.id;
-    this.workspaceState.setDirty(false);
   }
 }

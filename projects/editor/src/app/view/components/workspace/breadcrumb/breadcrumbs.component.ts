@@ -10,6 +10,8 @@ import { Ripple } from 'primeng/ripple';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { CreateModelDialog } from '../../dialogs/create-model/create-model.dialog';
 import { Tooltip } from 'primeng/tooltip';
+import { ActivatedRoute } from '@angular/router';
+import { NavigationService } from '../../../../services/navigation.service';
 
 type BreadcrumbItem = Omit<MenuItem, 'items'> & {
   isFirst?: boolean;
@@ -27,6 +29,9 @@ type BreadcrumbItem = Omit<MenuItem, 'items'> & {
 export class BreadcrumbsComponent {
   protected readonly storage: StorageService = inject(StorageService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
+
+  protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
+  protected readonly navigation: NavigationService = inject(NavigationService);
 
   protected readonly destroyRef: DestroyRef = inject(DestroyRef);
   protected readonly dialogService: DialogService = inject(DialogService);
@@ -106,7 +111,7 @@ export class BreadcrumbsComponent {
 
   protected handleChangeModelSlot(slot: number): void {
     if (this.workspace.store.selectedSlot() === slot) return;
-    this.workspace.store.setSelectedSlot(slot);
+    void this.navigation.navigateToSlot(this.activatedRoute, slot);
   }
 
   protected handleContextMenu($event: MouseEvent, item: BreadcrumbItem): void {
@@ -115,7 +120,12 @@ export class BreadcrumbsComponent {
   }
 
   protected async handleDeleteModel(): Promise<void> {
-    const slot: number | undefined = this.selectedMenuItem()?.slot;
-    if (slot) await this.workspace.actions.deleteSlot(slot);
+    const slotToDelete: number | undefined = this.selectedMenuItem()?.slot;
+    if (!slotToDelete) return;
+    await this.workspace.actions.deleteSlot(slotToDelete);
+
+    const currentSlot: number | null = this.workspace.store.selectedSlot();
+    if (!currentSlot || currentSlot !== slotToDelete) return;
+    void this.navigation.navigateToSlot(this.activatedRoute, currentSlot - 1);
   }
 }

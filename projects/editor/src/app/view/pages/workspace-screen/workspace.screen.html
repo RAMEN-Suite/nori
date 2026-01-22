@@ -1,29 +1,17 @@
-@let isNodeSelected = !!workspace.store.selectedNodeId();
-
 <app-tool-bar />
 
 <main class="main-window flex flex-row" style="--p-tool-bar-h: 50px">
-  <div
-    class="flex flex-2 border-r border-(--p-menubar-border-color) bg-(--p-menubar-background)/40"
-    animate.enter="side-menu-entrance"
-  >
+  <div class="flex flex-2 border-r border-(--p-menubar-border-color) bg-(--p-menubar-background)/40" animate.enter="side-menu-entrance">
     <app-side-menu class="basis-full" />
   </div>
 
   <div class="flex flex-5" animate.enter="node-editor-entrance">
-    <app-node-editor class="basis-full" [hidden]="!isNodeSelected" />
-
-    @if (!isNodeSelected) {
-      <div class="flex flex-col" animate.enter="welcome-entrance">
-        <div class="flex">sample text</div>
-      </div>
-    }
+    <div class="basis-full">
+      <router-outlet />
+    </div>
   </div>
 
-  <div
-    class="flex flex-5 border-l border-(--p-menubar-border-color) bg-(--p-menubar-background)/40"
-    animate.enter="visualizer-entrance"
-  >
+  <div class="flex flex-5 border-l border-(--p-menubar-border-color) bg-(--p-menubar-background)/40" animate.enter="visualizer-entrance">
     <app-visualizer class="basis-full" />
   </div>
 </main>

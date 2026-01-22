@@ -64,7 +64,7 @@ export class StorageService {
     this.manifests.set(list);
   }
 
-  public async createProject(input: CreateManifest, metamodel: GModel, example?: GModel): Promise<void> {
+  public async createProject(input: CreateManifest, metamodel: GModel, example?: GModel): Promise<Manifest> {
     const timestamp: string = new Date().toISOString();
     const projectId: string = new ShortUniqueId({ length: 18 }).randomUUID();
 
@@ -99,8 +99,8 @@ export class StorageService {
       }
     });
 
-    this.selectProject(projectId);
     await this.refreshManifests();
+    return manifest;
   }
 
   public async updateProject(projectId: string, patch: UpdateManifest): Promise<void> {

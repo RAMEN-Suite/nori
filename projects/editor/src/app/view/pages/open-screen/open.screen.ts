@@ -13,6 +13,7 @@ import { ScrollPanel } from 'primeng/scrollpanel';
 import { ConfirmationService } from 'primeng/api';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { DatePipe } from '@angular/common';
+import { NavigationService } from '../../../services/navigation.service';
 
 @Component({
   selector: 'app-open-screen',
@@ -35,7 +36,9 @@ import { DatePipe } from '@angular/common';
 export class OpenScreen implements OnInit {
   protected readonly windowState: WindowState = inject(WindowState);
   protected readonly storage: StorageService = inject(StorageService);
+
   protected readonly confirmation: ConfirmationService = inject(ConfirmationService);
+  protected readonly navigation: NavigationService = inject(NavigationService);
 
   protected readonly searchInput: WritableSignal<string> = signal('');
   protected readonly filteredManifest: Signal<Manifest[]> = computed((): Manifest[] => {
@@ -45,14 +48,17 @@ export class OpenScreen implements OnInit {
 
     return list.filter(
       (manifest: Manifest): boolean =>
-        manifest.name.toLowerCase().includes(query) ||
-        manifest.projectId.toLowerCase().includes(query),
+        manifest.name.toLowerCase().includes(query) || manifest.projectId.toLowerCase().includes(query),
     );
   });
 
   public ngOnInit(): void {
     this.windowState.setTitle('Open Project', 'pi pi-folder-open');
     void this.storage.refreshManifests();
+  }
+
+  public handleOpenProject(projectId: string): void {
+    void this.navigation.navigateToProject(projectId);
   }
 
   public async handleDeleteProject(manifest: Manifest): Promise<void> {

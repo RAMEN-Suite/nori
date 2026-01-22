@@ -8,33 +8,24 @@ import { IftaLabel } from 'primeng/iftalabel';
 import { Button } from 'primeng/button';
 import { Select } from 'primeng/select';
 import { Checkbox } from 'primeng/checkbox';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { Message } from 'primeng/message';
 import { CATALOG, EXAMPLES } from '../../../../data/CATALOG';
 import { GModel } from '../../../core/models/GModel';
 import { CreateManifest, StorageService } from '../../../services/storage.service';
+import { Manifest } from '../../../models/Manifest';
+import { NavigationService } from '../../../services/navigation.service';
 
 @Component({
   selector: 'app-create',
-  imports: [
-    FormsModule,
-    InputText,
-    Fieldset,
-    Textarea,
-    IftaLabel,
-    Button,
-    Select,
-    Checkbox,
-    RouterLink,
-    Message,
-  ],
+  imports: [FormsModule, InputText, Fieldset, Textarea, IftaLabel, Button, Select, Checkbox, RouterLink, Message],
   templateUrl: './start.screen.html',
   styleUrl: './start.screen.scss',
 })
 export class StartScreen {
   protected readonly windowState: WindowState = inject(WindowState);
   protected readonly storage: StorageService = inject(StorageService);
-  protected readonly router: Router = inject(Router);
+  protected readonly navigation: NavigationService = inject(NavigationService);
 
   protected readonly manifest: CreateManifest;
   protected readonly metamodels: GModel[] = CATALOG;
@@ -82,7 +73,7 @@ export class StartScreen {
     this.manifest.metamodelName = name;
 
     const example: GModel | undefined = this.isCreatingExample ? EXAMPLES[0] : undefined;
-    await this.storage.createProject(this.manifest, this.selectedMetamodel, example);
-    void this.router.navigate(['/ws', this.storage.selectedProjectId()]);
+    const manifest: Manifest = await this.storage.createProject(this.manifest, this.selectedMetamodel, example);
+    void this.navigation.navigateToProject(manifest.projectId);
   }
 }

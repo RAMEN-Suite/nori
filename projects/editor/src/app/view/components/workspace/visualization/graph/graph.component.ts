@@ -37,6 +37,8 @@ import {
 import { buildRenderModel, getViewportSize } from './graph.layout';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
 import { NodeColors } from '../../../../../models/ModelRecord';
+import { ActivatedRoute } from '@angular/router';
+import { NavigationService } from '../../../../../services/navigation.service';
 
 @Component({
   selector: 'app-graph',
@@ -47,6 +49,9 @@ import { NodeColors } from '../../../../../models/ModelRecord';
 export class GraphComponent implements AfterViewInit {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   protected readonly destroyRef: DestroyRef = inject(DestroyRef);
+
+  protected readonly navigation: NavigationService = inject(NavigationService);
+  protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
 
   protected svgSelection?: SVGSelection;
   protected rootGroupSelection?: RootSelection;
@@ -446,6 +451,7 @@ export class GraphComponent implements AfterViewInit {
   }
 
   protected handleNodeClick(_: MouseEvent, node: PositionedNode): void {
-    this.workspace.store.setSelectedNodeId(node.id);
+    const selectedSlot: number | null = this.workspace.store.selectedSlot();
+    void this.navigation.navigateToNode(this.activatedRoute, selectedSlot, node.id);
   }
 }

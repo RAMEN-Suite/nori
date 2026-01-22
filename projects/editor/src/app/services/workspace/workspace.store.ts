@@ -23,17 +23,11 @@ export class WorkspaceStore {
   }
 
   public setSelectedSlot(selectedSlot: number | null): void {
-    if (selectedSlot === null) return this.selectedSlot.set(null);
+    if (selectedSlot === null || isNaN(selectedSlot)) return this.selectedSlot.set(1);
     this.selectedSlot.set(Math.max(1, selectedSlot));
   }
 
   public setWorkingModel(workingModel: GModel | null): void {
     this.workingModel.set(workingModel);
-  }
-
-  public resetSelections(): void {
-    this.setSelectedNodeColors({});
-    this.setSelectedNodeId(null);
-    this.setSelectedSlot(null);
   }
 }

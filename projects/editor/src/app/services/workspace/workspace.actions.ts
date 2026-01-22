@@ -30,18 +30,8 @@ export class WorkspaceActions {
   private readonly helper: SuggestionHelper = new SuggestionHelper();
 
   constructor() {
-    this.registerInitialEffect();
     this.registerSlotChangesEffect();
     this.registerNodeColorsEffect();
-  }
-
-  private registerInitialEffect(): void {
-    effect((): void => {
-      const records: Map<number, ModelRecord> = this.storage.recordsBySlot();
-      const selectedSlot: number | null = this.store.selectedSlot();
-      if (records.size === 0 || selectedSlot !== null) return;
-      this.store.setSelectedSlot(1);
-    });
   }
 
   private registerSlotChangesEffect(): void {
@@ -103,10 +93,6 @@ export class WorkspaceActions {
   public async deleteNode(nodeId: Id): Promise<void> {
     this.apply((model: GModel): GModel => GModelOperations.deleteNode(model, nodeId));
     await this.saveSelectedWork();
-
-    if (this.store.selectedNodeId() === nodeId) {
-      this.store.setSelectedNodeId(null);
-    }
   }
 
   public async updateNode(nodeId: Id, patch: PatchNode): Promise<void> {
@@ -154,7 +140,7 @@ export class WorkspaceActions {
     await this.saveSelectedWork();
   }
 
-  public async createSlot(input: CreateSlotInput): Promise<void> {
+  public async createSlot(input: CreateSlotInput): Promise<number> {
     const projectId: string | null = this.storage.selectedProjectId();
     if (!projectId) throw new Error('No active project selected.');
 
@@ -176,16 +162,13 @@ export class WorkspaceActions {
       description: input.description,
     });
 
-    this.store.setSelectedSlot(lastSlot + 1);
+    return lastSlot + 1;
   }
 
   public async deleteSlot(slot: number): Promise<void> {
     const projectId: string | null = this.storage.selectedProjectId();
     if (!projectId) throw new Error('No active project selected.');
     await this.storage.deleteSlot(projectId, slot);
-
-    const selectedSlot: number | null = this.store.selectedSlot();
-    if (slot === selectedSlot) this.store.setSelectedSlot(slot - 1);
   }
 
   public async updateModelInformation(name: string | null, version: string | null): Promise<void> {

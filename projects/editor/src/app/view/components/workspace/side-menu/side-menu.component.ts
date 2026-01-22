@@ -12,6 +12,8 @@ import { ContextMenu } from 'primeng/contextmenu';
 import { FormsModule } from '@angular/forms';
 import { ConfirmationService, MenuItem } from 'primeng/api';
 import { ConfirmDialog } from 'primeng/confirmdialog';
+import { ActivatedRoute } from '@angular/router';
+import { NavigationService } from '../../../../services/navigation.service';
 
 type SideMenuItem = MenuItem & {
   isCategory?: boolean;
@@ -42,6 +44,9 @@ type SideMenuItem = MenuItem & {
 export class SideMenuComponent {
   protected readonly confirmation: ConfirmationService = inject(ConfirmationService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
+
+  protected readonly navigation: NavigationService = inject(NavigationService);
+  protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
 
   protected readonly selectedContextItem: WritableSignal<SideMenuItem | null> = signal(null);
   protected readonly contextMenu: WritableSignal<SideMenuItem[]> = signal([]);
@@ -127,7 +132,8 @@ export class SideMenuComponent {
 
   protected async handleCreateNode(baseNodeId: string): Promise<void> {
     const newNode: GNode = await this.workspace.actions.createNode('Untitled', baseNodeId);
-    this.workspace.store.setSelectedNodeId(newNode.id);
+    const selectedSlot: number | null = this.workspace.store.selectedSlot();
+    void this.navigation.navigateToNode(this.activatedRoute, selectedSlot, newNode.id);
   }
 
   protected async handleDuplicateNode(): Promise<void> {
@@ -135,7 +141,8 @@ export class SideMenuComponent {
     if (!nodeId) return;
 
     const newNode: GNode = await this.workspace.actions.duplicateNode(nodeId);
-    this.workspace.store.setSelectedNodeId(newNode.id);
+    const selectedSlot: number | null = this.workspace.store.selectedSlot();
+    void this.navigation.navigateToNode(this.activatedRoute, selectedSlot, newNode.id);
   }
 
   protected async handleDeleteNode(): Promise<void> {
@@ -161,13 +168,20 @@ export class SideMenuComponent {
       accept: async (): Promise<void> => {
         if (!selectedMenuItem.id) return;
         await this.workspace.actions.deleteNode(selectedMenuItem.id);
+
+        const selectedNodeId: string | null = this.workspace.store.selectedNodeId();
+        if (selectedMenuItem.id !== selectedNodeId) return;
+
+        const selectedSlot: number | null = this.workspace.store.selectedSlot();
+        void this.navigation.navigateToSlot(this.activatedRoute, selectedSlot);
       },
     });
   }
 
   protected handleSelectPanelItem(item: SideMenuItem): void {
     if (item.isCategory) return;
-    this.workspace.store.setSelectedNodeId(item.id ?? null);
+    const selectedSlot: number | null = this.workspace.store.selectedSlot();
+    void this.navigation.navigateToNode(this.activatedRoute, selectedSlot, item.id ?? null);
   }
 
   protected handleContextMenu($event: MouseEvent, clickedItem: SideMenuItem): void {

@@ -10,6 +10,8 @@ import { Textarea } from 'primeng/textarea';
 import { REGEXP } from '../../../../core/const/REGEXP';
 import { DynamicDialogRef } from 'primeng/dynamicdialog';
 import { CreateSlotInput } from '../../../../services/workspace/workspace.actions';
+import { ActivatedRoute } from '@angular/router';
+import { NavigationService } from '../../../../services/navigation.service';
 
 @Component({
   selector: 'app-modal-create-model',
@@ -20,6 +22,9 @@ import { CreateSlotInput } from '../../../../services/workspace/workspace.action
 export class CreateModelDialog {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   protected readonly dialogRef: DynamicDialogRef = inject(DynamicDialogRef);
+
+  protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
+  protected readonly navigation: NavigationService = inject(NavigationService);
 
   protected newModel: CreateSlotInput;
   protected isSubmitted: boolean = false;
@@ -60,7 +65,8 @@ export class CreateModelDialog {
     this.isSubmitted = true;
     if (!this.isFormValid()) return;
 
-    await this.workspace.actions.createSlot(this.newModel);
+    const slot: number = await this.workspace.actions.createSlot(this.newModel);
+    void this.navigation.navigateToSlot(this.activatedRoute, slot);
     this.dialogRef.close();
   }
 }

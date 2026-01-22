@@ -7,15 +7,16 @@ import { Panel } from 'primeng/panel';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Tooltip } from 'primeng/tooltip';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
-import { WorkspaceState } from '../../../../../states/workspace.state';
 import { NgStyle } from '@angular/common';
-import { PatchNode } from '../../../../../core/handler/GModelMutations';
 import { ConfirmationService } from 'primeng/api';
 import { GNode } from '../../../../../core/models/GModel';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { NodeColorsDialog } from '../../../dialogs/node-colors/node-colors.dialog';
 import { AutoFocus } from 'primeng/autofocus';
+import { PatchNode } from '../../../../../core/handler/GModelMutations';
+import { NavigationService } from '../../../../../services/navigation.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-node-basics',
@@ -37,16 +38,19 @@ import { AutoFocus } from 'primeng/autofocus';
   styleUrl: './node-basics.component.scss',
 })
 export class NodeBasicsComponent {
+  protected readonly workspace: WorkspaceService = inject(WorkspaceService);
+  protected readonly confirmation: ConfirmationService = inject(ConfirmationService);
+
+  protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
+  protected readonly navigation: NavigationService = inject(NavigationService);
+
   protected readonly destroyRef: DestroyRef = inject(DestroyRef);
   protected readonly dialogService: DialogService = inject(DialogService);
-  protected readonly confirmation: ConfirmationService = inject(ConfirmationService);
   protected dialogRef: DynamicDialogRef | null = null;
-
-  protected readonly workspace: WorkspaceService = inject(WorkspaceService);
-  protected readonly workspaceState: WorkspaceState = inject(WorkspaceState);
 
   protected readonly isNameActive: WritableSignal<boolean> = signal(false);
 
+  public isDraftDirty: ModelSignal<boolean | undefined> = model();
   public draftNode: ModelSignal<PatchNode> = model({});
 
   constructor() {
@@ -63,7 +67,7 @@ export class NodeBasicsComponent {
 
   protected handleEditNodeName(): void {
     this.isNameActive.set(!this.isNameActive());
-    this.workspaceState.setDirty(true);
+    this.isDraftDirty.set(true);
   }
 
   public handleOpenColorsDialog(): void {
@@ -105,7 +109,10 @@ export class NodeBasicsComponent {
       },
       accept: async (): Promise<void> => {
         if (!selectedNode.id) return;
+
         await this.workspace.actions.deleteNode(selectedNode.id);
+        const selectedSlot: number | null = this.workspace.store.selectedSlot();
+        void this.navigation.navigateToSlot(this.activatedRoute, selectedSlot);
       },
     });
   }

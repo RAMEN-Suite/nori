@@ -5,7 +5,7 @@
     <p-scroll-panel class="min-h-full" animate.enter="node-editor-entrance">
       <ng-template #content>
         <div class="flex flex-col gap-5 px-5 py-3">
-          <app-node-basics [(draftNode)]="draftNode" />
+          <app-node-basics [(draftNode)]="draftNode" [(isDraftDirty)]="isDraftDirty" />
 
           <p-tabs value="0" class="border border-(--p-panel-border-color)">
             <p-tablist>
@@ -45,14 +45,8 @@
       </div>
 
       <div class="flex flex-row gap-5">
-        <p-button
-          label="Save & Validate"
-          size="small"
-          variant="outlined"
-          (click)="handleSaveView()"
-          [disabled]="!workspaceState.state().isDirty"
-        />
-        <p-button label="Reset" size="small" variant="outlined" (click)="handleResetView()" [disabled]="!workspaceState.state().isDirty" />
+        <p-button label="Save & Validate" size="small" variant="outlined" (click)="handleSaveView()" [disabled]="!isDraftDirty()" />
+        <p-button label="Reset" size="small" variant="outlined" (click)="handleResetView()" [disabled]="!isDraftDirty()" />
       </div>
     </div>
   }
