@@ -45,8 +45,8 @@
       </div>
 
       <div class="flex flex-row gap-5">
-        <p-button label="Save & Validate" size="small" variant="outlined" (click)="handleSaveView()" [disabled]="!isDraftDirty()" />
         <p-button label="Reset" size="small" variant="outlined" (click)="handleResetView()" [disabled]="!isDraftDirty()" />
+        <p-button label="Save Changes" size="small" (click)="handleSaveView()" [disabled]="!isDraftDirty()" />
       </div>
     </div>
   }

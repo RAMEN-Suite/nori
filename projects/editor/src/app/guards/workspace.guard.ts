@@ -3,8 +3,8 @@ import { inject } from '@angular/core';
 import { StorageService } from '../services/storage.service';
 import { PARAMETERS } from '../app.routes';
 
-export interface OnDeactivate {
-  ngOnDeactivate: () => boolean | Promise<boolean>;
+export interface CanDeactivate {
+  ngCanDeactivate: () => boolean | Promise<boolean>;
 }
 
 export const hasWorkspace: CanActivateFn = async (route: ActivatedRouteSnapshot): Promise<boolean | UrlTree> => {
@@ -20,6 +20,6 @@ export const hasWorkspace: CanActivateFn = async (route: ActivatedRouteSnapshot)
   return true;
 };
 
-export const hasUnsavedChanges: CanDeactivateFn<OnDeactivate> = async (component: OnDeactivate): Promise<boolean> => {
-  return component.ngOnDeactivate();
+export const hasUnsavedChanges: CanDeactivateFn<CanDeactivate> = async (component: CanDeactivate): Promise<boolean> => {
+  return component.ngCanDeactivate();
 };

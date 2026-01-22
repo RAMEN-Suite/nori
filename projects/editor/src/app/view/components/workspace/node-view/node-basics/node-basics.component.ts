@@ -8,7 +8,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Tooltip } from 'primeng/tooltip';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
 import { NgStyle } from '@angular/common';
-import { ConfirmationService } from 'primeng/api';
 import { GNode } from '../../../../../core/models/GModel';
 import { ConfirmDialog } from 'primeng/confirmdialog';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -17,6 +16,11 @@ import { AutoFocus } from 'primeng/autofocus';
 import { PatchNode } from '../../../../../core/handler/GModelMutations';
 import { NavigationService } from '../../../../../services/navigation.service';
 import { ActivatedRoute } from '@angular/router';
+import {
+  ConfirmationButton,
+  ConfirmationDialog,
+  ConfirmationOptions,
+} from '../../../dialogs/confirmation/confirmation.dialog';
 
 @Component({
   selector: 'app-node-basics',
@@ -33,14 +37,12 @@ import { ActivatedRoute } from '@angular/router';
     ConfirmDialog,
     AutoFocus,
   ],
-  providers: [ConfirmationService, DialogService, DynamicDialogRef],
+  providers: [DialogService, DynamicDialogRef],
   templateUrl: './node-basics.component.html',
   styleUrl: './node-basics.component.scss',
 })
 export class NodeBasicsComponent {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
-  protected readonly confirmation: ConfirmationService = inject(ConfirmationService);
-
   protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
   protected readonly navigation: NavigationService = inject(NavigationService);
 
@@ -91,29 +93,40 @@ export class NodeBasicsComponent {
     const selectedNode: GNode | null = this.workspace.view.selectedWorkNode();
     if (!selectedNode) return;
 
-    this.confirmation.confirm({
-      message: `Do you really want to delete "${selectedNode.name}"?`,
-      header: 'Delete Node',
-      key: 'node-basics',
-      dismissableMask: true,
-      rejectButtonProps: {
-        label: 'Cancel',
-        size: 'small',
-        variant: 'outlined',
-      },
-      acceptButtonProps: {
-        label: 'Yes, I want to delete my node',
-        size: 'small',
-        variant: 'outlined',
-        severity: 'danger',
-      },
-      accept: async (): Promise<void> => {
+    const acceptButton: ConfirmationButton = {
+      label: 'Yes, I want delete it',
+      size: 'small',
+      severity: 'danger',
+      variant: 'outlined',
+      click: async (): Promise<void> => {
         if (!selectedNode.id) return;
-
         await this.workspace.actions.deleteNode(selectedNode.id);
         const selectedSlot: number = this.workspace.store.selectedSlot();
         void this.navigation.navigateToSlot(this.activatedRoute, selectedSlot);
       },
+    };
+    const cancelButton: ConfirmationButton = {
+      label: `Cancel`,
+      size: 'small',
+      variant: 'outlined',
+      click: (): void => this.dialogRef?.close(),
+    };
+
+    const options: ConfirmationOptions = {
+      title: 'Deleting Node',
+      message: `Do you really want to delete <span class="font-bold font-stretch-semi-expanded">${selectedNode.name}</span>? <br />
+      Once deleted, it is gone forever.`,
+      icon: 'pi-trash',
+      justify: 'justify-around',
+      buttons: [[cancelButton], [acceptButton]],
+    };
+
+    this.dialogRef = this.dialogService.open(ConfirmationDialog, {
+      showHeader: false,
+      closeOnEscape: true,
+      dismissableMask: true,
+      closable: true,
+      inputValues: { options },
     });
   }
 }

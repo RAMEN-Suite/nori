@@ -1,4 +1,4 @@
-import { Component, computed, inject, OnInit, Signal, signal, WritableSignal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, OnInit, Signal, signal, WritableSignal } from '@angular/core';
 import { StorageService } from '../../../services/storage.service';
 import { WindowState } from '../../../states/window.state';
 import { InputText } from 'primeng/inputtext';
@@ -10,35 +10,30 @@ import { InputGroupAddon } from 'primeng/inputgroupaddon';
 import { Fieldset } from 'primeng/fieldset';
 import { Manifest } from '../../../models/Manifest';
 import { ScrollPanel } from 'primeng/scrollpanel';
-import { ConfirmationService } from 'primeng/api';
-import { ConfirmDialog } from 'primeng/confirmdialog';
 import { DatePipe } from '@angular/common';
 import { NavigationService } from '../../../services/navigation.service';
+import {
+  ConfirmationButton,
+  ConfirmationDialog,
+  ConfirmationOptions,
+} from '../../components/dialogs/confirmation/confirmation.dialog';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 @Component({
   selector: 'app-open-screen',
-  imports: [
-    InputText,
-    Button,
-    RouterLink,
-    InputGroup,
-    InputGroupAddon,
-    Fieldset,
-    FormsModule,
-    ScrollPanel,
-    ConfirmDialog,
-    DatePipe,
-  ],
-  providers: [ConfirmationService],
+  imports: [InputText, Button, RouterLink, InputGroup, InputGroupAddon, Fieldset, FormsModule, ScrollPanel, DatePipe],
+  providers: [DialogService, DynamicDialogRef],
   templateUrl: './open.screen.html',
   styleUrl: './open.screen.scss',
 })
 export class OpenScreen implements OnInit {
   protected readonly windowState: WindowState = inject(WindowState);
   protected readonly storage: StorageService = inject(StorageService);
-
-  protected readonly confirmation: ConfirmationService = inject(ConfirmationService);
   protected readonly navigation: NavigationService = inject(NavigationService);
+
+  protected readonly destroyRef: DestroyRef = inject(DestroyRef);
+  protected readonly dialogService: DialogService = inject(DialogService);
+  protected dialogRef: DynamicDialogRef | null = null;
 
   protected readonly searchInput: WritableSignal<string> = signal('');
   protected readonly filteredManifest: Signal<Manifest[]> = computed((): Manifest[] => {
@@ -52,6 +47,13 @@ export class OpenScreen implements OnInit {
     );
   });
 
+  constructor() {
+    this.destroyRef.onDestroy((): void => {
+      this.dialogRef?.close();
+      this.dialogRef = null;
+    });
+  }
+
   public ngOnInit(): void {
     this.windowState.setTitle('Open Project', 'pi pi-folder-open');
     void this.storage.refreshManifests();
@@ -62,23 +64,38 @@ export class OpenScreen implements OnInit {
   }
 
   public async handleDeleteProject(manifest: Manifest): Promise<void> {
-    this.confirmation.confirm({
-      message: `Do you really want to delete "${manifest.name}"?`,
-      header: `Deleting Project`,
-      key: 'open-projects',
+    const acceptButton: ConfirmationButton = {
+      label: 'Yes, I want delete it',
+      size: 'small',
+      severity: 'danger',
+      variant: 'outlined',
+      click: async (): Promise<void> => {
+        void this.storage.deleteProject(manifest.projectId);
+        this.dialogRef?.close();
+      },
+    };
+    const cancelButton: ConfirmationButton = {
+      label: `Cancel`,
+      size: 'small',
+      variant: 'outlined',
+      click: (): void => this.dialogRef?.close(),
+    };
+
+    const options: ConfirmationOptions = {
+      title: 'Deleting Project',
+      message: `Do you really want to delete <span class="font-bold font-stretch-semi-expanded">${manifest.name}</span>? <br />
+      Once deleted, it is gone forever.`,
+      icon: 'pi-trash',
+      justify: 'justify-around',
+      buttons: [[cancelButton], [acceptButton]],
+    };
+
+    this.dialogRef = this.dialogService.open(ConfirmationDialog, {
+      showHeader: false,
+      closeOnEscape: true,
       dismissableMask: true,
-      rejectButtonProps: {
-        label: 'Cancel',
-        size: 'small',
-        variant: 'outlined',
-      },
-      acceptButtonProps: {
-        label: 'Yes, I want to delete my project',
-        size: 'small',
-        variant: 'outlined',
-        severity: 'danger',
-      },
-      accept: (): void => void this.storage.deleteProject(manifest.projectId),
+      closable: true,
+      inputValues: { options },
     });
   }
 

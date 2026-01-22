@@ -10,10 +10,7 @@
       <ng-template #item let-item>
         <div class="cursor-pointer">
           @if (item.isCategory) {
-            <div
-              pRipple
-              class="mb-1.5 flex flex-row items-center justify-between border-b border-(--p-menubar-border-color) px-2 py-1.5"
-            >
+            <div pRipple class="mb-1.5 flex flex-row items-center justify-between border-b border-(--p-menubar-border-color) px-2 py-1.5">
               <div class="flex font-bold font-stretch-semi-condensed">
                 {{ item.label }}
               </div>
@@ -66,5 +63,3 @@
     </div>
   </ng-template>
 </p-context-menu>
-
-<p-confirm-dialog key="side-menu" />

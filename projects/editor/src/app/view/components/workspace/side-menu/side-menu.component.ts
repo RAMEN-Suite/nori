@@ -1,4 +1,4 @@
-import { Component, computed, inject, Signal, signal, viewChild, WritableSignal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, Signal, signal, viewChild, WritableSignal } from '@angular/core';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { PanelMenu } from 'primeng/panelmenu';
 import { GNode } from '../../../../core/models/GModel';
@@ -10,10 +10,15 @@ import { Ripple } from 'primeng/ripple';
 import { Tooltip } from 'primeng/tooltip';
 import { ContextMenu } from 'primeng/contextmenu';
 import { FormsModule } from '@angular/forms';
-import { ConfirmationService, MenuItem } from 'primeng/api';
-import { ConfirmDialog } from 'primeng/confirmdialog';
+import { MenuItem } from 'primeng/api';
 import { ActivatedRoute } from '@angular/router';
 import { NavigationService } from '../../../../services/navigation.service';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import {
+  ConfirmationButton,
+  ConfirmationDialog,
+  ConfirmationOptions,
+} from '../../dialogs/confirmation/confirmation.dialog';
 
 type SideMenuItem = MenuItem & {
   isCategory?: boolean;
@@ -25,28 +30,20 @@ type SideMenuItem = MenuItem & {
 
 @Component({
   selector: 'app-side-menu',
-  imports: [
-    PanelMenu,
-    IftaLabel,
-    InputText,
-    ScrollPanel,
-    Button,
-    Ripple,
-    Tooltip,
-    ContextMenu,
-    FormsModule,
-    ConfirmDialog,
-  ],
-  providers: [ConfirmationService],
+  imports: [PanelMenu, IftaLabel, InputText, ScrollPanel, Button, Ripple, Tooltip, ContextMenu, FormsModule],
+  providers: [DialogService, DynamicDialogRef],
   templateUrl: './side-menu.component.html',
   styleUrl: './side-menu.component.scss',
 })
 export class SideMenuComponent {
-  protected readonly confirmation: ConfirmationService = inject(ConfirmationService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
 
   protected readonly navigation: NavigationService = inject(NavigationService);
   protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
+
+  protected readonly destroyRef: DestroyRef = inject(DestroyRef);
+  protected readonly dialogService: DialogService = inject(DialogService);
+  protected dialogRef: DynamicDialogRef | null = null;
 
   protected readonly selectedContextItem: WritableSignal<SideMenuItem | null> = signal(null);
   protected readonly contextMenu: WritableSignal<SideMenuItem[]> = signal([]);
@@ -71,6 +68,13 @@ export class SideMenuComponent {
 
   protected readonly sideMenuItems: Signal<SideMenuItem[]> = computed((): SideMenuItem[] => this.createSideMenu());
   protected readonly filteredMenuItems: Signal<SideMenuItem[]> = computed((): SideMenuItem[] => this.filterMenuItems());
+
+  constructor() {
+    this.destroyRef.onDestroy((): void => {
+      this.dialogRef?.close();
+      this.dialogRef = null;
+    });
+  }
 
   private createSideMenu(): SideMenuItem[] {
     const baseNodes: GNode[] = this.workspace.view.baseNodes();
@@ -149,23 +153,12 @@ export class SideMenuComponent {
     const selectedMenuItem: SideMenuItem | null = this.selectedContextItem();
     if (!selectedMenuItem) return;
 
-    this.confirmation.confirm({
-      message: `Do you really want to delete "${selectedMenuItem.label}"?`,
-      header: 'Delete Node',
-      key: 'side-menu',
-      dismissableMask: true,
-      rejectButtonProps: {
-        label: 'Cancel',
-        size: 'small',
-        variant: 'outlined',
-      },
-      acceptButtonProps: {
-        label: 'Yes, I want to delete my node',
-        size: 'small',
-        variant: 'outlined',
-        severity: 'danger',
-      },
-      accept: async (): Promise<void> => {
+    const acceptButton: ConfirmationButton = {
+      label: 'Yes, I want delete it',
+      size: 'small',
+      severity: 'danger',
+      variant: 'outlined',
+      click: async (): Promise<void> => {
         if (!selectedMenuItem.id) return;
         await this.workspace.actions.deleteNode(selectedMenuItem.id);
 
@@ -174,7 +167,31 @@ export class SideMenuComponent {
 
         const selectedSlot: number = this.workspace.store.selectedSlot();
         void this.navigation.navigateToSlot(this.activatedRoute, selectedSlot);
+        this.dialogRef?.close();
       },
+    };
+    const cancelButton: ConfirmationButton = {
+      label: `Cancel`,
+      size: 'small',
+      variant: 'outlined',
+      click: (): void => this.dialogRef?.close(),
+    };
+
+    const options: ConfirmationOptions = {
+      title: 'Deleting Node',
+      message: `Do you really want to delete <span class="font-bold font-stretch-semi-expanded">${selectedMenuItem.label}</span>? <br />
+      Once deleted, it is gone forever.`,
+      icon: 'pi-trash',
+      justify: 'justify-around',
+      buttons: [[cancelButton], [acceptButton]],
+    };
+
+    this.dialogRef = this.dialogService.open(ConfirmationDialog, {
+      showHeader: false,
+      closeOnEscape: true,
+      dismissableMask: true,
+      closable: true,
+      inputValues: { options },
     });
   }
 

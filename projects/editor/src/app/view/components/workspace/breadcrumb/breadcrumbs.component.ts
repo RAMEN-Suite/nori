@@ -12,8 +12,14 @@ import { CreateModelDialog } from '../../dialogs/create-model/create-model.dialo
 import { Tooltip } from 'primeng/tooltip';
 import { ActivatedRoute } from '@angular/router';
 import { NavigationService } from '../../../../services/navigation.service';
+import {
+  ConfirmationButton,
+  ConfirmationDialog,
+  ConfirmationOptions,
+} from '../../dialogs/confirmation/confirmation.dialog';
 
 type BreadcrumbItem = Omit<MenuItem, 'items'> & {
+  label?: string;
   isFirst?: boolean;
   isLast?: boolean;
   slot?: number;
@@ -122,9 +128,43 @@ export class BreadcrumbsComponent {
   protected async handleDeleteModel(): Promise<void> {
     const slotToDelete: number | undefined = this.selectedMenuItem()?.slot;
     if (!slotToDelete) return;
-    await this.workspace.actions.deleteSlot(slotToDelete);
 
-    const currentSlot: number = this.workspace.store.selectedSlot();
-    if (currentSlot === slotToDelete) void this.navigation.navigateToSlot(this.activatedRoute, currentSlot - 1);
+    const acceptButton: ConfirmationButton = {
+      label: 'Yes, I want delete it',
+      size: 'small',
+      severity: 'danger',
+      variant: 'outlined',
+      click: async (): Promise<void> => {
+        await this.workspace.actions.deleteSlot(slotToDelete);
+        this.dialogRef?.close();
+
+        const currentSlot: number = this.workspace.store.selectedSlot();
+        if (currentSlot !== slotToDelete) return;
+        void this.navigation.navigateToSlot(this.activatedRoute, currentSlot - 1);
+      },
+    };
+    const cancelButton: ConfirmationButton = {
+      label: `Cancel`,
+      size: 'small',
+      variant: 'outlined',
+      click: (): void => this.dialogRef?.close(),
+    };
+
+    const options: ConfirmationOptions = {
+      title: 'Deleting Model',
+      message: `Do you really want to delete <span class="font-bold font-stretch-semi-expanded">${this.selectedMenuItem()?.label}</span>? <br />
+      Once deleted, it is gone forever.`,
+      icon: 'pi-trash',
+      justify: 'justify-around',
+      buttons: [[cancelButton], [acceptButton]],
+    };
+
+    this.dialogRef = this.dialogService.open(ConfirmationDialog, {
+      showHeader: false,
+      closeOnEscape: true,
+      dismissableMask: true,
+      closable: true,
+      inputValues: { options },
+    });
   }
 }
