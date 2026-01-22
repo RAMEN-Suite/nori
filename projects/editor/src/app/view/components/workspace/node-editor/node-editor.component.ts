@@ -35,9 +35,14 @@ export class NodeEditorComponent {
   protected readonly workspaceState: WorkspaceState = inject(WorkspaceState);
 
   protected readonly draftNode: WritableSignal<PatchNode> = signal({});
+  protected currentId: string | null = null;
 
   constructor() {
-    effect((): void => this.handleResetView());
+    effect((): void => {
+      const selectedId: string | null = this.workspace.store.selectedNodeId();
+      if (!selectedId || selectedId === this.currentId) return;
+      this.handleResetView();
+    });
   }
 
   protected handleCloseView(): void {
@@ -53,7 +58,9 @@ export class NodeEditorComponent {
   protected handleResetView(): void {
     const selectedNode: GNode | null = this.workspace.view.selectedWorkNode();
     if (!selectedNode) return;
+
     this.draftNode.set(structuredClone(selectedNode));
+    this.currentId = selectedNode.id;
     this.workspaceState.setDirty(false);
   }
 }
