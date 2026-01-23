@@ -9,7 +9,6 @@ import { Tooltip } from 'primeng/tooltip';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
 import { NgStyle } from '@angular/common';
 import { GNode } from '../../../../../core/models/GModel';
-import { ConfirmDialog } from 'primeng/confirmdialog';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { NodeColorsDialog } from '../../../dialogs/node-colors/node-colors.dialog';
 import { AutoFocus } from 'primeng/autofocus';
@@ -24,19 +23,7 @@ import {
 
 @Component({
   selector: 'app-node-basics',
-  imports: [
-    Button,
-    Chip,
-    Inplace,
-    InputText,
-    Panel,
-    ReactiveFormsModule,
-    Tooltip,
-    FormsModule,
-    NgStyle,
-    ConfirmDialog,
-    AutoFocus,
-  ],
+  imports: [Button, Chip, Inplace, InputText, Panel, ReactiveFormsModule, Tooltip, FormsModule, NgStyle, AutoFocus],
   providers: [DialogService, DynamicDialogRef],
   templateUrl: './node-basics.component.html',
   styleUrl: './node-basics.component.scss',

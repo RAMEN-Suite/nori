@@ -4,11 +4,10 @@ import { WorkspaceService } from '../../../../../services/workspace/workspace.se
 import { Fieldset } from 'primeng/fieldset';
 import { GAttribute } from '../../../../../core/models/GModel';
 import { NodeAttributeComponent } from './node-attribute/node-attribute.component';
-import { Button } from 'primeng/button';
 
 @Component({
   selector: 'app-node-attributes',
-  imports: [Fieldset, NodeAttributeComponent, Button],
+  imports: [Fieldset, NodeAttributeComponent],
   templateUrl: './node-attributes.component.html',
   styleUrl: './node-attributes.component.scss',
 })
