@@ -21,4 +21,8 @@ export class HomeScreen implements OnInit {
   public ngOnInit(): void {
     this.windowState.setTitle('NORI - A Model Layering Tool', 'pi pi-home');
   }
+
+  public handleOpenRepository(): void {
+    window.open(environment.repositoryURL, '_blank');
+  }
 }
