@@ -2,7 +2,7 @@ import { GModel } from './models/GModel';
 import { SchemaValidator } from './validation/SchemaValidator';
 
 export interface CreateDerivedModelInput {
-  readonly schemaId: string;
+  readonly uri: string;
   readonly id: string;
   readonly name: string;
   readonly version: string;
@@ -12,7 +12,7 @@ export class GModelFactory {
   public static deriveModel(base: GModel, input: CreateDerivedModelInput): GModel {
     return {
       $schema: SchemaValidator.getSchemaNode().$id!,
-      $id: input.schemaId,
+      $id: input.uri,
       id: input.id,
       version: input.version,
       kind: 'GModel',

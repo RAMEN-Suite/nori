@@ -51,7 +51,7 @@ export class BreadcrumbsComponent {
     {
       label: 'Edit Details',
       icon: 'pi pi-pen-to-square',
-      command: (): void => {},
+      command: (): void => void this.handleOpenSlotView(),
     },
     {
       label: 'Lock Model',
@@ -112,6 +112,20 @@ export class BreadcrumbsComponent {
       closeOnEscape: true,
       draggable: true,
       closable: true,
+    });
+  }
+
+  protected handleOpenSlotView(): void {
+    const workingSlot: number | undefined = this.selectedMenuItem()?.slot;
+    if (!workingSlot) return;
+
+    this.dialogRef?.close();
+    this.dialogRef = this.dialogService.open(CreateModelDialog, {
+      header: 'Update Domain Model',
+      closeOnEscape: true,
+      draggable: true,
+      closable: true,
+      inputValues: { workingSlot },
     });
   }
 

@@ -247,18 +247,18 @@ export class StorageService {
     await this.refreshManifests();
   }
 
-  public async canDeleteSlot(projectId: string, slot: number): Promise<boolean> {
+  public async getLastSlot(projectId: string): Promise<number> {
+    const records: ModelRecord[] = await database.models.where('projectId').equals(projectId).sortBy('slot');
+    return records[records.length - 1]?.slot ?? -1;
+  }
+
+  private async canDeleteSlot(projectId: string, slot: number): Promise<boolean> {
     const records: ModelRecord[] = await database.models.where('projectId').equals(projectId).toArray();
     const maxSlot: number = records.reduce((max: number, m: ModelRecord): number => Math.max(max, m.slot), -1);
     return maxSlot <= slot;
   }
 
-  public async getRecordBySlot(projectId: string, slot: number): Promise<ModelRecord | undefined> {
+  private async getRecordBySlot(projectId: string, slot: number): Promise<ModelRecord | undefined> {
     return database.models.where('[projectId+slot]').equals([projectId, slot]).first();
-  }
-
-  public async getLastSlot(projectId: string): Promise<number> {
-    const records: ModelRecord[] = await database.models.where('projectId').equals(projectId).sortBy('slot');
-    return records[records.length - 1]?.slot ?? -1;
   }
 }

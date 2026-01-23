@@ -11,7 +11,7 @@
             maxlength="70"
             autocomplete="off"
             fluid
-            [(ngModel)]="newModel.name"
+            [(ngModel)]="workingModel().name"
             [invalid]="(nameModel.touched || isSubmitted) && !isModelNameValid()"
             required
           />
@@ -19,9 +19,7 @@
         </p-ifta-label>
 
         @if ((nameModel.touched || isSubmitted) && !isModelNameValid()) {
-          <p-message severity="error" size="small" variant="simple">
-            Model name must be at least 3 characters.
-          </p-message>
+          <p-message severity="error" size="small" variant="simple"> Model name must be at least 3 characters. </p-message>
         }
       </div>
 
@@ -29,7 +27,7 @@
         <textarea
           pTextarea
           id="description"
-          [(ngModel)]="newModel.description"
+          [(ngModel)]="workingModel().description"
           name="description"
           maxlength="140"
           autocomplete="off"
@@ -54,7 +52,7 @@
             fluid
             required
             name="version"
-            [(ngModel)]="newModel.version"
+            [(ngModel)]="workingModel().version"
             [invalid]="(versionModel.touched || isSubmitted) && !isVersionValid()"
           />
           <label for="version">Model Version</label>
@@ -81,7 +79,7 @@
             fluid
             required
             name="uri"
-            [(ngModel)]="newModel.uri"
+            [(ngModel)]="workingModel().uri"
             [invalid]="(uriModel.touched || isSubmitted) && !isUriValid()"
           />
           <label for="uri">Model URI</label>
@@ -98,11 +96,11 @@
 
   <div class="mt-4 flex flex-row justify-between gap-2">
     <p-button label="Cancel" outlined (click)="handleCloseModal()" />
-    <p-button
-      label="Create Domain Model"
-      outlined
-      (click)="handleCreateModel()"
-      [disabled]="!isFormValid()"
-    />
+
+    @if (workingSlot() === undefined) {
+      <p-button label="Create Domain Model" outlined (click)="handleCreateModel()" [disabled]="!isFormValid()" />
+    } @else {
+      <p-button label="Update Domain Model" outlined (click)="handleUpdateModel()" [disabled]="!isFormValid()" />
+    }
   </div>
 </div>

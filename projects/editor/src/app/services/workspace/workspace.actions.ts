@@ -53,7 +53,7 @@ export class WorkspaceActions {
 
   public apply(mutator: (workingModel: GModel) => GModel): void {
     const current: GModel | null = this.store.workingModel();
-    if (!current) throw new Error('No working model loaded.');
+    if (!current) throw new Error('Cannot apply: no working model loaded.');
 
     const updated: GModel = mutator(current);
     this.store.setWorkingModel(updated);
@@ -72,7 +72,7 @@ export class WorkspaceActions {
 
   public async duplicateNode(nodeId: Id): Promise<GNode> {
     const work: GModel | null = this.store.workingModel();
-    if (!work) throw new Error('No working model loaded.');
+    if (!work) throw new Error('Cannot duplicate: no working model loaded.');
 
     const cloned: ConnectedNode = this.helper.duplicateConnectedNode(work, nodeId);
 
@@ -118,7 +118,7 @@ export class WorkspaceActions {
 
   public async createRelation(baseRelationId: Id, fromNodeId: Id, toNodeId: Id): Promise<GRelation> {
     const base: GModel | null = this.view.baseModel();
-    if (!base) throw new Error('No base model loaded.');
+    if (!base) throw new Error('Cannot create relation: no base model loaded.');
 
     const input: CreateRelationInput = { baseRelationId, fromNodeId, toNodeId };
     const relation: GRelation = this.helper.createDerivedRelation(base, base.id, input);
@@ -140,14 +140,14 @@ export class WorkspaceActions {
 
   public async createSlot(input: CreateSlotInput): Promise<number> {
     const projectId: string | null = this.storage.selectedProjectId();
-    if (!projectId) throw new Error('No active project selected.');
+    if (!projectId) throw new Error('Cannot create slot: no active project selected.');
 
     const lastSlot: number = await this.storage.getLastSlot(projectId);
     const base: GModel | null = this.storage.recordsBySlot().get(lastSlot)?.gmodel ?? null;
-    if (!base) throw new Error(`Base model missing for slot ${lastSlot}.`);
+    if (!base) throw new Error(`Cannot create slot: base model missing for slot ${lastSlot}.`);
 
     const derived: GModel = GModelFactory.deriveModel(base, {
-      schemaId: input.uri,
+      uri: input.uri,
       id: SuggestionHelper.createIdentifier(),
       name: input.name,
       version: input.version,
@@ -163,19 +163,31 @@ export class WorkspaceActions {
     return lastSlot + 1;
   }
 
-  public async deleteSlot(slot: number): Promise<void> {
-    const projectId: string | null = this.storage.selectedProjectId();
-    if (!projectId) throw new Error('No active project selected.');
-    await this.storage.deleteSlot(projectId, slot);
+  public async updateSlot(slot: number, input: CreateSlotInput): Promise<void> {
+    const existing: ModelRecord | undefined = this.storage.recordsBySlot().get(slot);
+    if (!existing) throw new Error(`Cannot update: model in ${slot} does not exist.`);
+    const { name, description, version, uri } = input;
+
+    const updatedModel: GModel = {
+      ...existing.gmodel,
+      name: name ?? existing.gmodel.name,
+      version: version ?? existing.gmodel.version,
+      $id: uri ?? existing.gmodel.$id,
+    };
+
+    const patch: UpdateRecordInput = {
+      name: name ?? existing.name,
+      description: description ?? existing.description,
+      gmodel: updatedModel,
+    };
+
+    await this.storage.updateRecord(existing.modelId, patch);
   }
 
-  public async updateModelInformation(name: string | null, version: string | null): Promise<void> {
-    this.apply((model: GModel): GModel => {
-      const modelName: string = name ?? model.name;
-      const modelVersion: string = version ?? model.version;
-      return { ...model, name: modelName, version: modelVersion };
-    });
-    await this.saveSelectedWork();
+  public async deleteSlot(slot: number): Promise<void> {
+    const projectId: string | null = this.storage.selectedProjectId();
+    if (!projectId) throw new Error('Cannot delete: no active project selected.');
+    await this.storage.deleteSlot(projectId, slot);
   }
 
   public async updateNodeColors(): Promise<void> {
