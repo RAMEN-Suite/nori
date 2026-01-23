@@ -20,10 +20,23 @@ import {
   ConfirmationDialog,
   ConfirmationOptions,
 } from '../../../dialogs/confirmation/confirmation.dialog';
+import { AutoselectDirective } from '../../../../../directives/autoselect.directive';
 
 @Component({
   selector: 'app-node-basics',
-  imports: [Button, Chip, Inplace, InputText, Panel, ReactiveFormsModule, Tooltip, FormsModule, NgStyle, AutoFocus],
+  imports: [
+    Button,
+    Chip,
+    Inplace,
+    InputText,
+    Panel,
+    ReactiveFormsModule,
+    Tooltip,
+    FormsModule,
+    NgStyle,
+    AutoFocus,
+    AutoselectDirective,
+  ],
   providers: [DialogService, DynamicDialogRef],
   templateUrl: './node-basics.component.html',
   styleUrl: './node-basics.component.scss',
