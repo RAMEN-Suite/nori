@@ -51,7 +51,7 @@ export class BreadcrumbsComponent {
     {
       label: 'Edit Details',
       icon: 'pi pi-pen-to-square',
-      command: (): void => void this.handleOpenSlotView(),
+      command: (): void => void this.handleOpenEditModel(),
     },
     {
       label: 'Lock Model',
@@ -105,7 +105,7 @@ export class BreadcrumbsComponent {
     return [firstItem, ...modelLayers, lastItem];
   }
 
-  protected handleOpenCreateModal(): void {
+  protected handleOpenCreateModel(): void {
     this.dialogRef?.close();
     this.dialogRef = this.dialogService.open(CreateModelDialog, {
       header: 'Create Domain Model',
@@ -115,7 +115,7 @@ export class BreadcrumbsComponent {
     });
   }
 
-  protected handleOpenSlotView(): void {
+  protected handleOpenEditModel(): void {
     const workingSlot: number | undefined = this.selectedMenuItem()?.slot;
     if (!workingSlot) return;
 
