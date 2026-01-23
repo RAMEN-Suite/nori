@@ -161,13 +161,13 @@ export class SideMenuComponent {
       click: async (): Promise<void> => {
         if (!selectedMenuItem.id) return;
         await this.workspace.actions.deleteNode(selectedMenuItem.id);
+        this.dialogRef?.close();
 
         const selectedNodeId: string | null = this.workspace.store.selectedNodeId();
         if (selectedMenuItem.id !== selectedNodeId) return;
 
         const selectedSlot: number = this.workspace.store.selectedSlot();
         void this.navigation.navigateToSlot(this.activatedRoute, selectedSlot);
-        this.dialogRef?.close();
       },
     };
     const cancelButton: ConfirmationButton = {
