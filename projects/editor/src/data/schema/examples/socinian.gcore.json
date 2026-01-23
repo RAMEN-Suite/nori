@@ -85,27 +85,21 @@
       "id": "K9xL1mQ8vR5p0Yt7W2nK",
       "name": "Place",
       "superTypes": ["lW611f30a2ky4276g3l8N:n7Vb2Qx0Lm9P3sT6yK1h"],
-      "attributes": [
-        { "name": "geo", "typeId": "string", "bounds": { "lowerBound": 0, "upperBound": 1 } }
-      ]
+      "attributes": [{ "name": "geo", "typeId": "String", "bounds": { "lowerBound": 0, "upperBound": 1 } }]
     },
     {
       "kind": "GNode",
       "id": "tN1yK7rB3m2Xv8qL0sP6",
       "name": "Organisation",
       "superTypes": ["lW611f30a2ky4276g3l8N:n7Vb2Qx0Lm9P3sT6yK1h"],
-      "attributes": [
-        { "name": "externalId", "typeId": "string", "bounds": { "lowerBound": 0, "upperBound": 1 } }
-      ]
+      "attributes": [{ "name": "externalId", "typeId": "String", "bounds": { "lowerBound": 0, "upperBound": 1 } }]
     },
     {
       "kind": "GNode",
       "id": "yK7rB3m2Xv8qL0sP6tN1",
       "name": "Person",
       "superTypes": ["lW611f30a2ky4276g3l8N:n7Vb2Qx0Lm9P3sT6yK1h"],
-      "attributes": [
-        { "name": "externalId", "typeId": "string", "bounds": { "lowerBound": 0, "upperBound": 1 } }
-      ]
+      "attributes": [{ "name": "externalId", "typeId": "String", "bounds": { "lowerBound": 0, "upperBound": 1 } }]
     },
 
     {

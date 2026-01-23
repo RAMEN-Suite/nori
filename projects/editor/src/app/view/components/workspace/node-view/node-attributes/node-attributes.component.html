@@ -10,10 +10,27 @@
             <span class="font-extrabold"> {{ index === 0 ? 'Metamodel' : `Model ${index}` }} </span>
           </div>
         </ng-template>
-        @for (item of inheritedAttributes; track item.attribute.name) {
-          {{ item.attribute.name }}
-        }
+        <div class="my-2 flex flex-col items-center">
+          <div class="flex w-full flex-col gap-2">
+            @for (item of inheritedAttributes; track item.attribute.name) {
+              <app-node-attribute [attribute]="item.attribute" [modelId]="item.modelId" [modelSlot]="item.slot" [nodeId]="item.nodeId" />
+            }
+          </div>
+        </div>
       </p-fieldset>
     }
   }
+
+  <div class="my-2 flex flex-col items-center px-4.5">
+    <div class="flex w-full flex-col gap-2">
+      @for (attribute of draftNode().attributes; track attribute.name) {
+        <app-node-attribute
+          [attribute]="attribute"
+          [modelSlot]="workspace.store.selectedSlot()"
+          [modelId]="workspace.store.workingModel()?.id"
+          [nodeId]="workspace.store.selectedNodeId() ?? undefined"
+        />
+      }
+    </div>
+  </div>
 </div>

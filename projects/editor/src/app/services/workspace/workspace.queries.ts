@@ -3,8 +3,10 @@ import { StorageService } from '../storage.service';
 import { WorkspaceStore } from './workspace.store';
 import { SuggestionHelper } from '../../core/helper/SuggestionHelper';
 import { ModelValidator, ValidationResult } from '../../core/validation/ModelValidator';
-import { GAttribute, GDataType, GModel, GNode, GRelation, Id } from '../../core/models/GModel';
+import { GAttribute, GDataType, GModel, GNode, GRelation, Id, TypeRef } from '../../core/models/GModel';
 import { BaseNode, SemanticHelper, SuperTypeChainItem } from '../../core/helper/SemanticHelper';
+import { GModelIndex } from '../../core/validation/container/GModelIndex';
+import { Builtins, QualifiedRefParts, Refs } from '../../core/validation/container/References';
 
 export interface InheritedAttribute {
   readonly slot: number;
@@ -21,6 +23,13 @@ export class WorkspaceQueries {
 
   private readonly helper: SuggestionHelper = new SuggestionHelper();
   private readonly validator: ModelValidator = new ModelValidator();
+
+  private readonly indexesByModelId: Signal<ReadonlyMap<Id, GModelIndex>> = computed((): Map<string, GModelIndex> => {
+    const map: Map<Id, GModelIndex> = new Map<Id, GModelIndex>();
+    const models: ReadonlyMap<Id, GModel> = this.storage.modelsById();
+    for (const [id, model] of models.entries()) map.set(id, new GModelIndex(model));
+    return map;
+  });
 
   private readonly baseSlot: Signal<number | null> = computed((): number | null => {
     const selectedSlot: number = this.store.selectedSlot();
@@ -162,4 +171,26 @@ export class WorkspaceQueries {
     const baseNodesById: ReadonlyMap<Id, GNode> = this.baseNodesById();
     return baseNodesById.get(baseNodeReference.baseNodeId) ?? null;
   });
+
+  public resolveDataType(typeId: TypeRef, modelId: Id): GDataType | null {
+    if (Builtins.isBuiltin(typeId)) return null;
+    const indexes: ReadonlyMap<Id, GModelIndex> = this.indexesByModelId();
+
+    if (Refs.isQualified(typeId)) {
+      const parts: QualifiedRefParts = Refs.splitQualified(typeId);
+      const index: GModelIndex | undefined = indexes.get(parts.modelId);
+      return index?.dataTypesById.get(parts.nodeId) ?? null;
+    }
+
+    const index: GModelIndex | undefined = indexes.get(modelId);
+    return index?.dataTypesById.get(typeId) ?? null;
+  }
+
+  public resolveTypeLabel(typeId: TypeRef, modelId: Id): string {
+    if (Builtins.isBuiltin(typeId)) return typeId;
+    const dataType: GDataType | null = this.resolveDataType(typeId, modelId);
+    if (!dataType) return `Unknown type (${String(typeId)})`;
+
+    return dataType.name;
+  }
 }

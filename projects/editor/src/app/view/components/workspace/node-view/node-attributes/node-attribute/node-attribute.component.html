@@ -1,0 +1,42 @@
+<div class="flex min-h-8.5 flex-row items-center gap-4">
+  <div class="flex flex-2 justify-end gap-4">
+    <i
+      pTooltip="Key Attribute"
+      tooltipPosition="bottom"
+      positionTop="12"
+      showDelay="500"
+      class="pi pi-key text-amber-500"
+      [hidden]="!attribute()?.isKey"
+    ></i>
+    <i
+      pTooltip="Computed Attribute"
+      tooltipPosition="bottom"
+      positionTop="12"
+      showDelay="500"
+      class="pi pi-wave-pulse text-blue-500"
+      [hidden]="!attribute()?.isDerived"
+    ></i>
+  </div>
+  <div class="flex flex-6 flex-row font-mono">
+    <div class="flex flex-7 font-bold">
+      {{ attribute()?.name }}
+    </div>
+    <div class="flex flex-1">:</div>
+    <div class="flex flex-5 font-light font-stretch-semi-expanded">
+      @let bounds = attribute()?.bounds ?? { lowerBound: 0, upperBound: 0 };
+      @let dataType = workspace.view.resolveTypeLabel(attribute()?.typeId ?? '', modelId() ?? '');
+      {{ formatAttributeType(bounds, dataType) }}
+    </div>
+  </div>
+  <div class="flex flex-3 justify-start">
+    @if (workspace.store.selectedSlot() === modelSlot()) {
+      <div class="flex flex-3 justify-start">
+        <p-button icon="pi pi-pencil" size="small" variant="text" />
+        <p-button icon="pi pi-copy" size="small" variant="text" />
+        <p-button icon="pi pi-trash" severity="danger" size="small" variant="text" />
+      </div>
+    } @else {
+      <p-button icon="pi pi-search" size="small" variant="text" [disabled]="modelSlot() === 0" (click)="handleOpenQualifiedReference()" />
+    }
+  </div>
+</div>

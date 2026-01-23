@@ -4,17 +4,7 @@
   "title": "GCore Light",
 
   "type": "object",
-  "required": [
-    "$schema",
-    "$id",
-    "id",
-    "version",
-    "kind",
-    "name",
-    "imports",
-    "classifiers",
-    "relations"
-  ],
+  "required": ["$schema", "$id", "id", "version", "kind", "name", "imports", "classifiers", "relations"],
   "additionalProperties": false,
 
   "properties": {
@@ -74,7 +64,7 @@
 
     "BuiltinType": {
       "type": "string",
-      "enum": ["string", "boolean", "number", "integer"],
+      "enum": ["String", "Boolean", "Integer", "Float"],
       "$comment": "Built-in scalar datatypes."
     },
 
