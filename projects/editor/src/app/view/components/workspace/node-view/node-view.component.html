@@ -1,53 +1,46 @@
-@let currentNode = workspace.view.selectedWorkNode;
-
 <div class="grid h-full grid-rows-[1fr_auto] bg-(--p-menubar-background)/40">
-  @if (currentNode()) {
-    <p-scroll-panel class="min-h-full" animate.enter="node-editor-entrance">
-      <ng-template #content>
-        <div class="flex flex-col gap-5 px-5 py-3">
-          <app-node-basics [(draftNode)]="draftNode" [(isDraftDirty)]="isDraftDirty" />
+  <p-scroll-panel class="min-h-full" animate.enter="node-editor-entrance">
+    <ng-template #content>
+      <div class="flex flex-col gap-5 px-5 py-3">
+        <app-node-basics />
 
-          <p-tabs value="0" class="border border-(--p-panel-border-color)">
-            <p-tablist>
-              <p-tab value="0" class="flex flex-6 justify-center">
-                <div class="flex flex-row items-center gap-3">
-                  <i class="pi pi-sliders-h text-xs!"></i>
-                  <span class="font-light">Attributes</span>
-                </div>
-              </p-tab>
-              <p-tab value="1" class="flex flex-6 justify-center">
-                <div class="flex flex-row items-center gap-3">
-                  <i class="pi pi-share-alt text-xs!"></i>
-                  <span class="font-light">Relationships</span>
-                </div>
-              </p-tab>
-            </p-tablist>
-            <p-tabpanels>
-              <p-tabpanel value="0">
-                <app-node-attributes [(draftNode)]="draftNode" />
-              </p-tabpanel>
-              <p-tabpanel value="1">
-                <app-node-relations />
-              </p-tabpanel>
-            </p-tabpanels>
-          </p-tabs>
-        </div>
-      </ng-template>
-    </p-scroll-panel>
-
-    <div
-      class="flex min-h-15 w-full flex-row items-center justify-between gap-5 border-t border-(--p-menubar-border-color) bg-(--p-menubar-background) px-5"
-      animate.enter="controls-entrance"
-      animate.leave="controls-leave"
-    >
-      <div class="flex flex-row gap-5">
-        <p-button label="Cancel" size="small" variant="outlined" (click)="handleCloseView()"></p-button>
+        <p-tabs value="0" class="border border-(--p-panel-border-color)">
+          <p-tablist>
+            <p-tab value="0" class="flex flex-6 justify-center">
+              <div class="flex flex-row items-center gap-3">
+                <i class="pi pi-sliders-h text-xs!"></i>
+                <span class="font-light">Attributes</span>
+              </div>
+            </p-tab>
+            <p-tab value="1" class="flex flex-6 justify-center">
+              <div class="flex flex-row items-center gap-3">
+                <i class="pi pi-share-alt text-xs!"></i>
+                <span class="font-light">Relationships</span>
+              </div>
+            </p-tab>
+          </p-tablist>
+          <p-tabpanels>
+            <p-tabpanel value="0">
+              <app-node-attributes />
+            </p-tabpanel>
+            <p-tabpanel value="1">
+              <app-node-relations />
+            </p-tabpanel>
+          </p-tabpanels>
+        </p-tabs>
       </div>
+    </ng-template>
+  </p-scroll-panel>
 
-      <div class="flex flex-row gap-5">
-        <p-button label="Reset" size="small" variant="outlined" (click)="handleResetView()" [disabled]="!isDraftDirty()" />
-        <p-button label="Save Changes" size="small" (click)="handleSaveView()" [disabled]="!isDraftDirty()" />
-      </div>
+  <div
+    class="flex min-h-15 w-full flex-row items-center justify-between gap-5 border-t border-(--p-menubar-border-color) bg-(--p-menubar-background) px-5"
+    animate.enter="controls-entrance"
+    animate.leave="controls-leave"
+  >
+    <div class="flex flex-row gap-5">
+      <p-button label="Close View" size="small" variant="outlined" (click)="handleCloseView()"></p-button>
     </div>
-  }
+
+    <div class="flex flex-row gap-5"></div>
+  </div>
 </div>

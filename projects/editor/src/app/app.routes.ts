@@ -3,7 +3,7 @@ import { HomeScreen } from './view/pages/home-screen/home.screen';
 import { WorkspaceScreen } from './view/pages/workspace-screen/workspace.screen';
 import { StartScreen } from './view/pages/start-screen/start.screen';
 import { OpenScreen } from './view/pages/open-screen/open.screen';
-import { hasUnsavedChanges, hasWorkspace } from './guards/workspace.guard';
+import { hasWorkspace } from './guards/workspace.guard';
 import { NodeViewComponent } from './view/components/workspace/node-view/node-view.component';
 import { SlotViewComponent } from './view/components/workspace/slot-view/slot-view.component';
 
@@ -32,7 +32,6 @@ export const routes: Routes = [
       },
       {
         path: `:${PARAMETERS.SLOT}/:${PARAMETERS.NODE}`,
-        canDeactivate: [hasUnsavedChanges],
         component: NodeViewComponent,
       },
     ],

@@ -1,4 +1,4 @@
-import { Component, DestroyRef, effect, inject, model, ModelSignal, signal, WritableSignal } from '@angular/core';
+import { Component, DestroyRef, effect, inject, signal, WritableSignal } from '@angular/core';
 import { Button } from 'primeng/button';
 import { Chip } from 'primeng/chip';
 import { Inplace } from 'primeng/inplace';
@@ -12,7 +12,6 @@ import { GNode } from '../../../../../core/models/GModel';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { NodeColorsDialog } from '../../../dialogs/node-colors/node-colors.dialog';
 import { AutoFocus } from 'primeng/autofocus';
-import { PatchNode } from '../../../../../core/handler/GModelMutations';
 import { NavigationService } from '../../../../../services/navigation.service';
 import { ActivatedRoute } from '@angular/router';
 import {
@@ -21,6 +20,8 @@ import {
   ConfirmationOptions,
 } from '../../../dialogs/confirmation/confirmation.dialog';
 import { AutoselectDirective } from '../../../../../directives/autoselect.directive';
+import { PatchNode } from '../../../../../core/handler/GModelMutations';
+import { StringTransformer } from '../../../../../core/helper/StringTransformer';
 
 @Component({
   selector: 'app-node-basics',
@@ -50,26 +51,19 @@ export class NodeBasicsComponent {
   protected readonly dialogService: DialogService = inject(DialogService);
   protected dialogRef: DynamicDialogRef | null = null;
 
-  protected readonly isNameActive: WritableSignal<boolean> = signal(false);
-
-  public isDraftDirty: ModelSignal<boolean | undefined> = model();
-  public draftNode: ModelSignal<PatchNode> = model({});
+  protected workingName: WritableSignal<string | null> = signal(null);
+  protected isWorkingNameActive: WritableSignal<boolean> = signal(false);
 
   constructor() {
     effect((): void => {
-      this.workspace.store.selectedNodeId();
-      this.isNameActive.set(false);
+      const currentName: string | undefined = this.workspace.view.selectedWorkNode()?.name;
+      this.workingName.set(currentName ?? null);
     });
 
     this.destroyRef.onDestroy((): void => {
       this.dialogRef?.close();
       this.dialogRef = null;
     });
-  }
-
-  protected handleEditNodeName(): void {
-    this.isNameActive.set(!this.isNameActive());
-    this.isDraftDirty.set(true);
   }
 
   public handleOpenColorsDialog(): void {
@@ -128,5 +122,17 @@ export class NodeBasicsComponent {
       closable: true,
       inputValues: { options },
     });
+  }
+
+  protected async handleSave(): Promise<void> {
+    const selectedId: string | null = this.workspace.store.selectedNodeId();
+    const workingName: string | null = this.workingName();
+    if (!selectedId || !workingName) return;
+
+    const transformedName: string = StringTransformer.toNodeName(workingName);
+    const patch: PatchNode = { name: transformedName };
+    await this.workspace.actions.updateNode(selectedId, patch);
+
+    this.isWorkingNameActive.set(false);
   }
 }

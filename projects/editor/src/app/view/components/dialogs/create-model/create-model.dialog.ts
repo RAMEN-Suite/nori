@@ -64,12 +64,12 @@ export class CreateModelDialog {
 
   protected isVersionValid(): boolean {
     const version: string = this.workingModel().version.trim();
-    return version !== '' && REGEXP.isSemanticVersion.test(version);
+    return version !== '' && REGEXP.SEMANTIC_VER.test(version);
   }
 
   protected isUriValid(): boolean {
     const uri: string = this.workingModel().uri.trim();
-    return uri !== '' && REGEXP.isValidURI.test(uri);
+    return uri !== '' && REGEXP.VALID_URI.test(uri);
   }
 
   protected isFormValid(): boolean {

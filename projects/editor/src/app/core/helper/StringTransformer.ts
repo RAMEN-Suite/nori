@@ -1,0 +1,34 @@
+const NODE_NAME_START = /(?:^|[^\p{L}\p{N}_]+)(\p{L})/gu;
+const NODE_NAME_INVALID_CHARS = /[^\p{L}\p{N}_]/gu;
+const NODE_NAME_VALID_START = /^\p{L}/u;
+
+const PROPERTY_NAME_START = /(?:^|[^\p{L}\p{N}_]+)(\p{L})/gu;
+const PROPERTY_NAME_INVALID_CHARS = /[^\p{L}\p{N}_]/gu;
+const PROPERTY_VALID_START = /^\p{L}/u;
+
+const RELATIONSHIP_NAME = /[\p{L}\p{N}]+/gu;
+const RELATIONSHIP_VALID_START = /^\p{Lu}/u;
+
+export class StringTransformer {
+  public static toNodeName(str: string): string {
+    const pascalized: string = str
+      .replace(NODE_NAME_START, (_: string, letter: string): string => letter.toUpperCase())
+      .replace(NODE_NAME_INVALID_CHARS, '');
+
+    return NODE_NAME_VALID_START.test(pascalized) ? pascalized : `N${pascalized}`;
+  }
+
+  public static toPropertyName(str: string): string {
+    const pascalized: string = str
+      .replace(PROPERTY_NAME_START, (_: string, letter: string): string => letter.toUpperCase())
+      .replace(PROPERTY_NAME_INVALID_CHARS, '');
+
+    const camelized: string = pascalized.charAt(0).toLowerCase() + pascalized.slice(1);
+    return PROPERTY_VALID_START.test(camelized) ? camelized : `p${camelized}`;
+  }
+
+  public static toRelationshipName(str: string): string {
+    const screamingSnake: string = (str.match(RELATIONSHIP_NAME) ?? []).join('_').toUpperCase();
+    return RELATIONSHIP_VALID_START.test(screamingSnake) ? screamingSnake : `R_${screamingSnake}`;
+  }
+}

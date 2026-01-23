@@ -16,7 +16,7 @@ export class Builtins {
 
 export class Refs {
   public static isQualified(ref: Ref): ref is QualifiedRef {
-    return REGEXP.isQualifiedRef.test(ref);
+    return REGEXP.QUALIFIED_REF.test(ref);
   }
 
   public static splitQualified(ref: QualifiedRef): QualifiedRefParts {

@@ -1,11 +1,7 @@
-import { ActivatedRouteSnapshot, CanActivateFn, CanDeactivateFn, Router, UrlTree } from '@angular/router';
+import { ActivatedRouteSnapshot, CanActivateFn, Router, UrlTree } from '@angular/router';
 import { inject } from '@angular/core';
 import { StorageService } from '../services/storage.service';
 import { PARAMETERS } from '../app.routes';
-
-export interface CanDeactivate {
-  ngCanDeactivate: () => boolean | Promise<boolean>;
-}
 
 export const hasWorkspace: CanActivateFn = async (route: ActivatedRouteSnapshot): Promise<boolean | UrlTree> => {
   const router: Router = inject(Router);
@@ -18,8 +14,4 @@ export const hasWorkspace: CanActivateFn = async (route: ActivatedRouteSnapshot)
   if (!isProjectExisting) return router.createUrlTree(['/']);
 
   return true;
-};
-
-export const hasUnsavedChanges: CanDeactivateFn<CanDeactivate> = async (component: CanDeactivate): Promise<boolean> => {
-  return component.ngCanDeactivate();
 };
