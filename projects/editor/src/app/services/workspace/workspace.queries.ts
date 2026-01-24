@@ -84,7 +84,7 @@ export class WorkspaceQueries {
 
   public readonly dataTypesByWork: Signal<GDataType[]> = computed((): GDataType[] => {
     const work: GModel | null = this.store.workingModel();
-    return work ? Array.from(this.helper.listDataTypes(work)) : [];
+    return work ? Array.from(this.helper.listDataTypesByModel(work)) : [];
   });
 
   public readonly inheritedAttributes: Signal<ReadonlyMap<Id, ReadonlyArray<InheritedAttribute>>> = computed(

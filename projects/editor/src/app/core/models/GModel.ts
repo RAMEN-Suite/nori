@@ -2,9 +2,7 @@ export type GClassifier = GNode | GDataType;
 export type Id = string;
 export type Ref = Id | QualifiedRef;
 export type QualifiedRef = string;
-export type ConstraintLanguage = string;
-export type ConstraintSeverity = 'error' | 'warn' | 'info';
-export type BuiltinType = 'string' | 'boolean' | 'number' | 'integer';
+export type BuiltinType = 'String' | 'Boolean' | 'Integer' | 'Float';
 export type TypeRef = BuiltinType | Ref;
 
 export interface GModel {
@@ -39,9 +37,11 @@ export interface GAttribute {
   name: string;
   typeId: TypeRef;
   bounds: Bounds;
-  defaultValue?: unknown;
   isKey?: boolean;
+  isUnique?: boolean;
+  isReadOnly?: boolean;
   isDerived?: boolean;
+  isOrdered?: boolean;
   constraints?: GConstraint[];
   ext?: Record<string, unknown>;
 }
@@ -54,10 +54,9 @@ export interface Bounds {
 export interface GConstraint {
   id: Id;
   name: string;
-  language: ConstraintLanguage;
-  expression: string | Record<string, unknown>;
-  params?: Record<string, unknown>;
-  severity?: ConstraintSeverity;
+  language: string;
+  expression: Record<string, unknown>;
+  severity?: 'error' | 'warn' | 'info';
   message?: string;
   code?: string;
   tags?: string[];
@@ -97,6 +96,7 @@ export interface RelationEnd {
   nodeId: Ref;
   role: string;
   bounds: Bounds;
+  isComposite?: boolean;
   constraints?: GConstraint[];
   ext?: Record<string, unknown>;
 }

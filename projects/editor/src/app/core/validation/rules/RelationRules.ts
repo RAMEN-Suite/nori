@@ -1,8 +1,14 @@
-import { GNode, GRelation, Id } from '../../models/GModel';
+import { GNode, GRelation, Id, Ref } from '../../models/GModel';
 import { Diagnostic, DiagnosticPath, DiagnosticReport, Diagnostics } from '../container/Diagnostics';
 import { VALIDATION_ERROR } from '../../const/VALIDATION_ERROR';
 import { ValidationContext } from '../SemanticValidator';
 import { BaseNode, SemanticHelper } from '../../helper/SemanticHelper';
+import { QualifiedRefParts, Refs } from '../container/References';
+
+type SuperTypeValidationResult = {
+  readonly baseRelationId: Id | null;
+  readonly diagnostics: Diagnostic[];
+};
 
 export class RelationRules {
   public validate(validationContext: ValidationContext): Diagnostic[] {
@@ -12,51 +18,45 @@ export class RelationRules {
     diagnostics.push(...this.validateUniqueIdentifiers(relations));
 
     relations.forEach((relation: GRelation, relationIndex: number): void => {
-      const relationPath: DiagnosticPath = DiagnosticPath.root().property('relations').index(relationIndex);
+      const path: DiagnosticPath = DiagnosticPath.root().property('relations').index(relationIndex);
+      diagnostics.push(...this.validateRelationEndBoundsCoherence(relation, path));
 
-      const baseRelationId: Id | null = SemanticHelper.getBaseRelationSuperTypeId(relation, validationContext.baseId);
+      const result: SuperTypeValidationResult = this.validateRelationSuperType(validationContext, relation, path);
+      diagnostics.push(...result.diagnostics);
+      if (!result.baseRelationId) return;
 
-      if (!baseRelationId) {
-        const report: DiagnosticReport = {
-          code: VALIDATION_ERROR.RELATION_SUPERTYPE_INVALID,
-          message: `Relation '${relation.id}' must have exactly one base superType (${validationContext.baseId}:<relationId>).`,
-          path: relationPath.property('superTypes'),
-          ref: relation.id,
-        };
-        diagnostics.push(Diagnostics.error(report));
-        return;
-      }
-
-      const baseRelation: GRelation | undefined = validationContext.baseIndex.relationsById.get(baseRelationId);
+      const baseRelation: GRelation | undefined = validationContext.baseIndex.relationsById.get(result.baseRelationId);
       if (!baseRelation) {
         const report: DiagnosticReport = {
           code: VALIDATION_ERROR.BASE_RELATION_NOT_FOUND,
-          message: `Base relation '${baseRelationId}' not found.`,
-          path: relationPath.property('superTypes').index(0),
-          ref: baseRelationId,
+          message: `Base relation '${result.baseRelationId}' not found.`,
+          path: path.property('superTypes').index(0),
+          ref: result.baseRelationId,
         };
         diagnostics.push(Diagnostics.error(report));
         return;
       }
+
+      diagnostics.push(...this.validateComposite(relation, baseRelation, path));
 
       if (!SemanticHelper.areRelationEndsLocal(relation)) {
         const report: DiagnosticReport = {
           code: VALIDATION_ERROR.RELATION_ENDS_NOT_LOCAL,
           message: `Relation ends must reference local nodes.`,
-          path: relationPath.property('from').property('nodeId'),
+          path: path.property('from').property('nodeId'),
           ref: relation.id,
         };
         diagnostics.push(Diagnostics.error(report));
         return;
       }
 
-      const eDiags: Diagnostic[] = this.validateEndNodes(validationContext, relation, relationPath);
+      const eDiags: Diagnostic[] = this.validateEndNodes(validationContext, relation, path);
       diagnostics.push(...eDiags);
       if (eDiags.length > 0) return;
 
-      diagnostics.push(...this.validateEndCompatibility(validationContext, relation, baseRelation, relationPath));
-      diagnostics.push(...this.validateRolesMatch(relation, baseRelation, relationPath));
-      diagnostics.push(...this.validateBoundsMatch(relation, baseRelation, relationPath));
+      diagnostics.push(...this.validateEndCompatibility(validationContext, relation, baseRelation, path));
+      diagnostics.push(...this.validateRolesMatch(relation, baseRelation, path));
+      diagnostics.push(...this.validateBoundsMatch(relation, baseRelation, path));
     });
 
     return diagnostics;
@@ -83,6 +83,132 @@ export class RelationRules {
 
       firstIndexByIdentifier.set(relationIdentifier, relationIndex);
     });
+
+    return diagnostics;
+  }
+
+  private validateRelationEndBoundsCoherence(relation: GRelation, relationPath: DiagnosticPath): Diagnostic[] {
+    const diagnostics: Diagnostic[] = [];
+
+    if (!SemanticHelper.areBoundsCoherent(relation.from.bounds)) {
+      diagnostics.push(
+        Diagnostics.error({
+          code: VALIDATION_ERROR.RELATION_FROM_BOUNDS_COHERENCE_INVALID,
+          message: `Invalid bounds for relation '${relation.id}' (from.bounds).`,
+          path: relationPath.property('from').property('bounds'),
+          ref: relation.id,
+        }),
+      );
+    }
+
+    if (!SemanticHelper.areBoundsCoherent(relation.to.bounds)) {
+      diagnostics.push(
+        Diagnostics.error({
+          code: VALIDATION_ERROR.RELATION_TO_BOUNDS_COHERENCE_INVALID,
+          message: `Invalid bounds for relation '${relation.id}' (to.bounds).`,
+          path: relationPath.property('to').property('bounds'),
+          ref: relation.id,
+        }),
+      );
+    }
+
+    return diagnostics;
+  }
+
+  private validateRelationSuperType(
+    validationContext: ValidationContext,
+    relation: GRelation,
+    relationPath: DiagnosticPath,
+  ): SuperTypeValidationResult {
+    const diagnostics: Diagnostic[] = [];
+    const superTypes: ReadonlyArray<Ref> = relation.superTypes ?? [];
+
+    if (superTypes.length !== 1) {
+      diagnostics.push(
+        Diagnostics.error({
+          code: VALIDATION_ERROR.RELATION_SUPERTYPE_CARDINALITY_INVALID,
+          message: `Relation '${relation.id}' must declare exactly one base superType (${validationContext.baseId}:<relationId>).`,
+          path: relationPath.property('superTypes'),
+          ref: relation.id,
+        }),
+      );
+      return { baseRelationId: null, diagnostics };
+    }
+
+    const superType: Ref = superTypes[0]!;
+    if (!Refs.isQualified(superType)) {
+      diagnostics.push(
+        Diagnostics.error({
+          code: VALIDATION_ERROR.RELATION_SUPERTYPE_NOT_QUALIFIED,
+          message: `Relation '${relation.id}' superType must be qualified (${validationContext.baseId}:<relationId>). Local supertypes are not allowed.`,
+          path: relationPath.property('superTypes').index(0),
+          ref: relation.id,
+        }),
+      );
+      return { baseRelationId: null, diagnostics };
+    }
+
+    const parts: QualifiedRefParts = Refs.splitQualified(superType);
+    if (parts.modelId !== validationContext.baseId) {
+      diagnostics.push(
+        Diagnostics.error({
+          code: VALIDATION_ERROR.RELATION_SUPERTYPE_NOT_BASE,
+          message: `Relation '${relation.id}' superType must reference base model '${validationContext.baseId}', but references '${parts.modelId}'.`,
+          path: relationPath.property('superTypes').index(0),
+          ref: relation.id,
+        }),
+      );
+      return { baseRelationId: null, diagnostics };
+    }
+
+    return { baseRelationId: parts.nodeId, diagnostics };
+  }
+
+  private validateComposite(
+    derivedRelation: GRelation,
+    baseRelation: GRelation,
+    relationPath: DiagnosticPath,
+  ): Diagnostic[] {
+    const diagnostics: Diagnostic[] = [];
+
+    const derivedFrom: boolean = derivedRelation.from.isComposite === true;
+    const derivedTo: boolean = derivedRelation.to.isComposite === true;
+
+    if (derivedFrom && derivedTo) {
+      diagnostics.push(
+        Diagnostics.error({
+          code: VALIDATION_ERROR.RELATION_COMPOSITE_BOTH_ENDS,
+          message: `Relation '${derivedRelation.id}' must not be composite on both ends.`,
+          path: relationPath,
+          ref: derivedRelation.id,
+        }),
+      );
+    }
+
+    const baseFrom: boolean = baseRelation.from.isComposite === true;
+    const baseTo: boolean = baseRelation.to.isComposite === true;
+
+    if (derivedFrom !== baseFrom) {
+      diagnostics.push(
+        Diagnostics.error({
+          code: VALIDATION_ERROR.RELATION_COMPOSITE_MISMATCH,
+          message: `from.isComposite must be '${baseFrom}'.`,
+          path: relationPath.property('from').property('isComposite'),
+          ref: derivedRelation.id,
+        }),
+      );
+    }
+
+    if (derivedTo !== baseTo) {
+      diagnostics.push(
+        Diagnostics.error({
+          code: VALIDATION_ERROR.RELATION_COMPOSITE_MISMATCH,
+          message: `to.isComposite must be '${baseTo}'.`,
+          path: relationPath.property('to').property('isComposite'),
+          ref: derivedRelation.id,
+        }),
+      );
+    }
 
     return diagnostics;
   }

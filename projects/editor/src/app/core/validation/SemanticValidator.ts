@@ -1,9 +1,10 @@
 import { GModel, Id } from '../models/GModel';
 import { GModelIndex } from './container/GModelIndex';
-import { Diagnostic, DiagnosticPath, DiagnosticReport, Diagnostics } from './container/Diagnostics';
-import { VALIDATION_ERROR } from '../const/VALIDATION_ERROR';
+import { Diagnostic } from './container/Diagnostics';
 import { RelationRules } from './rules/RelationRules';
 import { ClassifierRules } from './rules/ClassifierRules';
+import { ImportRules } from './rules/ImportRules';
+import { VALIDATION_ERROR } from '../const/VALIDATION_ERROR';
 
 export interface ValidationOptions {
   readonly baseId: string;
@@ -21,6 +22,7 @@ export interface ValidationContext {
 export class SemanticValidator {
   private readonly classifierRules: ClassifierRules = new ClassifierRules();
   private readonly relationRules: RelationRules = new RelationRules();
+  private readonly importRules: ImportRules = new ImportRules();
 
   public validate(
     baseModel: GModel,
@@ -30,16 +32,6 @@ export class SemanticValidator {
   ): Diagnostic[] {
     const baseIndex: GModelIndex = new GModelIndex(baseModel);
     const derivedIndex: GModelIndex = new GModelIndex(derivedModel);
-
-    if (!derivedIndex.importsByModelId.has(options.baseId)) {
-      const report: DiagnosticReport = {
-        code: VALIDATION_ERROR.MISSING_BASE_IMPORT,
-        message: `Derived model must import base with modelId '${options.baseId}'.`,
-        ref: options.baseId,
-        path: DiagnosticPath.root().property('imports'),
-      };
-      return [Diagnostics.error(report)];
-    }
 
     const validationContext: ValidationContext = {
       baseId: options.baseId,
@@ -51,6 +43,12 @@ export class SemanticValidator {
     };
 
     const diagnostics: Diagnostic[] = [];
+    diagnostics.push(...this.importRules.validate(validationContext));
+
+    if (diagnostics.some((d: Diagnostic): boolean => d.code === VALIDATION_ERROR.MISSING_BASE_IMPORT)) {
+      return diagnostics;
+    }
+
     diagnostics.push(...this.classifierRules.validate(validationContext));
     diagnostics.push(...this.relationRules.validate(validationContext));
     return diagnostics;

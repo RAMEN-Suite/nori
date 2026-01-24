@@ -48,6 +48,8 @@ export class AttributeRules {
           ref: node.id,
         };
         diagnostics.push(Diagnostics.error(report));
+      } else {
+        diagnostics.push(...this.validateAttributeFlags(attribute, node, attributePath));
       }
 
       const isTypeExisting: boolean = this.attributeTypeExists(validationContext, attribute.typeId);
@@ -61,6 +63,54 @@ export class AttributeRules {
         diagnostics.push(Diagnostics.error(report));
       }
     });
+
+    return diagnostics;
+  }
+
+  private validateAttributeFlags(attribute: GAttribute, node: GNode, attributePath: DiagnosticPath): Diagnostic[] {
+    const diagnostics: Diagnostic[] = [];
+
+    const isKey: boolean = attribute.isKey === true;
+    const isDerived: boolean = attribute.isDerived === true;
+    const isReadOnly: boolean = attribute.isReadOnly === true;
+
+    if (isKey) {
+      const lowerBound: number = attribute.bounds.lowerBound;
+      const upperBound: number = attribute.bounds.upperBound;
+
+      const isSingleValued: boolean = upperBound === 1;
+      const isRequired: boolean = lowerBound >= 1;
+
+      if (!isSingleValued || !isRequired) {
+        const report: DiagnosticReport = {
+          code: VALIDATION_ERROR.ATTRIBUTE_KEY_BOUNDS_INVALID,
+          message: `Key attribute '${attribute.name}' in node '${node.id}' should have bounds 1..1.`,
+          path: attributePath.property('bounds'),
+          ref: node.id,
+        };
+        diagnostics.push(Diagnostics.warn(report));
+      }
+
+      if (isDerived) {
+        const report: DiagnosticReport = {
+          code: VALIDATION_ERROR.ATTRIBUTE_KEY_DERIVED_INVALID,
+          message: `Key attribute '${attribute.name}' in node '${node.id}' must not be derived.`,
+          path: attributePath.property('isDerived'),
+          ref: node.id,
+        };
+        diagnostics.push(Diagnostics.warn(report));
+      }
+    }
+
+    if (isDerived && !isReadOnly) {
+      const report: DiagnosticReport = {
+        code: VALIDATION_ERROR.ATTRIBUTE_DERIVED_NOT_READONLY,
+        message: `Derived attribute '${attribute.name}' in node '${node.id}' should be read-only.`,
+        path: attributePath.property('isReadOnly'),
+        ref: node.id,
+      };
+      diagnostics.push(Diagnostics.warn(report));
+    }
 
     return diagnostics;
   }

@@ -37,12 +37,13 @@ export class SuggestionHelper {
     return relations.sort((a: GRelation, b: GRelation): number => a.name.localeCompare(b.name));
   }
 
-  public listDataTypes(model: GModel): ReadonlyArray<GDataType> {
+  public listDataTypesByModel(model: GModel): ReadonlyArray<GDataType> {
     const modelIndex: GModelIndex = new GModelIndex(model);
     const types: GDataType[] = Array.from(modelIndex.dataTypesById.values());
     return types.sort((a: GDataType, b: GDataType): number => a.name.localeCompare(b.name));
   }
 
+  // todo superchain
   public listAllDataTypes(base: GModel, derived: GModel): ReadonlyArray<GDataType> {
     const baseIndex = new GModelIndex(base);
     const derivedIndex = new GModelIndex(derived);
@@ -55,7 +56,8 @@ export class SuggestionHelper {
     return types.sort((a: GDataType, b: GDataType): number => a.name.localeCompare(b.name));
   }
 
-  public listForbiddenAttributes(base: GModel, derived: GModel, nodeId: Id): ReadonlySet<string> {
+  // todo superchain
+  public listAttributeNames(base: GModel, derived: GModel, nodeId: Id): ReadonlySet<string> {
     const baseIndex: GModelIndex = new GModelIndex(base);
     const derivedIndex: GModelIndex = new GModelIndex(derived);
 

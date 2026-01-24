@@ -1,10 +1,5 @@
 import { GDataType, GLiteral } from '../../models/GModel';
-import {
-  Diagnostic,
-  DiagnosticPath,
-  DiagnosticReport,
-  Diagnostics,
-} from '../container/Diagnostics';
+import { Diagnostic, DiagnosticPath, DiagnosticReport, Diagnostics } from '../container/Diagnostics';
 import { VALIDATION_ERROR } from '../../const/VALIDATION_ERROR';
 
 export class DataTypeRules {
@@ -14,19 +9,28 @@ export class DataTypeRules {
     const literals: GLiteral[] | undefined = dataType.literals;
     if (!literals) return diagnostics;
 
+    if (literals.length === 0) {
+      const report: DiagnosticReport = {
+        code: VALIDATION_ERROR.DATATYPE_LITERALS_EMPTY,
+        message: `Datatype '${dataType.id}' declares literals but contains none.`,
+        path: classifierPath.property('literals'),
+        ref: dataType.id,
+      };
+      diagnostics.push(Diagnostics.warn(report));
+      return diagnostics;
+    }
+
     diagnostics.push(
       ...this.validateUniqueLiteralNames(literals, classifierPath),
       ...this.validateUniqueLiteralSerializedForms(literals, classifierPath),
       ...this.validateUniqueLiteralValues(literals, classifierPath),
+      ...this.validateLiteralValueConsistency(literals, classifierPath),
     );
 
     return diagnostics;
   }
 
-  private validateUniqueLiteralNames(
-    literals: GLiteral[],
-    classifierPath: DiagnosticPath,
-  ): Diagnostic[] {
+  private validateUniqueLiteralNames(literals: GLiteral[], classifierPath: DiagnosticPath): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
     const firstIndexByName: Map<string, number> = new Map();
 
@@ -49,17 +53,15 @@ export class DataTypeRules {
     return diagnostics;
   }
 
-  private validateUniqueLiteralSerializedForms(
-    literals: GLiteral[],
-    classifierPath: DiagnosticPath,
-  ): Diagnostic[] {
+  private validateUniqueLiteralSerializedForms(literals: GLiteral[], classifierPath: DiagnosticPath): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
     const firstIndexBySerialized: Map<string, number> = new Map();
 
     literals.forEach((lit: GLiteral, index: number) => {
-      const serialized: string = lit.literal && lit.literal.length > 0 ? lit.literal : lit.name;
-      const previous: number | undefined = firstIndexBySerialized.get(serialized);
+      const hasLiteral: boolean = !!lit.literal && lit.literal.trim().length > 0;
+      const serialized: string = hasLiteral ? lit.literal! : lit.name;
 
+      const previous: number | undefined = firstIndexBySerialized.get(serialized);
       if (previous !== undefined) {
         const report: DiagnosticReport = {
           code: VALIDATION_ERROR.DATATYPE_LITERAL_SERIALIZED_DUPLICATE,
@@ -67,7 +69,7 @@ export class DataTypeRules {
           path: classifierPath
             .property('literals')
             .index(index)
-            .property(lit.literal ? 'literal' : 'name'),
+            .property(hasLiteral ? 'literal' : 'name'),
           ref: serialized,
         };
         diagnostics.push(Diagnostics.error(report));
@@ -79,17 +81,14 @@ export class DataTypeRules {
     return diagnostics;
   }
 
-  private validateUniqueLiteralValues(
-    literals: GLiteral[],
-    classifierPath: DiagnosticPath,
-  ): Diagnostic[] {
+  private validateUniqueLiteralValues(literals: GLiteral[], classifierPath: DiagnosticPath): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
     const firstIndexByValue: Map<number, number> = new Map();
 
     literals.forEach((literal: GLiteral, index: number): void => {
       if (literal.value === undefined || literal.value === null) return;
-      const previous: number | undefined = firstIndexByValue.get(literal.value);
 
+      const previous: number | undefined = firstIndexByValue.get(literal.value);
       if (previous !== undefined) {
         const report: DiagnosticReport = {
           code: VALIDATION_ERROR.DATATYPE_LITERAL_VALUE_DUPLICATE,
@@ -102,6 +101,30 @@ export class DataTypeRules {
         firstIndexByValue.set(literal.value, index);
       }
     });
+
+    return diagnostics;
+  }
+
+  private validateLiteralValueConsistency(literals: GLiteral[], classifierPath: DiagnosticPath): Diagnostic[] {
+    const diagnostics: Diagnostic[] = [];
+
+    let withValue: number = 0;
+    let withoutValue: number = 0;
+
+    for (const literal of literals) {
+      if (literal.value === undefined || literal.value === null) withoutValue += 1;
+      else withValue += 1;
+    }
+
+    if (withValue > 0 && withoutValue > 0) {
+      const report: DiagnosticReport = {
+        code: VALIDATION_ERROR.DATATYPE_LITERAL_VALUE_INCONSISTENT,
+        message: `Datatype literals mix explicit 'value' assignments (${withValue}) and implicit values (${withoutValue}). Consider making values consistent.`,
+        path: classifierPath.property('literals'),
+        ref: String(withValue),
+      };
+      diagnostics.push(Diagnostics.warn(report));
+    }
 
     return diagnostics;
   }
