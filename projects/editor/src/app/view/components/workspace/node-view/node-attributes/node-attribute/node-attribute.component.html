@@ -5,7 +5,7 @@
       tooltipPosition="bottom"
       positionTop="12"
       showDelay="500"
-      class="pi pi-key text-amber-500"
+      class="pi pi-key text-amber-600"
       [hidden]="!attribute()?.isKey"
     ></i>
     <i
@@ -13,30 +13,39 @@
       tooltipPosition="bottom"
       positionTop="12"
       showDelay="500"
-      class="pi pi-wave-pulse text-blue-500"
+      class="pi pi-wave-pulse text-blue-600"
       [hidden]="!attribute()?.isDerived"
     ></i>
   </div>
-  <div class="flex flex-6 flex-row font-mono">
-    <div class="flex flex-7 font-bold">
+  <div class="flex flex-8 flex-row">
+    <div class="flex flex-6 font-bold">
       {{ attribute()?.name }}
     </div>
     <div class="flex flex-1">:</div>
     <div class="flex flex-5 font-light font-stretch-semi-expanded">
       @let bounds = attribute()?.bounds ?? { lowerBound: 0, upperBound: 0 };
       @let dataType = workspace.view.resolveTypeLabel(attribute()?.typeId ?? '', modelId() ?? '');
-      {{ formatAttributeType(bounds, dataType) }}
+      <span [innerHTML]="formatAttributeType(bounds, dataType)"></span>
     </div>
   </div>
-  <div class="flex flex-3 justify-start">
+  <div class="flex flex-2 justify-start">
     @if (workspace.store.selectedSlot() === modelSlot()) {
-      <div class="flex flex-3 justify-start">
+      <div class="flex justify-center">
         <p-button icon="pi pi-pencil" size="small" variant="text" />
-        <p-button icon="pi pi-copy" size="small" variant="text" />
         <p-button icon="pi pi-trash" severity="danger" size="small" variant="text" />
       </div>
     } @else {
-      <p-button icon="pi pi-search" size="small" variant="text" [disabled]="modelSlot() === 0" (click)="handleOpenQualifiedReference()" />
+      <p-button
+        pTooltip="Jump to Source"
+        tooltipPosition="bottom"
+        positionTop="12"
+        showDelay="500"
+        icon="pi pi-reply"
+        size="small"
+        variant="text"
+        [hidden]="modelSlot() === 0"
+        (click)="handleOpenQualifiedReference()"
+      />
     }
   </div>
 </div>

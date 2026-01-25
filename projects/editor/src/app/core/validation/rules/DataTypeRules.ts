@@ -1,8 +1,9 @@
 import { GDataType, GLiteral } from '../../models/GModel';
 import { Diagnostic, DiagnosticPath, DiagnosticReport, Diagnostics } from '../container/Diagnostics';
 import { VALIDATION_ERROR } from '../../const/VALIDATION_ERROR';
+import { Rules } from '../../models/Rules';
 
-export class DataTypeRules {
+export class DataTypeRules implements Rules {
   public validate(dataType: GDataType, classifierPath: DiagnosticPath): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
 

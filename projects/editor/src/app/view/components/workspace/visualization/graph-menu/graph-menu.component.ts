@@ -1,7 +1,7 @@
 import { Component, computed, DestroyRef, inject, Signal, signal, WritableSignal } from '@angular/core';
 import { GraphComponent } from '../graph/graph.component';
 import { GModel } from '../../../../../core/models/GModel';
-import { GModelGraph, GraphData, GraphLink, GraphNode } from '../../../../../core/GModelGraph';
+import { GModelGraph, GraphData, GraphLink, GraphNode } from '../../../../../core/utils/GModelGraph';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
 import { FormsModule } from '@angular/forms';
 import { Menubar } from 'primeng/menubar';

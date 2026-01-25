@@ -2,8 +2,9 @@ import { GModel, Id, Import } from '../../models/GModel';
 import { Diagnostic, DiagnosticPath, DiagnosticReport, Diagnostics } from '../container/Diagnostics';
 import { VALIDATION_ERROR } from '../../const/VALIDATION_ERROR';
 import { ValidationContext } from '../SemanticValidator';
+import { Rules } from '../../models/Rules';
 
-export class ImportRules {
+export class ImportRules implements Rules {
   public validate(validationContext: ValidationContext): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
     const model: GModel = validationContext.derivedModel;

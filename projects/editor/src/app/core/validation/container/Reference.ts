@@ -1,26 +1,18 @@
 import { REGEXP } from '../../const/REGEXP';
-import { BuiltinType, Id, QualifiedRef, Ref, TypeRef } from '../../models/GModel';
+import { Id, QualifiedRef, Ref } from '../../models/GModel';
 
-export interface QualifiedRefParts {
+export interface QualifiedParts {
   readonly modelId: Id;
   readonly nodeId: Id;
 }
 
-export class Builtins {
-  public static readonly set: ReadonlySet<string> = new Set(['String', 'Boolean', 'Float', 'Integer']);
-
-  public static isBuiltin(ref: TypeRef): ref is BuiltinType {
-    return Builtins.set.has(ref);
-  }
-}
-
-export class Refs {
+export class Reference {
   public static isQualified(ref: Ref): ref is QualifiedRef {
     return REGEXP.QUALIFIED_REF.test(ref);
   }
 
-  public static splitQualified(ref: QualifiedRef): QualifiedRefParts {
-    if (!Refs.isQualified(ref)) {
+  public static splitQualified(ref: QualifiedRef): QualifiedParts {
+    if (!Reference.isQualified(ref)) {
       throw new Error(`Invalid QualifiedRef: '${ref}'`);
     }
 

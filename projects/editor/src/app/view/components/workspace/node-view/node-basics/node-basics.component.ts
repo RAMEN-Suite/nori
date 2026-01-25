@@ -20,7 +20,7 @@ import {
   ConfirmationOptions,
 } from '../../../dialogs/confirmation/confirmation.dialog';
 import { AutoselectDirective } from '../../../../../directives/autoselect.directive';
-import { PatchNode } from '../../../../../core/handler/GModelMutations';
+import { PatchNode } from '../../../../../core/GModelMutations';
 import { StringTransformer } from '../../../../../core/helper/StringTransformer';
 
 @Component({

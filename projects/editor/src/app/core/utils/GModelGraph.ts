@@ -1,5 +1,5 @@
-import { GDataType, GModel, GNode, GRelation, Ref } from './models/GModel';
-import { Refs } from './validation/container/References';
+import { GDataType, GModel, GNode, GRelation, Ref } from '../models/GModel';
+import { Reference } from '../validation/container/Reference';
 
 export interface GraphNode {
   readonly id: string;
@@ -62,7 +62,7 @@ export class GModelGraph {
         id: node.id,
         kind: 'GNode',
         label: node.name,
-        superType: Refs.splitQualified(superType).nodeId,
+        superType: Reference.splitQualified(superType).nodeId,
       };
 
       nodes.push(graphNode);

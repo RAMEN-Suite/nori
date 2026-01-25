@@ -2,15 +2,17 @@ import { GNode, GRelation, Id, Ref } from '../../models/GModel';
 import { Diagnostic, DiagnosticPath, DiagnosticReport, Diagnostics } from '../container/Diagnostics';
 import { VALIDATION_ERROR } from '../../const/VALIDATION_ERROR';
 import { ValidationContext } from '../SemanticValidator';
-import { BaseNode, SemanticHelper } from '../../helper/SemanticHelper';
-import { QualifiedRefParts, Refs } from '../container/References';
+import { SemanticHelper } from '../../helper/SemanticHelper';
+import { QualifiedParts, Reference } from '../container/Reference';
+import { SemanticResolver } from '../../helper/SemanticResolver';
+import { Rules } from '../../models/Rules';
 
 type SuperTypeValidationResult = {
   readonly baseRelationId: Id | null;
   readonly diagnostics: Diagnostic[];
 };
 
-export class RelationRules {
+export class RelationRules implements Rules {
   public validate(validationContext: ValidationContext): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
     const relations: GRelation[] = validationContext.derivedModel.relations ?? [];
@@ -136,7 +138,7 @@ export class RelationRules {
     }
 
     const superType: Ref = superTypes[0]!;
-    if (!Refs.isQualified(superType)) {
+    if (!Reference.isQualified(superType)) {
       diagnostics.push(
         Diagnostics.error({
           code: VALIDATION_ERROR.RELATION_SUPERTYPE_NOT_QUALIFIED,
@@ -148,7 +150,7 @@ export class RelationRules {
       return { baseRelationId: null, diagnostics };
     }
 
-    const parts: QualifiedRefParts = Refs.splitQualified(superType);
+    const parts: QualifiedParts = Reference.splitQualified(superType);
     if (parts.modelId !== validationContext.baseId) {
       diagnostics.push(
         Diagnostics.error({
@@ -261,8 +263,8 @@ export class RelationRules {
 
     if (!fromNode || !toNode) return diagnostics;
 
-    const fromBaseNode: BaseNode | null = SemanticHelper.getBaseSuperType(fromNode, validationContext.baseId);
-    if (!fromBaseNode) {
+    const from: QualifiedParts | null = SemanticResolver.getQualifiedPartsFromNode(fromNode, validationContext.baseId);
+    if (!from) {
       const report: DiagnosticReport = {
         code: VALIDATION_ERROR.FROM_NODE_SUPERTYPE_INVALID,
         message: `From-node '${fromNode.id}' must have exactly one base superType.`,
@@ -273,8 +275,8 @@ export class RelationRules {
       return diagnostics;
     }
 
-    const toBaseNode: BaseNode | null = SemanticHelper.getBaseSuperType(toNode, validationContext.baseId);
-    if (!toBaseNode) {
+    const to: QualifiedParts | null = SemanticResolver.getQualifiedPartsFromNode(toNode, validationContext.baseId);
+    if (!to) {
       const report: DiagnosticReport = {
         code: VALIDATION_ERROR.TO_NODE_SUPERTYPE_INVALID,
         message: `To-node '${toNode.id}' must have exactly one base superType.`,
@@ -285,7 +287,7 @@ export class RelationRules {
       return diagnostics;
     }
 
-    if (fromBaseNode.baseNodeId !== baseRelation.from.nodeId) {
+    if (from.nodeId !== baseRelation.from.nodeId) {
       const report: DiagnosticReport = {
         code: VALIDATION_ERROR.RELATION_FROM_INCOMPATIBLE,
         message: `From-node '${fromNode.id}' must specialize base '${baseRelation.from.nodeId}'.`,
@@ -295,7 +297,7 @@ export class RelationRules {
       diagnostics.push(Diagnostics.error(report));
     }
 
-    if (toBaseNode.baseNodeId !== baseRelation.to.nodeId) {
+    if (to.nodeId !== baseRelation.to.nodeId) {
       const report: DiagnosticReport = {
         code: VALIDATION_ERROR.RELATION_TO_INCOMPATIBLE,
         message: `To-node '${toNode.id}' must specialize base '${baseRelation.to.nodeId}'.`,

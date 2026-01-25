@@ -35,6 +35,10 @@ export class WorkspaceScreen implements OnInit {
       const manifest: Manifest | null = this.storage.selectedManifest();
       this.windowState.setTitle(manifest?.name ?? '', 'pi pi-pen-to-square');
     });
+
+    effect(() => {
+      console.log(this.workspace.view.validation());
+    });
   }
 
   private registerRouteSubscription(): void {

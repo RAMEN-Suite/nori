@@ -1,3 +1,5 @@
+@let currentNode = workspace.view.selectedWorkNode;
+
 <div class="flex flex-col gap-3">
   @for (item of workspace.view.selectedWorkNodeChain(); track item.node.id; let index = $index) {
     @let inheritedAttributes = workspace.view.inheritedAttributes().get(item.node.id);
@@ -23,7 +25,7 @@
 
   <div class="my-2 flex flex-col items-center px-4.5">
     <div class="flex w-full flex-col gap-2">
-      @for (attribute of draftNode().attributes; track attribute.name) {
+      @for (attribute of currentNode()?.attributes; track attribute.name) {
         <app-node-attribute
           [attribute]="attribute"
           [modelSlot]="workspace.store.selectedSlot()"
@@ -33,4 +35,8 @@
       }
     </div>
   </div>
+</div>
+
+<div class="mt-2.5 flex flex-col items-center justify-center gap-3">
+  <p-button label="Add Attribute" class="w-full" variant="outlined" fluid (click)="handleOpenCreateAttribute()" />
 </div>

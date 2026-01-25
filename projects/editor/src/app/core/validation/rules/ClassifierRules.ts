@@ -5,8 +5,9 @@ import { ValidationContext } from '../SemanticValidator';
 import { NodeRules } from './NodeRules';
 import { DataTypeRules } from './DataTypeRules';
 import { AttributeRules } from './AttributeRules';
+import { Rules } from '../../models/Rules';
 
-export class ClassifierRules {
+export class ClassifierRules implements Rules {
   private readonly nodeRules: NodeRules = new NodeRules();
   private readonly dataTypeRules: DataTypeRules = new DataTypeRules();
   private readonly attributeRules: AttributeRules = new AttributeRules();

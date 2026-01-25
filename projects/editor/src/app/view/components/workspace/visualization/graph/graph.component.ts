@@ -15,7 +15,7 @@ import {
 } from '@angular/core';
 import * as d3 from 'd3';
 import { ZoomTransform } from 'd3';
-import { GraphData } from '../../../../../core/GModelGraph';
+import { GraphData } from '../../../../../core/utils/GModelGraph';
 import type {
   LinkSelection,
   NodeDrag,

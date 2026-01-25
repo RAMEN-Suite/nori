@@ -1,11 +1,14 @@
 import { GAttribute, GNode, Id, TypeRef } from '../../models/GModel';
 import { Diagnostic, DiagnosticPath, DiagnosticReport, Diagnostics } from '../container/Diagnostics';
 import { VALIDATION_ERROR } from '../../const/VALIDATION_ERROR';
-import { Builtins, Refs } from '../container/References';
+import { QualifiedParts, Reference } from '../container/Reference';
 import { ValidationContext } from '../SemanticValidator';
-import { SemanticHelper, SuperTypeChainItem } from '../../helper/SemanticHelper';
+import { SemanticHelper } from '../../helper/SemanticHelper';
+import { BaseNode, SemanticResolver } from '../../helper/SemanticResolver';
+import { Builtins } from '../container/Builtins';
+import { Rules } from '../../models/Rules';
 
-export class AttributeRules {
+export class AttributeRules implements Rules {
   public validate(validationContext: ValidationContext, node: GNode, classifierPath: DiagnosticPath): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
 
@@ -122,7 +125,7 @@ export class AttributeRules {
     const startNode: Id = node.id;
     const { models } = validationContext;
 
-    const chain: ReadonlyArray<SuperTypeChainItem> = SemanticHelper.getSuperTypeChain(startModel, startNode, models);
+    const chain: ReadonlyArray<BaseNode> = SemanticResolver.getBaseNodeChain(startModel, startNode, models);
     if (chain.length === 0) return names;
 
     for (const item of chain) {
@@ -133,15 +136,15 @@ export class AttributeRules {
     return names;
   }
 
-  private attributeTypeExists(validationContext: ValidationContext, typeId: TypeRef): boolean {
-    if (Builtins.isBuiltin(typeId)) return true;
+  private attributeTypeExists(validationContext: ValidationContext, typeRef: TypeRef): boolean {
+    if (Builtins.isBuiltin(typeRef)) return true;
     const { baseId, baseIndex, derivedIndex } = validationContext;
 
-    if (Refs.isQualified(typeId)) {
-      const baseTypeId: Id | null = SemanticHelper.getBaseQualifiedId(typeId, baseId);
-      return !!baseTypeId && baseIndex.dataTypesById.has(baseTypeId);
+    if (Reference.isQualified(typeRef)) {
+      const baseNode: QualifiedParts | null = SemanticResolver.getQualifiedPartsFromRef(typeRef, baseId);
+      return !!baseNode && baseIndex.dataTypesById.has(baseNode.nodeId);
     }
 
-    return derivedIndex.dataTypesById.has(typeId);
+    return derivedIndex.dataTypesById.has(typeRef);
   }
 }

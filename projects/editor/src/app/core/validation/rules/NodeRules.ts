@@ -2,9 +2,10 @@ import { GNode, Id, Ref } from '../../models/GModel';
 import { Diagnostic, DiagnosticPath, DiagnosticReport, Diagnostics } from '../container/Diagnostics';
 import { VALIDATION_ERROR } from '../../const/VALIDATION_ERROR';
 import { ValidationContext } from '../SemanticValidator';
-import { QualifiedRefParts, Refs } from '../container/References';
+import { QualifiedParts, Reference } from '../container/Reference';
+import { Rules } from '../../models/Rules';
 
-export class NodeRules {
+export class NodeRules implements Rules {
   public validate(validationContext: ValidationContext, node: GNode, classifierPath: DiagnosticPath): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
 
@@ -21,7 +22,7 @@ export class NodeRules {
     }
 
     const superType: Ref = superTypes[0]!;
-    if (!Refs.isQualified(superType)) {
+    if (!Reference.isQualified(superType)) {
       const report: DiagnosticReport = {
         code: VALIDATION_ERROR.NODE_SUPERTYPE_NOT_QUALIFIED,
         message: `Node '${node.id}' superType must be qualified (${validationContext.baseId}:<nodeId>). Local supertypes are not allowed.`,
@@ -32,7 +33,7 @@ export class NodeRules {
       return diagnostics;
     }
 
-    const parts: QualifiedRefParts = Refs.splitQualified(superType);
+    const parts: QualifiedParts = Reference.splitQualified(superType);
     if (parts.modelId !== validationContext.baseId) {
       const report: DiagnosticReport = {
         code: VALIDATION_ERROR.NODE_SUPERTYPE_NOT_BASE,

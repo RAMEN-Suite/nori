@@ -1,18 +1,11 @@
 import { effect, inject, Injectable } from '@angular/core';
 import { StorageService, UpdateRecordInput } from '../storage.service';
 import { WorkspaceStore } from './workspace.store';
-import { WorkspaceQueries } from './workspace.queries';
-import {
-  ConnectedNode,
-  CreateNodeInput,
-  CreateRelationInput,
-  SuggestionHelper,
-} from '../../core/helper/SuggestionHelper';
+import { WorkspaceView } from './workspace.view';
 import { ModelRecord, NodeColors, ViewSettings } from '../../models/ModelRecord';
 import { GDataType, GModel, GNode, GRelation, Id } from '../../core/models/GModel';
-import { GModelMutations, PatchDataType, PatchNode, PatchRelation } from '../../core/handler/GModelMutations';
-import { GModelOperations } from '../../core/handler/GModelOperations';
-import { GModelFactory } from '../../core/GModelFactory';
+import { GModelMutations, PatchDataType, PatchNode, PatchRelation } from '../../core/GModelMutations';
+import { ConnectedNode, CreateNodeInput, CreateRelationInput, GModelFactory } from '../../core/GModelFactory';
 
 export type CreateSlotInput = {
   uri: string;
@@ -25,9 +18,7 @@ export type CreateSlotInput = {
 export class WorkspaceActions {
   private readonly storage: StorageService = inject(StorageService);
   private readonly store: WorkspaceStore = inject(WorkspaceStore);
-  private readonly view: WorkspaceQueries = inject(WorkspaceQueries);
-
-  private readonly helper: SuggestionHelper = new SuggestionHelper();
+  private readonly view: WorkspaceView = inject(WorkspaceView);
 
   constructor() {
     this.registerSlotChangesEffect();
@@ -62,7 +53,7 @@ export class WorkspaceActions {
   public async createNode(nodeName: string, baseNodeId: Id): Promise<GNode> {
     const baseId: Id = this.view.baseId();
     const input: CreateNodeInput = { name: nodeName, baseNodeId };
-    const node: GNode = this.helper.createDerivedNode(baseId, input);
+    const node: GNode = GModelFactory.createNode(baseId, input);
 
     this.apply((model: GModel): GModel => GModelMutations.addClassifier(model, node));
     await this.saveSelectedWork();
@@ -74,7 +65,7 @@ export class WorkspaceActions {
     const work: GModel | null = this.store.workingModel();
     if (!work) throw new Error('Cannot duplicate: no working model loaded.');
 
-    const cloned: ConnectedNode = this.helper.duplicateConnectedNode(work, nodeId);
+    const cloned: ConnectedNode = GModelFactory.duplicateConnectedNode(work, nodeId);
 
     this.apply((model: GModel): GModel => {
       let updated: GModel = GModelMutations.addClassifier(model, cloned.node);
@@ -89,7 +80,7 @@ export class WorkspaceActions {
   }
 
   public async deleteNode(nodeId: Id): Promise<void> {
-    this.apply((model: GModel): GModel => GModelOperations.deleteNode(model, nodeId));
+    this.apply((model: GModel): GModel => GModelMutations.deleteNode(model, nodeId));
     await this.saveSelectedWork();
   }
 
@@ -99,7 +90,7 @@ export class WorkspaceActions {
   }
 
   public async createDataType(dataTypeName: string): Promise<GDataType> {
-    const dataType: GDataType = this.helper.createDataType({ name: dataTypeName });
+    const dataType: GDataType = GModelFactory.createDataType({ name: dataTypeName });
     this.apply((model: GModel): GModel => GModelMutations.addClassifier(model, dataType));
     await this.saveSelectedWork();
 
@@ -107,7 +98,7 @@ export class WorkspaceActions {
   }
 
   public async deleteDataType(dataTypeId: Id): Promise<void> {
-    this.apply((model: GModel): GModel => GModelOperations.deleteDataType(model, dataTypeId));
+    this.apply((model: GModel): GModel => GModelMutations.deleteDataType(model, dataTypeId));
     await this.saveSelectedWork();
   }
 
@@ -121,7 +112,7 @@ export class WorkspaceActions {
     if (!base) throw new Error('Cannot create relation: no base model loaded.');
 
     const input: CreateRelationInput = { baseRelationId, fromNodeId, toNodeId };
-    const relation: GRelation = this.helper.createDerivedRelation(base, base.id, input);
+    const relation: GRelation = GModelFactory.createRelation(base, base.id, input);
 
     this.apply((model: GModel): GModel => GModelMutations.addRelation(model, relation));
     await this.saveSelectedWork();
@@ -146,9 +137,9 @@ export class WorkspaceActions {
     const base: GModel | null = this.storage.recordsBySlot().get(lastSlot)?.gmodel ?? null;
     if (!base) throw new Error(`Cannot create slot: base model missing for slot ${lastSlot}.`);
 
-    const derived: GModel = GModelFactory.deriveModel(base, {
+    const derived: GModel = GModelFactory.createModel(base, {
       uri: input.uri,
-      id: SuggestionHelper.createIdentifier(),
+      id: GModelFactory.createIdentifier(),
       name: input.name,
       version: input.version,
     });
