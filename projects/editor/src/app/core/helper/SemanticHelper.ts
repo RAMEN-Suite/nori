@@ -2,7 +2,7 @@ import { Bounds, GRelation } from '../models/GModel';
 import { Reference } from '../validation/container/Reference';
 
 export class SemanticHelper {
-  private static readonly UNBOUNDED = -1 as const;
+  public static readonly UNBOUNDED = -1 as const;
 
   public static areBoundsCoherent(bounds: Bounds): boolean {
     if (bounds.lowerBound < 0) return false;

@@ -22,7 +22,8 @@
           "name": "uuid",
           "typeId": "Q9mT2aL7vK0pX4sN1cDz",
           "bounds": { "lowerBound": 1, "upperBound": 1 },
-          "isKey": true
+          "isKey": true,
+          "isReadOnly": true
         },
         {
           "name": "label",
@@ -42,7 +43,8 @@
           "name": "uuid",
           "typeId": "Q9mT2aL7vK0pX4sN1cDz",
           "bounds": { "lowerBound": 1, "upperBound": 1 },
-          "isKey": true
+          "isKey": true,
+          "isReadOnly": true
         },
         {
           "name": "label",
@@ -62,7 +64,8 @@
           "name": "uuid",
           "typeId": "Q9mT2aL7vK0pX4sN1cDz",
           "bounds": { "lowerBound": 1, "upperBound": 1 },
-          "isKey": true
+          "isKey": true,
+          "isReadOnly": true
         },
         {
           "name": "label",
@@ -82,7 +85,8 @@
           "name": "uuid",
           "typeId": "Q9mT2aL7vK0pX4sN1cDz",
           "bounds": { "lowerBound": 1, "upperBound": 1 },
-          "isKey": true
+          "isKey": true,
+          "isReadOnly": true
         },
         {
           "name": "label",
@@ -102,7 +106,8 @@
           "name": "uuid",
           "typeId": "Q9mT2aL7vK0pX4sN1cDz",
           "bounds": { "lowerBound": 1, "upperBound": 1 },
-          "isKey": true
+          "isKey": true,
+          "isReadOnly": true
         },
         {
           "name": "type",

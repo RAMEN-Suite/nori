@@ -7,6 +7,11 @@ import { NavigationService } from '../../../../../../services/navigation.service
 import { ActivatedRoute } from '@angular/router';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { CreateAttributeDialog } from '../../../../dialogs/create-attribute/create-attribute.dialog';
+import {
+  ConfirmationButton,
+  ConfirmationDialog,
+  ConfirmationOptions,
+} from '../../../../dialogs/confirmation/confirmation.dialog';
 
 const FORMATS = {
   EXCLAMATION: "<span class='font-bold ms-1 text-red-500'>!</span>",
@@ -77,6 +82,47 @@ export class NodeAttributeComponent {
       draggable: true,
       closable: true,
       inputValues: { currentAttribute },
+    });
+  }
+
+  protected async handleDeleteAttribute(): Promise<void> {
+    const currentAttribute: GAttribute | undefined = this.attribute();
+    if (!currentAttribute) return;
+
+    const currentNodeId: string | null = this.workspace.store.currentNodeId();
+    if (!currentNodeId) return;
+
+    const acceptButton: ConfirmationButton = {
+      label: 'Yes, I want delete it',
+      size: 'small',
+      severity: 'danger',
+      variant: 'outlined',
+      click: async (): Promise<void> => {
+        await this.workspace.actions.removeAttribute(currentNodeId, currentAttribute.name);
+      },
+    };
+    const cancelButton: ConfirmationButton = {
+      label: `Cancel`,
+      size: 'small',
+      variant: 'outlined',
+      click: (): void => this.dialogRef?.close(),
+    };
+
+    const options: ConfirmationOptions = {
+      title: 'Deleting Attribute',
+      message: `Do you really want to delete <span class="font-bold font-stretch-semi-expanded">${currentAttribute.name}</span>? <br />
+      Once deleted, it is gone forever.`,
+      icon: 'pi-trash',
+      justify: 'justify-around',
+      buttons: [[cancelButton], [acceptButton]],
+    };
+
+    this.dialogRef = this.dialogService.open(ConfirmationDialog, {
+      showHeader: false,
+      closeOnEscape: true,
+      dismissableMask: true,
+      closable: true,
+      inputValues: { options },
     });
   }
 

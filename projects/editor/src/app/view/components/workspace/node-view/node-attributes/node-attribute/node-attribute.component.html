@@ -8,6 +8,14 @@
       class="pi pi-key"
       [hidden]="!attribute()?.isKey"
     ></i>
+    <i
+      pTooltip="ReadOnly Attribute"
+      tooltipPosition="bottom"
+      positionTop="12"
+      showDelay="500"
+      class="pi pi-eye"
+      [hidden]="!attribute()?.isReadOnly"
+    ></i>
   </div>
   <div class="flex flex-8 flex-row">
     <div class="flex flex-6 font-bold">
@@ -24,7 +32,7 @@
     @if (workspace.store.currentSlot() === modelSlot()) {
       <div class="flex justify-center">
         <p-button icon="pi pi-pencil" size="small" variant="text" (click)="handleOpenCreateAttribute()" />
-        <p-button icon="pi pi-trash" severity="danger" size="small" variant="text" />
+        <p-button icon="pi pi-trash" severity="danger" size="small" variant="text" (click)="handleDeleteAttribute()" />
       </div>
     } @else {
       <p-button

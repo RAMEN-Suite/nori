@@ -15,10 +15,13 @@ import { Transformer } from '../../../../core/helper/Transformer';
 import { NgClass } from '@angular/common';
 import { Message } from 'primeng/message';
 import { CreateAttributeInput } from '../../../../core/GModelFactory';
+import { SemanticHelper } from '../../../../core/helper/SemanticHelper';
 
 interface RenderedOption {
   label: string;
   icon: string;
+  onCheck?: () => void;
+  onUncheck?: () => void;
   isChecked: WritableSignal<boolean>;
   isDisabled?: WritableSignal<boolean>;
 }
@@ -56,13 +59,11 @@ export class CreateAttributeDialog {
   protected readonly filteredDataTypeOptions: WritableSignal<GenericOption<string>[]> = signal([]);
   protected readonly dataTypeOptions: WritableSignal<GenericOption<string>[]> = signal([]);
 
-  public hasKey: InputSignal<boolean | undefined> = input();
   public currentAttribute: InputSignal<GAttribute | undefined> = input();
-
   protected draftAttribute: WritableSignal<GAttribute> = signal({
     name: '',
     typeId: '',
-    bounds: { lowerBound: 0, upperBound: 0 },
+    bounds: { lowerBound: 0, upperBound: 1 },
   });
 
   protected readonly attributeOptions: AttributeOptions = {
@@ -87,17 +88,28 @@ export class CreateAttributeDialog {
           label: `Attribute is <span class="font-bold">required</span>?`,
           icon: 'pi-exclamation-circle',
           isChecked: this.attributeOptions.isRequired,
+          onUncheck: (): void => {
+            this.attributeOptions.isKey.set(false);
+          },
         },
         {
           label: `Attribute is a <span class="font-bold">list</span>?`,
           icon: 'pi-list',
           isChecked: this.attributeOptions.isList,
           isDisabled: this.attributeOptions.isKey,
+          onCheck: (): void => {
+            this.attributeOptions.isKey.set(false);
+          },
+          onUncheck: (): void => {
+            this.attributeOptions.isOrdered.set(false);
+            this.attributeOptions.isUnique.set(false);
+          },
         },
         {
           label: `Attribute is <span class="font-bold">read only</span>?`,
           icon: 'pi-pen-to-square',
           isChecked: this.attributeOptions.isReadOnly,
+          isDisabled: this.attributeOptions.isKey,
         },
       ],
       isVisible: signal(true),
@@ -109,6 +121,13 @@ export class CreateAttributeDialog {
           label: `Attribute is an <span class="font-bold">identifier</span>?`,
           icon: 'pi-key',
           isChecked: this.attributeOptions.isKey,
+          onCheck: (): void => {
+            this.attributeOptions.isRequired.set(true);
+            this.attributeOptions.isList.set(false);
+            this.attributeOptions.isOrdered.set(false);
+            this.attributeOptions.isUnique.set(false);
+            this.attributeOptions.isReadOnly.set(true);
+          },
         },
       ],
       isVisible: this.attributeOptions.isRequired,
@@ -121,11 +140,19 @@ export class CreateAttributeDialog {
           label: `List is <span class="font-bold">ordered</span>?`,
           icon: 'pi-sort-alt',
           isChecked: this.attributeOptions.isOrdered,
+          onCheck: (): void => {
+            this.attributeOptions.isList.set(true);
+            this.attributeOptions.isKey.set(false);
+          },
         },
         {
           label: `Elements are <span class="font-bold">unique</span>?`,
           icon: 'pi-globe',
           isChecked: this.attributeOptions.isUnique,
+          onCheck: (): void => {
+            this.attributeOptions.isList.set(true);
+            this.attributeOptions.isKey.set(false);
+          },
         },
       ],
       isVisible: this.attributeOptions.isList,
@@ -136,7 +163,6 @@ export class CreateAttributeDialog {
   constructor() {
     effect((): void => this.registerDataTypesEffect());
     effect((): void => this.registerCurrentAttributeEffect());
-    effect((): void => this.registerClosedCategoryEffect());
   }
 
   protected registerDataTypesEffect(): void {
@@ -157,14 +183,20 @@ export class CreateAttributeDialog {
 
   protected registerCurrentAttributeEffect(): void {
     const attribute: GAttribute | undefined = this.currentAttribute();
-    if (attribute) this.draftAttribute.set(structuredClone(attribute));
-  }
+    if (!attribute) return;
 
-  protected registerClosedCategoryEffect(): void {
-    this.renderedOptions.forEach((category: RenderedCategory): void => {
-      if (category.isVisible()) return;
-      category.options.forEach((option: RenderedOption): void => option.isChecked.set(false));
-    });
+    this.draftAttribute.set(structuredClone(attribute));
+    this.attributeOptions.isKey.set(!!attribute.isKey);
+    this.attributeOptions.isReadOnly.set(!!attribute.isReadOnly);
+    this.attributeOptions.isUnique.set(!!attribute.isUnique);
+    this.attributeOptions.isOrdered.set(!!attribute.isOrdered);
+
+    const { lowerBound, upperBound } = attribute.bounds;
+    const isList: boolean = upperBound > 1 || upperBound === SemanticHelper.UNBOUNDED;
+    const isRequired: boolean = lowerBound === 1;
+
+    this.attributeOptions.isList.set(isList);
+    this.attributeOptions.isRequired.set(isRequired);
   }
 
   protected formatTypeLabel(typeRef: TypeRef): string {
@@ -177,6 +209,11 @@ export class CreateAttributeDialog {
 
     const modelId: string | undefined = this.workspace.store.currentModel()?.id;
     return modelId ? this.workspace.view.resolveTypeLabel(typeRef, modelId) : '';
+  }
+
+  protected handleSelectOption(option: RenderedOption): void {
+    if (option.isChecked() && option.onCheck !== undefined) return option.onCheck();
+    else if (option.onUncheck !== undefined) return option.onUncheck();
   }
 
   protected handleAutoComplete($event: AutoCompleteCompleteEvent): void {
@@ -260,7 +297,7 @@ export class CreateAttributeDialog {
 
   private getAttributeBounds(): Bounds {
     const lowerBound: number = this.attributeOptions.isRequired() ? 1 : 0;
-    const upperBound: number = this.attributeOptions.isList() ? -1 : 1;
+    const upperBound: number = this.attributeOptions.isList() ? SemanticHelper.UNBOUNDED : 1;
     return { lowerBound, upperBound };
   }
 }

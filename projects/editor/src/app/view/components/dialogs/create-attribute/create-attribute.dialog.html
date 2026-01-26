@@ -72,6 +72,7 @@
                     [(ngModel)]="option.isChecked"
                     [options]="selectOptions"
                     [disabled]="option.isDisabled !== undefined && option.isDisabled()"
+                    (ngModelChange)="handleSelectOption(option)"
                     optionLabel="label"
                     optionValue="value"
                     fluid
@@ -93,7 +94,7 @@
     @if (currentAttribute() === undefined) {
       <p-button label="Add Attribute" outlined (click)="handleCreateAttribute()" [disabled]="!isFormValid()" />
     } @else {
-      <p-button label="Edit Attribute" outlined (click)="handleUpdateAttribute()" [disabled]="!isFormValid()" />
+      <p-button label="Update Attribute" outlined (click)="handleUpdateAttribute()" [disabled]="!isFormValid()" />
     }
   </div>
 </div>
