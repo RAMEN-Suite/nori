@@ -1,5 +1,5 @@
 <div class="flex min-h-8.5 flex-row items-center gap-4">
-  <div class="flex flex-2 items-center justify-end gap-4">
+  <div class="flex flex-2 items-center justify-end gap-4 px-2">
     <i
       pTooltip="Key Attribute"
       tooltipPosition="bottom"
@@ -18,7 +18,7 @@
     ></i>
   </div>
   <div class="flex flex-8 flex-row items-center">
-    <div class="flex flex-4 font-bold">
+    <div class="flex flex-5 font-bold">
       {{ attribute()?.name }}
     </div>
     <div class="flex flex-1">:</div>
@@ -56,7 +56,7 @@
         icon="pi pi-reply"
         size="small"
         variant="text"
-        [hidden]="modelSlot() === 0"
+        [disabled]="modelSlot() === 0"
         (click)="handleOpenQualifiedReference()"
       />
     }

@@ -7,7 +7,7 @@ import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
 import { ScrollPanel } from 'primeng/scrollpanel';
 import { NodeAttributesComponent } from './node-attributes/node-attributes.component';
 import { NodeRelationsComponent } from './node-relations/node-relations.component';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { NavigationService } from '../../../../services/navigation.service';
 
 @Component({
@@ -31,11 +31,30 @@ import { NavigationService } from '../../../../services/navigation.service';
 })
 export class NodeViewComponent {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
+
   protected readonly navigation: NavigationService = inject(NavigationService);
   protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
+  protected readonly router: Router = inject(Router);
+
+  protected activeTab: 'attributes' | 'relations' = 'attributes';
+
+  constructor() {
+    this.activatedRoute.queryParamMap.subscribe((queryParams: ParamMap): void => {
+      const tab: string | null = queryParams.get('tab');
+      this.activeTab = tab === 'relations' ? 'relations' : 'attributes';
+    });
+  }
 
   protected handleCloseView(): void {
     const selectedSlot: number = this.workspace.store.currentSlot();
     void this.navigation.navigateToSlot(this.activatedRoute, selectedSlot);
+  }
+
+  protected handleTab(tab: 'attributes' | 'relations'): void {
+    void this.router.navigate([], {
+      relativeTo: this.activatedRoute,
+      queryParams: { tab },
+      queryParamsHandling: 'merge',
+    });
   }
 }
