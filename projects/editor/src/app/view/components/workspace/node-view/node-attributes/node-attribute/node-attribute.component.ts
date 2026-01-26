@@ -12,6 +12,8 @@ import {
   ConfirmationDialog,
   ConfirmationOptions,
 } from '../../../../dialogs/confirmation/confirmation.dialog';
+import { SemanticHelper } from '../../../../../../core/helper/SemanticHelper';
+import { Chip } from 'primeng/chip';
 
 const FORMATS = {
   EXCLAMATION: "<span class='font-bold ms-1 text-red-500'>!</span>",
@@ -19,9 +21,11 @@ const FORMATS = {
   UPPER_BOUND: "<span class='font-bold'>(%s)</span>",
 };
 
+type AttributeChip = { icon: string; tooltip: string };
+
 @Component({
   selector: 'app-node-attribute',
-  imports: [Button, Tooltip],
+  imports: [Button, Tooltip, Chip],
   providers: [DialogService, DynamicDialogRef],
   templateUrl: './node-attribute.component.html',
   styleUrl: './node-attribute.component.scss',
@@ -132,5 +136,15 @@ export class NodeAttributeComponent {
     if (!slot || !nodeId || slot === 0) return;
 
     void this.navigation.navigateToNode(this.activatedRoute, slot, nodeId);
+  }
+
+  protected isList(bounds: Bounds): boolean {
+    return bounds.upperBound === SemanticHelper.UNBOUNDED || bounds.upperBound > 1;
+  }
+
+  protected getCollectionChip(attribute: GAttribute | undefined): AttributeChip | null {
+    if (attribute?.isOrdered) return { icon: 'pi pi-sort-alt', tooltip: 'List preserves element order' };
+    if (attribute?.isUnique) return { icon: 'pi pi-globe', tooltip: 'List contains no duplicates' };
+    return null;
   }
 }

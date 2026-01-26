@@ -1,11 +1,11 @@
 <div class="flex min-h-8.5 flex-row items-center gap-4">
-  <div class="flex flex-2 justify-end gap-4">
+  <div class="flex flex-2 items-center justify-end gap-4">
     <i
       pTooltip="Key Attribute"
       tooltipPosition="bottom"
       positionTop="12"
       showDelay="500"
-      class="pi pi-key"
+      class="pi pi-key cursor-help"
       [hidden]="!attribute()?.isKey"
     ></i>
     <i
@@ -13,19 +13,32 @@
       tooltipPosition="bottom"
       positionTop="12"
       showDelay="500"
-      class="pi pi-eye"
+      class="pi pi-eye cursor-help"
       [hidden]="!attribute()?.isReadOnly"
     ></i>
   </div>
-  <div class="flex flex-8 flex-row">
-    <div class="flex flex-6 font-bold">
+  <div class="flex flex-8 flex-row items-center">
+    <div class="flex flex-4 font-bold">
       {{ attribute()?.name }}
     </div>
     <div class="flex flex-1">:</div>
-    <div class="flex flex-5 font-light font-stretch-semi-expanded">
+    <div class="flex flex-6 items-center font-light font-stretch-semi-expanded">
       @let bounds = attribute()?.bounds ?? { lowerBound: 0, upperBound: 0 };
       @let dataType = workspace.view.resolveTypeLabel(attribute()?.typeId ?? '', modelId() ?? '');
+      @let chip = getCollectionChip(attribute());
+
       <span [innerHTML]="formatAttributeType(bounds, dataType)"></span>
+
+      @if (chip) {
+        <p-chip
+          [icon]="chip.icon"
+          [pTooltip]="chip.tooltip"
+          tooltipPosition="bottom"
+          positionTop="12"
+          showDelay="500"
+          class="ms-2 mt-0.5 cursor-help px-3! py-1! text-xs"
+        />
+      }
     </div>
   </div>
   <div class="flex flex-2 justify-start">
