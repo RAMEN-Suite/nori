@@ -50,7 +50,7 @@ export class AttributeRules extends AbstractRules {
   }
 
   private validateAttributes(
-    validationContext: ValidationContext,
+    ctc: ValidationContext,
     node: GNode,
     attributes: ReadonlyArray<GAttribute>,
     inheritedNames: ReadonlySet<string>,
@@ -64,7 +64,7 @@ export class AttributeRules extends AbstractRules {
       diagnostics.push(...this.validateNoInheritedShadowing(attribute, node, inheritedNames, attributePath));
       diagnostics.push(...this.validateBounds(attribute, node, attributePath));
       diagnostics.push(...this.validateKeyFlag(attribute, node, attributePath));
-      diagnostics.push(...this.validateTypeResolvable(validationContext, attribute, node, attributePath));
+      diagnostics.push(...this.validateTypeResolvable(ctc, attribute, node, attributePath));
     });
 
     return diagnostics;
@@ -123,12 +123,12 @@ export class AttributeRules extends AbstractRules {
   }
 
   private validateTypeResolvable(
-    validationContext: ValidationContext,
+    ctx: ValidationContext,
     attribute: GAttribute,
     node: GNode,
     attributePath: DiagnosticPath,
   ): Diagnostic[] {
-    const isResolvable: boolean = this.isTypeRefResolvable(validationContext, attribute.typeId);
+    const isResolvable: boolean = this.isTypeRefResolvable(ctx, attribute.typeId);
     if (isResolvable) return [];
 
     return [
@@ -141,14 +141,10 @@ export class AttributeRules extends AbstractRules {
     ];
   }
 
-  private resolveInheritedAttributeNames(validationContext: ValidationContext, nodeId: Id): ReadonlySet<string> {
+  private resolveInheritedAttributeNames(ctx: ValidationContext, nodeId: Id): ReadonlySet<string> {
     const names: Set<string> = new Set<string>();
-    const startModelId: Id = validationContext.derivedIndex.model.id;
-    const chain: ReadonlyArray<ResolvedNode> = NodeResolver.resolveSuperTypeChain(
-      startModelId,
-      nodeId,
-      validationContext.models,
-    );
+    const startModelId: Id = ctx.derivedIndex.model.id;
+    const chain: ReadonlyArray<ResolvedNode> = NodeResolver.resolveSuperTypeChain(startModelId, nodeId, ctx.models);
 
     for (const item of chain) {
       for (const attribute of item.node.attributes ?? []) {
@@ -158,20 +154,17 @@ export class AttributeRules extends AbstractRules {
     return names;
   }
 
-  private isTypeRefResolvable(validationContext: ValidationContext, typeRef: TypeRef): boolean {
+  private isTypeRefResolvable(ctx: ValidationContext, typeRef: TypeRef): boolean {
     if (Builtins.isBuiltin(typeRef)) return true;
-    if (!Reference.isQualified(typeRef)) return validationContext.derivedIndex.dataTypesById.has(typeRef);
+    if (!Reference.isQualified(typeRef)) return ctx.derivedIndex.dataTypesById.has(typeRef);
 
     const parts: QualifiedParts = Reference.splitQualified(typeRef);
-    const closure: ReadonlyArray<GModel> = ModelResolver.resolveImports(
-      validationContext.derivedIndex.model.id,
-      validationContext.models,
-    );
+    const closure: ReadonlyArray<GModel> = ModelResolver.resolveImports(ctx.derivedIndex.model.id, ctx.models);
 
     const allowedModelIds: Set<Id> = new Set<Id>(closure.map((m: GModel): Id => m.id));
     if (!allowedModelIds.has(parts.modelId)) return false;
 
-    const targetModel: GModel | undefined = validationContext.models.get(parts.modelId);
+    const targetModel: GModel | undefined = ctx.models.get(parts.modelId);
     if (!targetModel) return false;
 
     const targetIndex = new GModelIndex(targetModel);

@@ -116,8 +116,8 @@ export class BreadcrumbsComponent {
   }
 
   protected handleOpenEditModel(): void {
-    const workingSlot: number | undefined = this.selectedMenuItem()?.slot;
-    if (!workingSlot) return;
+    const currentSlot: number | undefined = this.selectedMenuItem()?.slot;
+    if (!currentSlot) return;
 
     this.dialogRef?.close();
     this.dialogRef = this.dialogService.open(CreateModelDialog, {
@@ -125,7 +125,7 @@ export class BreadcrumbsComponent {
       closeOnEscape: true,
       draggable: true,
       closable: true,
-      inputValues: { workingSlot },
+      inputValues: { currentSlot },
     });
   }
 

@@ -33,7 +33,7 @@ export class SemanticValidator {
     const baseIndex: GModelIndex = new GModelIndex(baseModel);
     const derivedIndex: GModelIndex = new GModelIndex(derivedModel);
 
-    const validationContext: ValidationContext = {
+    const ctx: ValidationContext = {
       baseId: options.baseId,
       baseIndex: baseIndex,
       derivedIndex: derivedIndex,
@@ -43,14 +43,14 @@ export class SemanticValidator {
     };
 
     const diagnostics: Diagnostic[] = [];
-    diagnostics.push(...this.importRules.validate(validationContext));
+    diagnostics.push(...this.importRules.validate(ctx));
 
     if (diagnostics.some((d: Diagnostic): boolean => d.code === VALIDATION_ERROR.MISSING_BASE_IMPORT)) {
       return diagnostics;
     }
 
-    diagnostics.push(...this.classifierRules.validate(validationContext));
-    diagnostics.push(...this.relationRules.validate(validationContext));
+    diagnostics.push(...this.classifierRules.validate(ctx));
+    diagnostics.push(...this.relationRules.validate(ctx));
     return diagnostics;
   }
 }

@@ -67,12 +67,16 @@ export class NodeAttributeComponent {
   }
 
   protected handleOpenCreateAttribute(): void {
+    const currentAttribute: GAttribute | undefined = this.attribute();
+    if (!currentAttribute) return;
+
     this.dialogRef?.close();
     this.dialogRef = this.dialogService.open(CreateAttributeDialog, {
       header: 'Create Attribute',
       closeOnEscape: true,
       draggable: true,
       closable: true,
+      inputValues: { currentAttribute },
     });
   }
 

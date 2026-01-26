@@ -3,81 +3,97 @@
     <p-fieldset legend="Basics">
       <div class="flex flex-col gap-2">
         <div class="flex flex-row gap-3">
-          <p-ifta-label class="flex basis-full">
-            <input [(ngModel)]="draftAttribute().name" pInputText id="attributeName" name="attributeName" fluid />
-            <label for="attributeName">Attribute Name</label>
-          </p-ifta-label>
-          <p-ifta-label class="flex basis-full">
-            <p-auto-complete
-              [ngModel]="resolveTypeLabel(draftAttribute().typeId)"
-              [suggestions]="filteredDataTypeOptions()"
-              (completeMethod)="handleAutoComplete($event)"
-              optionLabel="label"
-              optionValue="value"
-              dropdown
-              fluid
-            />
-            <label for="attributeType">Attribute Type</label>
-          </p-ifta-label>
+          <div class="flex basis-full flex-col gap-2">
+            <p-ifta-label class="flex basis-full">
+              <input
+                #nameModel="ngModel"
+                [(ngModel)]="draftAttribute().name"
+                (blur)="handleTransformName()"
+                [invalid]="(nameModel.touched || isSubmitted) && (!isAttributeUnique() || !isNameValid())"
+                pInputText
+                id="attributeName"
+                name="attributeName"
+                fluid
+                required
+              />
+              <label for="attributeName">Attribute Name</label>
+            </p-ifta-label>
+
+            @if (nameModel.touched || isSubmitted) {
+              @if (!isAttributeUnique()) {
+                <p-message severity="error" size="small" variant="simple"> Attribute does already exist. </p-message>
+              }
+
+              @if (!isNameValid()) {
+                <p-message severity="error" size="small" variant="simple"> Attribute name cannot be empty. </p-message>
+              }
+            }
+          </div>
+          <div class="flex basis-full flex-col gap-2">
+            <p-ifta-label class="flex basis-full">
+              <p-auto-complete
+                #dataTypeModel="ngModel"
+                [ngModel]="formatTypeLabel(draftAttribute().typeId)"
+                [suggestions]="filteredDataTypeOptions()"
+                (completeMethod)="handleAutoComplete($event)"
+                (ngModelChange)="handleSelectType($event)"
+                [invalid]="(dataTypeModel.touched || isSubmitted) && !isAttributeTypeValid()"
+                optionLabel="label"
+                optionValue="value"
+                dropdown
+                fluid
+                required
+              />
+              <label for="attributeType">Attribute Type</label>
+            </p-ifta-label>
+
+            @if ((dataTypeModel.touched || isSubmitted) && !isAttributeTypeValid()) {
+              <p-message severity="error" size="small" variant="simple"> Please select an attribute type. </p-message>
+            }
+          </div>
         </div>
       </div>
     </p-fieldset>
 
-    <p-fieldset legend="Advanced">
-      <div class="flex flex-col gap-2">
-        <div class="flex flex-row items-center gap-4">
-          <i class="pi pi-exclamation-circle"></i>
-          <div class="flex-6">Attribute is <span class="font-bold">required</span>?</div>
-          <div class="flex-6 justify-center">
-            <p-select-button
-              [(ngModel)]="isRequired"
-              [options]="selectOptions"
-              optionLabel="label"
-              optionValue="value"
-              fluid
-              size="small"
-              styleClass="p-1!"
-            />
+    @for (category of renderedOptions; track category.label) {
+      @let isCategoryDisabled = category.isDisabled !== undefined && category.isDisabled();
+
+      @if (category.isVisible() && !isCategoryDisabled) {
+        <p-fieldset [legend]="category.label" animate.enter="options-entrance">
+          <div class="flex flex-col gap-2">
+            @for (option of category.options; track option.label) {
+              @let isOptionDisabled = option.isDisabled !== undefined && option.isDisabled();
+
+              <div class="flex flex-row items-center gap-4" [class.cursor-not-allowed]="isOptionDisabled">
+                <i class="pi" [ngClass]="option.icon"></i>
+                <div [class.text-muted-color]="isOptionDisabled" [innerHTML]="option.label" class="flex-6"></div>
+                <div class="flex-6 justify-center">
+                  <p-select-button
+                    [(ngModel)]="option.isChecked"
+                    [options]="selectOptions"
+                    [disabled]="option.isDisabled !== undefined && option.isDisabled()"
+                    optionLabel="label"
+                    optionValue="value"
+                    fluid
+                    size="small"
+                    styleClass="p-1!"
+                  />
+                </div>
+              </div>
+            }
           </div>
-        </div>
-        <div class="flex flex-col">
-          <div class="flex flex-row items-center gap-4">
-            <i class="pi pi-list"></i>
-            <div class="flex-6">Attribute is a <span class="font-bold">list</span>?</div>
-            <div class="flex-6 justify-center">
-              <p-select-button
-                [(ngModel)]="isList"
-                [options]="selectOptions"
-                optionLabel="label"
-                optionValue="value"
-                fluid
-                size="small"
-                styleClass="p-1!"
-              />
-            </div>
-          </div>
-        </div>
-        <div class="flex flex-row items-center gap-4">
-          <i class="pi pi-pen-to-square"></i>
-          <div class="flex-6">Attribute is <span class="font-bold">read only</span>?</div>
-          <div class="flex-6 justify-center">
-            <p-select-button
-              [(ngModel)]="isReadOnly"
-              [options]="selectOptions"
-              optionLabel="label"
-              optionValue="value"
-              fluid
-              size="small"
-              styleClass="p-1!"
-            />
-          </div>
-        </div>
-      </div>
-    </p-fieldset>
+        </p-fieldset>
+      }
+    }
   </div>
 
   <div class="mt-4 flex flex-row justify-between gap-2">
-    <p-button label="Cancel" outlined />
-    <p-button label="Add Attribute" outlined />
+    <p-button label="Cancel" outlined (click)="handleCloseModal()" />
+
+    @if (currentAttribute() === undefined) {
+      <p-button label="Add Attribute" outlined (click)="handleCreateAttribute()" [disabled]="!isFormValid()" />
+    } @else {
+      <p-button label="Edit Attribute" outlined (click)="handleUpdateAttribute()" [disabled]="!isFormValid()" />
+    }
   </div>
 </div>

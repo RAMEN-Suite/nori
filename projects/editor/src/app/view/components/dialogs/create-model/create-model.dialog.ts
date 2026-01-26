@@ -29,23 +29,23 @@ export class CreateModelDialog {
   protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
   protected readonly navigation: NavigationService = inject(NavigationService);
 
-  public draftSlot: ModelSignal<number | undefined> = model();
-  public draftModel: WritableSignal<CreateSlotInput> = signal({
+  protected isSubmitted: boolean = false;
+
+  public currentSlot: ModelSignal<number | undefined> = model();
+  protected draftModel: WritableSignal<CreateSlotInput> = signal({
     name: '',
     description: '',
     version: '1.0.0',
     uri: 'https://example.com/',
   });
 
-  protected isSubmitted: boolean = false;
-
   constructor() {
     effect((): void => {
-      const workingSlot: number | undefined = this.draftSlot();
-      if (!workingSlot) return;
+      const currentSlot: number | undefined = this.currentSlot();
+      if (!currentSlot) return;
 
-      const existing: ModelRecord | undefined = this.storage.recordsBySlot().get(workingSlot);
-      if (!existing) return this.draftSlot.set(undefined);
+      const existing: ModelRecord | undefined = this.storage.recordsBySlot().get(currentSlot);
+      if (!existing) return this.currentSlot.set(undefined);
 
       const input: CreateSlotInput = {
         name: existing.name,
@@ -93,10 +93,10 @@ export class CreateModelDialog {
     this.isSubmitted = true;
     if (!this.isFormValid()) return;
 
-    const workingSlot: number | undefined = this.draftSlot();
-    if (!workingSlot) return;
+    const currentSlot: number | undefined = this.currentSlot();
+    if (!currentSlot) return;
 
-    void this.workspace.actions.updateSlot(workingSlot, this.draftModel());
+    void this.workspace.actions.updateSlot(currentSlot, this.draftModel());
     this.dialogRef.close();
   }
 }
