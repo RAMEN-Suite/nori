@@ -9,7 +9,7 @@ const PROPERTY_VALID_START = /^\p{L}/u;
 const RELATIONSHIP_NAME = /[\p{L}\p{N}]+/gu;
 const RELATIONSHIP_VALID_START = /^\p{Lu}/u;
 
-export class StringTransformer {
+export class Transformer {
   public static toNodeName(str: string): string {
     const pascalized: string = str
       .replace(NODE_NAME_START, (_: string, letter: string): string => letter.toUpperCase())

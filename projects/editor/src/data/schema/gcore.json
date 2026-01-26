@@ -261,13 +261,7 @@
         "isReadOnly": {
           "type": "boolean",
           "default": false,
-          "$comment": "Value cannot be modified after initialization."
-        },
-
-        "isDerived": {
-          "type": "boolean",
-          "default": false,
-          "$comment": "Value is computed from other model state."
+          "$comment": "Value cannot be modified generally."
         },
 
         "isOrdered": {

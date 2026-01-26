@@ -3,9 +3,9 @@ import { Diagnostic, DiagnosticPath, DiagnosticReport, Diagnostics } from '../co
 import { VALIDATION_ERROR } from '../../const/VALIDATION_ERROR';
 import { ValidationContext } from '../SemanticValidator';
 import { QualifiedParts, Reference } from '../container/Reference';
-import { Rules } from '../../models/Rules';
+import { AbstractRule } from './AbstractRule';
 
-export class NodeRules implements Rules {
+export class NodeRules extends AbstractRule {
   public validate(validationContext: ValidationContext, node: GNode, classifierPath: DiagnosticPath): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
 
@@ -45,7 +45,7 @@ export class NodeRules implements Rules {
       return diagnostics;
     }
 
-    const baseNodeId: Id = parts.nodeId;
+    const baseNodeId: Id = parts.refId;
     if (!validationContext.baseIndex.nodesById.has(baseNodeId)) {
       const report: DiagnosticReport = {
         code: VALIDATION_ERROR.BASE_NODE_NOT_FOUND,

@@ -35,10 +35,6 @@ export class WorkspaceScreen implements OnInit {
       const manifest: Manifest | null = this.storage.selectedManifest();
       this.windowState.setTitle(manifest?.name ?? '', 'pi pi-pen-to-square');
     });
-
-    effect(() => {
-      console.log(this.workspace.view.validation());
-    });
   }
 
   private registerRouteSubscription(): void {
@@ -52,8 +48,8 @@ export class WorkspaceScreen implements OnInit {
     const slot: string | null = paramMap?.get(PARAMETERS.SLOT);
     const nodeId: string | null = paramMap?.get(PARAMETERS.NODE);
 
-    this.workspace.store.setSelectedSlot(slot ? Number(slot) : null);
-    this.workspace.store.setSelectedNodeId(nodeId ?? null);
+    this.workspace.store.setCurrentSlot(slot ? Number(slot) : null);
+    this.workspace.store.setCurrentNodeId(nodeId ?? null);
   }
 
   public async ngOnInit(): Promise<void> {

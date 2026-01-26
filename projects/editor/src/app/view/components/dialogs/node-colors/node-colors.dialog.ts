@@ -34,15 +34,15 @@ export class NodeColorsDialog implements OnInit {
   });
 
   public ngOnInit() {
-    this.currentColors = this.workspace.store.selectedNodeColors();
+    this.currentColors = this.workspace.store.currentNodeColors();
   }
 
   protected async handleColorChange(baseId: string, hexColor: string): Promise<void> {
-    this.workspace.store.updateSelectedNodeColor(baseId, hexColor);
+    this.workspace.store.updateCurrentNodeColors(baseId, hexColor);
   }
 
   protected async handleReset(): Promise<void> {
-    this.workspace.store.setSelectedNodeColors(this.currentColors);
+    this.workspace.store.setCurrentNodeColors(this.currentColors);
   }
 
   protected async handleSaveChanges(): Promise<void> {

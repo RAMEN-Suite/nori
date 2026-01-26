@@ -62,7 +62,7 @@ export class GraphMenuComponent {
   });
 
   protected graphData: Signal<GraphData> = computed((): GraphData => {
-    const model: GModel | null = this.workspace.view.slotModel();
+    const model: GModel | null = this.workspace.store.currentModel();
     const graphData: GraphData = new GModelGraph().build(model);
 
     const key: string = this.computeGraphKey(graphData);

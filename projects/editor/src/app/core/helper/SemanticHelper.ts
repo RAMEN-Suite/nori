@@ -10,12 +10,12 @@ export class SemanticHelper {
     return bounds.upperBound >= bounds.lowerBound;
   }
 
-  public static isDerivedBoundsCompatible(base: Bounds, derived: Bounds): boolean {
-    if (!this.areBoundsCoherent(derived)) return false;
-    if (derived.lowerBound < base.lowerBound) return false;
+  public static isModelBoundsCompatible(base: Bounds, model: Bounds): boolean {
+    if (!this.areBoundsCoherent(model)) return false;
+    if (model.lowerBound < base.lowerBound) return false;
     if (base.upperBound === this.UNBOUNDED) return true;
-    if (derived.upperBound === this.UNBOUNDED) return false;
-    return derived.upperBound <= base.upperBound;
+    if (model.upperBound === this.UNBOUNDED) return false;
+    return model.upperBound <= base.upperBound;
   }
 
   public static areRelationEndsLocal(relation: GRelation): boolean {

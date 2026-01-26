@@ -3,7 +3,7 @@ import { Id, QualifiedRef, Ref } from '../../models/GModel';
 
 export interface QualifiedParts {
   readonly modelId: Id;
-  readonly nodeId: Id;
+  readonly refId: Id;
 }
 
 export class Reference {
@@ -17,7 +17,7 @@ export class Reference {
     }
 
     const index: number = ref.indexOf(':');
-    return { modelId: ref.slice(0, index), nodeId: ref.slice(index + 1) };
+    return { modelId: ref.slice(0, index), refId: ref.slice(index + 1) };
   }
 
   public static qualify(baseId: Id, nodeId: Id): QualifiedRef {

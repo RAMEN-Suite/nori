@@ -1,7 +1,8 @@
-import { GDataType, GModel, GNode, GRelation, Id, Import } from '../models/GModel';
+import { GDataType, GModel, GNode, GRelation, Id } from '../models/GModel';
 import { GModelIndex } from '../validation/container/GModelIndex';
 import { QualifiedParts, Reference } from '../validation/container/Reference';
-import { BaseNode, SemanticResolver } from './SemanticResolver';
+import { NodeResolver, ResolvedNode } from '../resolver/NodeResolver';
+import { ModelResolver } from '../resolver/ModelResolver';
 
 export class QueryHelper {
   public static listNodes(model: GModel): ReadonlyArray<GNode> {
@@ -14,9 +15,9 @@ export class QueryHelper {
     startModelId: string,
     startNodeId: string,
     modelsById: ReadonlyMap<Id, GModel>,
-  ): ReadonlyArray<BaseNode> {
+  ): ReadonlyArray<ResolvedNode> {
     try {
-      return SemanticResolver.getBaseNodeChain(startModelId, startNodeId, modelsById);
+      return NodeResolver.resolveSuperTypeChain(startModelId, startNodeId, modelsById);
     } catch (error: unknown) {
       console.error(error);
       return [];
@@ -24,14 +25,14 @@ export class QueryHelper {
   }
 
   public static listGroupedNodesByBaseId(base: GModel, model: GModel): ReadonlyMap<Id, ReadonlyArray<GNode>> {
-    const derivedIndex: GModelIndex = new GModelIndex(model);
+    const modelIndex: GModelIndex = new GModelIndex(model);
     const grouped: Map<Id, GNode[]> = new Map<Id, GNode[]>();
 
-    for (const node of derivedIndex.nodesById.values()) {
-      const superType: QualifiedParts | null = SemanticResolver.getQualifiedPartsFromNode(node, base.id);
+    for (const node of modelIndex.nodesById.values()) {
+      const superType: QualifiedParts | null = NodeResolver.resolveLocalSuperType(node.superTypes, base.id);
       if (!superType) continue;
 
-      const baseNodeId: Id = superType.nodeId;
+      const baseNodeId: Id = superType.refId;
       const list: GNode[] | undefined = grouped.get(baseNodeId);
 
       if (list) list.push(node);
@@ -55,17 +56,17 @@ export class QueryHelper {
 
   public static listRelationsFrom(base: GModel, model: GModel, fromNodeId: Id): ReadonlyArray<GRelation> {
     const baseIndex: GModelIndex = new GModelIndex(base);
-    const derivedIndex: GModelIndex = new GModelIndex(model);
+    const modelIndex: GModelIndex = new GModelIndex(model);
 
-    const fromNode: GNode | undefined = derivedIndex.nodesById.get(fromNodeId);
+    const fromNode: GNode | undefined = modelIndex.nodesById.get(fromNodeId);
     if (!fromNode) return [];
 
-    const superType: QualifiedParts | null = SemanticResolver.getQualifiedPartsFromNode(fromNode, base.id);
+    const superType: QualifiedParts | null = NodeResolver.resolveLocalSuperType(fromNode.superTypes, base.id);
     if (!superType) return [];
 
     const allowed: GRelation[] = [];
     for (const relation of baseIndex.relationsById.values()) {
-      if (relation.from.nodeId === superType.nodeId) allowed.push(relation);
+      if (relation.from.nodeId === superType.refId) allowed.push(relation);
     }
 
     return allowed.sort((a: GRelation, b: GRelation): number => a.name.localeCompare(b.name));
@@ -73,7 +74,7 @@ export class QueryHelper {
 
   public static listRelationToNodes(base: GModel, model: GModel, baseRelationId: Id): ReadonlyArray<GNode> {
     const baseIndex: GModelIndex = new GModelIndex(base);
-    const derivedIndex: GModelIndex = new GModelIndex(model);
+    const modelIndex: GModelIndex = new GModelIndex(model);
 
     const baseRelation: GRelation | undefined = baseIndex.relationsById.get(baseRelationId);
     if (!baseRelation) return [];
@@ -81,10 +82,10 @@ export class QueryHelper {
     const expectedToBaseId: Id = baseRelation.to.nodeId;
     const allowed: GNode[] = [];
 
-    for (const node of derivedIndex.nodesById.values()) {
-      const superType: QualifiedParts | null = SemanticResolver.getQualifiedPartsFromNode(node, base.id);
+    for (const node of modelIndex.nodesById.values()) {
+      const superType: QualifiedParts | null = NodeResolver.resolveLocalSuperType(node.superTypes, base.id);
       if (!superType) continue;
-      if (superType.nodeId === expectedToBaseId) allowed.push(node);
+      if (superType.refId === expectedToBaseId) allowed.push(node);
     }
 
     return allowed.sort((a: GNode, b: GNode): number => a.name.localeCompare(b.name));
@@ -96,61 +97,19 @@ export class QueryHelper {
     return types.sort((a: GDataType, b: GDataType): number => a.name.localeCompare(b.name));
   }
 
-  public static listGlobalDataTypes(
-    base: GModel,
-    model: GModel,
-    modelsById?: ReadonlyMap<Id, GModel>,
-  ): ReadonlyArray<GDataType> {
-    if (!modelsById) return this.listBaseDataTypes(base, model);
-    const closure: ReadonlyArray<GModel> = this.getImportClosure(model.id, modelsById);
+  public static listGlobalDataTypes(model: GModel, modelsById: ReadonlyMap<Id, GModel>): ReadonlyArray<GDataType> {
+    const closures: ReadonlyArray<GModel> = ModelResolver.resolveImports(model.id, modelsById);
+    const modelIndex: GModelIndex = new GModelIndex(model);
+    const available: GDataType[] = [...modelIndex.dataTypesById.values()];
 
-    const derivedIndex: GModelIndex = new GModelIndex(model);
-    const available: GDataType[] = [...derivedIndex.dataTypesById.values()];
+    for (const closure of closures) {
+      if (closure.id === model.id) continue;
 
-    for (const model of closure) {
-      if (model.id === model.id) continue;
-
-      const index: GModelIndex = new GModelIndex(model);
+      const index: GModelIndex = new GModelIndex(closure);
       for (const dataType of index.dataTypesById.values()) {
-        available.push({ ...dataType, id: Reference.qualify(model.id, dataType.id) });
+        available.push({ ...dataType, id: Reference.qualify(closure.id, dataType.id) });
       }
     }
     return available.sort((a: GDataType, b: GDataType): number => a.name.localeCompare(b.name));
-  }
-
-  private static listBaseDataTypes(base: GModel, derived: GModel): ReadonlyArray<GDataType> {
-    const baseIndex = new GModelIndex(base);
-    const derivedIndex = new GModelIndex(derived);
-    const types: GDataType[] = [...derivedIndex.dataTypesById.values()];
-
-    for (const dataType of baseIndex.dataTypesById.values()) {
-      types.push({ ...dataType, id: Reference.qualify(base.id, dataType.id) });
-    }
-
-    return types.sort((a: GDataType, b: GDataType): number => a.name.localeCompare(b.name));
-  }
-
-  private static getImportClosure(startModelId: Id, modelsById: ReadonlyMap<Id, GModel>): ReadonlyArray<GModel> {
-    const result: GModel[] = [];
-    const visited: Set<Id> = new Set<Id>();
-    const queue: Id[] = [startModelId];
-
-    while (queue.length > 0) {
-      const currentId: Id = queue.shift()!;
-      if (visited.has(currentId)) continue;
-      visited.add(currentId);
-
-      const model: GModel | undefined = modelsById.get(currentId);
-      if (!model) continue;
-
-      result.push(model);
-
-      const imports: Import[] = model.imports ?? [];
-      for (const imp of imports) {
-        if (!visited.has(imp.modelId)) queue.push(imp.modelId);
-      }
-    }
-
-    return result;
   }
 }

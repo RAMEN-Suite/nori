@@ -1,8 +1,8 @@
 import { GAttribute, GClassifier, GDataType, GModel, GNode, GRelation, Id } from './models/GModel';
 
-export type PatchNode = Partial<Pick<GNode, 'name' | 'superTypes' | 'attributes'>>;
-export type PatchDataType = Partial<Pick<GDataType, 'name' | 'literals'>>;
-export type PatchRelation = Partial<Pick<GRelation, 'name' | 'from' | 'to' | 'isBidirectional'>>;
+export type UpdateNodeInput = Partial<Pick<GNode, 'name' | 'superTypes' | 'attributes'>>;
+export type UpdateDataTypeInput = Partial<Pick<GDataType, 'name' | 'literals'>>;
+export type UpdateRelationInput = Partial<Pick<GRelation, 'name' | 'from' | 'to' | 'isBidirectional'>>;
 
 export class GModelMutations {
   public static addClassifier(model: GModel, classifier: GClassifier): GModel {
@@ -22,7 +22,7 @@ export class GModelMutations {
     return { ...model, classifiers: filtered };
   }
 
-  public static updateNode(model: GModel, nodeId: string, patch: PatchNode): GModel {
+  public static updateNode(model: GModel, nodeId: string, patch: UpdateNodeInput): GModel {
     const classifiers: GClassifier[] = model.classifiers ?? [];
     let found: boolean = false;
 
@@ -38,7 +38,7 @@ export class GModelMutations {
     return { ...model, classifiers: patched };
   }
 
-  public static updateDataType(model: GModel, dataTypeId: string, patch: PatchDataType): GModel {
+  public static updateDataType(model: GModel, dataTypeId: string, patch: UpdateDataTypeInput): GModel {
     const classifiers: GClassifier[] = model.classifiers ?? [];
     let found: boolean = false;
 
@@ -69,7 +69,7 @@ export class GModelMutations {
     return { ...model, relations: filtered };
   }
 
-  public static updateRelation(model: GModel, relationId: string, patch: PatchRelation): GModel {
+  public static updateRelation(model: GModel, relationId: string, patch: UpdateRelationInput): GModel {
     const relations: GRelation[] = model.relations ?? [];
     let found: boolean = false;
 

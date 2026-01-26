@@ -35,7 +35,7 @@ export class NodeViewComponent {
   protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
 
   protected handleCloseView(): void {
-    const selectedSlot: number = this.workspace.store.selectedSlot();
+    const selectedSlot: number = this.workspace.store.currentSlot();
     void this.navigation.navigateToSlot(this.activatedRoute, selectedSlot);
   }
 }

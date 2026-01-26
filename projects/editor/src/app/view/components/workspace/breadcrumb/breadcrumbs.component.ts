@@ -130,7 +130,7 @@ export class BreadcrumbsComponent {
   }
 
   protected handleChangeModelSlot(slot: number): void {
-    if (this.workspace.store.selectedSlot() === slot) return;
+    if (this.workspace.store.currentSlot() === slot) return;
     void this.navigation.navigateToSlot(this.activatedRoute, slot);
   }
 
@@ -152,7 +152,7 @@ export class BreadcrumbsComponent {
         await this.workspace.actions.deleteSlot(slotToDelete);
         this.dialogRef?.close();
 
-        const currentSlot: number = this.workspace.store.selectedSlot();
+        const currentSlot: number = this.workspace.store.currentSlot();
         if (currentSlot !== slotToDelete) return;
         void this.navigation.navigateToSlot(this.activatedRoute, currentSlot - 1);
       },

@@ -4,7 +4,7 @@ import { WorkspaceStore } from './workspace.store';
 import { WorkspaceView } from './workspace.view';
 import { ModelRecord, NodeColors, ViewSettings } from '../../models/ModelRecord';
 import { GDataType, GModel, GNode, GRelation, Id } from '../../core/models/GModel';
-import { GModelMutations, PatchDataType, PatchNode, PatchRelation } from '../../core/GModelMutations';
+import { GModelMutations, UpdateDataTypeInput, UpdateNodeInput, UpdateRelationInput } from '../../core/GModelMutations';
 import { ConnectedNode, CreateNodeInput, CreateRelationInput, GModelFactory } from '../../core/GModelFactory';
 
 export type CreateSlotInput = {
@@ -27,27 +27,28 @@ export class WorkspaceActions {
 
   private registerSlotChangesEffect(): void {
     effect((): void => {
-      const derived: GModel | null = this.view.slotModel();
-      const work: GModel | null = derived ? structuredClone(derived) : null;
-      this.store.setWorkingModel(work);
+      const slot: number | null = this.store.currentSlot();
+      const model: GModel | undefined = this.storage.recordsBySlot().get(slot)?.gmodel;
+      const cloned: GModel | null = model ? structuredClone(model) : null;
+      this.store.setCurrentModel(cloned);
     });
   }
 
   private registerNodeColorsEffect(): void {
     effect((): void => {
-      const selectedSlot: number = this.store.selectedSlot();
-      const record: ModelRecord | undefined = this.storage.recordsBySlot().get(selectedSlot);
-      const nodeColors: NodeColors = record?.view?.nodeColors ?? {};
-      this.store.setSelectedNodeColors(nodeColors);
+      const slot: number = this.store.currentSlot();
+      const record: ModelRecord | undefined = this.storage.recordsBySlot().get(slot);
+      const map: NodeColors = record?.view?.nodeColors ?? {};
+      this.store.setCurrentNodeColors(map);
     });
   }
 
-  public apply(mutator: (workingModel: GModel) => GModel): void {
-    const current: GModel | null = this.store.workingModel();
+  public apply(mutator: (model: GModel) => GModel): void {
+    const current: GModel | null = this.store.currentModel();
     if (!current) throw new Error('Cannot apply: no working model loaded.');
 
     const updated: GModel = mutator(current);
-    this.store.setWorkingModel(updated);
+    this.store.setCurrentModel(updated);
   }
 
   public async createNode(nodeName: string, baseNodeId: Id): Promise<GNode> {
@@ -56,55 +57,17 @@ export class WorkspaceActions {
     const node: GNode = GModelFactory.createNode(baseId, input);
 
     this.apply((model: GModel): GModel => GModelMutations.addClassifier(model, node));
-    await this.saveSelectedWork();
+    await this.saveCurrentModel();
 
     return node;
-  }
-
-  public async duplicateNode(nodeId: Id): Promise<GNode> {
-    const work: GModel | null = this.store.workingModel();
-    if (!work) throw new Error('Cannot duplicate: no working model loaded.');
-
-    const cloned: ConnectedNode = GModelFactory.duplicateConnectedNode(work, nodeId);
-
-    this.apply((model: GModel): GModel => {
-      let updated: GModel = GModelMutations.addClassifier(model, cloned.node);
-      for (const relation of cloned.relations) {
-        updated = GModelMutations.addRelation(updated, relation);
-      }
-      return updated;
-    });
-
-    await this.saveSelectedWork();
-    return cloned.node;
-  }
-
-  public async deleteNode(nodeId: Id): Promise<void> {
-    this.apply((model: GModel): GModel => GModelMutations.deleteNode(model, nodeId));
-    await this.saveSelectedWork();
-  }
-
-  public async updateNode(nodeId: Id, patch: PatchNode): Promise<void> {
-    this.apply((model: GModel): GModel => GModelMutations.updateNode(model, nodeId, patch));
-    await this.saveSelectedWork();
   }
 
   public async createDataType(dataTypeName: string): Promise<GDataType> {
     const dataType: GDataType = GModelFactory.createDataType({ name: dataTypeName });
     this.apply((model: GModel): GModel => GModelMutations.addClassifier(model, dataType));
-    await this.saveSelectedWork();
+    await this.saveCurrentModel();
 
     return dataType;
-  }
-
-  public async deleteDataType(dataTypeId: Id): Promise<void> {
-    this.apply((model: GModel): GModel => GModelMutations.deleteDataType(model, dataTypeId));
-    await this.saveSelectedWork();
-  }
-
-  public async updateDataType(dataTypeId: Id, patch: PatchDataType): Promise<void> {
-    this.apply((model: GModel): GModel => GModelMutations.updateDataType(model, dataTypeId, patch));
-    await this.saveSelectedWork();
   }
 
   public async createRelation(baseRelationId: Id, fromNodeId: Id, toNodeId: Id): Promise<GRelation> {
@@ -115,18 +78,55 @@ export class WorkspaceActions {
     const relation: GRelation = GModelFactory.createRelation(base, base.id, input);
 
     this.apply((model: GModel): GModel => GModelMutations.addRelation(model, relation));
-    await this.saveSelectedWork();
+    await this.saveCurrentModel();
     return relation;
   }
 
-  public async updateRelation(relationId: Id, patch: PatchRelation): Promise<void> {
+  public async updateNode(nodeId: Id, patch: UpdateNodeInput): Promise<void> {
+    this.apply((model: GModel): GModel => GModelMutations.updateNode(model, nodeId, patch));
+    await this.saveCurrentModel();
+  }
+
+  public async updateDataType(dataTypeId: Id, patch: UpdateDataTypeInput): Promise<void> {
+    this.apply((model: GModel): GModel => GModelMutations.updateDataType(model, dataTypeId, patch));
+    await this.saveCurrentModel();
+  }
+
+  public async updateRelation(relationId: Id, patch: UpdateRelationInput): Promise<void> {
     this.apply((model: GModel): GModel => GModelMutations.updateRelation(model, relationId, patch));
-    await this.saveSelectedWork();
+    await this.saveCurrentModel();
+  }
+
+  public async deleteNode(nodeId: Id): Promise<void> {
+    this.apply((model: GModel): GModel => GModelMutations.deleteNode(model, nodeId));
+    await this.saveCurrentModel();
+  }
+
+  public async deleteDataType(dataTypeId: Id): Promise<void> {
+    this.apply((model: GModel): GModel => GModelMutations.deleteDataType(model, dataTypeId));
+    await this.saveCurrentModel();
   }
 
   public async deleteRelation(relationId: Id): Promise<void> {
     this.apply((model: GModel): GModel => GModelMutations.removeRelationById(model, relationId));
-    await this.saveSelectedWork();
+    await this.saveCurrentModel();
+  }
+
+  public async duplicateNode(nodeId: Id): Promise<GNode> {
+    const model: GModel | null = this.store.currentModel();
+    if (!model) throw new Error('Cannot duplicate: no working model loaded.');
+    const cloned: ConnectedNode = GModelFactory.duplicateConnectedNode(model, nodeId);
+
+    this.apply((model: GModel): GModel => {
+      let updated: GModel = GModelMutations.addClassifier(model, cloned.node);
+      for (const relation of cloned.relations) {
+        updated = GModelMutations.addRelation(updated, relation);
+      }
+      return updated;
+    });
+
+    await this.saveCurrentModel();
+    return cloned.node;
   }
 
   public async createSlot(input: CreateSlotInput): Promise<number> {
@@ -182,17 +182,17 @@ export class WorkspaceActions {
   }
 
   public async updateNodeColors(): Promise<void> {
-    const nodeColors: NodeColors = this.store.selectedNodeColors();
+    const nodeColors: NodeColors = this.store.currentNodeColors();
     await this.saveSelectedViewSettings({ nodeColors });
   }
 
-  public async saveSelectedWork(): Promise<void> {
-    const work: GModel | null = this.store.workingModel();
-    if (!work) throw new Error('Cannot save: no working model loaded.');
+  public async saveCurrentModel(): Promise<void> {
+    const model: GModel | null = this.store.currentModel();
+    if (!model) throw new Error('Cannot save: no working model loaded.');
 
     const existing: ModelRecord = this.getSelectedRecord();
     const patch: Partial<UpdateRecordInput> = {
-      gmodel: work,
+      gmodel: model,
       name: existing.name,
       description: existing.description,
     };
@@ -207,7 +207,7 @@ export class WorkspaceActions {
   }
 
   private getSelectedRecord(): ModelRecord {
-    const selectedSlot: number = this.store.selectedSlot();
+    const selectedSlot: number = this.store.currentSlot();
     const existing: ModelRecord | undefined = this.storage.recordsBySlot().get(selectedSlot);
     if (!existing) throw new Error(`Cannot persist: no model for slot ${selectedSlot}.`);
 

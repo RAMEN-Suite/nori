@@ -89,7 +89,7 @@ export class GraphComponent implements AfterViewInit {
 
   private registerColorChangesEffect(): void {
     effect((): void => {
-      this.superTypeColors.set(this.workspace.store.selectedNodeColors());
+      this.superTypeColors.set(this.workspace.store.currentNodeColors());
       untracked((): void => this.updateNodeColorsOnly());
     });
   }
@@ -194,7 +194,7 @@ export class GraphComponent implements AfterViewInit {
   }
 
   private refreshHover(): void {
-    const selectedId: string | null = this.workspace.store.selectedNodeId();
+    const selectedId: string | null = this.workspace.store.currentNodeId();
     this.clearHoverHighlight();
     this.applyHoverHighlight(selectedId);
     this.applySelectedHighlight(selectedId);
@@ -451,7 +451,7 @@ export class GraphComponent implements AfterViewInit {
   }
 
   protected handleNodeClick(_: MouseEvent, node: PositionedNode): void {
-    const selectedSlot: number = this.workspace.store.selectedSlot();
+    const selectedSlot: number = this.workspace.store.currentSlot();
     void this.navigation.navigateToNode(this.activatedRoute, selectedSlot, node.id);
   }
 }

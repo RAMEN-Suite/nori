@@ -20,8 +20,8 @@ import {
   ConfirmationOptions,
 } from '../../../dialogs/confirmation/confirmation.dialog';
 import { AutoselectDirective } from '../../../../../directives/autoselect.directive';
-import { PatchNode } from '../../../../../core/GModelMutations';
-import { StringTransformer } from '../../../../../core/helper/StringTransformer';
+import { UpdateNodeInput } from '../../../../../core/GModelMutations';
+import { Transformer } from '../../../../../core/helper/Transformer';
 
 @Component({
   selector: 'app-node-basics',
@@ -56,7 +56,7 @@ export class NodeBasicsComponent {
 
   constructor() {
     effect((): void => {
-      const currentName: string | undefined = this.workspace.view.selectedWorkNode()?.name;
+      const currentName: string | undefined = this.workspace.view.currentNode()?.name;
       this.workingName.set(currentName ?? null);
     });
 
@@ -78,13 +78,13 @@ export class NodeBasicsComponent {
   }
 
   protected async handleDuplicateNode(): Promise<void> {
-    const selectedId: string | null = this.workspace.store.selectedNodeId();
+    const selectedId: string | null = this.workspace.store.currentNodeId();
     if (!selectedId) return;
     await this.workspace.actions.duplicateNode(selectedId);
   }
 
   protected async handleDeleteNode(): Promise<void> {
-    const selectedNode: GNode | null = this.workspace.view.selectedWorkNode();
+    const selectedNode: GNode | null = this.workspace.view.currentNode();
     if (!selectedNode) return;
 
     const acceptButton: ConfirmationButton = {
@@ -95,7 +95,7 @@ export class NodeBasicsComponent {
       click: async (): Promise<void> => {
         if (!selectedNode.id) return;
         await this.workspace.actions.deleteNode(selectedNode.id);
-        const selectedSlot: number = this.workspace.store.selectedSlot();
+        const selectedSlot: number = this.workspace.store.currentSlot();
         void this.navigation.navigateToSlot(this.activatedRoute, selectedSlot);
       },
     };
@@ -125,12 +125,12 @@ export class NodeBasicsComponent {
   }
 
   protected async handleSave(): Promise<void> {
-    const selectedId: string | null = this.workspace.store.selectedNodeId();
+    const selectedId: string | null = this.workspace.store.currentNodeId();
     const workingName: string | null = this.workingName();
     if (!selectedId || !workingName) return;
 
-    const transformedName: string = StringTransformer.toNodeName(workingName);
-    const patch: PatchNode = { name: transformedName };
+    const transformedName: string = Transformer.toNodeName(workingName);
+    const patch: UpdateNodeInput = { name: transformedName };
     await this.workspace.actions.updateNode(selectedId, patch);
 
     this.isWorkingNameActive.set(false);

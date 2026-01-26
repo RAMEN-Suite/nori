@@ -38,9 +38,8 @@ export interface GAttribute {
   typeId: TypeRef;
   bounds: Bounds;
   isKey?: boolean;
-  isUnique?: boolean;
   isReadOnly?: boolean;
-  isDerived?: boolean;
+  isUnique?: boolean;
   isOrdered?: boolean;
   constraints?: GConstraint[];
   ext?: Record<string, unknown>;

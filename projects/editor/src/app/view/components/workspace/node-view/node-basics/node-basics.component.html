@@ -1,4 +1,4 @@
-@let currentNode = workspace.view.selectedWorkNode;
+@let currentNode = workspace.view.currentNode;
 
 <div class="flex flex-row">
   <p-panel class="basis-full p-0!">
@@ -70,11 +70,11 @@
     </ng-template>
     <div class="flex flex-row items-center gap-2">
       <span class="text-md font-light select-none">Inherits from:</span>
-      @for (baseNode of [workspace.view.selectedBaseNode()]; track baseNode?.id) {
+      @for (baseNode of [workspace.view.currentBaseNode()]; track baseNode?.id) {
         <p-chip class="cursor-pointer px-4! py-1! text-xs select-none" (click)="handleOpenColorsDialog()">
           <div class="flex flex-row items-center gap-2">
             @let nodeId = baseNode?.id ?? '';
-            @let hexColor = this.workspace.store.selectedNodeColors()[nodeId];
+            @let hexColor = this.workspace.store.currentNodeColors()[nodeId];
             <i class="pi pi-circle-fill" style="font-size: 7pt" [ngStyle]="{ color: hexColor }"></i>
             {{ baseNode?.name }}
           </div>

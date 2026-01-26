@@ -29,8 +29,8 @@ export class CreateModelDialog {
   protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
   protected readonly navigation: NavigationService = inject(NavigationService);
 
-  public workingSlot: ModelSignal<number | undefined> = model();
-  public workingModel: WritableSignal<CreateSlotInput> = signal({
+  public draftSlot: ModelSignal<number | undefined> = model();
+  public draftModel: WritableSignal<CreateSlotInput> = signal({
     name: '',
     description: '',
     version: '1.0.0',
@@ -41,11 +41,11 @@ export class CreateModelDialog {
 
   constructor() {
     effect((): void => {
-      const workingSlot: number | undefined = this.workingSlot();
+      const workingSlot: number | undefined = this.draftSlot();
       if (!workingSlot) return;
 
       const existing: ModelRecord | undefined = this.storage.recordsBySlot().get(workingSlot);
-      if (!existing) return this.workingSlot.set(undefined);
+      if (!existing) return this.draftSlot.set(undefined);
 
       const input: CreateSlotInput = {
         name: existing.name,
@@ -53,22 +53,22 @@ export class CreateModelDialog {
         uri: existing.gmodel.$id,
         version: existing.gmodel.version,
       };
-      this.workingModel.set(input);
+      this.draftModel.set(input);
     });
   }
 
   protected isModelNameValid(): boolean {
-    const modelName: string = this.workingModel.name.trim();
+    const modelName: string = this.draftModel.name.trim();
     return modelName !== '' && modelName.length >= 3;
   }
 
   protected isVersionValid(): boolean {
-    const version: string = this.workingModel().version.trim();
+    const version: string = this.draftModel().version.trim();
     return version !== '' && REGEXP.SEMANTIC_VER.test(version);
   }
 
   protected isUriValid(): boolean {
-    const uri: string = this.workingModel().uri.trim();
+    const uri: string = this.draftModel().uri.trim();
     return uri !== '' && REGEXP.VALID_URI.test(uri);
   }
 
@@ -84,7 +84,7 @@ export class CreateModelDialog {
     this.isSubmitted = true;
     if (!this.isFormValid()) return;
 
-    const createdSlot: number = await this.workspace.actions.createSlot(this.workingModel());
+    const createdSlot: number = await this.workspace.actions.createSlot(this.draftModel());
     void this.navigation.navigateToSlot(this.activatedRoute, createdSlot);
     this.dialogRef.close();
   }
@@ -93,10 +93,10 @@ export class CreateModelDialog {
     this.isSubmitted = true;
     if (!this.isFormValid()) return;
 
-    const workingSlot: number | undefined = this.workingSlot();
+    const workingSlot: number | undefined = this.draftSlot();
     if (!workingSlot) return;
 
-    void this.workspace.actions.updateSlot(workingSlot, this.workingModel());
+    void this.workspace.actions.updateSlot(workingSlot, this.draftModel());
     this.dialogRef.close();
   }
 }

@@ -66,6 +66,23 @@ export class GModelFactory {
     };
   }
 
+  public static createAttribute(): GAttribute {
+    return {
+      name: '',
+      typeId: '',
+      bounds: {
+        lowerBound: 0,
+        upperBound: 0,
+      },
+      isKey: undefined,
+      isReadOnly: undefined,
+      isUnique: undefined,
+      isOrdered: undefined,
+      constraints: [],
+      ext: {},
+    };
+  }
+
   public static createDataType(input: CreateDataTypeInput): GDataType {
     return {
       kind: 'GDataType',

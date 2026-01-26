@@ -62,7 +62,7 @@ export class GModelGraph {
         id: node.id,
         kind: 'GNode',
         label: node.name,
-        superType: Reference.splitQualified(superType).nodeId,
+        superType: Reference.splitQualified(superType).refId,
       };
 
       nodes.push(graphNode);

@@ -1,7 +1,7 @@
-@let currentNode = workspace.view.selectedWorkNode;
+@let currentNode = workspace.view.currentNode;
 
 <div class="flex flex-col gap-3">
-  @for (item of workspace.view.selectedWorkNodeChain(); track item.node.id; let index = $index) {
+  @for (item of workspace.view.currentNodeChain(); track item.node.id; let index = $index) {
     @let inheritedAttributes = workspace.view.inheritedAttributes().get(item.node.id);
 
     @if (inheritedAttributes && inheritedAttributes.length > 0) {
@@ -28,9 +28,9 @@
       @for (attribute of currentNode()?.attributes; track attribute.name) {
         <app-node-attribute
           [attribute]="attribute"
-          [modelSlot]="workspace.store.selectedSlot()"
-          [modelId]="workspace.store.workingModel()?.id"
-          [nodeId]="workspace.store.selectedNodeId() ?? undefined"
+          [modelSlot]="workspace.store.currentSlot()"
+          [modelId]="workspace.store.currentModel()?.id"
+          [nodeId]="workspace.store.currentNodeId() ?? undefined"
         />
       }
     </div>

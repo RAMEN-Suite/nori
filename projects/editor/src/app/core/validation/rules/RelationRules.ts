@@ -4,15 +4,15 @@ import { VALIDATION_ERROR } from '../../const/VALIDATION_ERROR';
 import { ValidationContext } from '../SemanticValidator';
 import { SemanticHelper } from '../../helper/SemanticHelper';
 import { QualifiedParts, Reference } from '../container/Reference';
-import { SemanticResolver } from '../../helper/SemanticResolver';
-import { Rules } from '../../models/Rules';
+import { NodeResolver } from '../../resolver/NodeResolver';
+import { AbstractRule } from './AbstractRule';
 
 type SuperTypeValidationResult = {
   readonly baseRelationId: Id | null;
   readonly diagnostics: Diagnostic[];
 };
 
-export class RelationRules implements Rules {
+export class RelationRules extends AbstractRule {
   public validate(validationContext: ValidationContext): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
     const relations: GRelation[] = validationContext.derivedModel.relations ?? [];
@@ -163,7 +163,7 @@ export class RelationRules implements Rules {
       return { baseRelationId: null, diagnostics };
     }
 
-    return { baseRelationId: parts.nodeId, diagnostics };
+    return { baseRelationId: parts.refId, diagnostics };
   }
 
   private validateComposite(
@@ -263,8 +263,11 @@ export class RelationRules implements Rules {
 
     if (!fromNode || !toNode) return diagnostics;
 
-    const from: QualifiedParts | null = SemanticResolver.getQualifiedPartsFromNode(fromNode, validationContext.baseId);
-    if (!from) {
+    const fromParts: QualifiedParts | null = NodeResolver.resolveLocalSuperType(
+      fromNode.superTypes,
+      validationContext.baseId,
+    );
+    if (!fromParts) {
       const report: DiagnosticReport = {
         code: VALIDATION_ERROR.FROM_NODE_SUPERTYPE_INVALID,
         message: `From-node '${fromNode.id}' must have exactly one base superType.`,
@@ -275,8 +278,11 @@ export class RelationRules implements Rules {
       return diagnostics;
     }
 
-    const to: QualifiedParts | null = SemanticResolver.getQualifiedPartsFromNode(toNode, validationContext.baseId);
-    if (!to) {
+    const toParts: QualifiedParts | null = NodeResolver.resolveLocalSuperType(
+      toNode.superTypes,
+      validationContext.baseId,
+    );
+    if (!toParts) {
       const report: DiagnosticReport = {
         code: VALIDATION_ERROR.TO_NODE_SUPERTYPE_INVALID,
         message: `To-node '${toNode.id}' must have exactly one base superType.`,
@@ -287,7 +293,7 @@ export class RelationRules implements Rules {
       return diagnostics;
     }
 
-    if (from.nodeId !== baseRelation.from.nodeId) {
+    if (fromParts.refId !== baseRelation.from.nodeId) {
       const report: DiagnosticReport = {
         code: VALIDATION_ERROR.RELATION_FROM_INCOMPATIBLE,
         message: `From-node '${fromNode.id}' must specialize base '${baseRelation.from.nodeId}'.`,
@@ -297,7 +303,7 @@ export class RelationRules implements Rules {
       diagnostics.push(Diagnostics.error(report));
     }
 
-    if (to.nodeId !== baseRelation.to.nodeId) {
+    if (toParts.refId !== baseRelation.to.nodeId) {
       const report: DiagnosticReport = {
         code: VALIDATION_ERROR.RELATION_TO_INCOMPATIBLE,
         message: `To-node '${toNode.id}' must specialize base '${baseRelation.to.nodeId}'.`,
@@ -350,7 +356,7 @@ export class RelationRules implements Rules {
   ): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
 
-    if (!SemanticHelper.isDerivedBoundsCompatible(baseRelation.from.bounds, derivedRelation.from.bounds)) {
+    if (!SemanticHelper.isModelBoundsCompatible(baseRelation.from.bounds, derivedRelation.from.bounds)) {
       const report: DiagnosticReport = {
         code: VALIDATION_ERROR.RELATION_FROM_BOUNDS_INVALID,
         message: `from.bounds must specialize base bounds.`,
@@ -360,7 +366,7 @@ export class RelationRules implements Rules {
       diagnostics.push(Diagnostics.error(report));
     }
 
-    if (!SemanticHelper.isDerivedBoundsCompatible(baseRelation.to.bounds, derivedRelation.to.bounds)) {
+    if (!SemanticHelper.isModelBoundsCompatible(baseRelation.to.bounds, derivedRelation.to.bounds)) {
       const report: DiagnosticReport = {
         code: VALIDATION_ERROR.RELATION_TO_BOUNDS_INVALID,
         message: `to.bounds must specialize base bounds.`,
