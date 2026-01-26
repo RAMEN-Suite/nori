@@ -1,4 +1,4 @@
-import { GModel, GNode, Id, Ref } from '../models/GModel';
+import { GAttribute, GModel, GNode, Id, Ref } from '../models/GModel';
 import { QualifiedParts, Reference } from '../validation/container/Reference';
 import { GModelIndex } from '../validation/container/GModelIndex';
 
@@ -25,16 +25,16 @@ export class NodeResolver {
     startNodeId: Id,
     modelsById: ReadonlyMap<Id, GModel>,
   ): ReadonlyArray<ResolvedNode> {
-    const chain: ResolvedNode[] = [];
-    const visited: Set<string> = new Set<string>();
+    const superTypeChain: ResolvedNode[] = [];
+    const visitedNode: Set<string> = new Set<string>();
 
     let currentModelId: Id = startModelId;
     let currentNodeId: Id = startNodeId;
 
     while (true) {
       const visitKey: string = `${currentModelId}:${currentNodeId}`;
-      if (visited.has(visitKey)) throw Error(`Cyclic superType chain detected at '${visitKey}'`);
-      visited.add(visitKey);
+      if (visitedNode.has(visitKey)) throw Error(`Cyclic superType chain detected at '${visitKey}'`);
+      visitedNode.add(visitKey);
 
       const currentModel: GModel | undefined = modelsById.get(currentModelId);
       if (!currentModel) break;
@@ -43,13 +43,13 @@ export class NodeResolver {
       const currentNode: GNode | undefined = currentIndex.nodesById.get(currentNodeId);
       if (!currentNode) break;
 
-      chain.push({ modelId: currentModelId, node: currentNode });
+      superTypeChain.push({ modelId: currentModelId, node: currentNode });
 
       const superTypes: ReadonlyArray<Ref> = currentNode.superTypes;
       if (superTypes.length === 0 || !superTypes[0]) break;
       if (superTypes.length !== 1) throw Error(`Invalid superTypes for '${currentNodeId}' expected(1).`);
-
       const superType: Ref = superTypes[0];
+
       if (Reference.isQualified(superType)) {
         const parts: QualifiedParts = Reference.splitQualified(superType);
         currentModelId = parts.modelId;
@@ -57,6 +57,44 @@ export class NodeResolver {
       } else currentNodeId = superType;
     }
 
-    return chain.slice(1).reverse();
+    return superTypeChain.slice(1).reverse();
+  }
+
+  public static resolveAttributeNames(
+    startModelId: Id,
+    startNodeId: Id,
+    modelsById: ReadonlyMap<Id, GModel>,
+  ): ReadonlySet<string> {
+    const attributeNames: Set<string> = new Set<string>();
+    const startModel: GModel | undefined = modelsById.get(startModelId);
+
+    if (startModel) {
+      const index: GModelIndex = new GModelIndex(startModel);
+      const node: GNode | undefined = index.nodesById.get(startNodeId);
+      if (node) for (const attribute of node.attributes ?? []) attributeNames.add(attribute.name);
+    }
+
+    const inherited: ReadonlySet<string> = this.resolveInheritedAttributeNames(startModelId, startNodeId, modelsById);
+    for (const name of inherited) attributeNames.add(name);
+    return attributeNames;
+  }
+
+  public static resolveInheritedAttributeNames(
+    startModelId: Id,
+    startNodeId: Id,
+    modelsById: ReadonlyMap<Id, GModel>,
+  ): ReadonlySet<string> {
+    const attributeNames: Set<string> = new Set<string>();
+    const chain: ReadonlyArray<ResolvedNode> = this.resolveSuperTypeChain(startModelId, startNodeId, modelsById);
+
+    for (const item of chain) {
+      const attributes: ReadonlyArray<GAttribute> = item.node.attributes ?? [];
+
+      for (const attribute of attributes) {
+        attributeNames.add(attribute.name);
+      }
+    }
+
+    return attributeNames;
   }
 }

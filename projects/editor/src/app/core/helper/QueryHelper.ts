@@ -26,26 +26,26 @@ export class QueryHelper {
 
   public static listGroupedNodesByBaseId(base: GModel, model: GModel): ReadonlyMap<Id, ReadonlyArray<GNode>> {
     const modelIndex: GModelIndex = new GModelIndex(model);
-    const grouped: Map<Id, GNode[]> = new Map<Id, GNode[]>();
+    const groupedNodes: Map<Id, GNode[]> = new Map<Id, GNode[]>();
 
     for (const node of modelIndex.nodesById.values()) {
       const superType: QualifiedParts | null = NodeResolver.resolveLocalSuperType(node.superTypes, base.id);
       if (!superType) continue;
 
-      const baseNodeId: Id = superType.refId;
-      const list: GNode[] | undefined = grouped.get(baseNodeId);
+      const refId: Id = superType.refId;
+      const list: GNode[] | undefined = groupedNodes.get(refId);
 
       if (list) list.push(node);
-      else grouped.set(baseNodeId, [node]);
+      else groupedNodes.set(refId, [node]);
     }
 
-    for (const [baseNodeId, list] of grouped.entries()) {
-      grouped.set(
+    for (const [baseNodeId, list] of groupedNodes.entries()) {
+      groupedNodes.set(
         baseNodeId,
         list.sort((a: GNode, b: GNode): number => a.name.localeCompare(b.name)),
       );
     }
-    return grouped;
+    return groupedNodes;
   }
 
   public static listRelations(model: GModel): ReadonlyArray<GRelation> {

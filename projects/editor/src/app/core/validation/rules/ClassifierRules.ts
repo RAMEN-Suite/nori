@@ -1,44 +1,23 @@
-import { GClassifier, Id } from '../../models/GModel';
-import { Diagnostic, DiagnosticPath, DiagnosticReport, Diagnostics } from '../container/Diagnostics';
+import { GClassifier, GDataType, GNode, Id } from '../../models/GModel';
+import { Diagnostic, DiagnosticPath, Diagnostics } from '../container/Diagnostics';
 import { VALIDATION_ERROR } from '../../const/VALIDATION_ERROR';
 import { ValidationContext } from '../SemanticValidator';
 import { NodeRules } from './NodeRules';
 import { DataTypeRules } from './DataTypeRules';
 import { AttributeRules } from './AttributeRules';
-import { AbstractRule } from './AbstractRule';
+import { AbstractRules } from './AbstractRules';
 
-export class ClassifierRules extends AbstractRule {
+export class ClassifierRules extends AbstractRules {
   private readonly nodeRules: NodeRules = new NodeRules();
   private readonly dataTypeRules: DataTypeRules = new DataTypeRules();
   private readonly attributeRules: AttributeRules = new AttributeRules();
 
-  public validate(validationContext: ValidationContext): Diagnostic[] {
+  public validate(ctx: ValidationContext): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
-    const classifiers: GClassifier[] = validationContext.derivedModel.classifiers ?? [];
+    const classifiers: ReadonlyArray<GClassifier> = ctx.derivedModel.classifiers ?? [];
 
     diagnostics.push(...this.validateUniqueIds(classifiers));
-
-    classifiers.forEach((classifier: GClassifier, classifierIndex: number): void => {
-      const classifierPath: DiagnosticPath = DiagnosticPath.root().property(`classifiers`).index(classifierIndex);
-
-      if (classifier.kind === 'GNode') {
-        const nodeValidation: Diagnostic[] = this.nodeRules.validate(validationContext, classifier, classifierPath);
-        const attributeValidation: Diagnostic[] = this.attributeRules.validate(
-          validationContext,
-          classifier,
-          classifierPath,
-        );
-        diagnostics.push(...nodeValidation, ...attributeValidation);
-        return;
-      }
-
-      if (classifier.kind === 'GDataType') {
-        const dataTypeValidation: Diagnostic[] = this.dataTypeRules.validate(classifier, classifierPath);
-        diagnostics.push(...dataTypeValidation);
-        return;
-      }
-    });
-
+    diagnostics.push(...this.validateClassifiers(ctx, classifiers));
     return diagnostics;
   }
 
@@ -47,23 +26,52 @@ export class ClassifierRules extends AbstractRule {
     const firstIndexByIdentifier: Map<Id, number> = new Map<Id, number>();
 
     classifiers.forEach((classifier: GClassifier, classifierIndex: number): void => {
-      const classifierId: Id = classifier.id;
-      const previousIndex: number | undefined = firstIndexByIdentifier.get(classifierId);
+      const previousIndex: number | undefined = firstIndexByIdentifier.get(classifier.id);
 
-      if (previousIndex !== undefined) {
-        const report: DiagnosticReport = {
-          code: VALIDATION_ERROR.CLASSIFIER_ID_DUPLICATE,
-          message: `Duplicate classifier id '${classifierId}' (also at index ${previousIndex}).`,
-          path: DiagnosticPath.root().property(`classifiers`).index(classifierIndex).property('id'),
-          ref: classifierId,
-        };
-        diagnostics.push(Diagnostics.error(report));
+      if (previousIndex === undefined) {
+        firstIndexByIdentifier.set(classifier.id, classifierIndex);
         return;
       }
 
-      firstIndexByIdentifier.set(classifierId, classifierIndex);
+      diagnostics.push(
+        Diagnostics.error({
+          code: VALIDATION_ERROR.CLASSIFIER_ID_DUPLICATE,
+          message: `Duplicate classifier id '${classifier.id}' (also at index ${previousIndex}).`,
+          path: DiagnosticPath.root().property('classifiers').index(classifierIndex).property('id'),
+          ref: classifier.id,
+        }),
+      );
     });
-
     return diagnostics;
+  }
+
+  private validateClassifiers(ctx: ValidationContext, classifiers: ReadonlyArray<GClassifier>): Diagnostic[] {
+    const diagnostics: Diagnostic[] = [];
+
+    classifiers.forEach((classifier: GClassifier, classifierIndex: number): void => {
+      const classifierPath: DiagnosticPath = DiagnosticPath.root().property('classifiers').index(classifierIndex);
+
+      if (classifier.kind === 'GNode') {
+        diagnostics.push(...this.validateNode(ctx, classifier, classifierPath));
+        return;
+      }
+
+      if (classifier.kind === 'GDataType') {
+        diagnostics.push(...this.validateDataType(classifier, classifierPath));
+        return;
+      }
+    });
+    return diagnostics;
+  }
+
+  private validateNode(ctx: ValidationContext, node: GNode, classifierPath: DiagnosticPath): Diagnostic[] {
+    const diagnostics: Diagnostic[] = [];
+    diagnostics.push(...this.nodeRules.validate(ctx, node, classifierPath));
+    diagnostics.push(...this.attributeRules.validate(ctx, node, classifierPath));
+    return diagnostics;
+  }
+
+  private validateDataType(dataType: GDataType, classifierPath: DiagnosticPath): Diagnostic[] {
+    return this.dataTypeRules.validate(dataType, classifierPath);
   }
 }

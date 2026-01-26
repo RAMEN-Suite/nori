@@ -149,7 +149,7 @@ export class BreadcrumbsComponent {
       severity: 'danger',
       variant: 'outlined',
       click: async (): Promise<void> => {
-        await this.workspace.actions.deleteSlot(slotToDelete);
+        await this.workspace.actions.removeSlot(slotToDelete);
         this.dialogRef?.close();
 
         const currentSlot: number = this.workspace.store.currentSlot();

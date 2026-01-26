@@ -94,7 +94,7 @@ export class NodeBasicsComponent {
       variant: 'outlined',
       click: async (): Promise<void> => {
         if (!selectedNode.id) return;
-        await this.workspace.actions.deleteNode(selectedNode.id);
+        await this.workspace.actions.removeNode(selectedNode.id);
         const selectedSlot: number = this.workspace.store.currentSlot();
         void this.navigation.navigateToSlot(this.activatedRoute, selectedSlot);
       },

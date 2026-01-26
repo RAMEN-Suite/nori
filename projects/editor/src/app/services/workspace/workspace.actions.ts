@@ -3,10 +3,24 @@ import { StorageService, UpdateRecordInput } from '../storage.service';
 import { WorkspaceStore } from './workspace.store';
 import { WorkspaceView } from './workspace.view';
 import { ModelRecord, NodeColors, ViewSettings } from '../../models/ModelRecord';
-import { GDataType, GModel, GNode, GRelation, Id } from '../../core/models/GModel';
-import { GModelMutations, UpdateDataTypeInput, UpdateNodeInput, UpdateRelationInput } from '../../core/GModelMutations';
-import { ConnectedNode, CreateNodeInput, CreateRelationInput, GModelFactory } from '../../core/GModelFactory';
+import { GAttribute, GDataType, GModel, GNode, GRelation, Id } from '../../core/models/GModel';
+import {
+  GModelMutations,
+  UpdateAttributeInput,
+  UpdateDataTypeInput,
+  UpdateNodeInput,
+  UpdateRelationInput,
+} from '../../core/GModelMutations';
+import {
+  ConnectedNode,
+  CreateAttributeInput,
+  CreateDataTypeInput,
+  CreateNodeInput,
+  CreateRelationInput,
+  GModelFactory,
+} from '../../core/GModelFactory';
 
+export type UpdateSlotInput = CreateSlotInput;
 export type CreateSlotInput = {
   uri: string;
   name: string;
@@ -51,35 +65,13 @@ export class WorkspaceActions {
     this.store.setCurrentModel(updated);
   }
 
-  public async createNode(nodeName: string, baseNodeId: Id): Promise<GNode> {
+  public async createNode(input: CreateNodeInput): Promise<GNode> {
     const baseId: Id = this.view.baseId();
-    const input: CreateNodeInput = { name: nodeName, baseNodeId };
     const node: GNode = GModelFactory.createNode(baseId, input);
-
     this.apply((model: GModel): GModel => GModelMutations.addClassifier(model, node));
     await this.saveCurrentModel();
 
     return node;
-  }
-
-  public async createDataType(dataTypeName: string): Promise<GDataType> {
-    const dataType: GDataType = GModelFactory.createDataType({ name: dataTypeName });
-    this.apply((model: GModel): GModel => GModelMutations.addClassifier(model, dataType));
-    await this.saveCurrentModel();
-
-    return dataType;
-  }
-
-  public async createRelation(baseRelationId: Id, fromNodeId: Id, toNodeId: Id): Promise<GRelation> {
-    const base: GModel | null = this.view.baseModel();
-    if (!base) throw new Error('Cannot create relation: no base model loaded.');
-
-    const input: CreateRelationInput = { baseRelationId, fromNodeId, toNodeId };
-    const relation: GRelation = GModelFactory.createRelation(base, base.id, input);
-
-    this.apply((model: GModel): GModel => GModelMutations.addRelation(model, relation));
-    await this.saveCurrentModel();
-    return relation;
   }
 
   public async updateNode(nodeId: Id, patch: UpdateNodeInput): Promise<void> {
@@ -87,28 +79,8 @@ export class WorkspaceActions {
     await this.saveCurrentModel();
   }
 
-  public async updateDataType(dataTypeId: Id, patch: UpdateDataTypeInput): Promise<void> {
-    this.apply((model: GModel): GModel => GModelMutations.updateDataType(model, dataTypeId, patch));
-    await this.saveCurrentModel();
-  }
-
-  public async updateRelation(relationId: Id, patch: UpdateRelationInput): Promise<void> {
-    this.apply((model: GModel): GModel => GModelMutations.updateRelation(model, relationId, patch));
-    await this.saveCurrentModel();
-  }
-
-  public async deleteNode(nodeId: Id): Promise<void> {
-    this.apply((model: GModel): GModel => GModelMutations.deleteNode(model, nodeId));
-    await this.saveCurrentModel();
-  }
-
-  public async deleteDataType(dataTypeId: Id): Promise<void> {
-    this.apply((model: GModel): GModel => GModelMutations.deleteDataType(model, dataTypeId));
-    await this.saveCurrentModel();
-  }
-
-  public async deleteRelation(relationId: Id): Promise<void> {
-    this.apply((model: GModel): GModel => GModelMutations.removeRelationById(model, relationId));
+  public async removeNode(nodeId: Id): Promise<void> {
+    this.apply((model: GModel): GModel => GModelMutations.removeNode(model, nodeId));
     await this.saveCurrentModel();
   }
 
@@ -127,6 +99,56 @@ export class WorkspaceActions {
 
     await this.saveCurrentModel();
     return cloned.node;
+  }
+
+  public async createAttribute(nodeId: Id, input: CreateAttributeInput): Promise<void> {
+    const modelsById: ReadonlyMap<Id, GModel> = this.storage.modelsById();
+    const attribute: GAttribute = GModelFactory.createAttribute(input);
+    this.apply((model: GModel): GModel => GModelMutations.addAttribute(model, nodeId, attribute, modelsById));
+    await this.saveCurrentModel();
+  }
+
+  public async updateAttribute(nodeId: Id, name: string, patch: UpdateAttributeInput): Promise<void> {
+    const modelsById: ReadonlyMap<Id, GModel> = this.storage.modelsById();
+    this.apply((model: GModel): GModel => GModelMutations.updateAttribute(model, nodeId, name, patch, modelsById));
+    await this.saveCurrentModel();
+  }
+
+  public async removeAttribute(nodeId: Id, name: string): Promise<void> {
+    this.apply((model: GModel): GModel => GModelMutations.removeAttribute(model, nodeId, name));
+    await this.saveCurrentModel();
+  }
+
+  public async createDataType(input: CreateDataTypeInput): Promise<GDataType> {
+    const dataType: GDataType = GModelFactory.createDataType(input);
+    this.apply((model: GModel): GModel => GModelMutations.addClassifier(model, dataType));
+    await this.saveCurrentModel();
+    return dataType;
+  }
+
+  public async updateDataType(dataTypeId: Id, patch: UpdateDataTypeInput): Promise<void> {
+    this.apply((model: GModel): GModel => GModelMutations.updateDataType(model, dataTypeId, patch));
+    await this.saveCurrentModel();
+  }
+
+  public async createRelation(input: CreateRelationInput): Promise<GRelation> {
+    const base: GModel | null = this.view.baseModel();
+    if (!base) throw new Error('Cannot create relation: no base model loaded.');
+
+    const relation: GRelation = GModelFactory.createRelation(base, base.id, input);
+    this.apply((model: GModel): GModel => GModelMutations.addRelation(model, relation));
+    await this.saveCurrentModel();
+    return relation;
+  }
+
+  public async updateRelation(relationId: Id, patch: UpdateRelationInput): Promise<void> {
+    this.apply((model: GModel): GModel => GModelMutations.updateRelation(model, relationId, patch));
+    await this.saveCurrentModel();
+  }
+
+  public async removeRelation(relationId: Id): Promise<void> {
+    this.apply((model: GModel): GModel => GModelMutations.removeRelationById(model, relationId));
+    await this.saveCurrentModel();
   }
 
   public async createSlot(input: CreateSlotInput): Promise<number> {
@@ -154,10 +176,10 @@ export class WorkspaceActions {
     return lastSlot + 1;
   }
 
-  public async updateSlot(slot: number, input: CreateSlotInput): Promise<void> {
+  public async updateSlot(slot: number, patch: UpdateSlotInput): Promise<void> {
     const existing: ModelRecord | undefined = this.storage.recordsBySlot().get(slot);
     if (!existing) throw new Error(`Cannot update: model in ${slot} does not exist.`);
-    const { name, description, version, uri } = input;
+    const { name, description, version, uri } = patch;
 
     const updatedModel: GModel = {
       ...existing.gmodel,
@@ -166,19 +188,19 @@ export class WorkspaceActions {
       $id: uri ?? existing.gmodel.$id,
     };
 
-    const patch: UpdateRecordInput = {
+    const recordPatch: UpdateRecordInput = {
       name: name ?? existing.name,
       description: description ?? existing.description,
       gmodel: updatedModel,
     };
 
-    await this.storage.updateRecord(existing.modelId, patch);
+    await this.storage.updateRecord(existing.modelId, recordPatch);
   }
 
-  public async deleteSlot(slot: number): Promise<void> {
+  public async removeSlot(slot: number): Promise<void> {
     const projectId: string | null = this.storage.selectedProjectId();
-    if (!projectId) throw new Error('Cannot delete: no active project selected.');
-    await this.storage.deleteSlot(projectId, slot);
+    if (!projectId) throw new Error('Cannot remove: no active project selected.');
+    await this.storage.removeSlot(projectId, slot);
   }
 
   public async updateNodeColors(): Promise<void> {

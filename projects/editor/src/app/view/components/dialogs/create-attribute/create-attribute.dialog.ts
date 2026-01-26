@@ -10,7 +10,6 @@ import { GAttribute, GDataType, TypeRef } from '../../../../core/models/GModel';
 import { Builtins } from '../../../../core/validation/container/Builtins';
 import { FormsModule } from '@angular/forms';
 import { QualifiedParts, Reference } from '../../../../core/validation/container/Reference';
-import { GModelFactory } from '../../../../core/GModelFactory';
 
 interface Option<T> {
   label: string;
@@ -34,13 +33,16 @@ export class CreateAttributeDialog {
   protected readonly filteredDataTypeOptions: WritableSignal<Option<string>[]> = signal([]);
   protected readonly dataTypeOptions: WritableSignal<Option<string>[]> = signal([]);
 
-  protected readonly draftAttribute: WritableSignal<GAttribute> = signal(GModelFactory.createAttribute());
-
   protected readonly isRequired: WritableSignal<boolean> = signal(false);
   protected readonly isReadOnly: WritableSignal<boolean> = signal(false);
   protected readonly isList: WritableSignal<boolean> = signal(false);
 
   public attribute: InputSignal<GAttribute | undefined> = input();
+  public draftAttribute: WritableSignal<GAttribute> = signal({
+    name: '',
+    typeId: '',
+    bounds: { lowerBound: 0, upperBound: 0 },
+  });
 
   constructor() {
     effect((): void => {

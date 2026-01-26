@@ -150,7 +150,7 @@ export class StorageService {
     await this.refreshManifests();
   }
 
-  public async deleteProject(projectId: string): Promise<void> {
+  public async removeProject(projectId: string): Promise<void> {
     await database.transaction('rw', database.manifests, database.models, async () => {
       await database.models.where('projectId').equals(projectId).delete();
       await database.manifests.delete(projectId);
@@ -221,16 +221,16 @@ export class StorageService {
     await this.refreshManifests();
   }
 
-  public async deleteSlot(projectId: string, slot: number): Promise<void> {
+  public async removeSlot(projectId: string, slot: number): Promise<void> {
     const record: ModelRecord | undefined = await this.getRecordBySlot(projectId, slot);
     if (!record) return;
 
-    const isAllowed: boolean = await this.canDeleteSlot(projectId, slot);
+    const isAllowed: boolean = await this.canRemoveSlot(projectId, slot);
     if (!isAllowed) throw new Error(`Cannot delete slot ${slot}: higher slots exist.`);
-    await this.deleteRecord(record.modelId);
+    await this.removeRecord(record.modelId);
   }
 
-  private async deleteRecord(modelId: string): Promise<void> {
+  private async removeRecord(modelId: string): Promise<void> {
     const existing: ModelRecord | undefined = await database.models.get(modelId);
     if (!existing) return;
 
@@ -252,7 +252,7 @@ export class StorageService {
     return records[records.length - 1]?.slot ?? -1;
   }
 
-  private async canDeleteSlot(projectId: string, slot: number): Promise<boolean> {
+  private async canRemoveSlot(projectId: string, slot: number): Promise<boolean> {
     const records: ModelRecord[] = await database.models.where('projectId').equals(projectId).toArray();
     const maxSlot: number = records.reduce((max: number, m: ModelRecord): number => Math.max(max, m.slot), -1);
     return maxSlot <= slot;

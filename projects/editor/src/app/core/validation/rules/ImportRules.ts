@@ -1,54 +1,73 @@
 import { GModel, Id, Import } from '../../models/GModel';
-import { Diagnostic, DiagnosticPath, DiagnosticReport, Diagnostics } from '../container/Diagnostics';
+import { Diagnostic, DiagnosticPath, Diagnostics } from '../container/Diagnostics';
 import { VALIDATION_ERROR } from '../../const/VALIDATION_ERROR';
 import { ValidationContext } from '../SemanticValidator';
-import { AbstractRule } from './AbstractRule';
+import { AbstractRules } from './AbstractRules';
 
-export class ImportRules extends AbstractRule {
-  public validate(validationContext: ValidationContext): Diagnostic[] {
+export class ImportRules extends AbstractRules {
+  public validate(ctx: ValidationContext): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
-    const model: GModel = validationContext.derivedModel;
 
-    const imports: Import[] = model.imports ?? [];
+    const model: GModel = ctx.derivedModel;
+    const imports: ReadonlyArray<Import> = model.imports ?? [];
+
+    diagnostics.push(...this.validateUniqueIds(imports));
+    diagnostics.push(...this.validateNoSelfImport(model, imports));
+    diagnostics.push(...this.validateBaseImported(ctx));
+    return diagnostics;
+  }
+
+  private validateUniqueIds(imports: ReadonlyArray<Import>): Diagnostic[] {
+    const diagnostics: Diagnostic[] = [];
     const firstIndexByModelId: Map<Id, number> = new Map<Id, number>();
 
     imports.forEach((imp: Import, index: number): void => {
-      const importPath: DiagnosticPath = DiagnosticPath.root().property('imports').index(index);
-
-      const previous: number | undefined = firstIndexByModelId.get(imp.modelId);
-      if (previous !== undefined) {
-        const report: DiagnosticReport = {
-          code: VALIDATION_ERROR.IMPORT_MODEL_ID_DUPLICATE,
-          message: `Duplicate import modelId '${imp.modelId}' (also at index ${previous}).`,
-          path: importPath.property('modelId'),
-          ref: imp.modelId,
-        };
-        diagnostics.push(Diagnostics.error(report));
-      } else {
+      const previousIndex: number | undefined = firstIndexByModelId.get(imp.modelId);
+      if (previousIndex === undefined) {
         firstIndexByModelId.set(imp.modelId, index);
+        return;
       }
 
-      if (imp.modelId === model.id) {
-        const report: DiagnosticReport = {
+      diagnostics.push(
+        Diagnostics.error({
+          code: VALIDATION_ERROR.IMPORT_MODEL_ID_DUPLICATE,
+          message: `Duplicate import modelId '${imp.modelId}' (also at index ${previousIndex}).`,
+          path: DiagnosticPath.root().property('imports').index(index).property('modelId'),
+          ref: imp.modelId,
+        }),
+      );
+    });
+    return diagnostics;
+  }
+
+  private validateNoSelfImport(model: GModel, imports: ReadonlyArray<Import>): Diagnostic[] {
+    const diagnostics: Diagnostic[] = [];
+
+    imports.forEach((imp: Import, index: number): void => {
+      if (imp.modelId !== model.id) return;
+
+      diagnostics.push(
+        Diagnostics.error({
           code: VALIDATION_ERROR.IMPORT_SELF_NOT_ALLOWED,
           message: `Model '${model.id}' must not import itself.`,
-          path: importPath.property('modelId'),
+          path: DiagnosticPath.root().property('imports').index(index).property('modelId'),
           ref: model.id,
-        };
-        diagnostics.push(Diagnostics.error(report));
-      }
+        }),
+      );
     });
-
-    if (!validationContext.derivedIndex.importsByModelId.has(validationContext.baseId)) {
-      const report: DiagnosticReport = {
-        code: VALIDATION_ERROR.MISSING_BASE_IMPORT,
-        message: `Derived model must import base with modelId '${validationContext.baseId}'.`,
-        ref: validationContext.baseId,
-        path: DiagnosticPath.root().property('imports'),
-      };
-      diagnostics.push(Diagnostics.error(report));
-    }
-
     return diagnostics;
+  }
+
+  private validateBaseImported(ctx: ValidationContext): Diagnostic[] {
+    if (ctx.derivedIndex.importsByModelId.has(ctx.baseId)) return [];
+
+    return [
+      Diagnostics.error({
+        code: VALIDATION_ERROR.MISSING_BASE_IMPORT,
+        message: `Derived model must import base with modelId '${ctx.baseId}'.`,
+        path: DiagnosticPath.root().property('imports'),
+        ref: ctx.baseId,
+      }),
+    ];
   }
 }

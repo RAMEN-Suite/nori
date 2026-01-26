@@ -1,5 +1,5 @@
 import { Diagnostic } from '../container/Diagnostics';
 
-export abstract class AbstractRule {
+export abstract class AbstractRules {
   public abstract validate(...args: unknown[]): Diagnostic[];
 }

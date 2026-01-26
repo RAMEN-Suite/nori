@@ -70,7 +70,7 @@ export class OpenScreen implements OnInit {
       severity: 'danger',
       variant: 'outlined',
       click: async (): Promise<void> => {
-        void this.storage.deleteProject(manifest.projectId);
+        void this.storage.removeProject(manifest.projectId);
         this.dialogRef?.close();
       },
     };

@@ -1,4 +1,4 @@
-import { GAttribute, GConstraint, GDataType, GModel, GNode, GRelation, Id } from './models/GModel';
+import { Bounds, GAttribute, GConstraint, GDataType, GModel, GNode, GRelation, Id, TypeRef } from './models/GModel';
 import { SchemaValidator } from './validation/SchemaValidator';
 import ShortUniqueId from 'short-unique-id';
 import { Reference } from './validation/container/Reference';
@@ -14,6 +14,17 @@ export interface CreateModelInput {
 export interface CreateNodeInput {
   readonly name: string;
   readonly baseNodeId: Id;
+}
+
+export interface CreateAttributeInput {
+  readonly name: string;
+  readonly typeId: TypeRef;
+  readonly bounds: Bounds;
+
+  readonly isKey?: boolean;
+  readonly isReadOnly?: boolean;
+  readonly isUnique?: boolean;
+  readonly isOrdered?: boolean;
 }
 
 export interface CreateRelationInput {
@@ -66,18 +77,15 @@ export class GModelFactory {
     };
   }
 
-  public static createAttribute(): GAttribute {
+  public static createAttribute(input: CreateAttributeInput): GAttribute {
     return {
-      name: '',
-      typeId: '',
-      bounds: {
-        lowerBound: 0,
-        upperBound: 0,
-      },
-      isKey: undefined,
-      isReadOnly: undefined,
-      isUnique: undefined,
-      isOrdered: undefined,
+      name: input.name,
+      typeId: input.typeId,
+      bounds: input.bounds,
+      isKey: input.isKey,
+      isReadOnly: input.isReadOnly,
+      isUnique: input.isUnique,
+      isOrdered: input.isOrdered,
       constraints: [],
       ext: {},
     };

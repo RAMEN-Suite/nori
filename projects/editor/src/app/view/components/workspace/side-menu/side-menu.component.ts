@@ -19,6 +19,7 @@ import {
   ConfirmationDialog,
   ConfirmationOptions,
 } from '../../dialogs/confirmation/confirmation.dialog';
+import { CreateNodeInput } from '../../../../core/GModelFactory';
 
 type SideMenuItem = MenuItem & {
   isCategory?: boolean;
@@ -135,7 +136,8 @@ export class SideMenuComponent {
   }
 
   protected async handleCreateNode(baseNodeId: string): Promise<void> {
-    const newNode: GNode = await this.workspace.actions.createNode('Untitled', baseNodeId);
+    const input: CreateNodeInput = { name: 'Untitled', baseNodeId };
+    const newNode: GNode = await this.workspace.actions.createNode(input);
     const selectedSlot: number = this.workspace.store.currentSlot();
     void this.navigation.navigateToNode(this.activatedRoute, selectedSlot, newNode.id);
   }
@@ -160,7 +162,7 @@ export class SideMenuComponent {
       variant: 'outlined',
       click: async (): Promise<void> => {
         if (!selectedMenuItem.id) return;
-        await this.workspace.actions.deleteNode(selectedMenuItem.id);
+        await this.workspace.actions.removeNode(selectedMenuItem.id);
         this.dialogRef?.close();
 
         const selectedNodeId: string | null = this.workspace.store.currentNodeId();

@@ -1,8 +1,10 @@
 import { GAttribute, GClassifier, GDataType, GModel, GNode, GRelation, Id } from './models/GModel';
+import { NodeResolver } from './resolver/NodeResolver';
 
 export type UpdateNodeInput = Partial<Pick<GNode, 'name' | 'superTypes' | 'attributes'>>;
 export type UpdateDataTypeInput = Partial<Pick<GDataType, 'name' | 'literals'>>;
 export type UpdateRelationInput = Partial<Pick<GRelation, 'name' | 'from' | 'to' | 'isBidirectional'>>;
+export type UpdateAttributeInput = Partial<GAttribute>;
 
 export class GModelMutations {
   public static addClassifier(model: GModel, classifier: GClassifier): GModel {
@@ -12,13 +14,8 @@ export class GModelMutations {
   public static removeClassifierById(model: GModel, classifierId: string): GModel {
     const classifiers: GClassifier[] = model.classifiers ?? [];
 
-    const filtered: GClassifier[] = classifiers.filter((classifier: GClassifier): boolean => {
-      return classifier.id !== classifierId;
-    });
-    if (filtered.length === classifiers.length) {
-      throw new Error(`Classifier not found: ${classifierId}`);
-    }
-
+    const filtered: GClassifier[] = classifiers.filter((c: GClassifier): boolean => c.id !== classifierId);
+    if (filtered.length === classifiers.length) throw new Error(`Classifier not found: ${classifierId}`);
     return { ...model, classifiers: filtered };
   }
 
@@ -36,6 +33,20 @@ export class GModelMutations {
 
     if (!found) throw new Error(`Node not found: ${nodeId}`);
     return { ...model, classifiers: patched };
+  }
+
+  public static removeNode(model: GModel, nodeId: string): GModel {
+    let newModel: GModel = GModelMutations.removeClassifierById(model, nodeId);
+
+    const relations: GRelation[] = newModel.relations;
+    const remainingRelations: GRelation[] = relations.filter((relation: GRelation): boolean => {
+      const fromId: Id = relation.from.nodeId;
+      const toId: Id = relation.to.nodeId;
+      return fromId !== nodeId && toId !== nodeId;
+    });
+
+    if (remainingRelations.length !== relations.length) newModel = { ...newModel, relations: remainingRelations };
+    return newModel;
   }
 
   public static updateDataType(model: GModel, dataTypeId: string, patch: UpdateDataTypeInput): GModel {
@@ -58,17 +69,6 @@ export class GModelMutations {
     return { ...model, relations: [...(model.relations ?? []), relation] };
   }
 
-  public static removeRelationById(model: GModel, relationId: string): GModel {
-    const relations: GRelation[] = model.relations ?? [];
-    const filtered: GRelation[] = relations.filter((r: GRelation): boolean => r.id !== relationId);
-
-    if (filtered.length === relations.length) {
-      throw new Error(`Relation not found: ${relationId}`);
-    }
-
-    return { ...model, relations: filtered };
-  }
-
   public static updateRelation(model: GModel, relationId: string, patch: UpdateRelationInput): GModel {
     const relations: GRelation[] = model.relations ?? [];
     let found: boolean = false;
@@ -84,46 +84,103 @@ export class GModelMutations {
     return { ...model, relations: patched };
   }
 
-  public static deleteNode(model: GModel, nodeId: string): GModel {
-    let newModel: GModel = GModelMutations.removeClassifierById(model, nodeId);
+  public static removeRelationById(model: GModel, relationId: string): GModel {
+    const relations: GRelation[] = model.relations ?? [];
+    const filtered: GRelation[] = relations.filter((relation: GRelation): boolean => relation.id !== relationId);
+    if (filtered.length === relations.length) throw new Error(`Relation not found: ${relationId}`);
+    return { ...model, relations: filtered };
+  }
 
-    const relations: GRelation[] = newModel.relations ?? [];
-    const remainingRelations: GRelation[] = relations.filter((relation: GRelation): boolean => {
-      const fromId: Id = relation.from.nodeId;
-      const toId: Id = relation.to.nodeId;
-      return fromId !== nodeId && toId !== nodeId;
+  public static addAttribute(
+    model: GModel,
+    nodeId: Id,
+    attribute: GAttribute,
+    modelsById: ReadonlyMap<Id, GModel>,
+  ): GModel {
+    const startModelId: Id = model.id;
+
+    const blockedNames: ReadonlySet<string> = NodeResolver.resolveAttributeNames(startModelId, nodeId, modelsById);
+    if (blockedNames.has(attribute.name)) throw new Error(`Attribute already exists: '${attribute.name}'`);
+
+    const classifiers: ReadonlyArray<GClassifier> = model.classifiers ?? [];
+    let foundNode: boolean = false;
+
+    const patched: GClassifier[] = classifiers.map((classifier: GClassifier): GClassifier => {
+      if (classifier.kind !== 'GNode') return classifier;
+      if (classifier.id !== nodeId) return classifier;
+
+      foundNode = true;
+      const node: GNode = classifier;
+      const attributes: ReadonlyArray<GAttribute> = node.attributes ?? [];
+      return { ...node, attributes: [...attributes, attribute] };
     });
 
-    if (remainingRelations.length !== relations.length) {
-      newModel = { ...newModel, relations: remainingRelations };
+    if (!foundNode) throw new Error(`Node not found: '${nodeId}'`);
+    return { ...model, classifiers: patched };
+  }
+
+  public static updateAttribute(
+    model: GModel,
+    nodeId: Id,
+    name: string,
+    patch: UpdateAttributeInput,
+    modelsById: ReadonlyMap<Id, GModel>,
+  ): GModel {
+    const newName: string = patch.name ?? name;
+
+    if (newName !== name) {
+      const blocked: Set<string> = new Set<string>(NodeResolver.resolveAttributeNames(model.id, nodeId, modelsById));
+      blocked.delete(name);
+      if (blocked.has(newName)) throw new Error(`Attribute already exists: '${newName}'`);
     }
 
-    newModel = this.removeAttributesReferencingType(newModel, nodeId);
-    return newModel;
-  }
+    const classifiers: ReadonlyArray<GClassifier> = model.classifiers ?? [];
+    let foundNode: boolean = false;
+    let foundAttribute: boolean = false;
 
-  public static deleteDataType(model: GModel, dataTypeId: string): GModel {
-    let newModel: GModel = GModelMutations.removeClassifierById(model, dataTypeId);
-    newModel = this.removeAttributesReferencingType(newModel, dataTypeId);
-    return newModel;
-  }
-
-  private static removeAttributesReferencingType(model: GModel, typeId: string): GModel {
-    const classifiers: GClassifier[] = model.classifiers ?? [];
-    let changed: boolean = false;
-
-    const patched: (GNode | GDataType)[] = classifiers.map((classifier: GClassifier): GNode | GDataType => {
+    const patched: GClassifier[] = classifiers.map((classifier: GClassifier): GClassifier => {
       if (classifier.kind !== 'GNode') return classifier;
+      if (classifier.id !== nodeId) return classifier;
+
+      foundNode = true;
       const node: GNode = classifier;
-      const attributes: GAttribute[] = node.attributes ?? [];
+      const attributes: ReadonlyArray<GAttribute> = node.attributes ?? [];
 
-      const filtered: GAttribute[] = attributes.filter((attribute: GAttribute): boolean => attribute.typeId !== typeId);
-      if (filtered.length === attributes.length) return classifier;
+      const nextAttributes: GAttribute[] = attributes.map((attribute: GAttribute): GAttribute => {
+        if (attribute.name !== name) return attribute;
+        foundAttribute = true;
+        return { ...attribute, ...patch, name: newName };
+      });
 
-      changed = true;
-      return { ...node, attributes: filtered };
+      return foundAttribute ? { ...node, attributes: nextAttributes } : node;
     });
 
-    return changed ? { ...model, classifiers: patched } : model;
+    if (!foundNode) throw new Error(`Node not found: '${nodeId}'`);
+    if (!foundAttribute) throw new Error(`Attribute not found: '${name}'`);
+    return { ...model, classifiers: patched };
+  }
+
+  public static removeAttribute(model: GModel, nodeId: Id, name: string): GModel {
+    const classifiers: ReadonlyArray<GClassifier> = model.classifiers ?? [];
+    let foundNode: boolean = false;
+    let removed: boolean = false;
+
+    const patched: GClassifier[] = classifiers.map((classifier: GClassifier): GClassifier => {
+      if (classifier.kind !== 'GNode') return classifier;
+      if (classifier.id !== nodeId) return classifier;
+
+      foundNode = true;
+
+      const node: GNode = classifier;
+      const attributes: ReadonlyArray<GAttribute> = node.attributes ?? [];
+      const filtered: GAttribute[] = attributes.filter((attribute: GAttribute): boolean => attribute.name !== name);
+
+      if (filtered.length !== attributes.length) removed = true;
+      return removed ? { ...node, attributes: filtered } : node;
+    });
+
+    if (!foundNode) throw new Error(`Node not found: '${nodeId}'`);
+    if (!removed) throw new Error(`Attribute not found: '${name}'`);
+    return { ...model, classifiers: patched };
   }
 }

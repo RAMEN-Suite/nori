@@ -1,126 +1,180 @@
-import { GAttribute, GNode, Id, TypeRef } from '../../models/GModel';
-import { Diagnostic, DiagnosticPath, DiagnosticReport, Diagnostics } from '../container/Diagnostics';
+import { GAttribute, GModel, GNode, Id, TypeRef } from '../../models/GModel';
+import { Diagnostic, DiagnosticPath, Diagnostics } from '../container/Diagnostics';
 import { VALIDATION_ERROR } from '../../const/VALIDATION_ERROR';
-import { QualifiedParts, Reference } from '../container/Reference';
 import { ValidationContext } from '../SemanticValidator';
 import { SemanticHelper } from '../../helper/SemanticHelper';
-import { NodeResolver, ResolvedNode } from '../../resolver/NodeResolver';
+import { AbstractRules } from './AbstractRules';
 import { Builtins } from '../container/Builtins';
-import { AbstractRule } from './AbstractRule';
+import { QualifiedParts, Reference } from '../container/Reference';
+import { ModelResolver } from '../../resolver/ModelResolver';
+import { GModelIndex } from '../container/GModelIndex';
+import { NodeResolver, ResolvedNode } from '../../resolver/NodeResolver';
 
-export class AttributeRules extends AbstractRule {
-  public validate(validationContext: ValidationContext, node: GNode, classifierPath: DiagnosticPath): Diagnostic[] {
+export class AttributeRules extends AbstractRules {
+  public validate(ctx: ValidationContext, node: GNode, classifierPath: DiagnosticPath): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
+    const attributes: ReadonlyArray<GAttribute> = node.attributes ?? [];
+    const inheritedNames: ReadonlySet<string> = this.resolveInheritedAttributeNames(ctx, node.id);
 
-    const attributes: GAttribute[] = node.attributes ?? [];
-    const attributeNames: ReadonlySet<string> = this.getAttributeNames(validationContext, node);
+    diagnostics.push(...this.validateAttributeNames(attributes, node, classifierPath));
+    diagnostics.push(...this.validateAttributes(ctx, node, attributes, inheritedNames, classifierPath));
+    return diagnostics;
+  }
+
+  private validateAttributeNames(
+    attributes: ReadonlyArray<GAttribute>,
+    node: GNode,
+    classifierPath: DiagnosticPath,
+  ): Diagnostic[] {
+    const diagnostics: Diagnostic[] = [];
     const firstIndexByName: Map<string, number> = new Map<string, number>();
 
     attributes.forEach((attribute: GAttribute, attributeIndex: number): void => {
-      const attributePath: DiagnosticPath = classifierPath.property('attributes').index(attributeIndex);
-
       const previousIndex: number | undefined = firstIndexByName.get(attribute.name);
-      if (previousIndex !== undefined) {
-        const report: DiagnosticReport = {
+      if (previousIndex === undefined) {
+        firstIndexByName.set(attribute.name, attributeIndex);
+        return;
+      }
+
+      diagnostics.push(
+        Diagnostics.error({
           code: VALIDATION_ERROR.ATTRIBUTE_NAME_DUPLICATE,
           message: `Duplicate attribute name '${attribute.name}' in node '${node.id}' (also at index ${previousIndex}).`,
-          path: attributePath.property('name'),
+          path: classifierPath.property('attributes').index(attributeIndex).property('name'),
           ref: node.id,
-        };
-        diagnostics.push(Diagnostics.error(report));
-      } else {
-        firstIndexByName.set(attribute.name, attributeIndex);
-      }
-
-      if (attributeNames.has(attribute.name)) {
-        const report: DiagnosticReport = {
-          code: VALIDATION_ERROR.ATTRIBUTE_NAME_SHADOWS_BASE,
-          message: `Attribute '${attribute.name}' in node '${node.id}' conflicts with inherited base attribute.`,
-          path: attributePath.property('name'),
-          ref: node.id,
-        };
-        diagnostics.push(Diagnostics.error(report));
-      }
-
-      if (!SemanticHelper.areBoundsCoherent(attribute.bounds)) {
-        const report: DiagnosticReport = {
-          code: VALIDATION_ERROR.ATTRIBUTE_BOUNDS_INVALID,
-          message: `Invalid bounds for attribute '${attribute.name}' in node '${node.id}'.`,
-          path: attributePath.property('bounds'),
-          ref: node.id,
-        };
-        diagnostics.push(Diagnostics.error(report));
-      } else {
-        diagnostics.push(...this.validateAttributeFlags(attribute, node, attributePath));
-      }
-
-      const isTypeExisting: boolean = this.isAttributeTypeExisting(validationContext, attribute.typeId);
-      if (!isTypeExisting) {
-        const report: DiagnosticReport = {
-          code: VALIDATION_ERROR.ATTRIBUTE_TYPE_NOT_FOUND,
-          message: `Attribute '${attribute.name}' in node '${node.id}' references unknown type '${attribute.typeId}'.`,
-          path: attributePath.property('typeId'),
-          ref: node.id,
-        };
-        diagnostics.push(Diagnostics.error(report));
-      }
+        }),
+      );
     });
 
     return diagnostics;
   }
 
-  private validateAttributeFlags(attribute: GAttribute, node: GNode, attributePath: DiagnosticPath): Diagnostic[] {
+  private validateAttributes(
+    validationContext: ValidationContext,
+    node: GNode,
+    attributes: ReadonlyArray<GAttribute>,
+    inheritedNames: ReadonlySet<string>,
+    classifierPath: DiagnosticPath,
+  ): Diagnostic[] {
     const diagnostics: Diagnostic[] = [];
-    const isKey: boolean = attribute.isKey === true;
 
-    if (isKey) {
-      const lowerBound: number = attribute.bounds.lowerBound;
-      const upperBound: number = attribute.bounds.upperBound;
+    attributes.forEach((attribute: GAttribute, attributeIndex: number): void => {
+      const attributePath: DiagnosticPath = classifierPath.property('attributes').index(attributeIndex);
 
-      const isSingleValued: boolean = upperBound === 1;
-      const isRequired: boolean = lowerBound >= 1;
-
-      if (!isSingleValued || !isRequired) {
-        const report: DiagnosticReport = {
-          code: VALIDATION_ERROR.ATTRIBUTE_KEY_BOUNDS_INVALID,
-          message: `Key attribute '${attribute.name}' in node '${node.id}' should have bounds 1..1.`,
-          path: attributePath.property('bounds'),
-          ref: node.id,
-        };
-        diagnostics.push(Diagnostics.warn(report));
-      }
-    }
+      diagnostics.push(...this.validateNoInheritedShadowing(attribute, node, inheritedNames, attributePath));
+      diagnostics.push(...this.validateBounds(attribute, node, attributePath));
+      diagnostics.push(...this.validateKeyFlag(attribute, node, attributePath));
+      diagnostics.push(...this.validateTypeResolvable(validationContext, attribute, node, attributePath));
+    });
 
     return diagnostics;
   }
 
-  private getAttributeNames(validationContext: ValidationContext, node: GNode): ReadonlySet<string> {
+  private validateNoInheritedShadowing(
+    attribute: GAttribute,
+    node: GNode,
+    inheritedNames: ReadonlySet<string>,
+    attributePath: DiagnosticPath,
+  ): Diagnostic[] {
+    if (!inheritedNames.has(attribute.name)) return [];
+
+    return [
+      Diagnostics.error({
+        code: VALIDATION_ERROR.ATTRIBUTE_NAME_SHADOWS_BASE,
+        message: `Attribute '${attribute.name}' in node '${node.id}' conflicts with inherited base attribute.`,
+        path: attributePath.property('name'),
+        ref: node.id,
+      }),
+    ];
+  }
+
+  private validateBounds(attribute: GAttribute, node: GNode, attributePath: DiagnosticPath): Diagnostic[] {
+    if (SemanticHelper.areBoundsCoherent(attribute.bounds)) return [];
+
+    return [
+      Diagnostics.error({
+        code: VALIDATION_ERROR.ATTRIBUTE_BOUNDS_INVALID,
+        message: `Invalid bounds for attribute '${attribute.name}' in node '${node.id}'.`,
+        path: attributePath.property('bounds'),
+        ref: node.id,
+      }),
+    ];
+  }
+
+  private validateKeyFlag(attribute: GAttribute, node: GNode, attributePath: DiagnosticPath): Diagnostic[] {
+    if (attribute.isKey !== true) return [];
+
+    const lowerBound: number = attribute.bounds.lowerBound;
+    const upperBound: number = attribute.bounds.upperBound;
+
+    const isSingleValued: boolean = upperBound === 1;
+    const isRequired: boolean = lowerBound >= 1;
+
+    if (isSingleValued && isRequired) return [];
+
+    return [
+      Diagnostics.warn({
+        code: VALIDATION_ERROR.ATTRIBUTE_KEY_BOUNDS_INVALID,
+        message: `Key attribute '${attribute.name}' in node '${node.id}' should have bounds 1..1.`,
+        path: attributePath.property('bounds'),
+        ref: node.id,
+      }),
+    ];
+  }
+
+  private validateTypeResolvable(
+    validationContext: ValidationContext,
+    attribute: GAttribute,
+    node: GNode,
+    attributePath: DiagnosticPath,
+  ): Diagnostic[] {
+    const isResolvable: boolean = this.isTypeRefResolvable(validationContext, attribute.typeId);
+    if (isResolvable) return [];
+
+    return [
+      Diagnostics.error({
+        code: VALIDATION_ERROR.ATTRIBUTE_TYPE_NOT_FOUND,
+        message: `Attribute '${attribute.name}' in node '${node.id}' references unknown type '${attribute.typeId}'.`,
+        path: attributePath.property('typeId'),
+        ref: node.id,
+      }),
+    ];
+  }
+
+  private resolveInheritedAttributeNames(validationContext: ValidationContext, nodeId: Id): ReadonlySet<string> {
     const names: Set<string> = new Set<string>();
-
-    const startModel: Id = validationContext.derivedIndex.model.id;
-    const startNode: Id = node.id;
-    const { models } = validationContext;
-
-    const chain: ReadonlyArray<ResolvedNode> = NodeResolver.resolveSuperTypeChain(startModel, startNode, models);
-    if (chain.length === 0) return names;
+    const startModelId: Id = validationContext.derivedIndex.model.id;
+    const chain: ReadonlyArray<ResolvedNode> = NodeResolver.resolveSuperTypeChain(
+      startModelId,
+      nodeId,
+      validationContext.models,
+    );
 
     for (const item of chain) {
-      const attributes: ReadonlyArray<GAttribute> = item.node.attributes ?? [];
-      for (const attribute of attributes) names.add(attribute.name);
+      for (const attribute of item.node.attributes ?? []) {
+        names.add(attribute.name);
+      }
     }
-
     return names;
   }
 
-  private isAttributeTypeExisting(validationContext: ValidationContext, typeRef: TypeRef): boolean {
+  private isTypeRefResolvable(validationContext: ValidationContext, typeRef: TypeRef): boolean {
     if (Builtins.isBuiltin(typeRef)) return true;
-    const { baseId, baseIndex, derivedIndex } = validationContext;
+    if (!Reference.isQualified(typeRef)) return validationContext.derivedIndex.dataTypesById.has(typeRef);
 
-    if (Reference.isQualified(typeRef)) {
-      const baseNode: QualifiedParts | null = NodeResolver.resolveLocalSuperType([typeRef], baseId);
-      return !!baseNode && baseIndex.dataTypesById.has(baseNode.refId);
-    }
+    const parts: QualifiedParts = Reference.splitQualified(typeRef);
+    const closure: ReadonlyArray<GModel> = ModelResolver.resolveImports(
+      validationContext.derivedIndex.model.id,
+      validationContext.models,
+    );
 
-    return derivedIndex.dataTypesById.has(typeRef);
+    const allowedModelIds: Set<Id> = new Set<Id>(closure.map((m: GModel): Id => m.id));
+    if (!allowedModelIds.has(parts.modelId)) return false;
+
+    const targetModel: GModel | undefined = validationContext.models.get(parts.modelId);
+    if (!targetModel) return false;
+
+    const targetIndex = new GModelIndex(targetModel);
+    return targetIndex.dataTypesById.has(parts.refId);
   }
 }
