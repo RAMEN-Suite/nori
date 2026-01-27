@@ -1,4 +1,4 @@
-import { GAttribute, GModel, GNode, GRelation, Id, Ref } from '../models/GModel';
+import { GAttribute, GModel, GNode, Id, Ref } from '../models/GModel';
 import { QualifiedParts, Reference } from '../validation/container/Reference';
 import { GModelIndex } from '../validation/container/GModelIndex';
 
@@ -96,37 +96,5 @@ export class NodeResolver {
     }
 
     return attributeNames;
-  }
-
-  public static resolveRelationRoles(
-    startModelId: Id,
-    startNodeId: Id,
-    modelsById: ReadonlyMap<Id, GModel>,
-  ): ReadonlySet<string> {
-    const roleNames: Set<string> = new Set<string>();
-    const startModel: GModel | undefined = modelsById.get(startModelId);
-    if (!startModel) return roleNames;
-
-    for (const relation of startModel.relations ?? []) {
-      if (relation.from.nodeId === startNodeId) roleNames.add(relation.to.role);
-      if (relation.to.nodeId === startNodeId) roleNames.add(relation.from.role);
-    }
-
-    return roleNames;
-  }
-
-  public static resolveBaseRelationName(base: GModel, relation: GRelation): string | null {
-    const superTypes: string[] = relation.superTypes ?? [];
-    if (superTypes.length !== 1) return null;
-
-    const superType: string = superTypes[0]!;
-    if (!Reference.isQualified(superType)) return null;
-
-    const parts: QualifiedParts = Reference.splitQualified(superType);
-    if (parts.modelId !== base.id) return null;
-
-    const baseIndex = new GModelIndex(base);
-    const baseRel: GRelation | undefined = baseIndex.relationsById.get(parts.refId);
-    return baseRel?.name ?? null;
   }
 }

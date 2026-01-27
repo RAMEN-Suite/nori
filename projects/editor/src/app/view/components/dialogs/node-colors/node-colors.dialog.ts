@@ -29,7 +29,7 @@ export class NodeColorsDialog implements OnInit {
   protected currentColors: NodeColors = {};
 
   protected readonly nodeColorOptions: Signal<NodeColorOption[]> = computed((): NodeColorOption[] => {
-    const baseNodes: GNode[] = this.workspace.view.baseNodes();
+    const baseNodes: ReadonlyArray<GNode> = this.workspace.view.baseNodes();
     return baseNodes.map((n: GNode): NodeColorOption => ({ id: n.id, name: n.name }));
   });
 

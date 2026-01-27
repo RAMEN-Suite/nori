@@ -1,18 +1,14 @@
-import { Component, effect, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
+import { Button } from 'primeng/button';
+import { Fieldset } from 'primeng/fieldset';
 
 @Component({
   selector: 'app-node-relations',
-  imports: [],
+  imports: [Button, Fieldset],
   templateUrl: './node-relations.component.html',
   styleUrl: './node-relations.component.scss',
 })
 export class NodeRelationsComponent {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
-
-  constructor() {
-    effect((): void => {
-      console.log(this.workspace.view.currentNodeRelations());
-    });
-  }
 }

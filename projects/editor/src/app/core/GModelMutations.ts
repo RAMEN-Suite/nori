@@ -1,5 +1,6 @@
 import { GAttribute, GClassifier, GDataType, GModel, GNode, GRelation, Id } from './models/GModel';
 import { NodeResolver } from './resolver/NodeResolver';
+import { RelationResolver } from './resolver/RelationResolver';
 
 export type UpdateNodeInput = Partial<Pick<GNode, 'name' | 'superTypes' | 'attributes'>>;
 export type UpdateDataTypeInput = Partial<Pick<GDataType, 'name' | 'literals'>>;
@@ -102,7 +103,7 @@ export class GModelMutations {
     const blockedNames: ReadonlySet<string> = NodeResolver.resolveAttributeNames(startModelId, nodeId, modelsById);
     if (blockedNames.has(attribute.name)) throw new Error(`Attribute already exists: '${attribute.name}'`);
 
-    const roleNames: ReadonlySet<string> = NodeResolver.resolveRelationRoles(startModelId, nodeId, modelsById);
+    const roleNames: ReadonlySet<string> = RelationResolver.resolveReservedRoleNames(startModelId, nodeId, modelsById);
     if (roleNames.has(attribute.name)) throw new Error(`Attribute reserved by role: '${attribute.name}'`);
 
     const classifiers: ReadonlyArray<GClassifier> = model.classifiers ?? [];
@@ -136,7 +137,7 @@ export class GModelMutations {
       blocked.delete(name);
       if (blocked.has(newName)) throw new Error(`Attribute already exists: '${newName}'`);
 
-      const roleNames: ReadonlySet<string> = NodeResolver.resolveRelationRoles(model.id, nodeId, modelsById);
+      const roleNames: ReadonlySet<string> = RelationResolver.resolveReservedRoleNames(model.id, nodeId, modelsById);
       if (roleNames.has(newName)) throw new Error(`Attribute reserved by role: '${newName}'`);
     }
 

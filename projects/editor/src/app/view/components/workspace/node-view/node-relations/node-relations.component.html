@@ -1,1 +1,21 @@
-<p>node-relations works!</p>
+<p-fieldset legend="Allowed Relations"> </p-fieldset>
+
+<div class="flex flex-col gap-3">
+  <div class="flex basis-full flex-row items-center">
+    <div class="flex flex-3 justify-center">Node A</div>
+    <div class="flex flex-5 justify-center">Relation</div>
+    <div class="flex flex-3 justify-center">Node B</div>
+    <div class="flex flex-1">
+      <div class="flex justify-center">
+        <p-button icon="pi pi-pencil" size="small" variant="text" />
+        <p-button icon="pi pi-trash" severity="danger" size="small" variant="text" />
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mt-2.5 flex flex-col items-center justify-center gap-3">
+  <p-button label="Add Relationship" class="w-full" variant="outlined" fluid />
+</div>
+
+@for (relation of workspace.view.currentRelations(); track relation.id) {}

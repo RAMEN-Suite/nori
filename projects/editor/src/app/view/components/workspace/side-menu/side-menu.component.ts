@@ -78,7 +78,7 @@ export class SideMenuComponent {
   }
 
   private createSideMenu(): SideMenuItem[] {
-    const baseNodes: GNode[] = this.workspace.view.baseNodes();
+    const baseNodes: ReadonlyArray<GNode> = this.workspace.view.baseNodes();
     const menuItems: SideMenuItem[] = [];
 
     for (const node of baseNodes) {

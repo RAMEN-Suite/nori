@@ -171,7 +171,7 @@ export class CreateAttributeDialog {
     const builtinTypes: string[] = Array.from(Builtins.set);
     for (const type of builtinTypes) options.push({ label: type, value: type });
 
-    const localTypes: GDataType[] = this.workspace.view.currentDataTypes();
+    const localTypes: ReadonlyArray<GDataType> = this.workspace.view.currentDataTypes();
     for (const type of localTypes) options.push({ label: type.name, value: type.id });
 
     const globalTypes: GDataType[] = this.workspace.view.globalDataTypes();

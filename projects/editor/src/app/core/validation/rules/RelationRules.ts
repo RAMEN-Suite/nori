@@ -24,6 +24,7 @@ export class RelationRules extends AbstractRules {
       const relationPath: DiagnosticPath = DiagnosticPath.root().property('relations').index(relationIndex);
 
       const resolution: BaseRelationResolution = this.resolveBaseRelationId(ctx, relation, relationPath);
+      diagnostics.push(...resolution.diagnostics);
       if (!resolution.baseRelationId) return;
 
       const baseRelation: GRelation | undefined = ctx.baseIndex.relationsById.get(resolution.baseRelationId);

@@ -8,6 +8,7 @@ import { QualifiedParts, Reference } from '../../core/validation/container/Refer
 import { QueryHelper, SelectableRelation } from '../../core/helper/QueryHelper';
 import { NodeResolver, ResolvedNode } from '../../core/resolver/NodeResolver';
 import { Builtins } from '../../core/validation/container/Builtins';
+import { RelationResolver } from '../../core/resolver/RelationResolver';
 
 export interface InheritedAttribute {
   readonly modelId: Id;
@@ -29,22 +30,22 @@ export class WorkspaceView {
     return map;
   });
 
-  public readonly baseId: Signal<Id> = computed((): Id => {
+  public readonly baseId: Signal<Readonly<Id>> = computed((): Id => {
     return this.baseModel()?.id ?? '';
   });
 
-  private readonly baseSlot: Signal<number | null> = computed((): number | null => {
+  private readonly baseSlot: Signal<Readonly<number | null>> = computed((): number | null => {
     const slot: number = this.store.currentSlot();
     return Math.max(0, slot - 1);
   });
 
-  public readonly baseModel: Signal<GModel | null> = computed((): GModel | null => {
+  public readonly baseModel: Signal<Readonly<GModel | null>> = computed((): GModel | null => {
     const model: number | null = this.baseSlot();
     if (model === null) return null;
     return this.storage.recordsBySlot().get(model)?.gmodel ?? null;
   });
 
-  public readonly validation: Signal<ValidationResult> = computed((): ValidationResult => {
+  public readonly validation: Signal<Readonly<ValidationResult>> = computed((): ValidationResult => {
     const baseModel: GModel | null = this.baseModel();
     const currentModel: GModel | null = this.store.currentModel();
 
@@ -53,20 +54,20 @@ export class WorkspaceView {
     return validator.validate(baseModel, currentModel, this.storage.modelsById());
   });
 
-  public readonly currentNode: Signal<GNode | null> = computed((): GNode | null => {
+  public readonly currentNode: Signal<Readonly<GNode | null>> = computed((): GNode | null => {
     const currentNodeId: Id | null = this.store.currentNodeId();
     if (!currentNodeId) return null;
     const currentNodesById: ReadonlyMap<Id, GNode> = this.currentNodesById();
     return currentNodesById.get(currentNodeId) ?? null;
   });
 
-  public readonly currentNodes: Signal<GNode[]> = computed((): GNode[] => {
+  public readonly currentNodes: Signal<ReadonlyArray<GNode>> = computed((): GNode[] => {
     const model: GModel | null = this.store.currentModel();
     return model ? Array.from(QueryHelper.listNodes(model)) : [];
   });
 
-  public readonly currentNodesById: Signal<ReadonlyMap<Id, GNode>> = computed((): ReadonlyMap<Id, GNode> => {
-    const nodes: GNode[] = this.currentNodes();
+  public readonly currentNodesById: Signal<ReadonlyMap<Id, GNode>> = computed((): Map<Id, GNode> => {
+    const nodes: ReadonlyArray<GNode> = this.currentNodes();
     const nodesById: Map<Id, GNode> = new Map<Id, GNode>();
     for (const node of nodes) nodesById.set(node.id, node);
     return nodesById;
@@ -81,13 +82,27 @@ export class WorkspaceView {
     },
   );
 
-  public readonly currentRelations: Signal<GRelation[]> = computed((): GRelation[] => {
+  public readonly currentRelations: Signal<ReadonlyArray<GRelation>> = computed((): GRelation[] => {
     const model: GModel | null = this.store.currentModel();
     return model ? Array.from(QueryHelper.listRelations(model)) : [];
   });
 
+  public readonly currentBaseRelations: Signal<ReadonlyArray<GRelation>> = computed((): GRelation[] => {
+    const baseNode: GNode | null = this.currentBaseNode();
+    const baseRelations: ReadonlyArray<GRelation> = this.baseRelations();
+    if (!baseNode) return [];
+
+    const picked: GRelation[] = baseRelations.filter((relation: GRelation): boolean => {
+      return relation.from.nodeId === baseNode.id || relation.to.nodeId === baseNode.id;
+    });
+
+    const relationById: Map<Id, GRelation> = new Map<Id, GRelation>();
+    for (const relation of picked) relationById.set(relation.id, relation);
+    return Array.from(relationById.values()).sort((a: GRelation, b: GRelation): number => a.name.localeCompare(b.name));
+  });
+
   public readonly currentNodeRelations: Signal<ReadonlyArray<GRelation>> = computed((): GRelation[] => {
-    const relations: GRelation[] = this.currentRelations();
+    const relations: ReadonlyArray<GRelation> = this.currentRelations();
     const node: GNode | null = this.currentNode();
     if (!node) return [];
 
@@ -113,7 +128,7 @@ export class WorkspaceView {
     return QueryHelper.listRelationRoles(model, node.id);
   });
 
-  public readonly currentDataTypes: Signal<GDataType[]> = computed((): GDataType[] => {
+  public readonly currentDataTypes: Signal<ReadonlyArray<GDataType>> = computed((): GDataType[] => {
     const model: GModel | null = this.store.currentModel();
     return model ? Array.from(QueryHelper.listDataTypes(model)) : [];
   });
@@ -127,7 +142,7 @@ export class WorkspaceView {
     return QueryHelper.listNodeChain(model.id, node.id, modelsById);
   });
 
-  public readonly currentBaseNode: Signal<GNode | null> = computed((): GNode | null => {
+  public readonly currentBaseNode: Signal<Readonly<GNode | null>> = computed((): GNode | null => {
     const baseModel: GModel | null = this.baseModel();
     const currentModel: GNode | null = this.currentNode();
     if (!baseModel || !currentModel) return null;
@@ -139,12 +154,12 @@ export class WorkspaceView {
     return baseNodesById.get(parts.refId) ?? null;
   });
 
-  public readonly baseNodes: Signal<GNode[]> = computed((): GNode[] => {
+  public readonly baseNodes: Signal<ReadonlyArray<GNode>> = computed((): GNode[] => {
     const model: GModel | null = this.baseModel();
     return model ? Array.from(QueryHelper.listNodes(model)) : [];
   });
 
-  public readonly baseNodesById: Signal<ReadonlyMap<Id, GNode>> = computed((): ReadonlyMap<Id, GNode> => {
+  public readonly baseNodesById: Signal<ReadonlyMap<Id, GNode>> = computed((): Map<Id, GNode> => {
     const model: GModel | null = this.baseModel();
     if (!model) return new Map<Id, GNode>();
 
@@ -154,7 +169,7 @@ export class WorkspaceView {
     return nodesById;
   });
 
-  public readonly baseRelations: Signal<GRelation[]> = computed((): GRelation[] => {
+  public readonly baseRelations: Signal<Readonly<GRelation[]>> = computed((): GRelation[] => {
     const model: GModel | null = this.baseModel();
     return model ? Array.from(QueryHelper.listRelations(model)) : [];
   });
@@ -167,7 +182,7 @@ export class WorkspaceView {
   });
 
   public readonly inheritedAttributes: Signal<ReadonlyMap<Id, ReadonlyArray<InheritedAttribute>>> = computed(
-    (): ReadonlyMap<Id, ReadonlyArray<InheritedAttribute>> => {
+    (): Map<Id, InheritedAttribute[]> => {
       const map: Map<Id, InheritedAttribute[]> = new Map<Id, InheritedAttribute[]>();
 
       this.currentNodeChain().forEach((item: ResolvedNode, slot: number): void => {
@@ -184,7 +199,7 @@ export class WorkspaceView {
     },
   );
 
-  public readonly inheritedAttributeNames: Signal<ReadonlySet<string>> = computed((): ReadonlySet<string> => {
+  public readonly inheritedAttributeNames: Signal<ReadonlySet<string>> = computed((): Set<string> => {
     const attributeNames: Set<string> = new Set<string>();
     const attributes: GAttribute[] = this.currentNode()?.attributes ?? [];
     const nodeChain: ReadonlyArray<ResolvedNode> = this.currentNodeChain();
@@ -202,7 +217,7 @@ export class WorkspaceView {
     return attributeNames;
   });
 
-  public resolveDataType(typeId: TypeRef, modelId: Id): GDataType | null {
+  public resolveDataType(typeId: TypeRef, modelId: Id): Readonly<GDataType | null> {
     if (Builtins.isBuiltin(typeId)) return null;
     const indexes: ReadonlyMap<Id, GModelIndex> = this.indexesByModelId();
 
@@ -216,7 +231,7 @@ export class WorkspaceView {
     return index?.dataTypesById.get(typeId) ?? null;
   }
 
-  public resolveTypeLabel(typeId: TypeRef, modelId: Id): string {
+  public resolveTypeLabel(typeId: TypeRef, modelId: Id): Readonly<string> {
     if (Builtins.isBuiltin(typeId)) return typeId;
     const dataType: GDataType | null = this.resolveDataType(typeId, modelId);
     if (!dataType) return `Unknown type (${String(typeId)})`;
@@ -231,5 +246,13 @@ export class WorkspaceView {
 
     if (selection.direction === 'OUT') return QueryHelper.listRelationToNodes(base, model, selection.baseRelationId);
     return QueryHelper.listRelationFromNodes(base, model, selection.baseRelationId);
+  }
+
+  public resolveBaseRelationName(relation: GRelation): Readonly<string> {
+    const base: GModel | null = this.baseModel();
+    if (!base) return relation.name;
+
+    const baseName: string | null = RelationResolver.resolveBaseRelationName(base, relation);
+    return baseName ?? relation.name;
   }
 }
