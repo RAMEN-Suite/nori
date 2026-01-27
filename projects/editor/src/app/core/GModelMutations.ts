@@ -102,6 +102,9 @@ export class GModelMutations {
     const blockedNames: ReadonlySet<string> = NodeResolver.resolveAttributeNames(startModelId, nodeId, modelsById);
     if (blockedNames.has(attribute.name)) throw new Error(`Attribute already exists: '${attribute.name}'`);
 
+    const roleNames: ReadonlySet<string> = NodeResolver.resolveRelationRoles(startModelId, nodeId, modelsById);
+    if (roleNames.has(attribute.name)) throw new Error(`Attribute reserved by role: '${attribute.name}'`);
+
     const classifiers: ReadonlyArray<GClassifier> = model.classifiers ?? [];
     let foundNode: boolean = false;
 
@@ -132,6 +135,9 @@ export class GModelMutations {
       const blocked: Set<string> = new Set<string>(NodeResolver.resolveAttributeNames(model.id, nodeId, modelsById));
       blocked.delete(name);
       if (blocked.has(newName)) throw new Error(`Attribute already exists: '${newName}'`);
+
+      const roleNames: ReadonlySet<string> = NodeResolver.resolveRelationRoles(model.id, nodeId, modelsById);
+      if (roleNames.has(newName)) throw new Error(`Attribute reserved by role: '${newName}'`);
     }
 
     const classifiers: ReadonlyArray<GClassifier> = model.classifiers ?? [];

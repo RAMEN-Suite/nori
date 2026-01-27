@@ -5,7 +5,7 @@ import { ModelValidator, ValidationResult } from '../../core/validation/ModelVal
 import { GAttribute, GDataType, GModel, GNode, GRelation, Id, TypeRef } from '../../core/models/GModel';
 import { GModelIndex } from '../../core/validation/container/GModelIndex';
 import { QualifiedParts, Reference } from '../../core/validation/container/Reference';
-import { QueryHelper } from '../../core/helper/QueryHelper';
+import { QueryHelper, SelectableRelation } from '../../core/helper/QueryHelper';
 import { NodeResolver, ResolvedNode } from '../../core/resolver/NodeResolver';
 import { Builtins } from '../../core/validation/container/Builtins';
 
@@ -80,6 +80,38 @@ export class WorkspaceView {
       return QueryHelper.listGroupedNodesByBaseId(baseModel, currentModel);
     },
   );
+
+  public readonly currentRelations: Signal<GRelation[]> = computed((): GRelation[] => {
+    const model: GModel | null = this.store.currentModel();
+    return model ? Array.from(QueryHelper.listRelations(model)) : [];
+  });
+
+  public readonly currentNodeRelations: Signal<ReadonlyArray<GRelation>> = computed((): GRelation[] => {
+    const relations: GRelation[] = this.currentRelations();
+    const node: GNode | null = this.currentNode();
+    if (!node) return [];
+
+    return relations.filter((relation: GRelation): boolean => {
+      return relation.from.nodeId === node.id || relation.to.nodeId === node.id;
+    });
+  });
+
+  public readonly currentSelectableRelations: Signal<ReadonlyArray<SelectableRelation>> = computed(
+    (): ReadonlyArray<SelectableRelation> => {
+      const base: GModel | null = this.baseModel();
+      const model: GModel | null = this.store.currentModel();
+      const node: GNode | null = this.currentNode();
+      if (!base || !model || !node) return [];
+      return QueryHelper.listSelectableRelations(base, model, node.id);
+    },
+  );
+
+  public readonly currentReservedRoles: Signal<ReadonlyArray<string>> = computed((): ReadonlyArray<string> => {
+    const model: GModel | null = this.store.currentModel();
+    const node: GNode | null = this.currentNode();
+    if (!model || !node) return [];
+    return QueryHelper.listRelationRoles(model, node.id);
+  });
 
   public readonly currentDataTypes: Signal<GDataType[]> = computed((): GDataType[] => {
     const model: GModel | null = this.store.currentModel();
@@ -190,5 +222,14 @@ export class WorkspaceView {
     if (!dataType) return `Unknown type (${String(typeId)})`;
 
     return dataType.name;
+  }
+
+  public resolveNodesForRelation(selection: SelectableRelation): ReadonlyArray<GNode> {
+    const base: GModel | null = this.baseModel();
+    const model: GModel | null = this.store.currentModel();
+    if (!base || !model) return [];
+
+    if (selection.direction === 'OUT') return QueryHelper.listRelationToNodes(base, model, selection.baseRelationId);
+    return QueryHelper.listRelationFromNodes(base, model, selection.baseRelationId);
   }
 }

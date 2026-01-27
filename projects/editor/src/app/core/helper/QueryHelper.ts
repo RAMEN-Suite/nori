@@ -4,6 +4,14 @@ import { QualifiedParts, Reference } from '../validation/container/Reference';
 import { NodeResolver, ResolvedNode } from '../resolver/NodeResolver';
 import { ModelResolver } from '../resolver/ModelResolver';
 
+export type SelectableRelation = {
+  readonly baseRelationId: Id;
+  readonly relationName: string;
+  readonly roleName: string;
+  readonly direction: 'OUT' | 'IN';
+  readonly isBidirectional?: boolean;
+};
+
 export class QueryHelper {
   public static listNodes(model: GModel): ReadonlyArray<GNode> {
     const modelIndex: GModelIndex = new GModelIndex(model);
@@ -54,22 +62,74 @@ export class QueryHelper {
     return relations.sort((a: GRelation, b: GRelation): number => a.name.localeCompare(b.name));
   }
 
-  public static listRelationsFrom(base: GModel, model: GModel, fromNodeId: Id): ReadonlyArray<GRelation> {
+  public static listSelectableRelations(base: GModel, model: GModel, nodeId: Id): ReadonlyArray<SelectableRelation> {
     const baseIndex: GModelIndex = new GModelIndex(base);
     const modelIndex: GModelIndex = new GModelIndex(model);
 
-    const fromNode: GNode | undefined = modelIndex.nodesById.get(fromNodeId);
-    if (!fromNode) return [];
+    const node: GNode | undefined = modelIndex.nodesById.get(nodeId);
+    if (!node) return [];
 
-    const superType: QualifiedParts | null = NodeResolver.resolveLocalSuperType(fromNode.superTypes, base.id);
+    const superType: QualifiedParts | null = NodeResolver.resolveLocalSuperType(node.superTypes, base.id);
     if (!superType) return [];
 
-    const allowed: GRelation[] = [];
+    const baseNodeId: Id = superType.refId;
+    const relations: SelectableRelation[] = [];
+
     for (const relation of baseIndex.relationsById.values()) {
-      if (relation.from.nodeId === superType.refId) allowed.push(relation);
+      if (relation.from.nodeId === baseNodeId) {
+        relations.push({
+          baseRelationId: relation.id,
+          relationName: relation.name,
+          direction: 'OUT',
+          roleName: relation.to.role,
+          isBidirectional: relation.isBidirectional,
+        });
+      }
+
+      if (relation.to.nodeId === baseNodeId) {
+        relations.push({
+          baseRelationId: relation.id,
+          relationName: relation.name,
+          direction: 'IN',
+          roleName: relation.from.role,
+          isBidirectional: relation.isBidirectional,
+        });
+      }
     }
 
-    return allowed.sort((a: GRelation, b: GRelation): number => a.name.localeCompare(b.name));
+    return relations.sort((a: SelectableRelation, b: SelectableRelation): number =>
+      a.relationName.localeCompare(b.relationName),
+    );
+  }
+
+  public static listRelationRoles(model: GModel, nodeId: Id): ReadonlyArray<string> {
+    const roles: Set<string> = new Set<string>();
+
+    for (const relation of model.relations ?? []) {
+      if (relation.from.nodeId === nodeId) roles.add(relation.to.role);
+      if (relation.to.nodeId === nodeId) roles.add(relation.from.role);
+    }
+
+    return Array.from(roles).sort((a: string, b: string): number => a.localeCompare(b));
+  }
+
+  public static listRelationFromNodes(base: GModel, model: GModel, baseRelationId: Id): ReadonlyArray<GNode> {
+    const baseIndex: GModelIndex = new GModelIndex(base);
+    const modelIndex: GModelIndex = new GModelIndex(model);
+
+    const baseRelation: GRelation | undefined = baseIndex.relationsById.get(baseRelationId);
+    if (!baseRelation) return [];
+
+    const expectedFromBaseId: Id = baseRelation.from.nodeId;
+    const allowed: GNode[] = [];
+
+    for (const node of modelIndex.nodesById.values()) {
+      const superType: QualifiedParts | null = NodeResolver.resolveLocalSuperType(node.superTypes, base.id);
+      if (!superType) continue;
+      if (superType.refId === expectedFromBaseId) allowed.push(node);
+    }
+
+    return allowed.sort((a: GNode, b: GNode): number => a.name.localeCompare(b.name));
   }
 
   public static listRelationToNodes(base: GModel, model: GModel, baseRelationId: Id): ReadonlyArray<GNode> {

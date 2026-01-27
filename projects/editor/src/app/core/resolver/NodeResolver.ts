@@ -97,4 +97,21 @@ export class NodeResolver {
 
     return attributeNames;
   }
+
+  public static resolveRelationRoles(
+    startModelId: Id,
+    startNodeId: Id,
+    modelsById: ReadonlyMap<Id, GModel>,
+  ): ReadonlySet<string> {
+    const roleNames: Set<string> = new Set<string>();
+    const startModel: GModel | undefined = modelsById.get(startModelId);
+    if (!startModel) return roleNames;
+
+    for (const relation of startModel.relations ?? []) {
+      if (relation.from.nodeId === startNodeId) roleNames.add(relation.to.role);
+      if (relation.to.nodeId === startNodeId) roleNames.add(relation.from.role);
+    }
+
+    return roleNames;
+  }
 }

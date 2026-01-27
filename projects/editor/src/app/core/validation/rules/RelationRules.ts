@@ -18,12 +18,12 @@ export class RelationRules extends AbstractRules {
     const diagnostics: Diagnostic[] = [];
     const relations: ReadonlyArray<GRelation> = ctx.derivedModel.relations ?? [];
     diagnostics.push(...this.validateUniqueIds(relations));
+    diagnostics.push(...this.validateRelationRoleConflicts(ctx, relations));
 
     relations.forEach((relation: GRelation, relationIndex: number): void => {
       const relationPath: DiagnosticPath = DiagnosticPath.root().property('relations').index(relationIndex);
 
       const resolution: BaseRelationResolution = this.resolveBaseRelationId(ctx, relation, relationPath);
-      diagnostics.push(...resolution.diagnostics);
       if (!resolution.baseRelationId) return;
 
       const baseRelation: GRelation | undefined = ctx.baseIndex.relationsById.get(resolution.baseRelationId);
@@ -152,6 +152,78 @@ export class RelationRules extends AbstractRules {
         ref: baseRelationId,
       }),
     ];
+  }
+
+  private validateRelationRoleConflicts(ctx: ValidationContext, relations: ReadonlyArray<GRelation>): Diagnostic[] {
+    const diagnostics: Diagnostic[] = [];
+    const ownerByKey: Map<string, Id> = new Map<string, Id>();
+    const ownerRelationByKey: Map<string, Id> = new Map<string, Id>();
+
+    relations.forEach((relation: GRelation, relationIndex: number): void => {
+      const relationPath: DiagnosticPath = DiagnosticPath.root().property('relations').index(relationIndex);
+
+      const resolution: BaseRelationResolution = this.resolveBaseRelationId(ctx, relation, relationPath);
+      diagnostics.push(...resolution.diagnostics);
+      if (!resolution.baseRelationId) return;
+
+      const baseRelationId: Id = resolution.baseRelationId;
+
+      this.validateRelationRole(
+        relation.from.nodeId,
+        relation.to.role,
+        baseRelationId,
+        relation.id,
+        relationPath.property('to').property('role'),
+        ownerByKey,
+        ownerRelationByKey,
+        diagnostics,
+      );
+
+      this.validateRelationRole(
+        relation.to.nodeId,
+        relation.from.role,
+        baseRelationId,
+        relation.id,
+        relationPath.property('from').property('role'),
+        ownerByKey,
+        ownerRelationByKey,
+        diagnostics,
+      );
+    });
+
+    return diagnostics;
+  }
+
+  private validateRelationRole(
+    nodeId: Id,
+    roleName: string,
+    baseRelationId: Id,
+    derivedRelationId: Id,
+    path: DiagnosticPath,
+    ownerByKey: Map<string, Id>,
+    ownerRelationByKey: Map<string, Id>,
+    diagnostics: Diagnostic[],
+  ): void {
+    const key: string = `${nodeId}::${roleName}`;
+    const existingBase: Id | undefined = ownerByKey.get(key);
+
+    if (existingBase === undefined) {
+      ownerByKey.set(key, baseRelationId);
+      ownerRelationByKey.set(key, derivedRelationId);
+      return;
+    }
+
+    if (existingBase === baseRelationId) return;
+    const firstOwnerRelationId: Id | undefined = ownerRelationByKey.get(key);
+
+    diagnostics.push(
+      Diagnostics.error({
+        code: VALIDATION_ERROR.RELATION_ROLE_PROPERTY_CONFLICT,
+        message: `Role '${roleName}' on node '${nodeId}' conflicts across base relations ('${existingBase}' vs '${baseRelationId}').`,
+        path,
+        ref: firstOwnerRelationId ?? derivedRelationId,
+      }),
+    );
   }
 
   private validateComposite(

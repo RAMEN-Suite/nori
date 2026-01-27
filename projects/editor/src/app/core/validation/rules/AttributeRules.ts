@@ -49,8 +49,33 @@ export class AttributeRules extends AbstractRules {
     return diagnostics;
   }
 
+  private validateNoRoleNameConflict(
+    ctx: ValidationContext,
+    node: GNode,
+    attribute: GAttribute,
+    attributePath: DiagnosticPath,
+  ): Diagnostic[] {
+    const reserved: Set<string> = new Set<string>();
+
+    for (const relation of ctx.derivedModel.relations ?? []) {
+      if (relation.from.nodeId === node.id) reserved.add(relation.to.role);
+      if (relation.to.nodeId === node.id) reserved.add(relation.from.role);
+    }
+
+    if (!reserved.has(attribute.name)) return [];
+
+    return [
+      Diagnostics.error({
+        code: VALIDATION_ERROR.ATTRIBUTE_NAME_CONFLICTS_WITH_ROLE,
+        message: `Attribute '${attribute.name}' in node '${node.id}' conflicts with a reserved relation role name.`,
+        path: attributePath.property('name'),
+        ref: attribute.name,
+      }),
+    ];
+  }
+
   private validateAttributes(
-    ctc: ValidationContext,
+    ctx: ValidationContext,
     node: GNode,
     attributes: ReadonlyArray<GAttribute>,
     inheritedNames: ReadonlySet<string>,
@@ -62,9 +87,10 @@ export class AttributeRules extends AbstractRules {
       const attributePath: DiagnosticPath = classifierPath.property('attributes').index(attributeIndex);
 
       diagnostics.push(...this.validateNoInheritedShadowing(attribute, node, inheritedNames, attributePath));
+      diagnostics.push(...this.validateNoRoleNameConflict(ctx, node, attribute, attributePath));
       diagnostics.push(...this.validateBounds(attribute, node, attributePath));
       diagnostics.push(...this.validateKeyFlag(attribute, node, attributePath));
-      diagnostics.push(...this.validateTypeResolvable(ctc, attribute, node, attributePath));
+      diagnostics.push(...this.validateTypeResolvable(ctx, attribute, node, attributePath));
     });
 
     return diagnostics;

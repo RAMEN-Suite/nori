@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal, WritableSignal } from '@angular/core';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
@@ -36,12 +36,12 @@ export class NodeViewComponent {
   protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
   protected readonly router: Router = inject(Router);
 
-  protected activeTab: 'attributes' | 'relations' = 'attributes';
+  protected activeTab: WritableSignal<'attributes' | 'relations'> = signal('attributes');
 
   constructor() {
     this.activatedRoute.queryParamMap.subscribe((queryParams: ParamMap): void => {
       const tab: string | null = queryParams.get('tab');
-      this.activeTab = tab === 'relations' ? 'relations' : 'attributes';
+      this.activeTab.set(tab === 'relations' ? 'relations' : 'attributes');
     });
   }
 

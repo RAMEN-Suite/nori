@@ -120,7 +120,7 @@ export class RelationEndRules extends AbstractRules {
     diagnostics.push(
       ...this.validateNodeHasBaseSuperType(
         fromParts,
-        VALIDATION_ERROR.FROM_NODE_SUPERTYPE_INVALID,
+        VALIDATION_ERROR.RELATION_FROM_NODE_SUPERTYPE_INVALID,
         fromNode.id,
         derivedRelation.id,
         relationPath.property('from').property('nodeId'),
@@ -132,7 +132,7 @@ export class RelationEndRules extends AbstractRules {
     diagnostics.push(
       ...this.validateNodeHasBaseSuperType(
         toParts,
-        VALIDATION_ERROR.TO_NODE_SUPERTYPE_INVALID,
+        VALIDATION_ERROR.RELATION_TO_NODE_SUPERTYPE_INVALID,
         toNode.id,
         derivedRelation.id,
         relationPath.property('to').property('nodeId'),
