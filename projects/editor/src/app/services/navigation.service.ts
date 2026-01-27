@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { ActivatedRoute, Router, UrlTree } from '@angular/router';
+import { ActivatedRoute, NavigationExtras, Router, UrlTree } from '@angular/router';
 import { PARAMETERS } from '../app.routes';
 
 @Injectable({ providedIn: 'root' })
@@ -21,16 +21,17 @@ export class NavigationService {
     const commands: string[] = ['/ws', projectId, String(slot)];
     if (nodeId !== null) commands.push(nodeId);
 
-    await this.navigateTo(commands);
+    const extras: NavigationExtras = nodeId !== null ? { queryParamsHandling: 'preserve' } : {};
+    await this.navigateTo(commands, extras);
   }
 
-  private async navigateTo(route: string[]): Promise<void> {
+  private async navigateTo(route: string[], extras?: NavigationExtras): Promise<void> {
     const currentUrl: string = this.router.url;
     const urlTree: UrlTree = this.router.createUrlTree(route);
     const targetUrl: string = this.router.serializeUrl(urlTree);
 
     if (currentUrl === targetUrl) return;
-    await this.router.navigate(route);
+    await this.router.navigate(route, extras);
   }
 
   private getRouteParameter(activatedRoute: ActivatedRoute, parameterName: string): string | null {
