@@ -12,7 +12,6 @@ import {
   ConfirmationDialog,
   ConfirmationOptions,
 } from '../../../../dialogs/confirmation/confirmation.dialog';
-import { SemanticHelper } from '../../../../../../core/helper/SemanticHelper';
 import { Chip } from 'primeng/chip';
 
 const FORMATS = {
@@ -136,10 +135,6 @@ export class NodeAttributeComponent {
     if (!slot || !nodeId || slot === 0) return;
 
     void this.navigation.navigateToNode(this.activatedRoute, slot, nodeId);
-  }
-
-  protected isList(bounds: Bounds): boolean {
-    return bounds.upperBound === SemanticHelper.UNBOUNDED || bounds.upperBound > 1;
   }
 
   protected getCollectionChip(attribute: GAttribute | undefined): AttributeChip | null {

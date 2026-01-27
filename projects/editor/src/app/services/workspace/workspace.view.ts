@@ -34,7 +34,7 @@ export class WorkspaceView {
     return this.baseModel()?.id ?? '';
   });
 
-  private readonly baseSlot: Signal<Readonly<number | null>> = computed((): number | null => {
+  public readonly baseSlot: Signal<Readonly<number | null>> = computed((): number | null => {
     const slot: number = this.store.currentSlot();
     return Math.max(0, slot - 1);
   });
@@ -101,14 +101,24 @@ export class WorkspaceView {
     return Array.from(relationById.values()).sort((a: GRelation, b: GRelation): number => a.name.localeCompare(b.name));
   });
 
-  public readonly currentNodeRelations: Signal<ReadonlyArray<GRelation>> = computed((): GRelation[] => {
+  public readonly currentNodeRelationsOut: Signal<ReadonlyArray<GRelation>> = computed((): ReadonlyArray<GRelation> => {
     const relations: ReadonlyArray<GRelation> = this.currentRelations();
     const node: GNode | null = this.currentNode();
     if (!node) return [];
 
-    return relations.filter((relation: GRelation): boolean => {
-      return relation.from.nodeId === node.id || relation.to.nodeId === node.id;
-    });
+    return relations
+      .filter((relation: GRelation): boolean => relation.from.nodeId === node.id)
+      .sort((a: GRelation, b: GRelation): number => a.name.localeCompare(b.name));
+  });
+
+  public readonly currentNodeRelationsIn: Signal<ReadonlyArray<GRelation>> = computed((): ReadonlyArray<GRelation> => {
+    const relations: ReadonlyArray<GRelation> = this.currentRelations();
+    const node: GNode | null = this.currentNode();
+    if (!node) return [];
+
+    return relations
+      .filter((relation: GRelation): boolean => relation.to.nodeId === node.id)
+      .sort((a: GRelation, b: GRelation): number => a.name.localeCompare(b.name));
   });
 
   public readonly currentSelectableRelations: Signal<ReadonlyArray<SelectableRelation>> = computed(

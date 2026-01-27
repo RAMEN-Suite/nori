@@ -7,7 +7,7 @@
     @if (inheritedAttributes && inheritedAttributes.length > 0) {
       <p-fieldset>
         <ng-template #header>
-          <div class="select-none">
+          <div class="max-w-100 truncate text-nowrap select-none">
             Prescribed by <span class="font-extrabold">{{ item.node.name }}</span> in
             <span class="font-extrabold"> {{ index === 0 ? 'Metamodel' : `Model ${index}` }} </span>
           </div>
@@ -23,20 +23,27 @@
     }
   }
 
-  <div class="my-2 flex flex-col items-center px-4.5">
-    <div class="flex w-full flex-col gap-2">
-      @for (attribute of currentNode()?.attributes; track attribute.name) {
-        <app-node-attribute
-          [attribute]="attribute"
-          [modelSlot]="workspace.store.currentSlot()"
-          [modelId]="workspace.store.currentModel()?.id"
-          [nodeId]="workspace.store.currentNodeId() ?? undefined"
-        />
-      }
-    </div>
-  </div>
-</div>
+  @if (currentNode()?.attributes?.length) {
+    <p-fieldset>
+      <ng-template #header>
+        <span class="font-bold">{{ workspace.view.currentNode()?.name }} </span> Attributes
+      </ng-template>
+      <div class="my-2 flex flex-col items-center">
+        <div class="flex w-full flex-col gap-2">
+          @for (attribute of currentNode()?.attributes; track attribute.name) {
+            <app-node-attribute
+              [attribute]="attribute"
+              [modelSlot]="workspace.store.currentSlot()"
+              [modelId]="workspace.store.currentModel()?.id"
+              [nodeId]="workspace.store.currentNodeId() ?? undefined"
+            />
+          }
+        </div>
+      </div>
+    </p-fieldset>
+  }
 
-<div class="mt-2.5 flex flex-col items-center justify-center gap-3">
-  <p-button label="Add Attribute" class="w-full" variant="outlined" fluid (click)="handleOpenCreateAttribute()" />
+  <div class="mt-3 flex flex-col items-center justify-center gap-3">
+    <p-button label="Add Attribute" class="w-full" variant="outlined" fluid (click)="handleOpenCreateAttribute()" />
+  </div>
 </div>

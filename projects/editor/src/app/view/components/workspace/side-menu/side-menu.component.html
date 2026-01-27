@@ -11,7 +11,7 @@
         <div class="cursor-pointer">
           @if (item.isCategory) {
             <div pRipple class="mb-1.5 flex flex-row items-center justify-between border-b border-(--p-menubar-border-color) px-2 py-1.5">
-              <div class="flex font-bold font-stretch-semi-condensed">
+              <div class="flex font-bold wrap-anywhere font-stretch-semi-condensed">
                 {{ item.label }}
               </div>
               <div class="flex">
@@ -51,7 +51,7 @@
   <ng-template #item let-item>
     <div
       pRipple
-      class="flex cursor-pointer flex-row items-center justify-start gap-3 px-2 py-2"
+      class="flex max-w-50! cursor-pointer flex-row items-center justify-start gap-3 px-2 py-2"
       [class.text-(--p-red-500)]="item.severity === 'error'"
     >
       <div class="flex flex-2 items-center justify-center">

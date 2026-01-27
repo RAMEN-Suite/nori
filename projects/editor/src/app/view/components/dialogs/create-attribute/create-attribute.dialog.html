@@ -10,6 +10,7 @@
                 [(ngModel)]="draftAttribute().name"
                 (blur)="handleTransformName()"
                 [invalid]="(nameModel.touched || isSubmitted) && (!isUnique() || !isNameValid() || !isNotRole())"
+                maxlength="32"
                 pInputText
                 id="attributeName"
                 name="attributeName"

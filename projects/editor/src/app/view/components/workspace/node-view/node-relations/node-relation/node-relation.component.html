@@ -1,1 +1,59 @@
-<p>node-relation works!</p>
+<div class="flex min-h-8.5 flex-row items-center gap-5">
+  <div class="flex flex-10 items-center gap-1">
+    @if (!isIncoming()) {
+      <div class="flex flex-6 flex-row justify-center">
+        <div class="wrap-anywhere">{{ resolveNode(relation()?.from?.nodeId ?? '') }}</div>
+      </div>
+    }
+    <div class="flex flex-6 flex-row items-center justify-center gap-2 text-sm select-none">
+      @if (!isIncoming()) {
+        <div class="flex-row">
+          <i class="pi pi-ellipsis-h mt-0.5" style="font-size: 8pt"></i>
+        </div>
+      } @else {
+        <div class="flex-row">
+          <i
+            class="pi pi-circle-fill mt-0.5 cursor-pointer"
+            style="font-size: 8pt"
+            [pTooltip]="resolveNode(relation()?.from?.nodeId ?? '')"
+            positionTop="15"
+            tooltipPosition="bottom"
+          ></i>
+          <i class="pi pi-ellipsis-h mt-0.5" style="font-size: 8pt"></i>
+        </div>
+      }
+      <div class="flex items-center">
+        [
+        <div class="mx-1 max-w-35 truncate">:{{ relation()?.name }}</div>
+        ]
+      </div>
+      @if (!isIncoming()) {
+        <div class="flex-row">
+          <i class="pi pi-arrow-right mt-0.5" style="font-size: 8pt"></i>
+          <i
+            class="pi pi-circle-fill mt-0.5 cursor-pointer"
+            style="font-size: 8pt"
+            [pTooltip]="resolveNode(relation()?.to?.nodeId ?? '')"
+            positionTop="15"
+            tooltipPosition="bottom"
+          ></i>
+        </div>
+      } @else {
+        <div class="flex-row">
+          <i class="pi pi-arrow-right mt-0.5" style="font-size: 8pt"></i>
+        </div>
+      }
+    </div>
+    @if (isIncoming()) {
+      <div class="flex flex-6 justify-center">
+        <div class="wrap-anywhere">{{ resolveNode(relation()?.to?.nodeId ?? '') }}</div>
+      </div>
+    }
+  </div>
+  <div class="flex flex-2">
+    <div class="flex justify-center">
+      <p-button icon="pi pi-pencil" size="small" variant="text" />
+      <p-button icon="pi pi-trash" severity="danger" size="small" variant="text" />
+    </div>
+  </div>
+</div>
