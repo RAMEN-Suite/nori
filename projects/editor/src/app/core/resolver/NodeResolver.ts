@@ -1,4 +1,4 @@
-import { GAttribute, GModel, GNode, Id, Ref } from '../models/GModel';
+import { GAttribute, GModel, GNode, GRelation, Id, Ref } from '../models/GModel';
 import { QualifiedParts, Reference } from '../validation/container/Reference';
 import { GModelIndex } from '../validation/container/GModelIndex';
 
@@ -113,5 +113,20 @@ export class NodeResolver {
     }
 
     return roleNames;
+  }
+
+  public static resolveBaseRelationName(base: GModel, relation: GRelation): string | null {
+    const superTypes: string[] = relation.superTypes ?? [];
+    if (superTypes.length !== 1) return null;
+
+    const superType: string = superTypes[0]!;
+    if (!Reference.isQualified(superType)) return null;
+
+    const parts: QualifiedParts = Reference.splitQualified(superType);
+    if (parts.modelId !== base.id) return null;
+
+    const baseIndex = new GModelIndex(base);
+    const baseRel: GRelation | undefined = baseIndex.relationsById.get(parts.refId);
+    return baseRel?.name ?? null;
   }
 }

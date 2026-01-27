@@ -238,7 +238,7 @@ export class CreateAttributeDialog {
     return attributeName.length > 0;
   }
 
-  protected isAttributeUnique(): boolean {
+  protected isUnique(): boolean {
     const currentAttribute: GAttribute | undefined = this.currentAttribute();
     if (currentAttribute && currentAttribute.name === this.draftAttribute().name) return true;
 
@@ -246,12 +246,18 @@ export class CreateAttributeDialog {
     return !this.workspace.view.inheritedAttributeNames().has(attributeName);
   }
 
-  protected isAttributeTypeValid(): boolean {
+  protected isNotRole(): boolean {
+    const attributeName: string = this.draftAttribute().name.toLowerCase().trim();
+    const roleNames: ReadonlySet<string> = this.workspace.view.currentRelationRoles();
+    return !roleNames.has(attributeName);
+  }
+
+  protected isTypeValid(): boolean {
     return !!this.draftAttribute().typeId;
   }
 
   protected isFormValid(): boolean {
-    return this.isAttributeTypeValid() && this.isNameValid() && this.isAttributeUnique();
+    return this.isTypeValid() && this.isNotRole() && this.isNameValid() && this.isUnique();
   }
 
   protected handleCloseModal(): void {

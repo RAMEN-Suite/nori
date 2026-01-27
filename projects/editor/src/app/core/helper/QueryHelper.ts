@@ -102,7 +102,7 @@ export class QueryHelper {
     );
   }
 
-  public static listRelationRoles(model: GModel, nodeId: Id): ReadonlyArray<string> {
+  public static listRelationRoles(model: GModel, nodeId: Id): ReadonlySet<string> {
     const roles: Set<string> = new Set<string>();
 
     for (const relation of model.relations ?? []) {
@@ -110,7 +110,7 @@ export class QueryHelper {
       if (relation.to.nodeId === nodeId) roles.add(relation.from.role);
     }
 
-    return Array.from(roles).sort((a: string, b: string): number => a.localeCompare(b));
+    return roles;
   }
 
   public static listRelationFromNodes(base: GModel, model: GModel, baseRelationId: Id): ReadonlyArray<GNode> {

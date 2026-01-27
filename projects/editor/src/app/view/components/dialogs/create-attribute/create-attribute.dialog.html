@@ -9,7 +9,7 @@
                 #nameModel="ngModel"
                 [(ngModel)]="draftAttribute().name"
                 (blur)="handleTransformName()"
-                [invalid]="(nameModel.touched || isSubmitted) && (!isAttributeUnique() || !isNameValid())"
+                [invalid]="(nameModel.touched || isSubmitted) && (!isUnique() || !isNameValid() || !isNotRole())"
                 pInputText
                 id="attributeName"
                 name="attributeName"
@@ -20,12 +20,16 @@
             </p-ifta-label>
 
             @if (nameModel.touched || isSubmitted) {
-              @if (!isAttributeUnique()) {
+              @if (!isUnique()) {
                 <p-message severity="error" size="small" variant="simple"> Attribute does already exist. </p-message>
               }
 
               @if (!isNameValid()) {
-                <p-message severity="error" size="small" variant="simple"> Attribute name cannot be empty. </p-message>
+                <p-message severity="error" size="small" variant="simple"> Name cannot be empty. </p-message>
+              }
+
+              @if (!isNotRole()) {
+                <p-message severity="error" size="small" variant="simple"> Name is reserved by relations. </p-message>
               }
             }
           </div>
@@ -37,7 +41,7 @@
                 [suggestions]="filteredDataTypeOptions()"
                 (completeMethod)="handleAutoComplete($event)"
                 (ngModelChange)="handleSelectType($event)"
-                [invalid]="(dataTypeModel.touched || isSubmitted) && !isAttributeTypeValid()"
+                [invalid]="(dataTypeModel.touched || isSubmitted) && !isTypeValid()"
                 optionLabel="label"
                 optionValue="value"
                 dropdown
@@ -47,8 +51,10 @@
               <label for="attributeType">Attribute Type</label>
             </p-ifta-label>
 
-            @if ((dataTypeModel.touched || isSubmitted) && !isAttributeTypeValid()) {
-              <p-message severity="error" size="small" variant="simple"> Please select an attribute type. </p-message>
+            @if ((dataTypeModel.touched || isSubmitted) && !isTypeValid()) {
+              <p-message severity="error" size="small" variant="simple">
+                Please <span class="font-bold">select</span> an attribute type.
+              </p-message>
             }
           </div>
         </div>

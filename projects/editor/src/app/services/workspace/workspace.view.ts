@@ -106,10 +106,10 @@ export class WorkspaceView {
     },
   );
 
-  public readonly currentReservedRoles: Signal<ReadonlyArray<string>> = computed((): ReadonlyArray<string> => {
+  public readonly currentRelationRoles: Signal<ReadonlySet<string>> = computed((): ReadonlySet<string> => {
     const model: GModel | null = this.store.currentModel();
     const node: GNode | null = this.currentNode();
-    if (!model || !node) return [];
+    if (!model || !node) return new Set<string>();
     return QueryHelper.listRelationRoles(model, node.id);
   });
 
