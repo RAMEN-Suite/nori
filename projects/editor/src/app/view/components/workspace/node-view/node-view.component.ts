@@ -9,6 +9,7 @@ import { NodeAttributesComponent } from './node-attributes/node-attributes.compo
 import { NodeRelationsComponent } from './node-relations/node-relations.component';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { NavigationService } from '../../../../services/navigation.service';
+import { Chip } from 'primeng/chip';
 
 @Component({
   selector: 'app-node-editor',
@@ -24,6 +25,7 @@ import { NavigationService } from '../../../../services/navigation.service';
     ScrollPanel,
     NodeAttributesComponent,
     NodeRelationsComponent,
+    Chip,
   ],
   providers: [],
   templateUrl: './node-view.component.html',

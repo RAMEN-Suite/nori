@@ -41,6 +41,13 @@
       <p-button label="Close View" size="small" variant="outlined" (click)="handleCloseView()"></p-button>
     </div>
 
-    <div class="flex flex-row gap-5"></div>
+    <div class="flex flex-row gap-5">
+      @if (!workspace.view.validation().hasErrors) {
+        <p-button label="no validation issues" size="small" outlined styleClass="px-10!" />
+      } @else {
+        @let amount = workspace.view.validation().diagnostics.length;
+        <p-button [label]="amount + ' validation issues'" size="small" outlined severity="danger" styleClass="px-10!" />
+      }
+    </div>
   </div>
 </div>
