@@ -1,28 +1,17 @@
 <div class="flex min-h-8.5 flex-row items-center gap-5">
-  <div class="flex flex-2 items-center justify-end gap-4">
-    <i
-      pTooltip="Key Attribute"
-      tooltipPosition="bottom"
-      positionTop="12"
-      showDelay="500"
-      class="pi pi-key cursor-help"
-      [hidden]="!attribute()?.isKey"
-    ></i>
-    <i
-      pTooltip="ReadOnly Attribute"
-      tooltipPosition="bottom"
-      positionTop="12"
-      showDelay="500"
-      class="pi pi-eye cursor-help"
-      [hidden]="!attribute()?.isReadOnly"
-    ></i>
+  <div class="flex flex-1 items-center justify-end gap-4">
+    @if (attribute()?.isKey) {
+      <i pTooltip="Key Attribute" tooltipPosition="bottom" positionTop="12" showDelay="500" class="pi pi-key cursor-help"></i>
+    } @else if (attribute()?.isReadOnly) {
+      <i pTooltip="ReadOnly Attribute" tooltipPosition="bottom" positionTop="12" showDelay="500" class="pi pi-eye cursor-help"></i>
+    }
   </div>
-  <div class="flex flex-8 flex-row items-center">
-    <div class="flex flex-5 wrap-anywhere">
+  <div class="flex flex-9 flex-row items-center">
+    <div class="flex flex-6 wrap-anywhere">
       {{ attribute()?.name }}
     </div>
     <div class="flex flex-1 justify-center">:</div>
-    <div class="flex flex-6 items-center font-light font-stretch-semi-expanded">
+    <div class="flex flex-5 items-center font-light font-stretch-semi-expanded">
       @let bounds = attribute()?.bounds ?? { lowerBound: 0, upperBound: 0 };
       @let dataType = workspace.view.resolveTypeLabel(attribute()?.typeId ?? '', modelId() ?? '');
       @let chip = getCollectionChip(attribute());
@@ -41,10 +30,10 @@
       }
     </div>
   </div>
-  <div class="flex flex-2">
+  <div class="flex flex-2 justify-center">
     @if (workspace.store.currentSlot() === modelSlot()) {
       <div class="flex justify-center">
-        <p-button icon="pi pi-pencil" size="small" variant="text" (click)="handleOpenCreateAttribute()" />
+        <p-button icon="pi pi-pencil" size="small" variant="text" (click)="handleOpenUpdateAttribute()" />
         <p-button icon="pi pi-trash" severity="danger" size="small" variant="text" (click)="handleDeleteAttribute()" />
       </div>
     } @else {

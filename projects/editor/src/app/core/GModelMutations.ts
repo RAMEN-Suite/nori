@@ -4,7 +4,7 @@ import { RelationResolver } from './resolver/RelationResolver';
 
 export type UpdateNodeInput = Partial<Pick<GNode, 'name' | 'superTypes' | 'attributes'>>;
 export type UpdateDataTypeInput = Partial<Pick<GDataType, 'name' | 'literals'>>;
-export type UpdateRelationInput = Partial<Pick<GRelation, 'name' | 'from' | 'to' | 'isBidirectional'>>;
+export type UpdateRelationInput = Partial<Pick<GRelation, 'name' | 'from' | 'to'>>;
 export type UpdateAttributeInput = Partial<GAttribute>;
 
 export class GModelMutations {

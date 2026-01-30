@@ -30,12 +30,11 @@ export class NodeAttributesComponent {
   protected handleOpenCreateAttribute(): void {
     this.dialogRef?.close();
     this.dialogRef = this.dialogService.open(CreateAttributeDialog, {
-      header: 'Create Attribute',
+      header: 'Add Attribute',
       closeOnEscape: true,
       draggable: true,
       closable: true,
       modal: true,
-      dismissableMask: true,
     });
   }
 }

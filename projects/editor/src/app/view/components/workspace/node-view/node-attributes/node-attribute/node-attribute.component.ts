@@ -15,7 +15,7 @@ import {
 import { Chip } from 'primeng/chip';
 
 const FORMATS = {
-  EXCLAMATION: "<span class='font-bold ms-1 text-red-500'>!</span>",
+  EXCLAMATION: "<span class='font-bold ms-1 text-red-500 font-stretch-200%'>!</span>",
   LIST: "<span class='font-bold me-1'>[</span>%s<span class='font-bold ms-1'>]</span>",
   UPPER_BOUND: "<span class='font-bold'>(%s)</span>",
 };
@@ -74,15 +74,16 @@ export class NodeAttributeComponent {
     return `${typeName}${requiredSuffix}`;
   }
 
-  protected handleOpenCreateAttribute(): void {
+  protected handleOpenUpdateAttribute(): void {
     const currentAttribute: GAttribute | undefined = this.attribute();
     if (!currentAttribute) return;
 
     this.dialogRef?.close();
     this.dialogRef = this.dialogService.open(CreateAttributeDialog, {
-      header: 'Create Attribute',
+      header: 'Edit Attribute',
       closeOnEscape: true,
       draggable: true,
+      modal: true,
       closable: true,
       inputValues: { currentAttribute },
     });

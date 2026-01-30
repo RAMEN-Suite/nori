@@ -1,0 +1,90 @@
+<div class="flex w-120 flex-col">
+  <p-fieldset legend="Basics">
+    <div class="flex flex-col gap-3">
+      <div class="flex flex-row gap-2">
+        <p-button styleClass="h-full!" outlined (click)="handleChangeDirection()">
+          <div class="flex items-center gap-1">
+            <i class="pi pi-circle-fill mt-0.5" style="font-size: 8pt"></i>
+            <i class="pi pi-arrow-right mt-0.5" [class.rotate-180]="selectedDirection() === 'IN'" style="font-size: 8pt"></i>
+          </div>
+        </p-button>
+
+        <p-ifta-label class="flex grow">
+          <p-auto-complete
+            [ngModel]="selectedTargetNode()"
+            [suggestions]="filteredReachableNodes()"
+            (completeMethod)="handleAutoComplete($event)"
+            (ngModelChange)="handleSelectTargetNode($event)"
+            id="relationTarget"
+            name="relationTarget"
+            optionLabel="name"
+            appendTo="body"
+            dropdown
+            fluid
+            required
+          />
+          <label for="relationTarget">Select Node as Target</label>
+        </p-ifta-label>
+      </div>
+
+      <p-ifta-label>
+        <p-select
+          [options]="allowedRelations()"
+          [ngModel]="selectedRelation()"
+          (ngModelChange)="handleSelectRelation($event)"
+          id="relationship"
+          name="relationship"
+          appendTo="body"
+          fluid
+        >
+          <ng-template #selectedItem let-item>
+            @let isReversed = item.direction !== 'OUT';
+
+            <div class="flex w-full max-w-90 min-w-0 items-center gap-2 overflow-hidden">
+              <i class="pi pi-circle-fill mt-0.5 shrink-0" style="font-size: 8pt"></i>
+
+              <div class="flex shrink-0 items-center whitespace-nowrap" [class.flex-row-reverse]="isReversed">
+                <i class="pi pi-ellipsis-h mt-0.5" style="font-size: 8pt"></i>
+                <span class="mx-1">[ :{{ item.relationName }} ]</span>
+                <i class="pi pi-arrow-right mt-0.5" [class.rotate-180]="isReversed" style="font-size: 8pt"></i>
+              </div>
+
+              <span class="min-w-0 flex-1 truncate">
+                {{ selectedTargetNode()?.name }}
+              </span>
+            </div>
+          </ng-template>
+
+          <ng-template #item let-item>
+            @let isReversed = item.direction !== 'OUT';
+
+            <div class="flex w-full max-w-90 min-w-0 items-center gap-2 overflow-hidden">
+              <i class="pi pi-circle-fill mt-0.5 shrink-0" style="font-size: 8pt"></i>
+
+              <div class="flex shrink-0 items-center whitespace-nowrap" [class.flex-row-reverse]="isReversed">
+                <i class="pi pi-ellipsis-h mt-0.5" style="font-size: 8pt"></i>
+                <span class="mx-1">[ :{{ item.relationName }} ]</span>
+                <i class="pi pi-arrow-right mt-0.5" [class.rotate-180]="isReversed" style="font-size: 8pt"></i>
+              </div>
+
+              <span class="min-w-0 flex-1 truncate">
+                {{ selectedTargetNode()?.name }}
+              </span>
+            </div>
+          </ng-template>
+        </p-select>
+        <label for="relationship">Select a Relationship</label>
+      </p-ifta-label>
+    </div>
+  </p-fieldset>
+
+  <div class="mt-4 flex flex-row justify-between gap-2">
+    <p-button label="Cancel" outlined (click)="handleCloseModal()" />
+
+    @if (currentRelation() === undefined) {
+      <p-button label="Add Relation" outlined (click)="handleCreateRelation()" [disabled]="!isFormValid()" />
+    } @else {
+      <p-button label="Update Relation" outlined [disabled]="!isFormValid()" />
+    }
+  </div>
+</div>

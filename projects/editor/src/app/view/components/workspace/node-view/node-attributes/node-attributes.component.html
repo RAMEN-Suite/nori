@@ -14,7 +14,7 @@
         </ng-template>
         <div class="my-2 flex flex-col items-center">
           <div class="flex w-full flex-col gap-2">
-            @for (item of inheritedAttributes; track item.attribute.name) {
+            @for (item of inheritedAttributes; track item.attribute.name; let isLast = $last) {
               <app-node-attribute [attribute]="item.attribute" [modelId]="item.modelId" [modelSlot]="item.slot" [nodeId]="item.nodeId" />
             }
           </div>
@@ -26,11 +26,11 @@
   @if (currentNode()?.attributes?.length) {
     <p-fieldset>
       <ng-template #header>
-        <span class="font-bold">{{ workspace.view.currentNode()?.name }} </span> Attributes
+        Attributes in <span class="font-bold">{{ workspace.view.currentNode()?.name }}</span>
       </ng-template>
       <div class="my-2 flex flex-col items-center">
         <div class="flex w-full flex-col gap-2">
-          @for (attribute of currentNode()?.attributes; track attribute.name) {
+          @for (attribute of currentNode()?.attributes; track attribute.name; let isLast = $last) {
             <app-node-attribute
               [attribute]="attribute"
               [modelSlot]="workspace.store.currentSlot()"

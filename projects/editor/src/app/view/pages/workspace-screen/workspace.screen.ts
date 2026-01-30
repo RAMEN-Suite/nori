@@ -34,6 +34,7 @@ export class WorkspaceScreen implements OnInit {
     effect((): void => {
       const manifest: Manifest | null = this.storage.selectedManifest();
       this.windowState.setTitle(manifest?.name ?? '', 'pi pi-pen-to-square');
+      console.log(this.workspace.store.currentModel());
     });
   }
 

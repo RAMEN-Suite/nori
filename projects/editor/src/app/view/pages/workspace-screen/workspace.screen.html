@@ -1,11 +1,14 @@
 <app-tool-bar />
 
 <main class="main-window flex flex-row" style="--p-tool-bar-h: 50px">
-  <div class="flex flex-2 border-r border-(--p-menubar-border-color) bg-(--p-menubar-background)/40" animate.enter="side-menu-entrance">
+  <div
+    class="flex min-w-65 flex-2 border-r border-(--p-menubar-border-color) bg-(--p-menubar-background)/40"
+    animate.enter="side-menu-entrance"
+  >
     <app-side-menu class="basis-full" />
   </div>
 
-  <div class="flex flex-5" animate.enter="node-editor-entrance">
+  <div class="flex min-w-150 flex-5" animate.enter="node-editor-entrance">
     <div class="basis-full">
       <router-outlet />
     </div>

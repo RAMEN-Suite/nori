@@ -16,7 +16,7 @@
       <div class="my-2 flex flex-col items-center">
         <div class="flex w-full flex-col gap-2">
           @for (relation of workspace.view.currentNodeRelationsOut(); track relation.id) {
-            <app-node-relation [relation]="relation" />
+            <app-node-relation [relation]="relation" [isOutgoing]="true" />
           }
         </div>
       </div>
@@ -37,7 +37,7 @@
       <div class="my-2 flex flex-col items-center">
         <div class="flex w-full flex-col gap-2">
           @for (relation of workspace.view.currentNodeRelationsIn(); track relation.id) {
-            <app-node-relation [relation]="relation" [isIncoming]="false" />
+            <app-node-relation [relation]="relation" />
           }
         </div>
       </div>
@@ -45,6 +45,6 @@
   }
 
   <div class="mt-3 flex flex-col items-center justify-center gap-3">
-    <p-button label="Add Relationship" class="w-full" variant="outlined" fluid />
+    <p-button label="Add Relationship" class="w-full" variant="outlined" fluid (click)="handleOpenCreateRelation()" />
   </div>
 </div>

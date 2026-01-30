@@ -310,12 +310,6 @@
         "from": { "$ref": "#/$defs/RelationEnd" },
         "to": { "$ref": "#/$defs/RelationEnd" },
 
-        "isBidirectional": {
-          "type": "boolean",
-          "default": false,
-          "$comment": "Tool hint: navigation may be exposed from both ends."
-        },
-
         "constraints": {
           "type": "array",
           "items": { "$ref": "#/$defs/GConstraint" },
@@ -344,6 +338,12 @@
           "type": "boolean",
           "default": false,
           "$comment": "Composition/containment: this end is the owning (whole) end. Typically only one end is composite."
+        },
+
+        "isNavigable": {
+          "type": "boolean",
+          "default": false,
+          "$comment": "Controls navigability of this relation end only."
         },
 
         "constraints": {

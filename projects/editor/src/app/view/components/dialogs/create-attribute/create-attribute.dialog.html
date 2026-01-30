@@ -10,10 +10,10 @@
                 [(ngModel)]="draftAttribute().name"
                 (blur)="handleTransformName()"
                 [invalid]="(nameModel.touched || isSubmitted) && (!isUnique() || !isNameValid() || !isNotRole())"
-                maxlength="32"
-                pInputText
                 id="attributeName"
                 name="attributeName"
+                maxlength="32"
+                pInputText
                 fluid
                 required
               />
@@ -37,12 +37,13 @@
           <div class="flex basis-full flex-col gap-2">
             <p-ifta-label class="flex basis-full">
               <p-auto-complete
-                #dataTypeModel="ngModel"
                 [ngModel]="formatTypeLabel(draftAttribute().typeId)"
                 [suggestions]="filteredDataTypeOptions()"
                 (completeMethod)="handleAutoComplete($event)"
                 (ngModelChange)="handleSelectType($event)"
-                [invalid]="(dataTypeModel.touched || isSubmitted) && !isTypeValid()"
+                [invalid]="isSubmitted && !isTypeValid()"
+                id="attributeType"
+                name="attributeType"
                 optionLabel="label"
                 optionValue="value"
                 dropdown
@@ -52,7 +53,7 @@
               <label for="attributeType">Attribute Type</label>
             </p-ifta-label>
 
-            @if ((dataTypeModel.touched || isSubmitted) && !isTypeValid()) {
+            @if (isSubmitted && !isTypeValid()) {
               <p-message severity="error" size="small" variant="simple">
                 Please <span class="font-bold">select</span> an attribute type.
               </p-message>
@@ -80,6 +81,7 @@
                     [options]="selectOptions"
                     [disabled]="option.isDisabled !== undefined && option.isDisabled()"
                     (ngModelChange)="handleSelectOption(option)"
+                    [allowEmpty]="false"
                     optionLabel="label"
                     optionValue="value"
                     fluid

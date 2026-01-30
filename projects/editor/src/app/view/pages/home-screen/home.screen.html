@@ -10,8 +10,8 @@
   </div>
 
   <div class="flex flex-col" animate.enter="menu-entrance">
-    <p-button variant="text" size="large" icon="pi pi-folder-plus" label="create a new project" routerLink="start" />
-    <p-button variant="text" size="large" icon="pi pi-folder" label="open an existing project" routerLink="open" />
+    <p-button variant="text" size="large" icon="pi pi-folder-plus" label="Create a new Project" routerLink="start" />
+    <p-button variant="text" size="large" icon="pi pi-folder" label="Open an existing Project" routerLink="open" />
   </div>
 
   <div class="mt-10 flex flex-col" animate.enter="sub-menu-entrance">
@@ -19,7 +19,7 @@
       variant="text"
       size="small"
       [icon]="isDark ? 'pi pi-moon' : 'pi pi-sun'"
-      label="change theme"
+      label="Change Theme"
       (click)="editorState.setTheme(isDark ? EDITOR_THEME.LIGHT : EDITOR_THEME.DARK)"
     />
     <p-button variant="text" size="small" icon="pi pi-github" label="RAMEN SUITE" (click)="handleOpenRepository()" />

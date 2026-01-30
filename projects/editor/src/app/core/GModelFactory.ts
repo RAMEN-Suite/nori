@@ -126,7 +126,6 @@ export class GModelFactory {
         constraints: [],
         ext: {},
       },
-      isBidirectional: baseRelation.isBidirectional,
       constraints: [],
       ext: {},
     };

@@ -86,7 +86,6 @@ export interface GRelation {
   name: string;
   from: RelationEnd;
   to: RelationEnd;
-  isBidirectional?: boolean;
   constraints?: GConstraint[];
   ext?: Record<string, unknown>;
 }
@@ -95,6 +94,7 @@ export interface RelationEnd {
   nodeId: Ref;
   role: string;
   bounds: Bounds;
+  isNavigable?: boolean;
   isComposite?: boolean;
   constraints?: GConstraint[];
   ext?: Record<string, unknown>;

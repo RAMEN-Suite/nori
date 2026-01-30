@@ -87,20 +87,6 @@ export class WorkspaceView {
     return model ? Array.from(QueryHelper.listRelations(model)) : [];
   });
 
-  public readonly currentBaseRelations: Signal<ReadonlyArray<GRelation>> = computed((): GRelation[] => {
-    const baseNode: GNode | null = this.currentBaseNode();
-    const baseRelations: ReadonlyArray<GRelation> = this.baseRelations();
-    if (!baseNode) return [];
-
-    const picked: GRelation[] = baseRelations.filter((relation: GRelation): boolean => {
-      return relation.from.nodeId === baseNode.id || relation.to.nodeId === baseNode.id;
-    });
-
-    const relationById: Map<Id, GRelation> = new Map<Id, GRelation>();
-    for (const relation of picked) relationById.set(relation.id, relation);
-    return Array.from(relationById.values()).sort((a: GRelation, b: GRelation): number => a.name.localeCompare(b.name));
-  });
-
   public readonly currentNodeRelationsOut: Signal<ReadonlyArray<GRelation>> = computed((): ReadonlyArray<GRelation> => {
     const relations: ReadonlyArray<GRelation> = this.currentRelations();
     const node: GNode | null = this.currentNode();
@@ -120,16 +106,6 @@ export class WorkspaceView {
       .filter((relation: GRelation): boolean => relation.to.nodeId === node.id)
       .sort((a: GRelation, b: GRelation): number => a.name.localeCompare(b.name));
   });
-
-  public readonly currentSelectableRelations: Signal<ReadonlyArray<SelectableRelation>> = computed(
-    (): ReadonlyArray<SelectableRelation> => {
-      const base: GModel | null = this.baseModel();
-      const model: GModel | null = this.store.currentModel();
-      const node: GNode | null = this.currentNode();
-      if (!base || !model || !node) return [];
-      return QueryHelper.listSelectableRelations(base, model, node.id);
-    },
-  );
 
   public readonly currentRelationRoles: Signal<ReadonlySet<string>> = computed((): ReadonlySet<string> => {
     const model: GModel | null = this.store.currentModel();
@@ -179,11 +155,6 @@ export class WorkspaceView {
     return nodesById;
   });
 
-  public readonly baseRelations: Signal<Readonly<GRelation[]>> = computed((): GRelation[] => {
-    const model: GModel | null = this.baseModel();
-    return model ? Array.from(QueryHelper.listRelations(model)) : [];
-  });
-
   public readonly globalDataTypes: Signal<GDataType[]> = computed((): GDataType[] => {
     const baseModel: GModel | null = this.baseModel();
     const currentModel: GModel | null = this.store.currentModel();
@@ -227,6 +198,50 @@ export class WorkspaceView {
     return attributeNames;
   });
 
+  public resolveReachableNodes(direction: 'IN' | 'OUT'): ReadonlyArray<GNode> {
+    const base: GModel | null = this.baseModel();
+    const model: GModel | null = this.store.currentModel();
+    const node: GNode | null = this.currentNode();
+    if (!base || !model || !node) return [];
+
+    const selections: ReadonlyArray<SelectableRelation> = QueryHelper.listSelectableRelations(base, model, node.id);
+    const nodesById: Map<Id, GNode> = new Map<Id, GNode>();
+
+    for (const selection of selections) {
+      if (selection.direction !== direction) continue;
+
+      const candidates: ReadonlyArray<GNode> =
+        selection.direction === 'OUT'
+          ? QueryHelper.listRelationToNodes(base, model, selection.baseRelationId)
+          : QueryHelper.listRelationFromNodes(base, model, selection.baseRelationId);
+      for (const node of candidates) nodesById.set(node.id, node);
+    }
+
+    return Array.from(nodesById.values()).sort((a: GNode, b: GNode): number => a.name.localeCompare(b.name));
+  }
+
+  public resolveAllowedRelations(targetNodeId: Id, direction: 'IN' | 'OUT'): ReadonlyArray<SelectableRelation> {
+    const base: GModel | null = this.baseModel();
+    const model: GModel | null = this.store.currentModel();
+    const node: GNode | null = this.currentNode();
+    if (!base || !model || !node) return [];
+
+    const selections: ReadonlyArray<SelectableRelation> = QueryHelper.listSelectableRelations(base, model, node.id);
+    const allowed: SelectableRelation[] = [];
+
+    for (const selection of selections) {
+      if (selection.direction !== direction) continue;
+
+      const candidates: ReadonlyArray<GNode> =
+        selection.direction === 'OUT'
+          ? QueryHelper.listRelationToNodes(base, model, selection.baseRelationId)
+          : QueryHelper.listRelationFromNodes(base, model, selection.baseRelationId);
+      if (candidates.some((node: GNode): boolean => node.id === targetNodeId)) allowed.push(selection);
+    }
+
+    return allowed;
+  }
+
   public resolveDataType(typeId: TypeRef, modelId: Id): Readonly<GDataType | null> {
     if (Builtins.isBuiltin(typeId)) return null;
     const indexes: ReadonlyMap<Id, GModelIndex> = this.indexesByModelId();
@@ -247,15 +262,6 @@ export class WorkspaceView {
     if (!dataType) return `Unknown type (${String(typeId)})`;
 
     return dataType.name;
-  }
-
-  public resolveNodesForRelation(selection: SelectableRelation): ReadonlyArray<GNode> {
-    const base: GModel | null = this.baseModel();
-    const model: GModel | null = this.store.currentModel();
-    if (!base || !model) return [];
-
-    if (selection.direction === 'OUT') return QueryHelper.listRelationToNodes(base, model, selection.baseRelationId);
-    return QueryHelper.listRelationFromNodes(base, model, selection.baseRelationId);
   }
 
   public resolveBaseRelationName(relation: GRelation): Readonly<string> {

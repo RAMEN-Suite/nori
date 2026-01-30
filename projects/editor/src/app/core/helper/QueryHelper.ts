@@ -4,12 +4,12 @@ import { QualifiedParts, Reference } from '../validation/container/Reference';
 import { NodeResolver, ResolvedNode } from '../resolver/NodeResolver';
 import { ModelResolver } from '../resolver/ModelResolver';
 
+export type Direction = 'OUT' | 'IN';
 export type SelectableRelation = {
   readonly baseRelationId: Id;
   readonly relationName: string;
   readonly roleName: string;
-  readonly direction: 'OUT' | 'IN';
-  readonly isBidirectional?: boolean;
+  readonly direction: Direction;
 };
 
 export class QueryHelper {
@@ -82,7 +82,6 @@ export class QueryHelper {
           relationName: relation.name,
           direction: 'OUT',
           roleName: relation.to.role,
-          isBidirectional: relation.isBidirectional,
         });
       }
 
@@ -92,7 +91,6 @@ export class QueryHelper {
           relationName: relation.name,
           direction: 'IN',
           roleName: relation.from.role,
-          isBidirectional: relation.isBidirectional,
         });
       }
     }
