@@ -257,7 +257,7 @@ export class GraphComponent implements AfterViewInit {
       .join('marker')
       .attr('id', 'g-arrow')
       .attr('viewBox', '0 0 10 10')
-      .attr('refX', 8)
+      .attr('refX', 5.5)
       .attr('refY', 5)
       .attr('markerUnits', 'userSpaceOnUse')
       .attr('markerWidth', 10)
