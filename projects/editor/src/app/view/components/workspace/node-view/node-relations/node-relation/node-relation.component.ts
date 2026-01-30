@@ -4,7 +4,6 @@ import { Button } from 'primeng/button';
 import { WorkspaceService } from '../../../../../../services/workspace/workspace.service';
 import { Tooltip } from 'primeng/tooltip';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { CreateRelationDialog } from '../../../../dialogs/create-relation/create-relation.dialog';
 import {
   ConfirmationButton,
   ConfirmationDialog,
@@ -42,20 +41,6 @@ export class NodeRelationComponent {
   protected resolveRelationName(relation?: GRelation): string {
     if (!relation) return '';
     return this.workspace.view.resolveBaseRelationName(relation);
-  }
-
-  protected handleOpenUpdateRelation(): void {
-    const currentRelation: GRelation | undefined = this.relation();
-    if (!currentRelation) return;
-
-    this.dialogRef?.close();
-    this.dialogRef = this.dialogService.open(CreateRelationDialog, {
-      header: 'Edit Relation',
-      closeOnEscape: true,
-      draggable: true,
-      closable: true,
-      inputValues: { currentRelation },
-    });
   }
 
   protected async handleDeleteRelation(): Promise<void> {

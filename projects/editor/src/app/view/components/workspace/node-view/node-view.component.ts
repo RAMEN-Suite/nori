@@ -1,4 +1,4 @@
-import { Component, inject, signal, WritableSignal } from '@angular/core';
+import { Component, effect, inject, signal, WritableSignal } from '@angular/core';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
@@ -42,6 +42,10 @@ export class NodeViewComponent {
     this.activatedRoute.queryParamMap.subscribe((queryParams: ParamMap): void => {
       const tab: string | null = queryParams.get('tab');
       this.activeTab.set(tab === 'relations' ? 'relations' : 'attributes');
+    });
+
+    effect(() => {
+      console.log(this.workspace.view.validation());
     });
   }
 

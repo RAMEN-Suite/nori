@@ -2,10 +2,22 @@
   <p-fieldset legend="Basics">
     <div class="flex flex-col gap-3">
       <div class="flex flex-row gap-2">
-        <p-button styleClass="h-full!" outlined (click)="handleChangeDirection()">
-          <div class="flex items-center gap-1">
-            <i class="pi pi-circle-fill mt-0.5" style="font-size: 8pt"></i>
-            <i class="pi pi-arrow-right mt-0.5" [class.rotate-180]="selectedDirection() === 'IN'" style="font-size: 8pt"></i>
+        <p-button
+          styleClass="h-full! border-(--p-autocomplete-dropdown-border-color)! border!"
+          severity="secondary"
+          (click)="handleChangeDirection()"
+          pTooltip="Change Direction"
+          tooltipPosition="bottom"
+          showDelay="500"
+          positionTop="10"
+        >
+          <div class="flex min-w-11 flex-col items-center justify-center gap-2">
+            @let isInbound = selectedDirection() === 'IN';
+            <div class="flex items-center gap-1">
+              <i class="pi pi-circle-fill mt-0.5" style="font-size: 8pt"></i>
+              <i class="pi pi-arrow-right mt-0.5" [class.rotate-180]="isInbound" style="font-size: 8pt"></i>
+            </div>
+            <span class="text-xs">{{ isInbound ? 'FROM' : 'TO' }}</span>
           </div>
         </p-button>
 
@@ -21,7 +33,6 @@
             appendTo="body"
             dropdown
             fluid
-            required
           />
           <label for="relationTarget">Select Node as Target</label>
         </p-ifta-label>
@@ -80,11 +91,6 @@
 
   <div class="mt-4 flex flex-row justify-between gap-2">
     <p-button label="Cancel" outlined (click)="handleCloseModal()" />
-
-    @if (currentRelation() === undefined) {
-      <p-button label="Add Relation" outlined (click)="handleCreateRelation()" [disabled]="!isFormValid()" />
-    } @else {
-      <p-button label="Update Relation" outlined [disabled]="!isFormValid()" />
-    }
+    <p-button label="Add Relation" outlined (click)="handleCreateRelation()" [disabled]="!isFormValid()" />
   </div>
 </div>

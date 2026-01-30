@@ -1,21 +1,20 @@
-import { Component, computed, effect, inject, input, InputSignal, signal, Signal, WritableSignal } from '@angular/core';
+import { Component, computed, inject, signal, Signal, WritableSignal } from '@angular/core';
 import { Fieldset } from 'primeng/fieldset';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Direction, SelectableRelation } from '../../../../core/helper/QueryHelper';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
-import { GNode, GRelation } from '../../../../core/models/GModel';
+import { GNode } from '../../../../core/models/GModel';
 import { AutoComplete, AutoCompleteCompleteEvent } from 'primeng/autocomplete';
 import { IftaLabel } from 'primeng/iftalabel';
 import { Select } from 'primeng/select';
 import { Button } from 'primeng/button';
 import { DynamicDialogRef } from 'primeng/dynamicdialog';
 import { CreateRelationInput } from '../../../../core/GModelFactory';
-import { QualifiedParts } from '../../../../core/validation/container/Reference';
-import { NodeResolver } from '../../../../core/resolver/NodeResolver';
+import { Tooltip } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-create-relation',
-  imports: [Fieldset, ReactiveFormsModule, FormsModule, AutoComplete, IftaLabel, Select, Button],
+  imports: [Fieldset, ReactiveFormsModule, FormsModule, AutoComplete, IftaLabel, Select, Button, Tooltip],
   templateUrl: './create-relation.dialog.html',
   styleUrl: './create-relation.dialog.scss',
 })
@@ -36,39 +35,6 @@ export class CreateRelationDialog {
     if (!currentTargetNode) return [];
     return Array.from(this.workspace.view.resolveAllowedRelations(currentTargetNode.id, direction));
   });
-
-  public currentRelation: InputSignal<GRelation | undefined> = input();
-
-  constructor() {
-    effect((): void => this.registerSelectableEffect());
-  }
-
-  protected registerSelectableEffect(): void {
-    const relation: GRelation | undefined = this.currentRelation();
-    const nodeId: string | null = this.workspace.store.currentNodeId();
-    if (!relation || !nodeId) return;
-
-    const baseModelId: string = this.workspace.view.baseId();
-    const parts: QualifiedParts | null = NodeResolver.resolveLocalSuperType(relation.superTypes, baseModelId);
-    if (!parts || !parts.refId) return;
-
-    const isOutbound: boolean = relation.from.nodeId === nodeId;
-    const direction: Direction = isOutbound ? 'OUT' : 'IN';
-    const roleName: string = isOutbound ? relation.from.role : relation.to.role;
-
-    const targetNodeId: string = isOutbound ? relation.from.nodeId : relation.to.nodeId;
-    const targetNode: GNode = this.workspace.view.currentNodesById().get(targetNodeId)!;
-
-    this.selectedDirection.set(direction);
-    this.selectedTargetNode.set(targetNode);
-
-    this.selectedRelation.set({
-      baseRelationId: parts.refId,
-      relationName: relation.name,
-      direction: direction,
-      roleName: roleName,
-    });
-  }
 
   protected handleAutoComplete($event: AutoCompleteCompleteEvent): void {
     const reachableNodes: ReadonlyArray<GNode> = this.workspace.view.resolveReachableNodes(this.selectedDirection());
