@@ -6,10 +6,11 @@ import { CreateModelDialog } from '../../dialogs/create-model/create-model.dialo
 import { ScrollPanel } from 'primeng/scrollpanel';
 import { StorageService } from '../../../../services/storage.service';
 import { Panel } from 'primeng/panel';
+import { Fieldset } from 'primeng/fieldset';
 
 @Component({
   selector: 'app-slot-view',
-  imports: [Button, ScrollPanel, Panel],
+  imports: [Button, ScrollPanel, Panel, Fieldset],
   providers: [DialogService, DynamicDialogRef],
   templateUrl: './slot-view.component.html',
   styleUrl: './slot-view.component.scss',

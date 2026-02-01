@@ -1,6 +1,6 @@
 <div class="grid h-full grid-rows-[1fr_auto]">
   @if (!workspace.store.currentModel()) {
-    <div class="flex min-h-full flex-col justify-center select-none">
+    <div class="flex min-h-full flex-col justify-center select-none" animate.enter="slot-view-entrance">
       <div class="mb-20 flex flex-col items-center">
         <svg height="96px" width="96px"><use href="images/ramen.svg#ramen-logo"></use></svg>
         <h1 class="font-condens text-4xl font-light">Welcome to NORI</h1>
@@ -17,20 +17,5 @@
         </div>
       </div>
     </div>
-  } @else {
-    <p-scroll-panel>
-      <ng-template #content>
-        <div class="flex flex-col gap-5 px-5 py-4">
-          <p-panel class="basis-full p-0!">
-            <ng-template #content>
-              <div class="flex flex-col gap-1.5">
-                <div class="max-w-135 truncate text-2xl">{{ workspace.store.currentRecord()?.name }}</div>
-                <span>{{ workspace.store.currentRecord()?.description }}</span>
-              </div>
-            </ng-template>
-          </p-panel>
-        </div>
-      </ng-template>
-    </p-scroll-panel>
   }
 </div>
