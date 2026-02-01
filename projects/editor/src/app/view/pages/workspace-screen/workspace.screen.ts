@@ -4,7 +4,7 @@ import { ToolBarComponent } from '../../components/workspace/tool-bar/tool-bar.c
 import { StorageService } from '../../../services/storage.service';
 import { Manifest } from '../../../models/Manifest';
 import { SideMenuComponent } from '../../components/workspace/side-menu/side-menu.component';
-import { GraphMenuComponent } from '../../components/workspace/visualization/graph-menu/graph-menu.component';
+import { GraphMenuComponent } from '../../components/workspace/graph-view/graph-menu/graph-menu.component';
 import { ActivatedRoute, NavigationEnd, ParamMap, Router, RouterOutlet } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
 import { WorkspaceService } from '../../../services/workspace/workspace.service';

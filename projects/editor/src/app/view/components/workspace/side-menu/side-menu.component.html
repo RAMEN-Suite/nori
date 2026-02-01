@@ -1,4 +1,4 @@
-<p-scroll-panel class="h-full min-h-0" style="--p-scrollpanel-bar-size: 4px">
+<p-scroll-panel class="h-full min-h-0" style="--p-scrollpanel-bar-size: 4px" [hidden]="workspace.store.currentModel() === null">
   <div class="flex flex-col gap-5 px-4 py-4">
     <div class="flex flex-col">
       <p-ifta-label>

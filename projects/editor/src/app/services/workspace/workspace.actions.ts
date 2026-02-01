@@ -42,9 +42,10 @@ export class WorkspaceActions {
   private registerSlotChangesEffect(): void {
     effect((): void => {
       const slot: number | null = this.store.currentSlot();
-      const model: GModel | undefined = this.storage.recordsBySlot().get(slot)?.gmodel;
-      const cloned: GModel | null = model ? structuredClone(model) : null;
-      this.store.setCurrentModel(cloned);
+      const record: ModelRecord | undefined = this.storage.recordsBySlot().get(slot);
+      const model: GModel | null = record ? structuredClone(record.gmodel) : null;
+      this.store.setCurrentModel(model);
+      this.store.setCurrentModelRecord(record ?? null);
     });
   }
 

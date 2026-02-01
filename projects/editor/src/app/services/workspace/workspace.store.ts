@@ -1,9 +1,10 @@
 import { GModel, Id } from '../../core/models/GModel';
 import { Injectable, signal, WritableSignal } from '@angular/core';
-import { NodeColors } from '../../models/ModelRecord';
+import { ModelRecord, NodeColors } from '../../models/ModelRecord';
 
 @Injectable({ providedIn: 'root' })
 export class WorkspaceStore {
+  public readonly currentRecord: WritableSignal<ModelRecord | null> = signal<ModelRecord | null>(null);
   public readonly currentModel: WritableSignal<GModel | null> = signal<GModel | null>(null);
   public readonly currentNodeId: WritableSignal<Id | null> = signal<Id | null>(null);
   public readonly currentSlot: WritableSignal<number> = signal<number>(1);
@@ -25,6 +26,10 @@ export class WorkspaceStore {
   public setCurrentSlot(slot: number | null): void {
     if (slot === null || isNaN(slot)) return this.currentSlot.set(1);
     this.currentSlot.set(Math.max(1, slot));
+  }
+
+  public setCurrentModelRecord(record: ModelRecord | null): void {
+    this.currentRecord.set(record);
   }
 
   public setCurrentModel(model: GModel | null): void {

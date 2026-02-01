@@ -1,0 +1,7 @@
+:host::ng-deep .p-panel-header {
+  display: none;
+}
+
+:host::ng-deep.p-panel-content {
+  padding: 18px;
+}
