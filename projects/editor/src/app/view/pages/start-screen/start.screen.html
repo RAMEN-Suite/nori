@@ -1,6 +1,8 @@
 <main class="main-window mx-auto flex max-w-2xl items-center">
-  <div class="card flex w-full flex-col gap-5" animate.enter="card-entrance">
-    <span class="block text-center text-3xl font-light">Creating a NORI Project</span>
+  <section class="card flex w-full flex-col gap-5" animate.enter="card-entrance" aria-label="Create project">
+    <header>
+      <h1 class="block text-center text-3xl font-light">Creating a NORI Project</h1>
+    </header>
 
     <p-fieldset legend="Basics">
       <div class="flex flex-col gap-3">
@@ -8,23 +10,21 @@
           <p-ifta-label>
             <input
               pInputText
+              #nameModel="ngModel"
               id="name"
               name="name"
-              [(ngModel)]="manifest.name"
-              #nameModel="ngModel"
               maxlength="70"
               autocomplete="off"
+              [(ngModel)]="manifest.name"
+              [invalid]="(nameModel.touched || isSubmitted) && !isProjectNameValid()"
               fluid
               required
-              [invalid]="(nameModel.touched || isSubmitted) && !isProjectNameValid()"
             />
             <label for="name">Project Name</label>
           </p-ifta-label>
 
           @if ((nameModel.touched || isSubmitted) && !isProjectNameValid()) {
-            <p-message severity="error" size="small" variant="simple">
-              Project name must be at least 3 characters.
-            </p-message>
+            <p-message severity="error" size="small" variant="simple"> Project name must be at least 3 characters. </p-message>
           }
         </div>
 
@@ -50,55 +50,44 @@
             <p-select
               id="metamodel"
               name="metamodel"
-              [(ngModel)]="selectedMetamodel"
               #metamodelModel="ngModel"
+              [(ngModel)]="selectedMetamodel"
               [options]="metamodels"
-              fluid
               [invalid]="(metamodelModel.touched || isSubmitted) && !isMetamodelValid()"
+              fluid
             >
-              <ng-template let-model #selectedItem>
-                {{ model.name }}
-                <span class="text-xs">(v.{{ model.version }})</span>
+              <ng-template #selectedItem let-model>
+                {{ model.name }} <span class="text-xs opacity-70">(v.{{ model.version }})</span>
               </ng-template>
-              <ng-template let-model #item>
-                {{ model.name }}
-                <span class="ms-1 text-xs">(v.{{ model.version }})</span>
+
+              <ng-template #item let-model>
+                {{ model.name }} <span class="ms-1 text-xs opacity-70">(v.{{ model.version }})</span>
               </ng-template>
             </p-select>
             <label for="metamodel">Metamodel</label>
           </p-ifta-label>
 
           @if ((metamodelModel.touched || isSubmitted) && !isMetamodelValid()) {
-            <p-message severity="error" size="small" variant="simple">
-              Please select a valid metamodel.
-            </p-message>
+            <p-message severity="error" size="small" variant="simple"> Please select a valid metamodel. </p-message>
           }
         </div>
 
         <div class="flex items-center gap-3">
           <p-check-box id="example" name="example" [(ngModel)]="isCreatingExample" binary />
-          <label
-            for="example"
-            class="cursor-pointer text-sm select-none"
-            (click)="isCreatingExample = !isCreatingExample"
-          >
+          <label for="example" class="cursor-pointer text-sm select-none" (click)="isCreatingExample = !isCreatingExample">
             Create an example model based on the selected metamodel.
           </label>
         </div>
       </div>
     </p-fieldset>
 
-    <div class="mt-4 flex flex-row items-center justify-between gap-5">
+    <footer class="mt-4 flex items-center justify-between gap-5">
       <div class="button-group flex gap-5">
-        <p-button label="Cancel" outlined routerLink="/" />
-        <p-button label="Open Project" outlined routerLink="/open" />
+        <p-button label="Cancel" outlined [routerLink]="'/'" />
+        <p-button label="Open Project" outlined [routerLink]="'/open'" />
       </div>
-      <p-button
-        label="Finish Setup"
-        [disabled]="!isFormValid()"
-        (click)="handleCreateProject()"
-        outlined
-      />
-    </div>
-  </div>
+
+      <p-button label="Finish Setup" outlined type="button" [disabled]="!isFormValid()" (click)="handleCreateProject()" />
+    </footer>
+  </section>
 </main>
