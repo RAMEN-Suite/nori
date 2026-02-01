@@ -56,6 +56,7 @@ export class GModelFactory {
         {
           schemaId: base.$id,
           modelId: base.id,
+          name: base.name,
         },
       ],
 

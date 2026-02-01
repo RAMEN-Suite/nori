@@ -21,6 +21,7 @@ export interface GModel {
 export interface Import {
   schemaId: string;
   modelId: Id;
+  name?: string;
 }
 
 export interface GNode {

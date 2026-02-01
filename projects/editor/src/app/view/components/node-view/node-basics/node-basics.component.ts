@@ -129,7 +129,7 @@ export class NodeBasicsComponent {
     const workingName: string | null = this.workingName();
     if (!selectedId || !workingName) return;
 
-    const transformedName: string = Transformer.toNodeName(workingName);
+    const transformedName: string = Transformer.toPascalName(workingName);
     const patch: UpdateNodeInput = { name: transformedName };
     await this.workspace.actions.updateNode(selectedId, patch);
 

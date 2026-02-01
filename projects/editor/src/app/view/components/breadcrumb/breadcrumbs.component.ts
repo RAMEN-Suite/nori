@@ -17,6 +17,8 @@ import {
   ConfirmationDialog,
   ConfirmationOptions,
 } from '../dialogs/confirmation/confirmation.dialog';
+import { ExportService } from '../../../services/export.service';
+import { Transformer } from '../../../core/helper/Transformer';
 
 type BreadcrumbItem = Omit<MenuItem, 'items'> & {
   label?: string;
@@ -35,6 +37,7 @@ type BreadcrumbItem = Omit<MenuItem, 'items'> & {
 export class BreadcrumbsComponent {
   protected readonly storage: StorageService = inject(StorageService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
+  protected readonly exporter: ExportService = inject(ExportService);
 
   protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
   protected readonly navigation: NavigationService = inject(NavigationService);
@@ -54,17 +57,16 @@ export class BreadcrumbsComponent {
       command: (): void => void this.handleOpenEditModel(),
     },
     {
-      label: 'Lock Model',
-      icon: 'pi pi-lock',
-      command: (): void => {},
-    },
-    {
       label: 'Export Model',
       icon: 'pi pi-download',
       command: (): void => {
         const slot: number = this.selectedMenuItem()?.slot ?? -1;
         const record: ModelRecord | undefined = this.storage.recordsBySlot().get(slot);
         if (!record || slot === -1) return;
+
+        const camelized: string = Transformer.toCamelName(record.gmodel.name);
+        const fileName: string = `${camelized}.gcore`;
+        void this.exporter.exportJSON(record.gmodel, { fileName });
       },
     },
     {

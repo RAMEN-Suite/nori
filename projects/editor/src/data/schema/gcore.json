@@ -95,7 +95,8 @@
       "$comment": "Import declaration for another model.",
       "properties": {
         "schemaId": { "type": "string", "format": "uri" },
-        "modelId": { "$ref": "#/$defs/Id" }
+        "modelId": { "$ref": "#/$defs/Id" },
+        "name": { "type": "string", "minLength": 1, "$comment": "Human-readable name of the model." }
       }
     },
 

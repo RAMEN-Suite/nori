@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { APPLICATION_IPC } from '../../../../electron/src/static/IPC_EVENTS';
-import { Electron } from '../../electron';
+import { Electron } from '../../types/electron';
 
 @Injectable({
   providedIn: 'root',

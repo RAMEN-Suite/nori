@@ -229,7 +229,7 @@ export class CreateAttributeDialog {
 
   protected handleTransformName(): void {
     if (this.draftAttribute().name.trim() === '') return;
-    const transformed: string = Transformer.toPropertyName(this.draftAttribute().name);
+    const transformed: string = Transformer.toCamelName(this.draftAttribute().name);
     this.draftAttribute.update((a: GAttribute): GAttribute => ({ ...a, name: transformed }));
   }
 
