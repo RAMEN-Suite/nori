@@ -5,7 +5,7 @@ import { GModelGraph, GraphData, GraphLink, GraphNode } from '../../../../../cor
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
 import { FormsModule } from '@angular/forms';
 import { Menubar } from 'primeng/menubar';
-import { DEFAULT_GRAPH_LAYOUT_SETTINGS, GraphLayoutMode, GraphLayoutSettings } from '../graph/graph.types';
+import { DEFAULT_GRAPH_LAYOUT_SETTINGS, GraphLayout, GraphLayoutSettings } from '../graph/graph.types';
 import { SelectButton } from 'primeng/selectbutton';
 import { ToggleButton } from 'primeng/togglebutton';
 import { Tooltip } from 'primeng/tooltip';
@@ -25,7 +25,7 @@ interface ToggleOption {
 interface LayoutOption {
   label: string;
   icon: string;
-  mode: GraphLayoutMode;
+  mode: GraphLayout;
 }
 
 @Component({
@@ -84,8 +84,8 @@ export class GraphMenuComponent {
     });
   }
 
-  public handleSelectLayoutMode(layoutMode: GraphLayoutMode): void {
-    this.settings.update((s: GraphLayoutSettings): GraphLayoutSettings => ({ ...s, layoutMode }));
+  public handleSelectLayoutMode(layoutMode: GraphLayout): void {
+    this.settings.update((s: GraphLayoutSettings): GraphLayoutSettings => ({ ...s, layout: layoutMode }));
   }
 
   public handleToggleOption(option: LayoutToggleOption): void {
@@ -104,7 +104,7 @@ export class GraphMenuComponent {
   }
 
   public handleLayoutReset(): void {
-    this.handleSelectLayoutMode(this.settings().layoutMode);
+    this.handleSelectLayoutMode(this.settings().layout);
   }
 
   private computeGraphKey(data: GraphData): string {

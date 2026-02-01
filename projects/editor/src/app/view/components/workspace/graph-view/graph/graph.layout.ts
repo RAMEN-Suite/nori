@@ -2,7 +2,7 @@ import * as d3 from 'd3';
 import { GraphData, GraphLink, GraphNode } from '../../../../../core/utils/GModelGraph';
 import {
   GraphInputModel,
-  GraphLayoutMode,
+  GraphLayout,
   GraphLayoutSettings,
   GraphPadding,
   PositionedNode,
@@ -14,17 +14,30 @@ import {
 type Hierarchy = Readonly<{ id: string; node?: PositionedNode; children?: Hierarchy[] }>;
 type Bounds = { minX: number; maxX: number; minY: number; maxY: number; width: number; height: number };
 
+type SplitLinks = Readonly<{ normal: ResolvedLink[]; self: ResolvedLink[] }>;
+type VisibilityResult = Readonly<{ nodes: PositionedNode[]; links: ResolvedLink[] }>;
+
+type ExpandResult = Readonly<{
+  nodes: PositionedNode[];
+  links: ResolvedLink[];
+  nodesById: Map<string, PositionedNode>;
+}>;
+
 export function buildRenderModel(input: GraphInputModel): RenderModel {
-  const nodes: PositionedNode[] = createNodes(input.data);
+  const baseNodes: PositionedNode[] = createNodes(input.data);
   const nodesById: Map<string, PositionedNode> = new Map<string, PositionedNode>(
-    nodes.map((node: PositionedNode): [string, PositionedNode] => [node.id, node]),
+    baseNodes.map((node: PositionedNode): [string, PositionedNode] => [node.id, node]),
   );
 
-  const links: ResolvedLink[] = createLinks(input.data, nodesById);
-  const visible: { nodes: PositionedNode[]; links: ResolvedLink[] } = applyVisibility(nodes, links, input.settings);
+  const baseLinks: ResolvedLink[] = createLinks(input.data, nodesById);
+  const split: SplitLinks = splitLinks(baseLinks);
+
+  const expanded: ExpandResult = expandGhostSelfLinks(baseNodes, split.normal, split.self, nodesById);
+
+  const visible: VisibilityResult = applyVisibility(expanded.nodes, expanded.links, input.settings);
   applyLayout(visible.nodes, visible.links, input.viewport, input.settings);
 
-  return { nodes: visible.nodes, links: visible.links, nodesById };
+  return { nodes: visible.nodes, links: visible.links, nodesById: expanded.nodesById };
 }
 
 export function getViewportSize(hostElement: HTMLDivElement): ViewportSize {
@@ -54,24 +67,85 @@ function createLinks(data: GraphData, nodesById: Map<string, PositionedNode>): R
     .filter((link: ResolvedLink | null): link is ResolvedLink => link !== null);
 }
 
+function splitLinks(links: ResolvedLink[]): SplitLinks {
+  const normal: ResolvedLink[] = [];
+  const self: ResolvedLink[] = [];
+
+  for (const link of links) {
+    if (link.source.id === link.target.id) self.push(link);
+    else normal.push(link);
+  }
+
+  return { normal, self };
+}
+
+function expandGhostSelfLinks(
+  baseNodes: PositionedNode[],
+  normalLinks: ResolvedLink[],
+  selfLinks: ResolvedLink[],
+  nodesById: Map<string, PositionedNode>,
+): ExpandResult {
+  if (selfLinks.length === 0) return { nodes: baseNodes, links: normalLinks, nodesById };
+
+  const ghostNodes: PositionedNode[] = [];
+  const ghostLinks: ResolvedLink[] = [];
+  const countsByRealId: Map<string, number> = new Map<string, number>();
+
+  for (const link of selfLinks) {
+    const real: PositionedNode | undefined = nodesById.get(link.source.id);
+    if (!real) continue;
+
+    const currentCount: number = countsByRealId.get(real.id) ?? 0;
+    countsByRealId.set(real.id, currentCount + 1);
+
+    const ghostId: string = `${real.id}__ghost__${link.id}`;
+    const ghost: PositionedNode = {
+      ...real,
+      id: ghostId,
+      x: 0,
+      y: 0,
+      baseX: 0,
+      baseY: 0,
+      ghost: { kind: 'ghost', realNodeId: real.id, selfLinkId: link.id },
+    };
+
+    nodesById.set(ghostId, ghost);
+    ghostNodes.push(ghost);
+
+    const ghostLink: ResolvedLink = {
+      ...link,
+      id: `${link.id}__ghost`,
+      source: real,
+      target: ghost,
+      meta: { kind: 'ghost-self' },
+    };
+
+    ghostLinks.push(ghostLink);
+  }
+
+  return { nodes: [...baseNodes, ...ghostNodes], links: [...normalLinks, ...ghostLinks], nodesById };
+}
+
 function applyVisibility(
   nodes: PositionedNode[],
   links: ResolvedLink[],
   settings: GraphLayoutSettings,
-): { nodes: PositionedNode[]; links: ResolvedLink[] } {
+): VisibilityResult {
   if (!settings.areIsolatedNodesHidden) return { nodes, links };
 
   const degrees: Map<string, number> = computeDegrees(nodes, links);
-  const visible: PositionedNode[] = nodes.filter((node: PositionedNode): boolean => (degrees.get(node.id) ?? 0) > 0);
+  const visibleNodes: PositionedNode[] = nodes.filter(
+    (node: PositionedNode): boolean => (degrees.get(node.id) ?? 0) > 0,
+  );
 
-  const visibleNodeIds: Set<string> = new Set<string>(visible.map((node: PositionedNode): string => node.id));
+  const visibleNodeIds: Set<string> = new Set<string>(visibleNodes.map((node: PositionedNode): string => node.id));
   const visibleLinks: ResolvedLink[] = links.filter((link: ResolvedLink): boolean => {
     const nodeHasSource: boolean = visibleNodeIds.has(link.source.id);
     const nodeHasTarget: boolean = visibleNodeIds.has(link.target.id);
     return nodeHasSource && nodeHasTarget;
   });
 
-  return { nodes: visible, links: visibleLinks };
+  return { nodes: visibleNodes, links: visibleLinks };
 }
 
 function applyLayout(
@@ -120,7 +194,7 @@ function applyConnectedLayout(
 ): void {
   if (nodes.length === 0) return;
 
-  const mode: GraphLayoutMode = settings.layoutMode;
+  const mode: GraphLayout = settings.layout;
   const hierarchyRoot: d3.HierarchyNode<Hierarchy> = buildHierarchy(nodes, links);
 
   const padding: Readonly<GraphPadding> = settings.padding;

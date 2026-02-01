@@ -2,46 +2,58 @@ import { GraphData, GraphLink, GraphNode } from '../../../../../core/utils/GMode
 import { D3ZoomEvent, DragBehavior, Selection, ZoomBehavior } from 'd3';
 
 export type GraphPadding = Readonly<{ top: number; right: number; bottom: number; left: number }>;
-
-export type GraphLayoutMode = 'treeTopDown' | 'clusterTopDown';
+export type GraphLayout = 'treeTopDown' | 'clusterTopDown';
 
 export type GraphLayoutSettings = Readonly<{
-  layoutMode: GraphLayoutMode;
+  layout: GraphLayout;
   padding: GraphPadding;
 
-  areIsolatedNodesHidden: boolean;
-
   nodeRadius: number;
-  layerGap: number;
   nodeSeparation: number;
+  layerGap: number;
 
+  areIsolatedNodesHidden: boolean;
   isolatedColumns: number;
   isolatedRowGap: number;
   isolatedColumnGap: number;
   isolatedAreaGap: number;
 }>;
 
-export const DEFAULT_GRAPH_PADDING: GraphPadding = { top: 50, right: 40, bottom: 30, left: 40 };
-
+export const DEFAULT_GRAPH_PADDING: GraphPadding = { top: 20, right: 40, bottom: 20, left: 40 };
 export const DEFAULT_GRAPH_LAYOUT_SETTINGS: GraphLayoutSettings = {
-  layoutMode: 'clusterTopDown',
+  layout: 'clusterTopDown',
   padding: DEFAULT_GRAPH_PADDING,
 
-  areIsolatedNodesHidden: false,
-
   nodeRadius: 15,
-  layerGap: 70,
   nodeSeparation: 60,
+  layerGap: 70,
 
-  isolatedColumns: 4,
+  areIsolatedNodesHidden: false,
+  isolatedColumns: 5,
   isolatedRowGap: 80,
-  isolatedColumnGap: 120,
+  isolatedColumnGap: 80,
   isolatedAreaGap: 100,
 };
 
-export type PositionedNode = GraphNode & { x: number; y: number; baseX: number; baseY: number };
+export type GhostNodeMeta = Readonly<{
+  kind: 'ghost';
+  realNodeId: string;
+  selfLinkId: string;
+}>;
+export type PositionedNode = GraphNode & {
+  x: number;
+  y: number;
+  baseX: number;
+  baseY: number;
+  ghost?: GhostNodeMeta;
+};
 
-export type ResolvedLink = Omit<GraphLink, 'source' | 'target'> & { source: PositionedNode; target: PositionedNode };
+export type ResolvedLinkMeta = Readonly<{ kind: 'ghost-self' }>;
+export type ResolvedLink = Omit<GraphLink, 'source' | 'target'> & {
+  source: PositionedNode;
+  target: PositionedNode;
+  meta?: ResolvedLinkMeta;
+};
 
 export type RenderModel = Readonly<{
   nodes: PositionedNode[];
@@ -50,7 +62,6 @@ export type RenderModel = Readonly<{
 }>;
 
 export type ViewportSize = Readonly<{ width: number; height: number }>;
-
 export type GraphInputModel = Readonly<{ data: GraphData; settings: GraphLayoutSettings; viewport: ViewportSize }>;
 
 // graph.component - d3 type definition outsourcing

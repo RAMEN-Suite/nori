@@ -133,7 +133,8 @@ export class GraphComponent implements AfterViewInit {
       .append('svg')
       .attr('width', '100%')
       .attr('height', '100%')
-      .style('user-select', 'none');
+      .style('user-select', 'none')
+      .on('click', (event: MouseEvent): void => this.handleBackgroundClick(event));
 
     this.rootGroupSelection = this.svgSelection.append('g');
     this.drawArrowMarker();
@@ -190,7 +191,15 @@ export class GraphComponent implements AfterViewInit {
   private updateNodeColorsOnly(): void {
     this.nodeSelection
       ?.select('circle')
-      .style('--g-node-fill', (node: PositionedNode): string => this.getNodeColor(node));
+      .style('--g-node-fill', (node: PositionedNode): string => this.getNodeColor(this.resolveNodeForColor(node)));
+  }
+
+  private resolveNodeForColor(node: PositionedNode): PositionedNode {
+    const model: RenderModel | undefined = this.renderModel;
+    if (!model) return node;
+    const realId: string | undefined = node.ghost?.realNodeId;
+    if (!realId) return node;
+    return (model.nodesById.get(realId) as PositionedNode | undefined) ?? node;
   }
 
   private refreshHover(): void {
@@ -201,7 +210,7 @@ export class GraphComponent implements AfterViewInit {
   }
 
   private drawLinks(rootGroupSelection: RootSelection, links: ResolvedLink[]): LinkSelection {
-    return rootGroupSelection
+    const merged: LinkSelection = rootGroupSelection
       .selectAll<SVGLineElement, ResolvedLink>('line.link')
       .data(links, (link: ResolvedLink): string => link.id)
       .join(
@@ -209,6 +218,9 @@ export class GraphComponent implements AfterViewInit {
         (update) => update,
         (exit) => exit.remove(),
       );
+
+    merged.classed('is-ghost', (link: ResolvedLink): boolean => link.meta?.kind === 'ghost-self');
+    return merged;
   }
 
   private drawNodes(rootGroupSelection: RootSelection, nodes: PositionedNode[]): NodeSelection {
@@ -242,6 +254,7 @@ export class GraphComponent implements AfterViewInit {
 
     merged.select('circle').attr('r', this.settings().nodeRadius);
     merged.select('text').text((node: PositionedNode): string => node.label ?? node.id);
+    merged.classed('is-ghost', (node: PositionedNode): boolean => !!node.ghost);
 
     return merged;
   }
@@ -361,7 +374,10 @@ export class GraphComponent implements AfterViewInit {
   }
 
   private applySelectedHighlight(nodeId: string | null): void {
-    this.nodeSelection?.classed('is-selected', (node: PositionedNode): boolean => node.id === nodeId);
+    this.nodeSelection?.classed('is-selected', (node: PositionedNode): boolean => {
+      const resolvedId: string = node.ghost?.realNodeId ?? node.id;
+      return resolvedId === nodeId;
+    });
   }
 
   private applyHoverHighlight(nodeId: string | null): void {
@@ -380,13 +396,20 @@ export class GraphComponent implements AfterViewInit {
       }
     }
 
+    const isNodeRelated: (candidate: PositionedNode) => boolean = (candidate: PositionedNode): boolean => {
+      const realId: string | undefined = candidate.ghost?.realNodeId;
+      if (!realId) return relatedNodeIds.has(candidate.id);
+      if (realId === nodeId) return true;
+      return relatedNodeIds.has(candidate.id);
+    };
+
     this.nodeSelection
-      ?.classed('is-dimmed', (candidate: PositionedNode) => !relatedNodeIds.has(candidate.id))
-      .classed('is-highlighted', (candidate: PositionedNode) => relatedNodeIds.has(candidate.id));
+      ?.classed('is-dimmed', (candidate: PositionedNode): boolean => !isNodeRelated(candidate))
+      .classed('is-highlighted', (candidate: PositionedNode): boolean => isNodeRelated(candidate));
 
     this.linkSelection
-      ?.classed('is-dimmed', (candidate: ResolvedLink) => !relatedLinkIds.has(candidate.id))
-      .classed('is-highlighted', (candidate: ResolvedLink) => relatedLinkIds.has(candidate.id));
+      ?.classed('is-dimmed', (candidate: ResolvedLink): boolean => !relatedLinkIds.has(candidate.id))
+      .classed('is-highlighted', (candidate: ResolvedLink): boolean => relatedLinkIds.has(candidate.id));
   }
 
   private clearHoverHighlight(): void {
@@ -443,15 +466,30 @@ export class GraphComponent implements AfterViewInit {
   }
 
   protected handleNodeHover(_: MouseEvent, node: PositionedNode): void {
-    this.applyHoverHighlight(node.id);
+    const realId: string = node.ghost?.realNodeId ?? node.id;
+    this.applyHoverHighlight(realId);
   }
 
   protected handleNodeLeave(): void {
     this.refreshHover();
   }
 
-  protected handleNodeClick(_: MouseEvent, node: PositionedNode): void {
+  protected handleNodeClick(event: MouseEvent, node: PositionedNode): void {
+    event.stopPropagation();
     const selectedSlot: number = this.workspace.store.currentSlot();
-    void this.navigation.navigateToNode(this.activatedRoute, selectedSlot, node.id);
+    const resolvedId: string = node.ghost?.realNodeId ?? node.id;
+    void this.navigation.navigateToNode(this.activatedRoute, selectedSlot, resolvedId);
+  }
+
+  private handleBackgroundClick(event: MouseEvent): void {
+    const target: EventTarget | null = event.target;
+    if (!(target instanceof Element)) return;
+
+    const isOnNode: boolean = !!target.closest('g.node');
+    const isOnLink: boolean = !!target.closest('line.link');
+    if (isOnNode || isOnLink) return;
+
+    const selectedSlot: number = this.workspace.store.currentSlot();
+    void this.navigation.navigateToSlot(this.activatedRoute, selectedSlot);
   }
 }

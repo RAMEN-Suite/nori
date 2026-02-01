@@ -30,6 +30,16 @@
   vector-effect: non-scaling-stroke;
 }
 
+:host ::ng-deep line.link.is-ghost {
+  stroke-dasharray: 6 4;
+}
+
+:host ::ng-deep g.node.is-ghost circle {
+  fill: transparent;
+  stroke: currentColor;
+  stroke-dasharray: 4 3;
+}
+
 :host ::ng-deep g.node circle {
   cursor: pointer;
   stroke: var(--g-node-stroke);
