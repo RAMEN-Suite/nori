@@ -1,17 +1,17 @@
 import { Component, DestroyRef, inject, input, InputSignal, model, ModelSignal } from '@angular/core';
 import { Button } from 'primeng/button';
 import { Tooltip } from 'primeng/tooltip';
-import { Bounds, GAttribute } from '../../../../../../core/models/GModel';
-import { WorkspaceService } from '../../../../../../services/workspace/workspace.service';
-import { NavigationService } from '../../../../../../services/navigation.service';
+import { Bounds, GAttribute } from '../../../../../core/models/GModel';
+import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
+import { NavigationService } from '../../../../../services/navigation.service';
 import { ActivatedRoute } from '@angular/router';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { CreateAttributeDialog } from '../../../../dialogs/create-attribute/create-attribute.dialog';
+import { CreateAttributeDialog } from '../../../dialogs/create-attribute/create-attribute.dialog';
 import {
   ConfirmationButton,
   ConfirmationDialog,
   ConfirmationOptions,
-} from '../../../../dialogs/confirmation/confirmation.dialog';
+} from '../../../dialogs/confirmation/confirmation.dialog';
 import { Chip } from 'primeng/chip';
 
 const FORMATS = {

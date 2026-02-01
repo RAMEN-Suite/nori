@@ -3,20 +3,20 @@ import { Breadcrumb } from 'primeng/breadcrumb';
 import { Chip } from 'primeng/chip';
 import { ContextMenu } from 'primeng/contextmenu';
 import { MenuItem } from 'primeng/api';
-import { WorkspaceService } from '../../../../services/workspace/workspace.service';
-import { StorageService } from '../../../../services/storage.service';
-import { ModelRecord } from '../../../../models/ModelRecord';
+import { WorkspaceService } from '../../../services/workspace/workspace.service';
+import { StorageService } from '../../../services/storage.service';
+import { ModelRecord } from '../../../models/ModelRecord';
 import { Ripple } from 'primeng/ripple';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { CreateModelDialog } from '../../dialogs/create-model/create-model.dialog';
+import { CreateModelDialog } from '../dialogs/create-model/create-model.dialog';
 import { Tooltip } from 'primeng/tooltip';
 import { ActivatedRoute } from '@angular/router';
-import { NavigationService } from '../../../../services/navigation.service';
+import { NavigationService } from '../../../services/navigation.service';
 import {
   ConfirmationButton,
   ConfirmationDialog,
   ConfirmationOptions,
-} from '../../dialogs/confirmation/confirmation.dialog';
+} from '../dialogs/confirmation/confirmation.dialog';
 
 type BreadcrumbItem = Omit<MenuItem, 'items'> & {
   label?: string;
@@ -61,7 +61,11 @@ export class BreadcrumbsComponent {
     {
       label: 'Export Model',
       icon: 'pi pi-download',
-      command: (): void => {},
+      command: (): void => {
+        const slot: number = this.selectedMenuItem()?.slot ?? -1;
+        const record: ModelRecord | undefined = this.storage.recordsBySlot().get(slot);
+        if (!record || slot === -1) return;
+      },
     },
     {
       separator: true,

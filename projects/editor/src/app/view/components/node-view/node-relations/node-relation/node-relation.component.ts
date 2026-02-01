@@ -1,14 +1,14 @@
 import { Component, DestroyRef, inject, input, InputSignal } from '@angular/core';
-import { GRelation } from '../../../../../../core/models/GModel';
+import { GRelation } from '../../../../../core/models/GModel';
 import { Button } from 'primeng/button';
-import { WorkspaceService } from '../../../../../../services/workspace/workspace.service';
+import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
 import { Tooltip } from 'primeng/tooltip';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import {
   ConfirmationButton,
   ConfirmationDialog,
   ConfirmationOptions,
-} from '../../../../dialogs/confirmation/confirmation.dialog';
+} from '../../../dialogs/confirmation/confirmation.dialog';
 
 @Component({
   selector: 'app-node-relation',

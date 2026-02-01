@@ -1,10 +1,10 @@
 import { Component, DestroyRef, inject } from '@angular/core';
-import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
+import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { Button } from 'primeng/button';
 import { Fieldset } from 'primeng/fieldset';
 import { NodeRelationComponent } from './node-relation/node-relation.component';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { CreateRelationDialog } from '../../../dialogs/create-relation/create-relation.dialog';
+import { CreateRelationDialog } from '../../dialogs/create-relation/create-relation.dialog';
 
 @Component({
   selector: 'app-node-relations',

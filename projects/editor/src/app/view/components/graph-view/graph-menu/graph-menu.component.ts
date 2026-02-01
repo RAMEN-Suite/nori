@@ -1,8 +1,8 @@
 import { Component, computed, DestroyRef, inject, Signal, signal, WritableSignal } from '@angular/core';
 import { GraphComponent } from '../graph/graph.component';
-import { GModel } from '../../../../../core/models/GModel';
-import { GModelGraph, GraphData, GraphLink, GraphNode } from '../../../../../core/utils/GModelGraph';
-import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
+import { GModel } from '../../../../core/models/GModel';
+import { GModelGraph, GraphData, GraphLink, GraphNode } from '../../../../core/utils/GModelGraph';
+import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { FormsModule } from '@angular/forms';
 import { Menubar } from 'primeng/menubar';
 import { DEFAULT_GRAPH_LAYOUT_SETTINGS, GraphLayout, GraphLayoutSettings } from '../graph/graph.types';
@@ -11,7 +11,7 @@ import { ToggleButton } from 'primeng/togglebutton';
 import { Tooltip } from 'primeng/tooltip';
 import { Button } from 'primeng/button';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { NodeColorsDialog } from '../../../dialogs/node-colors/node-colors.dialog';
+import { NodeColorsDialog } from '../../dialogs/node-colors/node-colors.dialog';
 
 type LayoutToggleOption = 'areIsolatedNodesHidden';
 

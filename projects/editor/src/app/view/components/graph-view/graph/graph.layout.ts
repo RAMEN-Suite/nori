@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { GraphData, GraphLink, GraphNode } from '../../../../../core/utils/GModelGraph';
+import { GraphData, GraphLink, GraphNode } from '../../../../core/utils/GModelGraph';
 import {
   GraphInputModel,
   GraphLayout,

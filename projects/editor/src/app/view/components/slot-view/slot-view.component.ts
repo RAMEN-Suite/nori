@@ -1,8 +1,8 @@
 import { Component, DestroyRef, inject } from '@angular/core';
-import { WorkspaceService } from '../../../../services/workspace/workspace.service';
+import { WorkspaceService } from '../../../services/workspace/workspace.service';
 import { Button } from 'primeng/button';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { CreateModelDialog } from '../../dialogs/create-model/create-model.dialog';
+import { CreateModelDialog } from '../dialogs/create-model/create-model.dialog';
 
 @Component({
   selector: 'app-slot-view',

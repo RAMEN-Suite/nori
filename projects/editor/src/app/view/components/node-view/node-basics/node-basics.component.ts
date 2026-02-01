@@ -6,22 +6,22 @@ import { InputText } from 'primeng/inputtext';
 import { Panel } from 'primeng/panel';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Tooltip } from 'primeng/tooltip';
-import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
+import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { NgStyle } from '@angular/common';
-import { GNode } from '../../../../../core/models/GModel';
+import { GNode } from '../../../../core/models/GModel';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { NodeColorsDialog } from '../../../dialogs/node-colors/node-colors.dialog';
+import { NodeColorsDialog } from '../../dialogs/node-colors/node-colors.dialog';
 import { AutoFocus } from 'primeng/autofocus';
-import { NavigationService } from '../../../../../services/navigation.service';
+import { NavigationService } from '../../../../services/navigation.service';
 import { ActivatedRoute } from '@angular/router';
 import {
   ConfirmationButton,
   ConfirmationDialog,
   ConfirmationOptions,
-} from '../../../dialogs/confirmation/confirmation.dialog';
-import { AutoselectDirective } from '../../../../../directives/autoselect.directive';
-import { UpdateNodeInput } from '../../../../../core/GModelMutations';
-import { Transformer } from '../../../../../core/helper/Transformer';
+} from '../../dialogs/confirmation/confirmation.dialog';
+import { AutoselectDirective } from '../../../../directives/autoselect.directive';
+import { UpdateNodeInput } from '../../../../core/GModelMutations';
+import { Transformer } from '../../../../core/helper/Transformer';
 
 @Component({
   selector: 'app-node-basics',

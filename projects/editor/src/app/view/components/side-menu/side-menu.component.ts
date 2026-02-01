@@ -1,7 +1,7 @@
 import { Component, computed, DestroyRef, inject, Signal, signal, viewChild, WritableSignal } from '@angular/core';
-import { WorkspaceService } from '../../../../services/workspace/workspace.service';
+import { WorkspaceService } from '../../../services/workspace/workspace.service';
 import { PanelMenu } from 'primeng/panelmenu';
-import { GNode } from '../../../../core/models/GModel';
+import { GNode } from '../../../core/models/GModel';
 import { IftaLabel } from 'primeng/iftalabel';
 import { InputText } from 'primeng/inputtext';
 import { ScrollPanel } from 'primeng/scrollpanel';
@@ -12,14 +12,14 @@ import { ContextMenu } from 'primeng/contextmenu';
 import { FormsModule } from '@angular/forms';
 import { MenuItem } from 'primeng/api';
 import { ActivatedRoute } from '@angular/router';
-import { NavigationService } from '../../../../services/navigation.service';
+import { NavigationService } from '../../../services/navigation.service';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import {
   ConfirmationButton,
   ConfirmationDialog,
   ConfirmationOptions,
-} from '../../dialogs/confirmation/confirmation.dialog';
-import { CreateNodeInput } from '../../../../core/GModelFactory';
+} from '../dialogs/confirmation/confirmation.dialog';
+import { CreateNodeInput } from '../../../core/GModelFactory';
 
 type SideMenuItem = MenuItem & {
   isCategory?: boolean;

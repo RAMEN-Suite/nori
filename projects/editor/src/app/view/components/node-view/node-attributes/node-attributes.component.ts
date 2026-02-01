@@ -1,9 +1,9 @@
 import { Component, DestroyRef, inject } from '@angular/core';
-import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
+import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { Fieldset } from 'primeng/fieldset';
 import { NodeAttributeComponent } from './node-attribute/node-attribute.component';
 import { Button } from 'primeng/button';
-import { CreateAttributeDialog } from '../../../dialogs/create-attribute/create-attribute.dialog';
+import { CreateAttributeDialog } from '../../dialogs/create-attribute/create-attribute.dialog';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 
 @Component({

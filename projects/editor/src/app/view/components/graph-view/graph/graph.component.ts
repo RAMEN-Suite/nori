@@ -15,7 +15,7 @@ import {
 } from '@angular/core';
 import * as d3 from 'd3';
 import { ZoomTransform } from 'd3';
-import { GraphData } from '../../../../../core/utils/GModelGraph';
+import { GraphData } from '../../../../core/utils/GModelGraph';
 import type {
   LinkSelection,
   NodeDrag,
@@ -35,10 +35,10 @@ import {
   ViewportSize,
 } from './graph.types';
 import { buildRenderModel, getViewportSize } from './graph.layout';
-import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
-import { NodeColors } from '../../../../../models/ModelRecord';
+import { WorkspaceService } from '../../../../services/workspace/workspace.service';
+import { NodeColors } from '../../../../models/ModelRecord';
 import { ActivatedRoute } from '@angular/router';
-import { NavigationService } from '../../../../../services/navigation.service';
+import { NavigationService } from '../../../../services/navigation.service';
 
 @Component({
   selector: 'app-graph',
