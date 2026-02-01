@@ -13,16 +13,20 @@ import { APP_THEME, ApplicationState } from '../../../states/application.state';
 })
 export class HomeScreen implements OnInit {
   protected readonly environment = environment;
-  protected readonly EDITOR_THEME = APP_THEME;
+  protected readonly APP_THEME = APP_THEME;
 
   protected readonly windowState: WindowState = inject(WindowState);
-  protected readonly editorState: ApplicationState = inject(ApplicationState);
+  protected readonly appState: ApplicationState = inject(ApplicationState);
 
   public ngOnInit(): void {
     this.windowState.setTitle('NORI - A Model Layering Tool', 'pi pi-home');
   }
 
-  public handleOpenRepository(): void {
+  protected handleOpenRepository(): void {
     window.open(environment.repositoryURL, '_blank');
+  }
+
+  protected handleToggleTheme(): void {
+    this.appState.setTheme(this.appState.state().theme === APP_THEME.DARK ? APP_THEME.LIGHT : APP_THEME.DARK);
   }
 }
