@@ -3,21 +3,16 @@ import { WorkspaceService } from '../../../../services/workspace/workspace.servi
 import { Button } from 'primeng/button';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { CreateModelDialog } from '../../dialogs/create-model/create-model.dialog';
-import { ScrollPanel } from 'primeng/scrollpanel';
-import { StorageService } from '../../../../services/storage.service';
-import { Panel } from 'primeng/panel';
-import { Fieldset } from 'primeng/fieldset';
 
 @Component({
   selector: 'app-slot-view',
-  imports: [Button, ScrollPanel, Panel, Fieldset],
+  imports: [Button],
   providers: [DialogService, DynamicDialogRef],
   templateUrl: './slot-view.component.html',
   styleUrl: './slot-view.component.scss',
 })
 export class SlotViewComponent {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
-  protected readonly storage: StorageService = inject(StorageService);
 
   protected readonly destroyRef: DestroyRef = inject(DestroyRef);
   protected readonly dialogService: DialogService = inject(DialogService);
