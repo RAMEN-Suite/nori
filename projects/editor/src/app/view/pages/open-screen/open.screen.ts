@@ -18,16 +18,29 @@ import {
   ConfirmationOptions,
 } from '../../components/dialogs/confirmation/confirmation.dialog';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { Tooltip } from 'primeng/tooltip';
 
 @Component({
   selector: 'app-open-screen',
-  imports: [InputText, Button, RouterLink, InputGroup, InputGroupAddon, Fieldset, FormsModule, ScrollPanel, DatePipe],
+  imports: [
+    InputText,
+    Button,
+    RouterLink,
+    InputGroup,
+    InputGroupAddon,
+    Fieldset,
+    FormsModule,
+    ScrollPanel,
+    DatePipe,
+    Tooltip,
+  ],
   providers: [DialogService, DynamicDialogRef],
   templateUrl: './open.screen.html',
   styleUrl: './open.screen.scss',
 })
 export class OpenScreen implements OnInit {
   protected readonly windowState: WindowState = inject(WindowState);
+
   protected readonly storage: StorageService = inject(StorageService);
   protected readonly navigation: NavigationService = inject(NavigationService);
 
@@ -36,15 +49,16 @@ export class OpenScreen implements OnInit {
   protected dialogRef: DynamicDialogRef | null = null;
 
   protected readonly searchInput: WritableSignal<string> = signal('');
-  protected readonly filteredManifest: Signal<Manifest[]> = computed((): Manifest[] => {
+  protected readonly filteredManifests: Signal<Manifest[]> = computed((): Manifest[] => {
     const query: string = this.searchInput().trim().toLowerCase();
     const list: Manifest[] = this.storage.manifests();
     if (!query) return list;
 
-    return list.filter(
-      (manifest: Manifest): boolean =>
-        manifest.name.toLowerCase().includes(query) || manifest.projectId.toLowerCase().includes(query),
-    );
+    return list.filter((manifest: Manifest): boolean => {
+      const isNameIncluding: boolean = manifest.name.toLowerCase().includes(query);
+      const isDescriptionIncluding: boolean = manifest.description.toLowerCase().includes(query);
+      return isNameIncluding || isDescriptionIncluding;
+    });
   });
 
   constructor() {
@@ -59,17 +73,17 @@ export class OpenScreen implements OnInit {
     void this.storage.refreshManifests();
   }
 
-  public handleOpenProject(projectId: string): void {
+  protected handleOpenProject(projectId: string): void {
     void this.navigation.navigateToProject(projectId);
   }
 
-  public async handleDeleteProject(manifest: Manifest): Promise<void> {
+  protected handleDeleteProject(manifest: Manifest): void {
     const acceptButton: ConfirmationButton = {
       label: 'Yes, I want delete it',
       size: 'small',
       severity: 'danger',
       variant: 'outlined',
-      click: async (): Promise<void> => {
+      click: (): void => {
         void this.storage.removeProject(manifest.projectId);
         this.dialogRef?.close();
       },
@@ -99,7 +113,7 @@ export class OpenScreen implements OnInit {
     });
   }
 
-  public async handleDuplicateProject(manifest: Manifest): Promise<void> {
+  protected handleDuplicateProject(manifest: Manifest): void {
     void this.storage.duplicateProject(manifest.projectId);
   }
 }
