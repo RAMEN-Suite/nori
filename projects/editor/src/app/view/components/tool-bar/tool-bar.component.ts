@@ -14,6 +14,11 @@ import { Tooltip } from 'primeng/tooltip';
   styleUrl: './tool-bar.component.scss',
 })
 export class ToolBarComponent {
-  protected readonly EDITOR_THEME: typeof APP_THEME = APP_THEME;
-  protected readonly editorState: ApplicationState = inject(ApplicationState);
+  protected readonly APP_THEME: typeof APP_THEME = APP_THEME;
+  protected readonly appState: ApplicationState = inject(ApplicationState);
+
+  protected handleToggleTheme(): void {
+    const isDark: boolean = this.appState.state().theme === APP_THEME.DARK;
+    this.appState.setTheme(isDark ? APP_THEME.LIGHT : APP_THEME.DARK);
+  }
 }

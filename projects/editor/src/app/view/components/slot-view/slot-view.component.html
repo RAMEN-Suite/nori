@@ -1,13 +1,13 @@
 <div class="grid h-full grid-rows-1">
   @if (!workspace.store.currentModel()) {
     <section class="flex h-full items-center justify-center select-none" animate.enter="slot-view-entrance" aria-label="Empty workspace">
-      <div class="mb-20 flex flex-col items-center">
+      <div class="mb-20 flex flex-col items-center text-center">
         <svg width="96" height="96" role="img" aria-label="NORI logo">
           <use href="images/ramen.svg#ramen-logo"></use>
         </svg>
 
         <h1 class="font-condens text-4xl font-light">Welcome to NORI</h1>
-        <p class="my-3 max-w-md">Add your first Model to start modelling</p>
+        <p class="my-3 max-w-md">Add a Model to start modelling</p>
 
         <div class="mt-10 flex gap-10">
           <div class="flex flex-col items-center gap-4">

@@ -37,7 +37,7 @@ type BreadcrumbItem = Omit<MenuItem, 'items'> & {
 export class BreadcrumbsComponent {
   protected readonly storage: StorageService = inject(StorageService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
-  protected readonly exporter: ExportService = inject(ExportService);
+  protected readonly export: ExportService = inject(ExportService);
 
   protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
   protected readonly navigation: NavigationService = inject(NavigationService);
@@ -59,15 +59,7 @@ export class BreadcrumbsComponent {
     {
       label: 'Export Model',
       icon: 'pi pi-download',
-      command: (): void => {
-        const slot: number = this.selectedMenuItem()?.slot ?? -1;
-        const record: ModelRecord | undefined = this.storage.recordsBySlot().get(slot);
-        if (!record || slot === -1) return;
-
-        const camelized: string = Transformer.toCamelName(record.gmodel.name);
-        const fileName: string = `${camelized}.gcore`;
-        void this.exporter.exportJSON(record.gmodel, { fileName });
-      },
+      command: (): void => void this.handleExportModel(),
     },
     {
       separator: true,
@@ -89,26 +81,6 @@ export class BreadcrumbsComponent {
     effect((): void => {
       this.breadcrumb.set(this.createBreadcrumb());
     });
-  }
-
-  private createBreadcrumb(): BreadcrumbItem[] {
-    const models: Map<number, ModelRecord> = this.storage.recordsBySlot();
-    const firstItem: BreadcrumbItem = { label: 'Metamodel', isFirst: true, isLast: false };
-    const lastItem: BreadcrumbItem = { icon: 'pi pi-plus', isFirst: false, isLast: true };
-
-    const modelLayers: BreadcrumbItem[] = [];
-    for (const slot of models.keys()) {
-      if (slot === 0) continue;
-
-      modelLayers.push({
-        label: `Model ${slot}`,
-        isFirst: false,
-        isLast: false,
-        slot: slot,
-      });
-    }
-
-    return [firstItem, ...modelLayers, lastItem];
   }
 
   protected handleOpenCreateModel(): void {
@@ -143,6 +115,16 @@ export class BreadcrumbsComponent {
   protected handleContextMenu($event: MouseEvent, item: BreadcrumbItem): void {
     this.selectedMenuItem.set(item);
     this.contextMenuRef()?.show($event);
+  }
+
+  protected handleExportModel(): void {
+    const slot: number = this.selectedMenuItem()?.slot ?? -1;
+    const record: ModelRecord | undefined = this.storage.recordsBySlot().get(slot);
+    if (!record || slot === -1) return;
+
+    const camelized: string = Transformer.toCamelName(record.gmodel.name);
+    const fileName: string = `${camelized}.gcore`;
+    void this.export.exportJSON(record.gmodel, { fileName });
   }
 
   protected async handleDeleteModel(): Promise<void> {
@@ -186,5 +168,25 @@ export class BreadcrumbsComponent {
       closable: true,
       inputValues: { options },
     });
+  }
+
+  private createBreadcrumb(): BreadcrumbItem[] {
+    const models: Map<number, ModelRecord> = this.storage.recordsBySlot();
+    const firstItem: BreadcrumbItem = { label: 'Metamodel', isFirst: true, isLast: false };
+    const lastItem: BreadcrumbItem = { icon: 'pi pi-plus', isFirst: false, isLast: true };
+
+    const modelLayers: BreadcrumbItem[] = [];
+    for (const slot of models.keys()) {
+      if (slot === 0) continue;
+
+      modelLayers.push({
+        label: `Model ${slot}`,
+        isFirst: false,
+        isLast: false,
+        slot: slot,
+      });
+    }
+
+    return [firstItem, ...modelLayers, lastItem];
   }
 }
