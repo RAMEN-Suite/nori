@@ -41,6 +41,7 @@
                 [suggestions]="filteredDataTypeOptions()"
                 (completeMethod)="handleAutoComplete($event)"
                 (ngModelChange)="handleSelectType($event)"
+                (onBlur)="handleSelectOnBlur($event)"
                 [invalid]="isSubmitted && !isTypeValid()"
                 id="attributeType"
                 name="attributeType"

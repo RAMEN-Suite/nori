@@ -220,6 +220,16 @@ export class CreateAttributeDialog {
     this.filteredDataTypeOptions.set(options);
   }
 
+  protected handleSelectOnBlur($event: Event): void {
+    const input: HTMLInputElement = $event.target as HTMLInputElement;
+    const options: GenericOption<string>[] = this.dataTypeOptions().filter((option: GenericOption<string>): boolean => {
+      return option.label.toLowerCase().includes(input.value.trim().toLowerCase());
+    });
+
+    if (!options[0] || options.length !== 1) return;
+    this.handleSelectType(options[0].value);
+  }
+
   protected handleSelectType(typeId: TypeRef): void {
     this.draftAttribute.update((attribute: GAttribute): GAttribute => ({ ...attribute, typeId }));
   }
