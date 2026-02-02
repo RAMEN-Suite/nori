@@ -1,4 +1,4 @@
-<p-scroll-panel class="h-full min-h-0" style="--p-scrollpanel-bar-size: 4px" [hidden]="workspace.store.currentModel() === null">
+<p-scroll-panel class="h-full min-h-0 select-none" style="--p-scrollpanel-bar-size: 4px" [hidden]="workspace.store.currentModel() === null">
   <div class="flex flex-col gap-5 px-4 py-4">
     <div class="flex flex-col">
       <p-ifta-label>
@@ -35,7 +35,7 @@
               (click)="handleSelectPanelItem(item)"
               (keydown.enter)="handleSelectPanelItem(item)"
             >
-              <span class="flex items-center gap-3 wrap-anywhere select-none">
+              <span class="flex items-center gap-3 wrap-anywhere">
                 <i class="pi pi-chevron-right" style="font-size: 8pt !important"></i>
                 {{ item.label }}
               </span>
@@ -51,7 +51,7 @@
   <ng-template #item let-item>
     <div
       pRipple
-      class="flex max-w-50! cursor-pointer flex-row items-center justify-start gap-3 px-2 py-2"
+      class="flex max-w-50! cursor-pointer flex-row items-center justify-start gap-3 px-2 py-2 select-none"
       [class.text-(--p-red-500)]="item.severity === 'error'"
     >
       <div class="flex flex-2 items-center justify-center">

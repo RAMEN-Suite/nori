@@ -16,8 +16,19 @@
       <div class="ml-2 flex items-center gap-2">
         <p-divider layout="vertical"></p-divider>
         <p-button
+          icon="pi pi-download"
+          aria-label="Export Model"
+          pTooltip="Export Current Model"
+          tooltipPosition="bottom"
+          positionTop="15"
+          variant="text"
+          size="small"
+          fluid
+          (click)="handleExportModel()"
+        />
+        <p-button
           [icon]="isDark ? 'pi pi-moon' : 'pi pi-sun'"
-          aria-label="Toggle theme"
+          aria-label="Toggle Theme"
           pTooltip="Toggle Theme"
           tooltipPosition="bottom"
           positionTop="15"
@@ -28,7 +39,7 @@
         />
         <p-button
           icon="pi pi-cog"
-          aria-label="Open settings"
+          aria-label="Open Settings"
           pTooltip="Settings"
           tooltipPosition="bottom"
           positionTop="15"
