@@ -9,15 +9,15 @@
         <h1 class="font-condens text-4xl font-light">Welcome to NORI</h1>
         <p class="my-3 max-w-md">Add a Model to start modelling</p>
 
-        <div class="mt-10 flex gap-10">
+        <div class="mt-10 flex gap-15">
           <div class="flex flex-col items-center gap-4">
             <p-button icon="pi pi-plus" size="large" aria-label="Create model" (click)="handleOpenCreateModel()" />
-            <span class="text-sm font-bold">Create Model</span>
+            <span class="text-sm">Create Model</span>
           </div>
 
           <div class="flex flex-col items-center gap-4">
             <p-button icon="pi pi-download" size="large" aria-label="Import model" (click)="fileInput.click()" />
-            <span class="text-sm font-bold">Import Model</span>
+            <span class="text-sm">Import Model</span>
           </div>
 
           <input #fileInput type="file" accept=".gcore.json,application/json" hidden (change)="handleImportModel(fileInput)" />
