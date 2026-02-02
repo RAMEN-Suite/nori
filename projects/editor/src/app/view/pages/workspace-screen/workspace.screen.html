@@ -1,24 +1,18 @@
 <app-tool-bar />
 
-<main class="main-window flex flex-row" style="--p-tool-bar-h: 50px">
-  <div
-    class="flex min-w-65 flex-2 border-r border-(--p-menubar-border-color) bg-(--p-menubar-background)/40"
-    animate.enter="side-menu-entrance"
-  >
-    <app-side-menu class="basis-full" />
-  </div>
+<main class="main-window flex h-full w-full overflow-hidden" style="--p-tool-bar-h: 50px">
+  <aside class="w-65 shrink-0 border-r border-(--p-menubar-border-color) bg-(--p-menubar-background)/40" animate.enter="side-menu-entrance">
+    <app-side-menu class="h-full w-full" />
+  </aside>
 
-  <div class="flex min-w-150 flex-5" animate.enter="node-view-entrance">
-    <div class="basis-full">
-      <router-outlet />
-    </div>
-  </div>
+  <section class="min-w-150 flex-1 shrink-0" animate.enter="node-view-entrance">
+    <router-outlet />
+  </section>
 
-  <div
-    class="flex flex-5 border-l border-(--p-menubar-border-color) bg-(--p-menubar-background)/40"
-    id="workspace-right"
+  <aside
+    class="min-w-0 flex-1 border-l border-(--p-menubar-border-color) bg-(--p-menubar-background)/40"
     animate.enter="visualizer-entrance"
   >
-    <app-visualizer class="basis-full" />
-  </div>
+    <app-visualizer class="h-full w-full" />
+  </aside>
 </main>

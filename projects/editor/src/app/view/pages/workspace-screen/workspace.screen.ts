@@ -28,14 +28,17 @@ export class WorkspaceScreen implements OnInit {
 
   constructor() {
     this.activatedRouteSubscription$ = this.router.events
-      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+      .pipe(filter((event: unknown): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe(this.registerRouteSubscription.bind(this));
 
     effect((): void => {
       const manifest: Manifest | null = this.storage.selectedManifest();
       this.windowState.setTitle(manifest?.name ?? '', 'pi pi-pen-to-square');
-      console.log(this.workspace.store.currentModel());
     });
+  }
+
+  public ngOnInit(): void {
+    void this.storage.refreshManifests();
   }
 
   private registerRouteSubscription(): void {
@@ -51,9 +54,5 @@ export class WorkspaceScreen implements OnInit {
 
     this.workspace.store.setCurrentSlot(slot ? Number(slot) : null);
     this.workspace.store.setCurrentNodeId(nodeId ?? null);
-  }
-
-  public async ngOnInit(): Promise<void> {
-    void this.storage.refreshManifests();
   }
 }
