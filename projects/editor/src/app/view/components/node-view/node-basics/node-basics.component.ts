@@ -38,7 +38,7 @@ import { Transformer } from '../../../../core/helper/Transformer';
     AutoFocus,
     AutoselectDirective,
   ],
-  providers: [DialogService, DynamicDialogRef],
+  providers: [DialogService],
   templateUrl: './node-basics.component.html',
   styleUrl: './node-basics.component.scss',
 })

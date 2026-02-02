@@ -22,19 +22,6 @@
           <p-message severity="error" size="small" variant="simple"> Model name must be at least 3 characters. </p-message>
         }
       </div>
-
-      <p-ifta-label>
-        <textarea
-          [(ngModel)]="draftModel().description"
-          id="description"
-          name="description"
-          maxlength="140"
-          autocomplete="off"
-          pTextarea
-          fluid
-        ></textarea>
-        <label for="description">Model Description</label>
-      </p-ifta-label>
     </div>
   </p-fieldset>
 

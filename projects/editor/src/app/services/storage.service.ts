@@ -4,7 +4,7 @@ import { ModelRecord } from '../models/ModelRecord';
 import { database } from '../app.database';
 import { environment } from '../../environments/environment';
 import ShortUniqueId from 'short-unique-id';
-import { GModel, Id } from '../core/models/GModel';
+import { GModel, Id, Import } from '../core/models/GModel';
 
 export type CreateManifest = Pick<
   Manifest,
@@ -12,8 +12,8 @@ export type CreateManifest = Pick<
 >;
 export type UpdateManifest = Pick<Manifest, 'name' | 'description'>;
 
-export type CreateRecordInput = Pick<ModelRecord, 'projectId' | 'gmodel' | 'name' | 'description'>;
-export type UpdateRecordInput = Partial<Pick<ModelRecord, 'gmodel' | 'name' | 'description' | 'view'>>;
+export type CreateRecordInput = Pick<ModelRecord, 'projectId' | 'gmodel' | 'name'>;
+export type UpdateRecordInput = Partial<Pick<ModelRecord, 'gmodel' | 'name' | 'view'>>;
 
 @Injectable({
   providedIn: 'root',
@@ -80,23 +80,10 @@ export class StorageService {
       updatedAt: timestamp,
     };
 
-    await database.transaction('rw', database.manifests, database.models, async () => {
+    await database.transaction('rw', database.manifests, database.models, async (): Promise<void> => {
       await database.manifests.add(manifest);
-      await this.createRecord({
-        projectId,
-        name: metamodel.name,
-        description: '',
-        gmodel: metamodel,
-      });
-
-      if (example) {
-        await this.createRecord({
-          projectId,
-          name: example.name,
-          description: '',
-          gmodel: example,
-        });
-      }
+      await this.createRecord({ projectId, name: metamodel.name, gmodel: metamodel });
+      if (example) await this.createRecord({ projectId, name: example.name, gmodel: example });
     });
 
     await this.refreshManifests();
@@ -195,6 +182,30 @@ export class StorageService {
     }
 
     await this.refreshManifests();
+  }
+
+  public async importRecord(gmodel: GModel): Promise<void> {
+    const projectId: string | null = this.selectedProjectId();
+    if (!projectId) throw new Error('No active project.');
+
+    const lastSlot: number = await this.getLastSlot(projectId);
+    const lastRecord: ModelRecord | undefined = await this.getRecordBySlot(projectId, lastSlot);
+
+    if (!lastRecord) throw new Error(`Last record not found for slot ${lastSlot}.`);
+    if (gmodel.imports.length === 0) throw new Error('Import failed: GModel has no imports.');
+
+    const lastModelId: string = lastRecord.gmodel.id;
+    const matchingImports: Import[] = gmodel.imports.filter((i: Import): boolean => i.modelId === lastModelId);
+
+    if (matchingImports.length !== 1) {
+      const importIds: string = gmodel.imports.map((i: Import): string => i.modelId).join(', ');
+      throw new Error(
+        `Import mismatch: expected exactly 1 import referencing last slot modelId=${lastModelId}, ` +
+          `but found ${matchingImports.length}. imports=[${importIds}]`,
+      );
+    }
+
+    await this.createRecord({ projectId, name: gmodel.name, gmodel });
   }
 
   public async updateRecord(modelId: string, patch: UpdateRecordInput): Promise<void> {

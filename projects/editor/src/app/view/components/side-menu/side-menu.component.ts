@@ -32,7 +32,7 @@ type SideMenuItem = MenuItem & {
 @Component({
   selector: 'app-side-menu',
   imports: [PanelMenu, IftaLabel, InputText, ScrollPanel, Button, Ripple, Tooltip, ContextMenu, FormsModule],
-  providers: [DialogService, DynamicDialogRef],
+  providers: [DialogService],
   templateUrl: './side-menu.component.html',
   styleUrl: './side-menu.component.scss',
 })

@@ -10,11 +10,10 @@ export interface ModelRecord {
   projectId: string;
   modelId: string;
 
-  gmodel: GModel;
-  slot: number;
-
   name: string;
-  description: string;
+  slot: number;
+  gmodel: GModel;
+
   view?: ViewSettings;
 
   createdAt: string;

@@ -22,7 +22,7 @@
                         </div>
 
                         <p class="text-sm opacity-90">
-                          {{ manifest.description?.trim() ? manifest.description : 'No description available.' }}
+                          {{ manifest.description !== '' ? manifest.description : 'No description available.' }}
                         </p>
 
                         <div class="mt-3">

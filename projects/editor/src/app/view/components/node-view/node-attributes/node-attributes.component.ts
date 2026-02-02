@@ -9,7 +9,7 @@ import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 @Component({
   selector: 'app-node-attributes',
   imports: [Fieldset, NodeAttributeComponent, Button],
-  providers: [DialogService, DynamicDialogRef],
+  providers: [DialogService],
   templateUrl: './node-attributes.component.html',
   styleUrl: './node-attributes.component.scss',
 })

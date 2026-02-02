@@ -6,7 +6,6 @@ import { Fieldset } from 'primeng/fieldset';
 import { IftaLabel } from 'primeng/iftalabel';
 import { Message } from 'primeng/message';
 import { FormsModule } from '@angular/forms';
-import { Textarea } from 'primeng/textarea';
 import { REGEXP } from '../../../../core/const/REGEXP';
 import { DynamicDialogRef } from 'primeng/dynamicdialog';
 import { CreateSlotInput } from '../../../../services/workspace/workspace.actions';
@@ -17,7 +16,7 @@ import { StorageService } from '../../../../services/storage.service';
 
 @Component({
   selector: 'app-modal-create-model',
-  imports: [InputText, Button, Fieldset, IftaLabel, Message, Textarea, FormsModule],
+  imports: [InputText, Button, Fieldset, IftaLabel, Message, FormsModule],
   templateUrl: './create-model.dialog.html',
   styleUrl: './create-model.dialog.scss',
 })
@@ -49,7 +48,6 @@ export class CreateModelDialog {
 
       const input: CreateSlotInput = {
         name: existing.name,
-        description: existing.description,
         uri: existing.gmodel.$id,
         version: existing.gmodel.version,
       };

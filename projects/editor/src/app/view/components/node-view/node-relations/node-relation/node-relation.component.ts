@@ -13,7 +13,7 @@ import {
 @Component({
   selector: 'app-node-relation',
   imports: [Button, Tooltip],
-  providers: [DynamicDialogRef, DialogService],
+  providers: [DialogService],
   templateUrl: './node-relation.component.html',
   styleUrl: './node-relation.component.scss',
 })

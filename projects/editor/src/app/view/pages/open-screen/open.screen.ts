@@ -34,7 +34,7 @@ import { Tooltip } from 'primeng/tooltip';
     DatePipe,
     Tooltip,
   ],
-  providers: [DialogService, DynamicDialogRef],
+  providers: [DialogService],
   templateUrl: './open.screen.html',
   styleUrl: './open.screen.scss',
 })

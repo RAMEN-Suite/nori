@@ -9,7 +9,7 @@ import { CreateRelationDialog } from '../../dialogs/create-relation/create-relat
 @Component({
   selector: 'app-node-relations',
   imports: [Button, Fieldset, NodeRelationComponent],
-  providers: [DynamicDialogRef, DialogService],
+  providers: [DialogService],
   templateUrl: './node-relations.component.html',
   styleUrl: './node-relations.component.scss',
 })

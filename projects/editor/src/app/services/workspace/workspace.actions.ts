@@ -25,7 +25,6 @@ export type CreateSlotInput = {
   uri: string;
   name: string;
   version: string;
-  description: string;
 };
 
 @Injectable({ providedIn: 'root' })
@@ -167,20 +166,14 @@ export class WorkspaceActions {
       version: input.version,
     });
 
-    await this.storage.createRecord({
-      projectId: projectId,
-      gmodel: derived,
-      name: input.name,
-      description: input.description,
-    });
-
+    await this.storage.createRecord({ projectId: projectId, gmodel: derived, name: input.name });
     return lastSlot + 1;
   }
 
   public async updateSlot(slot: number, patch: UpdateSlotInput): Promise<void> {
     const existing: ModelRecord | undefined = this.storage.recordsBySlot().get(slot);
     if (!existing) throw new Error(`Cannot update: model in ${slot} does not exist.`);
-    const { name, description, version, uri } = patch;
+    const { name, version, uri } = patch;
 
     const updatedModel: GModel = {
       ...existing.gmodel,
@@ -189,12 +182,7 @@ export class WorkspaceActions {
       $id: uri ?? existing.gmodel.$id,
     };
 
-    const recordPatch: UpdateRecordInput = {
-      name: name ?? existing.name,
-      description: description ?? existing.description,
-      gmodel: updatedModel,
-    };
-
+    const recordPatch: UpdateRecordInput = { name: name ?? existing.name, gmodel: updatedModel };
     await this.storage.updateRecord(existing.modelId, recordPatch);
   }
 
@@ -214,11 +202,7 @@ export class WorkspaceActions {
     if (!model) throw new Error('Cannot save: no working model loaded.');
 
     const existing: ModelRecord = this.getSelectedRecord();
-    const patch: Partial<UpdateRecordInput> = {
-      gmodel: model,
-      name: existing.name,
-      description: existing.description,
-    };
+    const patch: Partial<UpdateRecordInput> = { gmodel: model, name: existing.name };
 
     await this.storage.updateRecord(existing.modelId, patch);
   }

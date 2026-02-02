@@ -25,7 +25,7 @@ type AttributeChip = { icon: string; tooltip: string };
 @Component({
   selector: 'app-node-attribute',
   imports: [Button, Tooltip, Chip],
-  providers: [DialogService, DynamicDialogRef],
+  providers: [DialogService],
   templateUrl: './node-attribute.component.html',
   styleUrl: './node-attribute.component.scss',
 })
