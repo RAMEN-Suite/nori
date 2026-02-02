@@ -1,0 +1,337 @@
+{
+  "$schema": "https://ramen-schema.org/gcore/1.0.0/schema.json",
+  "$id": "https://example.com/",
+  "id": "asSOzqHwLcn484Bj",
+  "version": "1.0.0",
+  "kind": "GModel",
+  "name": "Simple Example",
+  "imports": [
+    {
+      "schemaId": "https://ramen-schema.org/ramen/1.0.0/schema.json",
+      "modelId": "lW611f30a2ky4276g3l8N",
+      "name": "RAMEN"
+    }
+  ],
+  "classifiers": [
+    {
+      "kind": "GNode",
+      "id": "zDBUgf5j7rqjyft9",
+      "name": "Text",
+      "superTypes": ["lW611f30a2ky4276g3l8N:Z4kq1M8sV0bN2xR7pT6u"],
+      "attributes": [],
+      "constraints": [],
+      "ext": {}
+    },
+    {
+      "kind": "GNode",
+      "id": "BEWkrksYl0LcKJ4A",
+      "name": "Image",
+      "superTypes": ["lW611f30a2ky4276g3l8N:cR5p0Yt7W2nK9xL1mQ8v"],
+      "attributes": [],
+      "constraints": [],
+      "ext": {}
+    },
+    {
+      "kind": "GNode",
+      "id": "kjC75EhrnRYQ7Uvm",
+      "name": "Person",
+      "superTypes": ["lW611f30a2ky4276g3l8N:n7Vb2Qx0Lm9P3sT6yK1h"],
+      "attributes": [
+        {
+          "name": "firstName",
+          "typeId": "String",
+          "bounds": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "isKey": false,
+          "isReadOnly": false,
+          "isUnique": false,
+          "isOrdered": false,
+          "constraints": [],
+          "ext": {}
+        },
+        {
+          "name": "lastName",
+          "typeId": "String",
+          "bounds": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "isKey": false,
+          "isReadOnly": false,
+          "isUnique": false,
+          "isOrdered": false,
+          "constraints": [],
+          "ext": {}
+        },
+        {
+          "name": "alias",
+          "typeId": "String",
+          "bounds": {
+            "lowerBound": 0,
+            "upperBound": -1
+          },
+          "isKey": false,
+          "isReadOnly": false,
+          "isUnique": true,
+          "isOrdered": false,
+          "constraints": [],
+          "ext": {}
+        }
+      ],
+      "constraints": [],
+      "ext": {}
+    },
+    {
+      "kind": "GNode",
+      "id": "Uc8UgUi4QxFXYyvj",
+      "name": "Place",
+      "superTypes": ["lW611f30a2ky4276g3l8N:n7Vb2Qx0Lm9P3sT6yK1h"],
+      "attributes": [
+        {
+          "name": "alias",
+          "typeId": "String",
+          "bounds": {
+            "lowerBound": 0,
+            "upperBound": -1
+          },
+          "isKey": false,
+          "isReadOnly": false,
+          "isUnique": true,
+          "isOrdered": false,
+          "constraints": [],
+          "ext": {}
+        }
+      ],
+      "constraints": [],
+      "ext": {}
+    },
+    {
+      "kind": "GNode",
+      "id": "pXE1GSGeLEoOrDkR",
+      "name": "Letter",
+      "superTypes": ["lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"],
+      "attributes": [],
+      "constraints": [],
+      "ext": {}
+    },
+    {
+      "kind": "GNode",
+      "id": "k9md2K7jUdZboaYr",
+      "name": "Corpus",
+      "superTypes": ["lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"],
+      "attributes": [],
+      "constraints": [],
+      "ext": {}
+    },
+    {
+      "kind": "GNode",
+      "id": "YiZjpE6mwVqXf7dF",
+      "name": "Annotation",
+      "superTypes": ["lW611f30a2ky4276g3l8N:m2Xv8qL0sP6tN1yK7rB3"],
+      "attributes": [],
+      "constraints": [],
+      "ext": {}
+    }
+  ],
+  "relations": [
+    {
+      "kind": "GRelation",
+      "id": "FUtvor8qgWqsSf6k",
+      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
+      "name": "PART_OF",
+      "from": {
+        "nodeId": "pXE1GSGeLEoOrDkR",
+        "role": "children",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "constraints": [],
+        "ext": {}
+      },
+      "to": {
+        "nodeId": "k9md2K7jUdZboaYr",
+        "role": "parents",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "constraints": [],
+        "ext": {}
+      },
+      "constraints": [],
+      "ext": {}
+    },
+    {
+      "kind": "GRelation",
+      "id": "XuNYLrA5kgniTQZ4",
+      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
+      "name": "PART_OF",
+      "from": {
+        "nodeId": "k9md2K7jUdZboaYr",
+        "role": "children",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "constraints": [],
+        "ext": {}
+      },
+      "to": {
+        "nodeId": "k9md2K7jUdZboaYr",
+        "role": "parents",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "constraints": [],
+        "ext": {}
+      },
+      "constraints": [],
+      "ext": {}
+    },
+    {
+      "kind": "GRelation",
+      "id": "ZOGN9fDILOtSi4wD",
+      "superTypes": ["lW611f30a2ky4276g3l8N:pX4sN1cDzK0mT3aL7vQ9"],
+      "name": "HAS_ANNOTATION",
+      "from": {
+        "nodeId": "zDBUgf5j7rqjyft9",
+        "role": "annotatesTexts",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "constraints": [],
+        "ext": {}
+      },
+      "to": {
+        "nodeId": "YiZjpE6mwVqXf7dF",
+        "role": "annotations",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "constraints": [],
+        "ext": {}
+      },
+      "constraints": [],
+      "ext": {}
+    },
+    {
+      "kind": "GRelation",
+      "id": "kqqlMnP98HOytCoE",
+      "superTypes": ["lW611f30a2ky4276g3l8N:mR0sT6yK1nB3xV7pQ2xL9"],
+      "name": "REFERS_TO",
+      "from": {
+        "nodeId": "YiZjpE6mwVqXf7dF",
+        "role": "annotations",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "constraints": [],
+        "ext": {}
+      },
+      "to": {
+        "nodeId": "kjC75EhrnRYQ7Uvm",
+        "role": "refersEntities",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "constraints": [],
+        "ext": {}
+      },
+      "constraints": [],
+      "ext": {}
+    },
+    {
+      "kind": "GRelation",
+      "id": "IhZdq0OIj1JOfCpz",
+      "superTypes": ["lW611f30a2ky4276g3l8N:mR0sT6yK1nB3xV7pQ2xL9"],
+      "name": "REFERS_TO",
+      "from": {
+        "nodeId": "YiZjpE6mwVqXf7dF",
+        "role": "annotations",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "constraints": [],
+        "ext": {}
+      },
+      "to": {
+        "nodeId": "Uc8UgUi4QxFXYyvj",
+        "role": "refersEntities",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "constraints": [],
+        "ext": {}
+      },
+      "constraints": [],
+      "ext": {}
+    },
+    {
+      "kind": "GRelation",
+      "id": "IprWDeOAmvJ2NkLa",
+      "superTypes": ["lW611f30a2ky4276g3l8N:nB3xK8pQ2yT6vL9mR0s1"],
+      "name": "PART_OF",
+      "from": {
+        "nodeId": "BEWkrksYl0LcKJ4A",
+        "role": "images",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "constraints": [],
+        "ext": {}
+      },
+      "to": {
+        "nodeId": "pXE1GSGeLEoOrDkR",
+        "role": "collections",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "constraints": [],
+        "ext": {}
+      },
+      "constraints": [],
+      "ext": {}
+    },
+    {
+      "kind": "GRelation",
+      "id": "aChOmf0Ikb9hBWfe",
+      "superTypes": ["lW611f30a2ky4276g3l8N:K0mT3aL7vQ9pX4sN1cDz"],
+      "name": "PART_OF",
+      "from": {
+        "nodeId": "zDBUgf5j7rqjyft9",
+        "role": "texts",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "constraints": [],
+        "ext": {}
+      },
+      "to": {
+        "nodeId": "pXE1GSGeLEoOrDkR",
+        "role": "collections",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "constraints": [],
+        "ext": {}
+      },
+      "constraints": [],
+      "ext": {}
+    }
+  ],
+  "ext": {}
+}
