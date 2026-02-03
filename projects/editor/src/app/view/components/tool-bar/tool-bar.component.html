@@ -4,7 +4,7 @@
   <p-menubar>
     <ng-template #start>
       <div class="flex cursor-pointer flex-row items-center select-none" routerLink="/" role="link" tabindex="0" aria-label="Go to home">
-        <svg width="24" height="24" class="mx-3" role="img" aria-label="NORI logo">
+        <svg width="24" height="24" class="mx-3 mb-1" role="img" aria-label="NORI logo">
           <use href="images/ramen.svg#ramen-logo"></use>
         </svg>
         <span class="font-bold uppercase">Nori</span>
@@ -16,7 +16,7 @@
       <div class="ml-2 flex items-center gap-2">
         <p-divider layout="vertical"></p-divider>
         <p-button
-          icon="pi pi-download"
+          icon="pi pi-upload"
           aria-label="Export Model"
           pTooltip="Export Current Model"
           tooltipPosition="bottom"
@@ -24,6 +24,7 @@
           variant="text"
           size="small"
           fluid
+          [disabled]="!workspace.store.currentModel()"
           (click)="handleExportModel()"
         />
         <p-button
@@ -47,6 +48,7 @@
           variant="text"
           size="small"
           fluid
+          [disabled]="true"
         />
       </div>
     </ng-template>

@@ -9,6 +9,7 @@ import { ColorPicker } from 'primeng/colorpicker';
 import { FormsModule } from '@angular/forms';
 import { Button } from 'primeng/button';
 import { NodeColors } from '../../../../models/ModelRecord';
+import iwanthue from 'iwanthue';
 
 interface NodeColorOption {
   id: string;
@@ -38,6 +39,19 @@ export class NodeColorsDialog implements OnInit, OnDestroy {
 
   public ngOnDestroy(): void {
     void this.handleSaveChanges();
+  }
+
+  protected async handleGenerateColors(): Promise<void> {
+    const baseNodes: ReadonlyArray<GNode> = this.workspace.view.baseNodes();
+    const colors: string[] = iwanthue(baseNodes.length, { colorSpace: 'colorblind' });
+    const colorMap: NodeColors = {};
+
+    for (const [index, node] of baseNodes.entries()) {
+      colorMap[node.id] = colors[index] ?? '';
+    }
+
+    this.workspace.store.setCurrentNodeColors(colorMap);
+    await this.workspace.actions.updateNodeColors();
   }
 
   protected async handleColorChange(baseId: string, hexColor: string): Promise<void> {

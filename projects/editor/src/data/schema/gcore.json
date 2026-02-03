@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://ramen-schema.org/gcore/1.0.0/schema.json",
-  "title": "GCore Light",
+  "title": "GCore",
 
   "type": "object",
   "required": ["$schema", "$id", "id", "version", "kind", "name", "imports", "classifiers", "relations"],
@@ -49,7 +49,7 @@
     }
   },
 
-  "$comment": "GCore Light: a minimal, JSON-first structural metamodel inspired by MOF/Ecore, focused on data modeling rather than full behavioral or reflective semantics.",
+  "$comment": "GCore: JSON-first structural metamodel inspired by MOF/Ecore, focused on data modeling rather than full behavioral or reflective semantics.",
 
   "$defs": {
     "Id": {

@@ -56,7 +56,7 @@ export class CreateModelDialog {
   }
 
   protected isModelNameValid(): boolean {
-    const modelName: string = this.draftModel.name.trim();
+    const modelName: string = this.draftModel().name.trim();
     return modelName !== '' && modelName.length >= 3;
   }
 
