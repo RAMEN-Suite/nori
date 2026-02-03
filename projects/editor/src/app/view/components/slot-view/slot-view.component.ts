@@ -32,7 +32,7 @@ export class SlotViewComponent {
   protected handleOpenCreateModel(): void {
     this.dialogRef?.close();
     this.dialogRef = this.dialogService.open(CreateModelDialog, {
-      header: 'Create Domain Model',
+      header: 'Create Project Model',
       closeOnEscape: true,
       draggable: true,
       closable: true,

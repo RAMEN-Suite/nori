@@ -85,9 +85,9 @@
     <p-button label="Cancel" outlined (click)="handleCloseModal()" />
 
     @if (currentSlot() === undefined) {
-      <p-button label="Create Domain Model" outlined (click)="handleCreateModel()" [disabled]="!isFormValid()" />
+      <p-button label="Create Project Model" outlined (click)="handleCreateModel()" [disabled]="!isFormValid()" />
     } @else {
-      <p-button label="Update Domain Model" outlined (click)="handleUpdateModel()" [disabled]="!isFormValid()" />
+      <p-button label="Update Project Model" outlined (click)="handleUpdateModel()" [disabled]="!isFormValid()" />
     }
   </div>
 </div>

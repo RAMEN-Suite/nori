@@ -86,7 +86,7 @@ export class BreadcrumbsComponent {
   protected handleOpenCreateModel(): void {
     this.dialogRef?.close();
     this.dialogRef = this.dialogService.open(CreateModelDialog, {
-      header: 'Create Domain Model',
+      header: 'Create Project Model',
       closeOnEscape: true,
       draggable: true,
       closable: true,
@@ -99,7 +99,7 @@ export class BreadcrumbsComponent {
 
     this.dialogRef?.close();
     this.dialogRef = this.dialogService.open(CreateModelDialog, {
-      header: 'Update Domain Model',
+      header: 'Update Project Model',
       closeOnEscape: true,
       draggable: true,
       closable: true,
@@ -172,21 +172,21 @@ export class BreadcrumbsComponent {
 
   private createBreadcrumb(): BreadcrumbItem[] {
     const models: Map<number, ModelRecord> = this.storage.recordsBySlot();
-    const firstItem: BreadcrumbItem = { label: 'Metamodel', isFirst: true, isLast: false };
     const lastItem: BreadcrumbItem = { icon: 'pi pi-plus', isFirst: false, isLast: true };
 
     const modelLayers: BreadcrumbItem[] = [];
-    for (const slot of models.keys()) {
-      if (slot === 0) continue;
+    for (const [slot, model] of models.entries()) {
+      const suffix: string = model.name.length > 32 ? '...' : '';
+      const label: string = model.name.slice(0, 32) + suffix;
 
       modelLayers.push({
-        label: `Model ${slot}`,
-        isFirst: false,
+        label: label,
+        isFirst: slot === 0,
         isLast: false,
         slot: slot,
       });
     }
 
-    return [firstItem, ...modelLayers, lastItem];
+    return [...modelLayers, lastItem];
   }
 }

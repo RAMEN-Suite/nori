@@ -5,6 +5,7 @@ import { NodeAttributeComponent } from './node-attribute/node-attribute.componen
 import { Button } from 'primeng/button';
 import { CreateAttributeDialog } from '../../dialogs/create-attribute/create-attribute.dialog';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { StorageService } from '../../../../services/storage.service';
 
 @Component({
   selector: 'app-node-attributes',
@@ -15,6 +16,7 @@ import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 })
 export class NodeAttributesComponent {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
+  protected readonly storage: StorageService = inject(StorageService);
 
   protected readonly destroyRef: DestroyRef = inject(DestroyRef);
   protected readonly dialogService: DialogService = inject(DialogService);
