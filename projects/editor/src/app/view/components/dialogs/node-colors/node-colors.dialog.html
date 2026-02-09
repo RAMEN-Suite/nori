@@ -1,6 +1,6 @@
 @let nodeColors = workspace.store.currentNodeColors;
 
-<p-scroll-panel class="max-h-100 min-w-90 py-2" (keydown.enter)="handleSaveChanges()">
+<p-scroll-panel class="h-95 min-w-90 py-2" (keydown.enter)="handleSaveChanges()">
   <div class="flex flex-col gap-3 px-5">
     @for (option of nodeColorOptions(); track option.id) {
       <div class="flex flex-row gap-4">
@@ -31,7 +31,7 @@
   </div>
 </p-scroll-panel>
 
-<div class="flex flex-row justify-center gap-3">
+<div class="mt-2 flex flex-row justify-center gap-3">
   <p-button label="Generate Colors" outlined (click)="handleGenerateColors()" />
   <p-button label="Save Selection" outlined (click)="handleSaveChanges()" />
 </div>
