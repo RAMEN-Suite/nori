@@ -1,16 +1,3 @@
-@layer utilities {
-  .text-xl,
-  .text-2xl,
-  .text-3xl,
-  .text-4xl,
-  .text-5xl,
-  .text-6xl,
-  .text-7xl {
-    font-family: 'Gruppo', sans-serif;
-    letter-spacing: -0.02em;
-  }
-}
-
 :root {
   --p-title-bar-h: 0px;
   --p-tool-bar-h: 0px;
@@ -26,13 +13,6 @@ html, body {
 body {
   margin: 0;
   background: var(--p-ground-background);
-}
-
-.p-dialog-title {
-  font-family: 'Gruppo', sans-serif;
-  letter-spacing: -0.02em;
-  font-size: var(--text-2xl) !important;
-  font-weight: 400 !important;
 }
 
 .p-menu-overlay-left {
@@ -73,6 +53,7 @@ body {
 .font-headline {
   font-family: 'Gruppo', sans-serif;
   letter-spacing: -2%;
+  font-weight: bold;
 }
 
 .font-subline {
