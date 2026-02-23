@@ -57,7 +57,7 @@
     {
       "kind": "GNode",
       "id": "Z4kq1M8sV0bN2xR7pT6u",
-      "name": "Text",
+      "name": "Content",
       "superTypes": [],
       "attributes": [
         {
@@ -68,28 +68,7 @@
           "isReadOnly": true
         },
         {
-          "name": "text",
-          "typeId": "String",
-          "bounds": { "lowerBound": 1, "upperBound": 1 }
-        }
-      ]
-    },
-
-    {
-      "kind": "GNode",
-      "id": "cR5p0Yt7W2nK9xL1mQ8v",
-      "name": "Image",
-      "superTypes": [],
-      "attributes": [
-        {
-          "name": "uuid",
-          "typeId": "Q9mT2aL7vK0pX4sN1cDz",
-          "bounds": { "lowerBound": 1, "upperBound": 1 },
-          "isKey": true,
-          "isReadOnly": true
-        },
-        {
-          "name": "source",
+          "name": "label",
           "typeId": "String",
           "bounds": { "lowerBound": 1, "upperBound": 1 }
         }
@@ -166,24 +145,6 @@
         "isNavigable": true
       }
     },
-    {
-      "kind": "GRelation",
-      "id": "nB3xK8pQ2yT6vL9mR0s1",
-      "superTypes": [],
-      "name": "PART_OF",
-      "from": {
-        "nodeId": "cR5p0Yt7W2nK9xL1mQ8v",
-        "role": "images",
-        "bounds": { "lowerBound": 0, "upperBound": -1 },
-        "isNavigable": true
-      },
-      "to": {
-        "nodeId": "aP3xK8nV1qR6tY2uZ9wB",
-        "role": "collections",
-        "bounds": { "lowerBound": 0, "upperBound": -1 },
-        "isNavigable": true
-      }
-    },
 
     {
       "kind": "GRelation",
@@ -211,24 +172,6 @@
       "from": {
         "nodeId": "Z4kq1M8sV0bN2xR7pT6u",
         "role": "annotatesTexts",
-        "bounds": { "lowerBound": 0, "upperBound": -1 },
-        "isNavigable": true
-      },
-      "to": {
-        "nodeId": "m2Xv8qL0sP6tN1yK7rB3",
-        "role": "annotations",
-        "bounds": { "lowerBound": 0, "upperBound": -1 },
-        "isNavigable": true
-      }
-    },
-    {
-      "kind": "GRelation",
-      "id": "L1mQ8vR5p0Yt7W2nK9xL",
-      "superTypes": [],
-      "name": "HAS_ANNOTATION",
-      "from": {
-        "nodeId": "cR5p0Yt7W2nK9xL1mQ8v",
-        "role": "annotatesImages",
         "bounds": { "lowerBound": 0, "upperBound": -1 },
         "isNavigable": true
       },
@@ -308,24 +251,6 @@
       "to": {
         "nodeId": "Z4kq1M8sV0bN2xR7pT6u",
         "role": "refersTexts",
-        "bounds": { "lowerBound": 0, "upperBound": -1 },
-        "isNavigable": true
-      }
-    },
-    {
-      "kind": "GRelation",
-      "id": "yK1hVb2Qx0Lm9P3sT6n7V",
-      "superTypes": [],
-      "name": "REFERS_TO",
-      "from": {
-        "nodeId": "m2Xv8qL0sP6tN1yK7rB3",
-        "role": "annotations",
-        "bounds": { "lowerBound": 0, "upperBound": -1 },
-        "isNavigable": true
-      },
-      "to": {
-        "nodeId": "cR5p0Yt7W2nK9xL1mQ8v",
-        "role": "refersImages",
         "bounds": { "lowerBound": 0, "upperBound": -1 },
         "isNavigable": true
       }
