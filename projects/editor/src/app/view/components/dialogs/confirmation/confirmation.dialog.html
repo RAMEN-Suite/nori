@@ -2,7 +2,7 @@
   <div class="bg-primary text-primary-contrast absolute -left-7 -mt-13 inline-flex h-18 w-18 items-center justify-center rounded-full">
     <i class="pi text-3xl!" [class]="options()?.icon"></i>
   </div>
-  <span class="mb-4 block text-2xl">{{ options()?.title }}</span>
+  <span class="mb-4 block text-2xl font-bold">{{ options()?.title }}</span>
   <p class="mb-0 text-center text-pretty" [innerHTML]="options()?.message"></p>
   <div class="mt-6 flex w-full flex-row items-center gap-2" [class]="options()?.justify">
     @for (group of options()?.buttons; track group) {
