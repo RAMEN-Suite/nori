@@ -61,6 +61,7 @@ export class CreateRelationDialog {
 
   protected handleSelectTargetNode($event: string | GNode): void {
     if (typeof $event === 'string') return;
+    this.selectedRelation.set(null);
     this.selectedTargetNode.set($event);
   }
 
