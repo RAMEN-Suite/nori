@@ -1,59 +1,90 @@
-# 
+# NORI – A Model Layering Tool
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.10.
+NORI is a tool for **multi-level modelling of objects across heterogeneous domains**, developed for use in domains such as the **Digital Humanities**.
 
-## Development server
+It can be used both as:
 
-To start a local development server, run:
+- a **web-based editor** (Angular)
+- a **desktop application** via Electron
 
-```bash
-ng serve
+---
+
+## Installation
+
+### Requirements
+
+- Node.js (LTS recommended)
+- npm
+
+Install dependencies:
+```
+npm install
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+---
 
-## Code scaffolding
+## Running (Development)
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Start the full development environment:
 
-```bash
-ng generate component component-name
+```
+npm run start:electron
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+This will:
 
-```bash
-ng generate --help
+1. Build the Electron process
+2. Start the Angular editor development server
+3. Wait for the editor to be available
+4. Launch the Electron application
+
+The Angular editor dev server runs at:
+
+http://localhost:4200
+
+If you only want to run the editor:
+
 ```
+npm run start:editor
+```
+
+---
 
 ## Building
 
-To build the project run:
-
-```bash
-ng build
+Build the Angular editor:
 ```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
+npm run build:editor
 ```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
+Build the Electron process:
 ```
+npm run build:electron
+```
+---
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## Packaging
 
-## Additional Resources
+Package the application:
+```
+npm run package
+```
+Create distributable installers:
+```
+npm run make
+```
+Both commands automatically build the Angular editor and Electron process before packaging.
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+---
+
+## License
+
+Copyright 2026 Sebastian Enns, TH Mittelhessen
+
+Licensed under the **Apache License, Version 2.0** (the "License");  
+you may not use this file except in compliance with the License.
+
+You may obtain a copy of the License at:
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an **"AS IS" BASIS**, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
