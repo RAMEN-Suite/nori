@@ -75,6 +75,7 @@
     "tailwindcss": "^4.1.18",
     "ts-loader": "^9.5.4",
     "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "~5.9.3",
     "wait-on": "^9.0.3"
   }
