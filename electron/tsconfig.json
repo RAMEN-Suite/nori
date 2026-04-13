@@ -7,8 +7,8 @@
     "esModuleInterop": true,
     "noImplicitAny": true,
     "sourceMap": true,
-    "baseUrl": ".",
-    "outDir": "../../dist/electron",
+    "baseUrl": "./",
+    "outDir": "../dist/electron",
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "paths": {

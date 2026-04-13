@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
-  "newProjectRoot": "projects",
+  "newProjectRoot": "./",
   "projects": {
     "editor": {
       "projectType": "application",
@@ -15,26 +15,26 @@
         "@schematics/angular:pipe": { "typeSeparator": "." },
         "@schematics/angular:resolver": { "typeSeparator": "." }
       },
-      "root": "projects/editor",
-      "sourceRoot": "projects/editor/src",
+      "root": "editor",
+      "sourceRoot": "editor/src",
       "prefix": "app",
       "architect": {
         "build": {
           "builder": "@angular/build:application",
           "options": {
-            "browser": "projects/editor/src/main.ts",
-            "tsConfig": "projects/editor/tsconfig.app.json",
+            "browser": "editor/src/main.ts",
+            "tsConfig": "editor/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
             "assets": [
               {
                 "glob": "**/*",
-                "input": "projects/editor/public"
+                "input": "editor/public"
               }
             ],
             "styles": [
-              "projects/editor/src/styles/tailwind.css",
-              "projects/editor/src/styles/fonts.css",
-              "projects/editor/src/styles/customs.css",
+              "editor/src/styles/tailwind.css",
+              "editor/src/styles/fonts.css",
+              "editor/src/styles/customs.css",
               "node_modules/animate.css/animate.css"
             ]
           },
@@ -61,8 +61,8 @@
               "sourceMap": true,
               "fileReplacements": [
                 {
-                  "replace": "projects/editor/src/environments/environment.ts",
-                  "with": "projects/editor/src/environments/environment.development.ts"
+                  "replace": "editor/src/environments/environment.ts",
+                  "with": "editor/src/environments/environment.development.ts"
                 }
               ]
             }
@@ -87,18 +87,18 @@
         "test": {
           "builder": "@angular/build:karma",
           "options": {
-            "tsConfig": "projects/editor/tsconfig.spec.json",
+            "tsConfig": "editor/tsconfig.spec.json",
             "inlineStyleLanguage": "scss",
             "assets": [
               {
                 "glob": "**/*",
-                "input": "projects/editor/public"
+                "input": "editor/public"
               }
             ],
             "styles": [
-              "projects/editor/src/styles/tailwind.css",
-              "projects/editor/src/styles/fonts.css",
-              "projects/editor/src/styles/customs.css",
+              "editor/src/styles/tailwind.css",
+              "editor/src/styles/fonts.css",
+              "editor/src/styles/customs.css",
               "node_modules/animate.css/animate.css"
             ]
           }

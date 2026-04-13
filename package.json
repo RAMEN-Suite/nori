@@ -14,7 +14,7 @@
   "scripts": {
     "ng": "ng",
     "build:editor": "ng build",
-    "build:electron": "tsc --project projects/electron/tsconfig.json",
+    "build:electron": "tsc --project electron/tsconfig.json",
     "start:editor": "ng serve editor",
     "start:electron": "concurrently \"npm run build:electron\" \"npm run start:editor\" \"npm run wait:editor && electron-forge start\"",
     "wait:editor": "wait-on http://localhost:4200",

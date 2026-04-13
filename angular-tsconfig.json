@@ -31,10 +31,10 @@
   "files": [],
   "references": [
     {
-      "path": "./projects/editor/tsconfig.app.json"
+      "path": "./editor/tsconfig.app.json"
     },
     {
-      "path": "./projects/editor/tsconfig.spec.json"
+      "path": "./editor/tsconfig.spec.json"
     }
   ]
 }
