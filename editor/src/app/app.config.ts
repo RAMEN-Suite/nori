@@ -6,10 +6,7 @@ import { SuitePreset } from '../styles/suite-preset';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    providePrimeNG({
-      theme: { preset: SuitePreset, options: { darkModeSelector: '.dark' } },
-      ripple: true,
-    }),
+    providePrimeNG({ theme: { preset: SuitePreset, options: { darkModeSelector: '.dark' } } }),
     provideBrowserGlobalErrorListeners(),
     provideZonelessChangeDetection(),
     provideRouter(routes, withRouterConfig({ paramsInheritanceStrategy: 'always' })),
