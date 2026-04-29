@@ -116,13 +116,13 @@
       "name": "PART_OF",
       "from": {
         "nodeId": "aP3xK8nV1qR6tY2uZ9wB",
-        "role": "children",
+        "role": "_collections",
         "bounds": { "lowerBound": 0, "upperBound": -1 },
         "isNavigable": true
       },
       "to": {
         "nodeId": "aP3xK8nV1qR6tY2uZ9wB",
-        "role": "parents",
+        "role": "_collectionOf",
         "bounds": { "lowerBound": 0, "upperBound": -1 },
         "isNavigable": true
       }
@@ -134,13 +134,13 @@
       "name": "PART_OF",
       "from": {
         "nodeId": "Z4kq1M8sV0bN2xR7pT6u",
-        "role": "texts",
+        "role": "_content",
         "bounds": { "lowerBound": 0, "upperBound": -1 },
         "isNavigable": true
       },
       "to": {
         "nodeId": "aP3xK8nV1qR6tY2uZ9wB",
-        "role": "collections",
+        "role": "_collections",
         "bounds": { "lowerBound": 0, "upperBound": -1 },
         "isNavigable": true
       }
@@ -153,13 +153,13 @@
       "name": "HAS_ANNOTATION",
       "from": {
         "nodeId": "aP3xK8nV1qR6tY2uZ9wB",
-        "role": "annotatesCollections",
+        "role": "_annotatesCollections",
         "bounds": { "lowerBound": 0, "upperBound": -1 },
         "isNavigable": true
       },
       "to": {
         "nodeId": "m2Xv8qL0sP6tN1yK7rB3",
-        "role": "annotations",
+        "role": "_annotations",
         "bounds": { "lowerBound": 0, "upperBound": -1 },
         "isNavigable": true
       }
@@ -171,13 +171,13 @@
       "name": "HAS_ANNOTATION",
       "from": {
         "nodeId": "Z4kq1M8sV0bN2xR7pT6u",
-        "role": "annotatesTexts",
+        "role": "_annotatesContent",
         "bounds": { "lowerBound": 0, "upperBound": -1 },
         "isNavigable": true
       },
       "to": {
         "nodeId": "m2Xv8qL0sP6tN1yK7rB3",
-        "role": "annotations",
+        "role": "_annotations",
         "bounds": { "lowerBound": 0, "upperBound": -1 },
         "isNavigable": true
       }
@@ -189,13 +189,13 @@
       "name": "HAS_ANNOTATION",
       "from": {
         "nodeId": "n7Vb2Qx0Lm9P3sT6yK1h",
-        "role": "annotatesEntities",
+        "role": "_annotatesEntities",
         "bounds": { "lowerBound": 0, "upperBound": -1 },
         "isNavigable": true
       },
       "to": {
         "nodeId": "m2Xv8qL0sP6tN1yK7rB3",
-        "role": "annotations",
+        "role": "_annotations",
         "bounds": { "lowerBound": 0, "upperBound": -1 },
         "isNavigable": true
       }
@@ -207,13 +207,13 @@
       "name": "HAS_ANNOTATION",
       "from": {
         "nodeId": "m2Xv8qL0sP6tN1yK7rB3",
-        "role": "annotatesAnnotations",
+        "role": "_annotatesAnnotations",
         "bounds": { "lowerBound": 0, "upperBound": -1 },
         "isNavigable": true
       },
       "to": {
         "nodeId": "m2Xv8qL0sP6tN1yK7rB3",
-        "role": "annotations",
+        "role": "_annotations",
         "bounds": { "lowerBound": 0, "upperBound": -1 },
         "isNavigable": true
       }
@@ -226,13 +226,13 @@
       "name": "REFERS_TO",
       "from": {
         "nodeId": "m2Xv8qL0sP6tN1yK7rB3",
-        "role": "annotations",
+        "role": "_referredToBy",
         "bounds": { "lowerBound": 0, "upperBound": -1 },
         "isNavigable": true
       },
       "to": {
         "nodeId": "aP3xK8nV1qR6tY2uZ9wB",
-        "role": "refersCollections",
+        "role": "_refersToCollections",
         "bounds": { "lowerBound": 0, "upperBound": -1 },
         "isNavigable": true
       }
@@ -244,13 +244,13 @@
       "name": "REFERS_TO",
       "from": {
         "nodeId": "m2Xv8qL0sP6tN1yK7rB3",
-        "role": "annotations",
+        "role": "_referredToBy",
         "bounds": { "lowerBound": 0, "upperBound": -1 },
         "isNavigable": true
       },
       "to": {
         "nodeId": "Z4kq1M8sV0bN2xR7pT6u",
-        "role": "refersTexts",
+        "role": "_refersToContent",
         "bounds": { "lowerBound": 0, "upperBound": -1 },
         "isNavigable": true
       }
@@ -262,13 +262,13 @@
       "name": "REFERS_TO",
       "from": {
         "nodeId": "m2Xv8qL0sP6tN1yK7rB3",
-        "role": "annotations",
+        "role": "_referredToBy",
         "bounds": { "lowerBound": 0, "upperBound": -1 },
         "isNavigable": true
       },
       "to": {
         "nodeId": "n7Vb2Qx0Lm9P3sT6yK1h",
-        "role": "refersEntities",
+        "role": "_refersToEntities",
         "bounds": { "lowerBound": 0, "upperBound": -1 },
         "isNavigable": true
       }
@@ -280,13 +280,13 @@
       "name": "REFERS_TO",
       "from": {
         "nodeId": "m2Xv8qL0sP6tN1yK7rB3",
-        "role": "annotations",
+        "role": "_referredToBy",
         "bounds": { "lowerBound": 0, "upperBound": -1 },
         "isNavigable": true
       },
       "to": {
         "nodeId": "m2Xv8qL0sP6tN1yK7rB3",
-        "role": "refersAnnotations",
+        "role": "_refersToAnnotations",
         "bounds": { "lowerBound": 0, "upperBound": -1 },
         "isNavigable": true
       }

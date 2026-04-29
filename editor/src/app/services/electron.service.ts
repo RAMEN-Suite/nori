@@ -12,10 +12,6 @@ export class ElectronService {
     this.electronAPI.send(event, payload);
   }
 
-  private async invoke<T>(event: string, payload?: unknown): Promise<T> {
-    return this.electronAPI.invoke(event, payload);
-  }
-
   public minimizeApplication(): void {
     this.send(APPLICATION_IPC.APPLICATION_MINIMIZE);
   }

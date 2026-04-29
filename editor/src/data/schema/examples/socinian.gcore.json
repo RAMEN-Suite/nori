@@ -1,399 +1,770 @@
 {
-  "$schema": "https://ramen-schema.org/gcore/1.0.0/schema.json",
-  "$id": "https://sozinianer.de/schema.json",
-
-  "id": "H9vQ2mL7pR0sT6yK1nB3",
-  "version": "1.0.0",
-
-  "kind": "GModel",
-  "name": "Socinian Correspondence (M2)",
-
-  "imports": [
-    {
-      "schemaId": "https://ramen-schema.org/ramen/1.0.0/schema.json",
-      "modelId": "lW611f30a2ky4276g3l8N"
-    }
-  ],
-
-  "classifiers": [
-    {
-      "kind": "GNode",
-      "id": "gH2k9Lm0Pq7Rs1Tu8Vw3",
-      "name": "Corpus",
-      "superTypes": ["lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"],
-      "attributes": []
-    },
-    {
-      "kind": "GNode",
-      "id": "pL8nV1qR6tY2uZ9wBaP3",
-      "name": "Communication",
-      "superTypes": ["lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"],
-      "attributes": []
-    },
-    {
-      "kind": "GNode",
-      "id": "sT6yK1nB3xV7pQ2L9mR0",
-      "name": "Letter",
-      "superTypes": ["lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"],
-      "attributes": []
-    },
-    {
-      "kind": "GNode",
-      "id": "xQ4nZ6mR2s9pL1vK7tY0",
-      "name": "Abstract",
-      "superTypes": ["lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"],
-      "attributes": []
-    },
-    {
-      "kind": "GNode",
-      "id": "aL7vQ9pX4sN1cDzK0mT3",
-      "name": "Variant",
-      "superTypes": ["lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"],
-      "attributes": []
-    },
-    {
-      "kind": "GNode",
-      "id": "vK0pX4sN1cDzK0mT3aL7",
-      "name": "Attachment",
-      "superTypes": ["lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"],
-      "attributes": []
-    },
-    {
-      "kind": "GNode",
-      "id": "cDzK0mT3aL7vQ9pX4sN1",
-      "name": "Document",
-      "superTypes": ["lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"],
-      "attributes": []
-    },
-    {
-      "kind": "GNode",
-      "id": "mQ8vR5p0Yt7W2nK9xL1m",
-      "name": "Figure",
-      "superTypes": ["lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"],
-      "attributes": []
-    },
-    {
-      "kind": "GNode",
-      "id": "R5p0Yt7W2nK9xL1mQ8vR",
-      "name": "Witness",
-      "superTypes": ["lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"],
-      "attributes": []
-    },
-
-    {
-      "kind": "GNode",
-      "id": "K9xL1mQ8vR5p0Yt7W2nK",
-      "name": "Place",
-      "superTypes": ["lW611f30a2ky4276g3l8N:n7Vb2Qx0Lm9P3sT6yK1h"],
-      "attributes": [{ "name": "geo", "typeId": "String", "bounds": { "lowerBound": 0, "upperBound": 1 } }]
-    },
-    {
-      "kind": "GNode",
-      "id": "tN1yK7rB3m2Xv8qL0sP6",
-      "name": "Organisation",
-      "superTypes": ["lW611f30a2ky4276g3l8N:n7Vb2Qx0Lm9P3sT6yK1h"],
-      "attributes": [{ "name": "externalId", "typeId": "String", "bounds": { "lowerBound": 0, "upperBound": 1 } }]
-    },
-    {
-      "kind": "GNode",
-      "id": "yK7rB3m2Xv8qL0sP6tN1",
-      "name": "Person",
-      "superTypes": ["lW611f30a2ky4276g3l8N:n7Vb2Qx0Lm9P3sT6yK1h"],
-      "attributes": [{ "name": "externalId", "typeId": "String", "bounds": { "lowerBound": 0, "upperBound": 1 } }]
-    },
-
-    {
-      "kind": "GNode",
-      "id": "uZ9wBaP3xK8nV1qR6tY2",
-      "name": "Annotation",
-      "superTypes": ["lW611f30a2ky4276g3l8N:m2Xv8qL0sP6tN1yK7rB3"],
-      "attributes": []
-    },
-    {
-      "kind": "GNode",
-      "id": "bN3xV7pQ2xL9mR0sT6yK",
-      "name": "Text",
-      "superTypes": ["lW611f30a2ky4276g3l8N:Z4kq1M8sV0bN2xR7pT6u"],
-      "attributes": []
-    },
-    {
-      "kind": "GNode",
-      "id": "pX4sN1cDzK0mT3aL7vQ9",
-      "name": "Postcard",
-      "superTypes": ["lW611f30a2ky4276g3l8N:cR5p0Yt7W2nK9xL1mQ8v"],
-      "attributes": []
-    },
-    {
-      "kind": "GNode",
-      "id": "L1mQ8vR5p0Yt7W2nK9xL",
-      "name": "Image",
-      "superTypes": ["lW611f30a2ky4276g3l8N:cR5p0Yt7W2nK9xL1mQ8v"],
-      "attributes": []
-    }
-  ],
-
-  "relations": [
-    {
-      "kind": "GRelation",
-      "id": "hQ8vR5p0Yt7W2nK9xL1m",
-      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
-      "name": "PART_OF",
-      "from": {
-        "nodeId": "pL8nV1qR6tY2uZ9wBaP3",
-        "role": "children",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      },
-      "to": {
-        "nodeId": "gH2k9Lm0Pq7Rs1Tu8Vw3",
-        "role": "parents",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      }
-    },
-    {
-      "kind": "GRelation",
-      "id": "mR2s9pL1vK7tY0xQ4nZ6",
-      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
-      "name": "PART_OF",
-      "from": {
-        "nodeId": "sT6yK1nB3xV7pQ2L9mR0",
-        "role": "children",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      },
-      "to": {
-        "nodeId": "pL8nV1qR6tY2uZ9wBaP3",
-        "role": "parents",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      }
-    },
-    {
-      "kind": "GRelation",
-      "id": "nB3xK8pQ2yT6vL9mR0s9",
-      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
-      "name": "PART_OF",
-      "from": {
-        "nodeId": "xQ4nZ6mR2s9pL1vK7tY0",
-        "role": "children",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      },
-      "to": {
-        "nodeId": "sT6yK1nB3xV7pQ2L9mR0",
-        "role": "parents",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      }
-    },
-    {
-      "kind": "GRelation",
-      "id": "pQ2xL9mR0sT6yK1nB3xV",
-      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
-      "name": "PART_OF",
-      "from": {
-        "nodeId": "xQ4nZ6mR2s9pL1vK7tY0",
-        "role": "children",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      },
-      "to": {
-        "nodeId": "cDzK0mT3aL7vQ9pX4sN1",
-        "role": "parents",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      }
-    },
-    {
-      "kind": "GRelation",
-      "id": "v8qL0sP6tN1yK7rB3m2X",
-      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
-      "name": "PART_OF",
-      "from": {
-        "nodeId": "xQ4nZ6mR2s9pL1vK7tY0",
-        "role": "children",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      },
-      "to": {
-        "nodeId": "mQ8vR5p0Yt7W2nK9xL1m",
-        "role": "parents",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      }
-    },
-
-    {
-      "kind": "GRelation",
-      "id": "K1nB3xV7pQ2L9mR0sT6y",
-      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
-      "name": "PART_OF",
-      "from": {
-        "nodeId": "vK0pX4sN1cDzK0mT3aL7",
-        "role": "children",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      },
-      "to": {
-        "nodeId": "pL8nV1qR6tY2uZ9wBaP3",
-        "role": "parents",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      }
-    },
-    {
-      "kind": "GRelation",
-      "id": "T6yK1nB3xV7pQ2L9mR0s",
-      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
-      "name": "PART_OF",
-      "from": {
-        "nodeId": "cDzK0mT3aL7vQ9pX4sN1",
-        "role": "children",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      },
-      "to": {
-        "nodeId": "vK0pX4sN1cDzK0mT3aL7",
-        "role": "parents",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      }
-    },
-    {
-      "kind": "GRelation",
-      "id": "pL1vK7tY0xQ4nZ6mR2s9",
-      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
-      "name": "PART_OF",
-      "from": {
-        "nodeId": "mQ8vR5p0Yt7W2nK9xL1m",
-        "role": "children",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      },
-      "to": {
-        "nodeId": "vK0pX4sN1cDzK0mT3aL7",
-        "role": "parents",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      }
-    },
-
-    {
-      "kind": "GRelation",
-      "id": "xL1mQ8vR5p0Yt7W2nK9",
-      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
-      "name": "PART_OF",
-      "from": {
-        "nodeId": "R5p0Yt7W2nK9xL1mQ8vR",
-        "role": "children",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      },
-      "to": {
-        "nodeId": "cDzK0mT3aL7vQ9pX4sN1",
-        "role": "parents",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      }
-    },
-    {
-      "kind": "GRelation",
-      "id": "mT3aL7vQ9pX4sN1cDzK0",
-      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
-      "name": "PART_OF",
-      "from": {
-        "nodeId": "R5p0Yt7W2nK9xL1mQ8vR",
-        "role": "children",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      },
-      "to": {
-        "nodeId": "sT6yK1nB3xV7pQ2L9mR0",
-        "role": "parents",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      }
-    },
-    {
-      "kind": "GRelation",
-      "id": "Q9pX4sN1cDzK0mT3aL7v",
-      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
-      "name": "PART_OF",
-      "from": {
-        "nodeId": "R5p0Yt7W2nK9xL1mQ8vR",
-        "role": "children",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      },
-      "to": {
-        "nodeId": "mQ8vR5p0Yt7W2nK9xL1m",
-        "role": "parents",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      }
-    },
-    {
-      "kind": "GRelation",
-      "id": "kL0sP6tN1yK7rB3m2Xv8",
-      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
-      "name": "PART_OF",
-      "from": {
-        "nodeId": "aL7vQ9pX4sN1cDzK0mT3",
-        "role": "children",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      },
-      "to": {
-        "nodeId": "R5p0Yt7W2nK9xL1mQ8vR",
-        "role": "parents",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      }
-    },
-
-    {
-      "kind": "GRelation",
-      "id": "rB3m2Xv8qL0sP6tN1yK7",
-      "superTypes": ["lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"],
-      "name": "PART_OF",
-      "from": {
-        "nodeId": "sT6yK1nB3xV7pQ2L9mR0",
-        "role": "children",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      },
-      "to": {
-        "nodeId": "vK0pX4sN1cDzK0mT3aL7",
-        "role": "parents",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      }
-    },
-
-    {
-      "kind": "GRelation",
-      "id": "zK0mT3aL7vQ9pX4sN1cD",
-      "superTypes": ["lW611f30a2ky4276g3l8N:K0mT3aL7vQ9pX4sN1cDz"],
-      "name": "PART_OF",
-      "from": {
-        "nodeId": "bN3xV7pQ2xL9mR0sT6yK",
-        "role": "texts",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      },
-      "to": {
-        "nodeId": "aL7vQ9pX4sN1cDzK0mT3",
-        "role": "collections",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      }
-    },
-    {
-      "kind": "GRelation",
-      "id": "cDzK0mT3aL7vQ9pX4sN9",
-      "superTypes": ["lW611f30a2ky4276g3l8N:K0mT3aL7vQ9pX4sN1cDz"],
-      "name": "PART_OF",
-      "from": {
-        "nodeId": "bN3xV7pQ2xL9mR0sT6yK",
-        "role": "texts",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      },
-      "to": {
-        "nodeId": "xQ4nZ6mR2s9pL1vK7tY0",
-        "role": "collections",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      }
-    },
-    {
-      "kind": "GRelation",
-      "id": "pX4sN1cDzK0mT3aL7vQ8",
-      "superTypes": ["lW611f30a2ky4276g3l8N:K0mT3aL7vQ9pX4sN1cDz"],
-      "name": "PART_OF",
-      "from": {
-        "nodeId": "bN3xV7pQ2xL9mR0sT6yK",
-        "role": "texts",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      },
-      "to": {
-        "nodeId": "gH2k9Lm0Pq7Rs1Tu8Vw3",
-        "role": "collections",
-        "bounds": { "lowerBound": 0, "upperBound": -1 }
-      }
-    }
-  ],
-
-  "ext": {}
+    "$schema": "https://ramen-schema.org/gcore/1.0.0/schema.json",
+    "$id": "https://sozinianer.de/schema.json",
+    "id": "H9vQ2mL7pR0sT6yK1nB3",
+    "version": "1.0.0",
+    "kind": "GModel",
+    "name": "Socinian Correspondence (M2)",
+    "imports": [
+        {
+            "schemaId": "https://ramen-schema.org/ramen/1.0.0/schema.json",
+            "modelId": "lW611f30a2ky4276g3l8N"
+        }
+    ],
+    "classifiers": [
+        {
+            "kind": "GNode",
+            "id": "gH2k9Lm0Pq7Rs1Tu8Vw3",
+            "name": "Corpus",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"
+            ],
+            "attributes": []
+        },
+        {
+            "kind": "GNode",
+            "id": "pL8nV1qR6tY2uZ9wBaP3",
+            "name": "Communication",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"
+            ],
+            "attributes": []
+        },
+        {
+            "kind": "GNode",
+            "id": "sT6yK1nB3xV7pQ2L9mR0",
+            "name": "Letter",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"
+            ],
+            "attributes": []
+        },
+        {
+            "kind": "GNode",
+            "id": "xQ4nZ6mR2s9pL1vK7tY0",
+            "name": "Abstract",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"
+            ],
+            "attributes": []
+        },
+        {
+            "kind": "GNode",
+            "id": "aL7vQ9pX4sN1cDzK0mT3",
+            "name": "Variant",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"
+            ],
+            "attributes": []
+        },
+        {
+            "kind": "GNode",
+            "id": "vK0pX4sN1cDzK0mT3aL7",
+            "name": "Attachment",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"
+            ],
+            "attributes": []
+        },
+        {
+            "kind": "GNode",
+            "id": "cDzK0mT3aL7vQ9pX4sN1",
+            "name": "Document",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"
+            ],
+            "attributes": []
+        },
+        {
+            "kind": "GNode",
+            "id": "mQ8vR5p0Yt7W2nK9xL1m",
+            "name": "Figure",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"
+            ],
+            "attributes": []
+        },
+        {
+            "kind": "GNode",
+            "id": "R5p0Yt7W2nK9xL1mQ8vR",
+            "name": "Witness",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"
+            ],
+            "attributes": []
+        },
+        {
+            "kind": "GNode",
+            "id": "K9xL1mQ8vR5p0Yt7W2nK",
+            "name": "Place",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:n7Vb2Qx0Lm9P3sT6yK1h"
+            ],
+            "attributes": [
+                {
+                    "name": "geo",
+                    "typeId": "String",
+                    "bounds": {
+                        "lowerBound": 0,
+                        "upperBound": 1
+                    }
+                }
+            ]
+        },
+        {
+            "kind": "GNode",
+            "id": "yK7rB3m2Xv8qL0sP6tN1",
+            "name": "Person",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:n7Vb2Qx0Lm9P3sT6yK1h"
+            ],
+            "attributes": [
+                {
+                    "name": "externalId",
+                    "typeId": "String",
+                    "bounds": {
+                        "lowerBound": 0,
+                        "upperBound": 1
+                    }
+                }
+            ]
+        },
+        {
+            "kind": "GNode",
+            "id": "uZ9wBaP3xK8nV1qR6tY2",
+            "name": "Annotation",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:m2Xv8qL0sP6tN1yK7rB3"
+            ],
+            "attributes": []
+        },
+        {
+            "kind": "GNode",
+            "id": "bN3xV7pQ2xL9mR0sT6yK",
+            "name": "Text",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:Z4kq1M8sV0bN2xR7pT6u"
+            ],
+            "attributes": []
+        },
+        {
+            "kind": "GNode",
+            "id": "gexxi7azzdIPHHBk",
+            "name": "Term",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:n7Vb2Qx0Lm9P3sT6yK1h"
+            ],
+            "attributes": [],
+            "constraints": [],
+            "ext": {}
+        },
+        {
+            "kind": "GNode",
+            "id": "0f1JCh3oSfwIjdEg",
+            "name": "BibleVerse",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:n7Vb2Qx0Lm9P3sT6yK1h"
+            ],
+            "attributes": [],
+            "constraints": [],
+            "ext": {}
+        }
+    ],
+    "relations": [
+        {
+            "kind": "GRelation",
+            "id": "hQ8vR5p0Yt7W2nK9xL1m",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"
+            ],
+            "name": "PART_OF",
+            "from": {
+                "nodeId": "pL8nV1qR6tY2uZ9wBaP3",
+                "role": "children",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            },
+            "to": {
+                "nodeId": "gH2k9Lm0Pq7Rs1Tu8Vw3",
+                "role": "parents",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            }
+        },
+        {
+            "kind": "GRelation",
+            "id": "mR2s9pL1vK7tY0xQ4nZ6",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"
+            ],
+            "name": "PART_OF",
+            "from": {
+                "nodeId": "sT6yK1nB3xV7pQ2L9mR0",
+                "role": "children",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            },
+            "to": {
+                "nodeId": "pL8nV1qR6tY2uZ9wBaP3",
+                "role": "parents",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            }
+        },
+        {
+            "kind": "GRelation",
+            "id": "nB3xK8pQ2yT6vL9mR0s9",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"
+            ],
+            "name": "PART_OF",
+            "from": {
+                "nodeId": "xQ4nZ6mR2s9pL1vK7tY0",
+                "role": "children",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            },
+            "to": {
+                "nodeId": "sT6yK1nB3xV7pQ2L9mR0",
+                "role": "parents",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            }
+        },
+        {
+            "kind": "GRelation",
+            "id": "pQ2xL9mR0sT6yK1nB3xV",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"
+            ],
+            "name": "PART_OF",
+            "from": {
+                "nodeId": "xQ4nZ6mR2s9pL1vK7tY0",
+                "role": "children",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            },
+            "to": {
+                "nodeId": "cDzK0mT3aL7vQ9pX4sN1",
+                "role": "parents",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            }
+        },
+        {
+            "kind": "GRelation",
+            "id": "v8qL0sP6tN1yK7rB3m2X",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"
+            ],
+            "name": "PART_OF",
+            "from": {
+                "nodeId": "xQ4nZ6mR2s9pL1vK7tY0",
+                "role": "children",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            },
+            "to": {
+                "nodeId": "mQ8vR5p0Yt7W2nK9xL1m",
+                "role": "parents",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            }
+        },
+        {
+            "kind": "GRelation",
+            "id": "K1nB3xV7pQ2L9mR0sT6y",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"
+            ],
+            "name": "PART_OF",
+            "from": {
+                "nodeId": "vK0pX4sN1cDzK0mT3aL7",
+                "role": "children",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            },
+            "to": {
+                "nodeId": "pL8nV1qR6tY2uZ9wBaP3",
+                "role": "parents",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            }
+        },
+        {
+            "kind": "GRelation",
+            "id": "T6yK1nB3xV7pQ2L9mR0s",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"
+            ],
+            "name": "PART_OF",
+            "from": {
+                "nodeId": "cDzK0mT3aL7vQ9pX4sN1",
+                "role": "children",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            },
+            "to": {
+                "nodeId": "vK0pX4sN1cDzK0mT3aL7",
+                "role": "parents",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            }
+        },
+        {
+            "kind": "GRelation",
+            "id": "pL1vK7tY0xQ4nZ6mR2s9",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"
+            ],
+            "name": "PART_OF",
+            "from": {
+                "nodeId": "mQ8vR5p0Yt7W2nK9xL1m",
+                "role": "children",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            },
+            "to": {
+                "nodeId": "vK0pX4sN1cDzK0mT3aL7",
+                "role": "parents",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            }
+        },
+        {
+            "kind": "GRelation",
+            "id": "xL1mQ8vR5p0Yt7W2nK9",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"
+            ],
+            "name": "PART_OF",
+            "from": {
+                "nodeId": "R5p0Yt7W2nK9xL1mQ8vR",
+                "role": "children",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            },
+            "to": {
+                "nodeId": "cDzK0mT3aL7vQ9pX4sN1",
+                "role": "parents",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            }
+        },
+        {
+            "kind": "GRelation",
+            "id": "mT3aL7vQ9pX4sN1cDzK0",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"
+            ],
+            "name": "PART_OF",
+            "from": {
+                "nodeId": "R5p0Yt7W2nK9xL1mQ8vR",
+                "role": "children",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            },
+            "to": {
+                "nodeId": "sT6yK1nB3xV7pQ2L9mR0",
+                "role": "parents",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            }
+        },
+        {
+            "kind": "GRelation",
+            "id": "Q9pX4sN1cDzK0mT3aL7v",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"
+            ],
+            "name": "PART_OF",
+            "from": {
+                "nodeId": "R5p0Yt7W2nK9xL1mQ8vR",
+                "role": "children",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            },
+            "to": {
+                "nodeId": "mQ8vR5p0Yt7W2nK9xL1m",
+                "role": "parents",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            }
+        },
+        {
+            "kind": "GRelation",
+            "id": "kL0sP6tN1yK7rB3m2Xv8",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"
+            ],
+            "name": "PART_OF",
+            "from": {
+                "nodeId": "aL7vQ9pX4sN1cDzK0mT3",
+                "role": "children",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            },
+            "to": {
+                "nodeId": "R5p0Yt7W2nK9xL1mQ8vR",
+                "role": "parents",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            }
+        },
+        {
+            "kind": "GRelation",
+            "id": "rB3m2Xv8qL0sP6tN1yK7",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:V7pQ2xL9mR0sT6yK1nB3"
+            ],
+            "name": "PART_OF",
+            "from": {
+                "nodeId": "sT6yK1nB3xV7pQ2L9mR0",
+                "role": "children",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            },
+            "to": {
+                "nodeId": "vK0pX4sN1cDzK0mT3aL7",
+                "role": "parents",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            }
+        },
+        {
+            "kind": "GRelation",
+            "id": "zK0mT3aL7vQ9pX4sN1cD",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:K0mT3aL7vQ9pX4sN1cDz"
+            ],
+            "name": "PART_OF",
+            "from": {
+                "nodeId": "bN3xV7pQ2xL9mR0sT6yK",
+                "role": "texts",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            },
+            "to": {
+                "nodeId": "aL7vQ9pX4sN1cDzK0mT3",
+                "role": "collections",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            }
+        },
+        {
+            "kind": "GRelation",
+            "id": "cDzK0mT3aL7vQ9pX4sN9",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:K0mT3aL7vQ9pX4sN1cDz"
+            ],
+            "name": "PART_OF",
+            "from": {
+                "nodeId": "bN3xV7pQ2xL9mR0sT6yK",
+                "role": "texts",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            },
+            "to": {
+                "nodeId": "xQ4nZ6mR2s9pL1vK7tY0",
+                "role": "collections",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            }
+        },
+        {
+            "kind": "GRelation",
+            "id": "pX4sN1cDzK0mT3aL7vQ8",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:K0mT3aL7vQ9pX4sN1cDz"
+            ],
+            "name": "PART_OF",
+            "from": {
+                "nodeId": "bN3xV7pQ2xL9mR0sT6yK",
+                "role": "texts",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            },
+            "to": {
+                "nodeId": "gH2k9Lm0Pq7Rs1Tu8Vw3",
+                "role": "collections",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                }
+            }
+        },
+        {
+            "kind": "GRelation",
+            "id": "1vsFZq4FKy5yltc3",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:pX4sN1cDzK0mT3aL7vQ9"
+            ],
+            "name": "HAS_ANNOTATION",
+            "from": {
+                "nodeId": "bN3xV7pQ2xL9mR0sT6yK",
+                "role": "annotatesTexts",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                },
+                "constraints": [],
+                "ext": {}
+            },
+            "to": {
+                "nodeId": "uZ9wBaP3xK8nV1qR6tY2",
+                "role": "annotations",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                },
+                "constraints": [],
+                "ext": {}
+            },
+            "constraints": [],
+            "ext": {}
+        },
+        {
+            "kind": "GRelation",
+            "id": "HVffdrJIfuK6XMkh",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:mR0sT6yK1nB3xV7pQ2xL9"
+            ],
+            "name": "REFERS_TO",
+            "from": {
+                "nodeId": "uZ9wBaP3xK8nV1qR6tY2",
+                "role": "annotations",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                },
+                "constraints": [],
+                "ext": {}
+            },
+            "to": {
+                "nodeId": "yK7rB3m2Xv8qL0sP6tN1",
+                "role": "refersEntities",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                },
+                "constraints": [],
+                "ext": {}
+            },
+            "constraints": [],
+            "ext": {}
+        },
+        {
+            "kind": "GRelation",
+            "id": "PYkxUTTR6EjpNIaB",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:mR0sT6yK1nB3xV7pQ2xL9"
+            ],
+            "name": "REFERS_TO",
+            "from": {
+                "nodeId": "uZ9wBaP3xK8nV1qR6tY2",
+                "role": "annotations",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                },
+                "constraints": [],
+                "ext": {}
+            },
+            "to": {
+                "nodeId": "K9xL1mQ8vR5p0Yt7W2nK",
+                "role": "refersEntities",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                },
+                "constraints": [],
+                "ext": {}
+            },
+            "constraints": [],
+            "ext": {}
+        },
+        {
+            "kind": "GRelation",
+            "id": "L7vSWp3AuzVCdhCs",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:mR0sT6yK1nB3xV7pQ2xL9"
+            ],
+            "name": "REFERS_TO",
+            "from": {
+                "nodeId": "uZ9wBaP3xK8nV1qR6tY2",
+                "role": "annotations",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                },
+                "constraints": [],
+                "ext": {}
+            },
+            "to": {
+                "nodeId": "gexxi7azzdIPHHBk",
+                "role": "refersEntities",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                },
+                "constraints": [],
+                "ext": {}
+            },
+            "constraints": [],
+            "ext": {}
+        },
+        {
+            "kind": "GRelation",
+            "id": "Q1JRaNdgz9IckdlD",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:mR0sT6yK1nB3xV7pQ2xL9"
+            ],
+            "name": "REFERS_TO",
+            "from": {
+                "nodeId": "uZ9wBaP3xK8nV1qR6tY2",
+                "role": "annotations",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                },
+                "constraints": [],
+                "ext": {}
+            },
+            "to": {
+                "nodeId": "0f1JCh3oSfwIjdEg",
+                "role": "refersEntities",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                },
+                "constraints": [],
+                "ext": {}
+            },
+            "constraints": [],
+            "ext": {}
+        },
+        {
+            "kind": "GRelation",
+            "id": "eKrsPPyc44OEq58b",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:sT6yK1nB3xV7pQ2L9mR0"
+            ],
+            "name": "HAS_ANNOTATION",
+            "from": {
+                "nodeId": "aL7vQ9pX4sN1cDzK0mT3",
+                "role": "annotatesCollections",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                },
+                "constraints": [],
+                "ext": {}
+            },
+            "to": {
+                "nodeId": "uZ9wBaP3xK8nV1qR6tY2",
+                "role": "annotations",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                },
+                "constraints": [],
+                "ext": {}
+            },
+            "constraints": [],
+            "ext": {}
+        },
+        {
+            "kind": "GRelation",
+            "id": "jwijYRk3pYDOjQ7h",
+            "superTypes": [
+                "lW611f30a2ky4276g3l8N:sT6yK1nB3xV7pQ2L9mR0"
+            ],
+            "name": "HAS_ANNOTATION",
+            "from": {
+                "nodeId": "sT6yK1nB3xV7pQ2L9mR0",
+                "role": "annotatesCollections",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                },
+                "constraints": [],
+                "ext": {}
+            },
+            "to": {
+                "nodeId": "uZ9wBaP3xK8nV1qR6tY2",
+                "role": "annotations",
+                "bounds": {
+                    "lowerBound": 0,
+                    "upperBound": -1
+                },
+                "constraints": [],
+                "ext": {}
+            },
+            "constraints": [],
+            "ext": {}
+        }
+    ],
+    "ext": {}
 }
