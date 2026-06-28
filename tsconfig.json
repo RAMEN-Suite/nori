@@ -1,0 +1,7 @@
+{
+  "extends": "./angular-tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  "include": ["forge.config.ts"]
+}
