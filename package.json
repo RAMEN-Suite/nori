@@ -25,7 +25,11 @@
     "make": "npm run build:electron && npm run build:editor && npm run make:forge",
     "make:forge": "tsx node_modules/@electron-forge/cli/src/electron-forge-make --arch x64",
     "publish": "npm run build:electron && npm run build:editor && npm run publish:forge",
-    "publish:forge": "tsx node_modules/@electron-forge/cli/src/electron-forge-publish"
+    "publish:forge": "tsx node_modules/@electron-forge/cli/src/electron-forge-publish",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --check src",
+    "format:fix": "prettier --write src"
   },
   "dependencies": {
     "@angular/common": "^21.2.10",
