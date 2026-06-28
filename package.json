@@ -79,5 +79,8 @@
     "tsx": "^4.21.0",
     "typescript": "~5.9.3",
     "wait-on": "^9.0.5"
+  },
+  "overrides": {
+    "@electron/node-gyp": "10.2.0-electron.2"
   }
 }
