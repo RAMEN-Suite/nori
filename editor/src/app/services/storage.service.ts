@@ -4,7 +4,7 @@ import { ModelRecord } from '../models/ModelRecord';
 import { database } from '../app.database';
 import { environment } from '../../environments/environment';
 import ShortUniqueId from 'short-unique-id';
-import { GModel, Id, Import } from '../core/models/GModel';
+import { GModel, Id, Import } from '@ramen-suite/core/gcore';
 
 export type CreateManifest = Pick<
   Manifest,

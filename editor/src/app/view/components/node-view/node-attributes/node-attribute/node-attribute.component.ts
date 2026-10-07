@@ -1,7 +1,7 @@
 import { Component, DestroyRef, inject, input, InputSignal, model, ModelSignal } from '@angular/core';
 import { Button } from 'primeng/button';
 import { Tooltip } from 'primeng/tooltip';
-import { Bounds, GAttribute } from '../../../../../core/models/GModel';
+import { Bounds, GAttribute } from '@ramen-suite/core/gcore';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
 import { NavigationService } from '../../../../../services/navigation.service';
 import { ActivatedRoute } from '@angular/router';

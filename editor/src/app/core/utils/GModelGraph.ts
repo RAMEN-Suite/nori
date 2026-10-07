@@ -1,5 +1,4 @@
-import { GDataType, GModel, GNode, GRelation, Ref } from '../models/GModel';
-import { Reference } from '../validation/container/Reference';
+import { GDataType, GModel, GNode, GRelation, Ref, Reference } from '@ramen-suite/core/gcore';
 
 export interface GraphNode {
   readonly id: string;

@@ -1,4 +1,4 @@
-import { GModel } from '../core/models/GModel';
+import { GModel } from '@ramen-suite/core/gcore';
 
 export type NodeColors = Record<string, string>;
 

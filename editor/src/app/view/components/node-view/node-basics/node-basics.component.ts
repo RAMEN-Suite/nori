@@ -8,7 +8,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Tooltip } from 'primeng/tooltip';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { NgStyle } from '@angular/common';
-import { GNode } from '../../../../core/models/GModel';
+import { GNode } from '@ramen-suite/core/gcore';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { NodeColorsDialog } from '../../dialogs/node-colors/node-colors.dialog';
 import { AutoFocus } from 'primeng/autofocus';
@@ -20,7 +20,7 @@ import {
   ConfirmationOptions,
 } from '../../dialogs/confirmation/confirmation.dialog';
 import { AutoselectDirective } from '../../../../directives/autoselect.directive';
-import { UpdateNodeInput } from '../../../../core/GModelMutations';
+import { UpdateNodeInput } from '@ramen-suite/core/gcore';
 import { Transformer } from '../../../../core/helper/Transformer';
 
 @Component({

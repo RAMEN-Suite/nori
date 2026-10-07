@@ -1,5 +1,6 @@
 # NORI – A Model Layering Tool
 
+
 NORI is a tool for **multi-level modelling of objects across heterogeneous domains**, developed for use in domains such as the **Digital Humanities**.
 
 It can be used both as:
@@ -15,8 +16,9 @@ It can be used both as:
 
 - Node.js (LTS recommended)
 - npm
+- Das Geschwister-Repository `../ramen-core` mit gebautem Paket `@ramen-suite/core`.
 
-Install dependencies:
+Zuerst im Geschwisterordner `ramen-core` die Abhängigkeiten installieren und `npm run build` ausführen. Danach hier die Abhängigkeiten installieren:
 ```
 npm install
 ```

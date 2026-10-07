@@ -1,8 +1,8 @@
-import ramen from './schema/metamodels/ramen.gcore.json';
+import { RAMEN_MODEL } from '@ramen-suite/core/ramen';
 import example from './schema/examples/example.gcore.json';
-import { SchemaValidator } from '../app/core/validation/SchemaValidator';
-import { GModel } from '../app/core/models/GModel';
+import { GModel, SchemaValidator } from '@ramen-suite/core/gcore';
 
+const ramen: unknown = RAMEN_MODEL;
 SchemaValidator.assertValid(ramen);
 SchemaValidator.assertValid(example);
 

@@ -1,6 +1,6 @@
 import { Component, computed, inject, OnDestroy, OnInit, Signal } from '@angular/core';
 import { DynamicDialogRef } from 'primeng/dynamicdialog';
-import { GNode } from '../../../../core/models/GModel';
+import { GNode } from '@ramen-suite/core/gcore';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { ScrollPanel } from 'primeng/scrollpanel';
 import { InputText } from 'primeng/inputtext';

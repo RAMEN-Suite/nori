@@ -6,7 +6,7 @@ import { Fieldset } from 'primeng/fieldset';
 import { IftaLabel } from 'primeng/iftalabel';
 import { Message } from 'primeng/message';
 import { FormsModule } from '@angular/forms';
-import { REGEXP } from '../../../../core/const/REGEXP';
+import { REGEXP } from '@ramen-suite/core/gcore';
 import { DynamicDialogRef } from 'primeng/dynamicdialog';
 import { CreateSlotInput } from '../../../../services/workspace/workspace.actions';
 import { ActivatedRoute } from '@angular/router';

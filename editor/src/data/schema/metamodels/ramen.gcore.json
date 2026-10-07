@@ -66,11 +66,6 @@
           "bounds": { "lowerBound": 1, "upperBound": 1 },
           "isKey": true,
           "isReadOnly": true
-        },
-        {
-          "name": "label",
-          "typeId": "String",
-          "bounds": { "lowerBound": 1, "upperBound": 1 }
         }
       ]
     },
@@ -92,17 +87,7 @@
           "name": "type",
           "typeId": "String",
           "bounds": { "lowerBound": 1, "upperBound": 1 },
-          "constraints": [
-            {
-              "id": "uN8k1P3qT6vB0xL9mR2s",
-              "name": "AnnotationTypeIsDictRef",
-              "language": "regex",
-              "expression": "^[a-z_][A-Za-z0-9_\\-]*:[a-z_][A-Za-z0-9_\\-:.]*$",
-              "severity": "error",
-              "message": "Annotation.type must be a dictionary ref of the form dict:type (e.g., tei:persName).",
-              "code": "ANNOTATION_TYPE_DICT"
-            }
-          ]
+          "constraints": []
         }
       ]
     }

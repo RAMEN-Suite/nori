@@ -3,7 +3,7 @@ import { WorkspaceService } from '../../../services/workspace/workspace.service'
 import { Button } from 'primeng/button';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { CreateModelDialog } from '../dialogs/create-model/create-model.dialog';
-import { SchemaValidator } from '../../../core/validation/SchemaValidator';
+import { SchemaValidator } from '@ramen-suite/core/gcore';
 import { StorageService } from '../../../services/storage.service';
 import { ConfirmationDialog, ConfirmationOptions } from '../dialogs/confirmation/confirmation.dialog';
 

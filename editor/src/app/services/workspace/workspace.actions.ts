@@ -3,14 +3,14 @@ import { StorageService, UpdateRecordInput } from '../storage.service';
 import { WorkspaceStore } from './workspace.store';
 import { WorkspaceView } from './workspace.view';
 import { ModelRecord, NodeColors, ViewSettings } from '../../models/ModelRecord';
-import { GAttribute, GDataType, GModel, GNode, GRelation, Id } from '../../core/models/GModel';
+import { GAttribute, GDataType, GModel, GNode, GRelation, Id } from '@ramen-suite/core/gcore';
 import {
   GModelMutations,
   UpdateAttributeInput,
   UpdateDataTypeInput,
   UpdateNodeInput,
   UpdateRelationInput,
-} from '../../core/GModelMutations';
+} from '@ramen-suite/core/gcore';
 import {
   ConnectedNode,
   CreateAttributeInput,
@@ -18,7 +18,7 @@ import {
   CreateNodeInput,
   CreateRelationInput,
   GModelFactory,
-} from '../../core/GModelFactory';
+} from '@ramen-suite/core/gcore';
 
 export type UpdateSlotInput = CreateSlotInput;
 export type CreateSlotInput = {

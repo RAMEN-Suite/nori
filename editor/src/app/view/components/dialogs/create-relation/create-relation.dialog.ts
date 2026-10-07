@@ -1,15 +1,15 @@
 import { Component, computed, inject, signal, Signal, WritableSignal } from '@angular/core';
 import { Fieldset } from 'primeng/fieldset';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { Direction, SelectableRelation } from '../../../../core/helper/QueryHelper';
+import { Direction, SelectableRelation } from '@ramen-suite/core/gcore';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
-import { GNode } from '../../../../core/models/GModel';
+import { GNode } from '@ramen-suite/core/gcore';
 import { AutoComplete, AutoCompleteCompleteEvent } from 'primeng/autocomplete';
 import { IftaLabel } from 'primeng/iftalabel';
 import { Select } from 'primeng/select';
 import { Button } from 'primeng/button';
 import { DynamicDialogRef } from 'primeng/dynamicdialog';
-import { CreateRelationInput } from '../../../../core/GModelFactory';
+import { CreateRelationInput } from '@ramen-suite/core/gcore';
 import { Tooltip } from 'primeng/tooltip';
 
 @Component({

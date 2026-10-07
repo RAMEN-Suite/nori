@@ -6,16 +6,16 @@ import { InputText } from 'primeng/inputtext';
 import { AutoComplete, AutoCompleteCompleteEvent } from 'primeng/autocomplete';
 import { SelectButton } from 'primeng/selectbutton';
 import { Button } from 'primeng/button';
-import { Bounds, GAttribute, GDataType, TypeRef } from '../../../../core/models/GModel';
-import { Builtins } from '../../../../core/validation/container/Builtins';
+import { Bounds, GAttribute, GDataType, TypeRef } from '@ramen-suite/core/gcore';
+import { Builtins } from '@ramen-suite/core/gcore';
 import { FormsModule } from '@angular/forms';
-import { QualifiedParts, Reference } from '../../../../core/validation/container/Reference';
+import { QualifiedParts, Reference } from '@ramen-suite/core/gcore';
 import { DynamicDialogRef } from 'primeng/dynamicdialog';
 import { Transformer } from '../../../../core/helper/Transformer';
 import { NgClass } from '@angular/common';
 import { Message } from 'primeng/message';
-import { CreateAttributeInput } from '../../../../core/GModelFactory';
-import { SemanticHelper } from '../../../../core/helper/SemanticHelper';
+import { CreateAttributeInput } from '@ramen-suite/core/gcore';
+import { SemanticHelper } from '@ramen-suite/core/gcore';
 
 interface RenderedOption {
   label: string;

@@ -11,7 +11,7 @@ import { Checkbox } from 'primeng/checkbox';
 import { RouterLink } from '@angular/router';
 import { Message } from 'primeng/message';
 import { CATALOG, EXAMPLES } from '../../../../data/CATALOG';
-import { GModel } from '../../../core/models/GModel';
+import { GModel } from '@ramen-suite/core/gcore';
 import { CreateManifest, StorageService } from '../../../services/storage.service';
 import { Manifest } from '../../../models/Manifest';
 import { NavigationService } from '../../../services/navigation.service';

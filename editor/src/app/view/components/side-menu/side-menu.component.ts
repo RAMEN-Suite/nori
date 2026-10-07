@@ -1,7 +1,7 @@
 import { Component, computed, DestroyRef, inject, Signal, signal, viewChild, WritableSignal } from '@angular/core';
 import { WorkspaceService } from '../../../services/workspace/workspace.service';
 import { PanelMenu } from 'primeng/panelmenu';
-import { GNode } from '../../../core/models/GModel';
+import { GNode } from '@ramen-suite/core/gcore';
 import { IftaLabel } from 'primeng/iftalabel';
 import { InputText } from 'primeng/inputtext';
 import { ScrollPanel } from 'primeng/scrollpanel';
@@ -19,7 +19,7 @@ import {
   ConfirmationDialog,
   ConfirmationOptions,
 } from '../dialogs/confirmation/confirmation.dialog';
-import { CreateNodeInput } from '../../../core/GModelFactory';
+import { CreateNodeInput } from '@ramen-suite/core/gcore';
 
 type SideMenuItem = MenuItem & {
   isCategory?: boolean;

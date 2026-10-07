@@ -1,4 +1,4 @@
-import { GModel, Id } from '../../core/models/GModel';
+import { GModel, Id } from '@ramen-suite/core/gcore';
 import { Injectable, signal, WritableSignal } from '@angular/core';
 import { ModelRecord, NodeColors } from '../../models/ModelRecord';
 

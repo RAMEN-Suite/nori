@@ -1,5 +1,5 @@
 import { Component, DestroyRef, inject, input, InputSignal } from '@angular/core';
-import { GRelation } from '../../../../../core/models/GModel';
+import { GRelation } from '@ramen-suite/core/gcore';
 import { Button } from 'primeng/button';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
 import { Tooltip } from 'primeng/tooltip';

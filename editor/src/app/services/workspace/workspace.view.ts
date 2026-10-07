@@ -1,14 +1,14 @@
 import { computed, inject, Injectable, Signal } from '@angular/core';
 import { StorageService } from '../storage.service';
 import { WorkspaceStore } from './workspace.store';
-import { ModelValidator, ValidationResult } from '../../core/validation/ModelValidator';
-import { GAttribute, GDataType, GModel, GNode, GRelation, Id, TypeRef } from '../../core/models/GModel';
-import { GModelIndex } from '../../core/validation/container/GModelIndex';
-import { QualifiedParts, Reference } from '../../core/validation/container/Reference';
-import { QueryHelper, SelectableRelation } from '../../core/helper/QueryHelper';
-import { NodeResolver, ResolvedNode } from '../../core/resolver/NodeResolver';
-import { Builtins } from '../../core/validation/container/Builtins';
-import { RelationResolver } from '../../core/resolver/RelationResolver';
+import { ModelValidator, ValidationResult } from '@ramen-suite/core/gcore';
+import { GAttribute, GDataType, GModel, GNode, GRelation, Id, TypeRef } from '@ramen-suite/core/gcore';
+import { GModelIndex } from '@ramen-suite/core/gcore';
+import { QualifiedParts, Reference } from '@ramen-suite/core/gcore';
+import { QueryHelper, SelectableRelation } from '@ramen-suite/core/gcore';
+import { NodeResolver, ResolvedNode } from '@ramen-suite/core/gcore';
+import { Builtins } from '@ramen-suite/core/gcore';
+import { RelationResolver } from '@ramen-suite/core/gcore';
 
 export interface InheritedAttribute {
   readonly modelId: Id;
