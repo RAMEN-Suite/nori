@@ -1,4 +1,7 @@
-<div class="flex max-w-140 min-w-140 flex-col gap-2">
+<div *transloco="let t" class="flex min-w-0 flex-col gap-2">
+  @if (currentSlot() === undefined) {
+    <p class="text-base-content/60 mb-3 text-sm">{{ t('editor.levelParent', { name: parentName() }) }}</p>
+  }
   <fieldset suiFieldset>
     <legend suiFieldsetLegend>Basics</legend>
     <div class="flex flex-col gap-3">

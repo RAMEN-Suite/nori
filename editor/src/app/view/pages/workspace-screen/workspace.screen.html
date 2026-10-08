@@ -1,8 +1,82 @@
-<div class="flex h-[calc(100dvh-var(--title-bar-height))] flex-col overflow-hidden">
-  <app-tool-bar />
-  <main class="grid min-h-0 flex-1 grid-cols-[auto_minmax(16rem,1fr)_22rem] overflow-auto xl:grid-cols-[auto_minmax(20rem,1fr)_26rem]">
-    <app-side-menu class="border-base-300 bg-base-100 min-h-0 border-r" />
-    <section class="bg-base-200 min-h-0" aria-label="Model graph"><app-visualizer class="block h-full" /></section>
-    <aside class="border-base-300 bg-base-100 min-h-0 overflow-auto border-l" aria-label="Inspector"><router-outlet /></aside>
-  </main>
-</div>
+<main *transloco="let t" class="workspace-shell" [class.inspector-open]="inspectorOpen()" [class.levels-open]="levelsOpen()">
+  <section class="workspace-canvas" data-nori-motion [attr.aria-label]="t('editor.graph')">
+    <app-visualizer #graph [canvasPadding]="graphPadding()" (nodeSelected)="inspectorOpen.set(true)" class="block h-full" />
+  </section>
+  <app-tool-bar
+    class="workspace-toolbar"
+    [catalogueOpen]="catalogueOpen()"
+    [levelsOpen]="levelsOpen()"
+    (toggleCatalogue)="handleToggleCatalogue()"
+    (toggleLevels)="handleToggleLevels()"
+    (resetGraph)="graph.handleLayoutReset()"
+    (fitGraph)="graph.handleFitView()"
+    (configureColours)="graph.handleOpenColorsDialog()"
+  />
+
+  <div
+    data-nori-motion
+    class="workspace-left"
+    [style.--nori-levels-height]="levelsHeight()"
+    [class.catalogue-open]="catalogueOpen()"
+    [class.levels-open]="levelsOpen()"
+  >
+    <div class="panel-slot">
+      <sui-card
+        class="workspace-panel workspace-catalogue"
+        [class.is-closed]="!catalogueOpen()"
+        [attr.inert]="catalogueOpen() ? null : ''"
+        [attr.aria-hidden]="!catalogueOpen()"
+        variant="border"
+        size="xs"
+        data-nori-motion
+      >
+        <div class="catalogue-content">
+          <app-side-menu (nodeSelected)="inspectorOpen.set(true)" (closePanel)="catalogueOpen.set(false)" class="block h-full min-h-0" />
+        </div>
+      </sui-card>
+    </div>
+    <div class="panel-slot">
+      <sui-card
+        class="workspace-panel workspace-levels"
+        [class.is-closed]="!levelsOpen()"
+        [attr.inert]="levelsOpen() ? null : ''"
+        [attr.aria-hidden]="!levelsOpen()"
+        variant="border"
+        size="xs"
+        data-nori-motion
+      >
+        <div class="levels-content"><app-model-levels (closePanel)="levelsOpen.set(false)" class="block h-full min-h-0" /></div>
+      </sui-card>
+    </div>
+  </div>
+
+  <div class="workspace-right">
+    <sui-card
+      class="workspace-panel workspace-inspector"
+      [class.is-closed]="!inspectorOpen()"
+      [attr.inert]="inspectorOpen() ? null : ''"
+      [attr.aria-hidden]="!inspectorOpen()"
+      variant="border"
+      size="xs"
+      data-nori-motion
+    >
+      <div class="inspector-content">
+        <header class="flex items-center justify-between gap-3 px-5 pt-3 pb-2">
+          <span class="text-base-content/55 text-xs font-medium tracking-wider uppercase">{{ t('editor.inspector') }}</span>
+          <button
+            suiButton
+            severity="neutral"
+            variant="text"
+            size="xs"
+            shape="circle"
+            [attr.aria-label]="t('editor.closeInspector')"
+            (click)="inspectorOpen.set(false)"
+          >
+            <svg lucideX class="size-4" aria-hidden="true"></svg>
+          </button>
+        </header>
+        <div class="editor-panel-scroll min-h-0 flex-1 overflow-auto"><router-outlet /></div>
+      </div>
+    </sui-card>
+  </div>
+</main>

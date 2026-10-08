@@ -1,24 +1,3 @@
-<section class="flex h-full flex-col items-center justify-center gap-5 overflow-auto p-6 text-center" aria-label="Model overview">
-  @if (workspace.store.currentModel(); as model) {
-    <h1 class="text-3xl">{{ model.name }}</h1>
-    <p>Select a node to edit its properties and relationships.</p>
-    @if (workspace.view.validation(); as validation) {
-      @if (!validation.valid) {
-        <ul class="text-left" aria-label="Validation findings">
-          @for (diagnostic of validation.diagnostics; track $index) {
-            <li>{{ diagnostic.message }}</li>
-          }
-        </ul>
-      }
-    }
-  } @else {
-    <h1 class="text-3xl">Loading project…</h1>
-  }
-  <div class="flex gap-3">
-    @if (workspace.view.editable()) {
-      <button suiButton (click)="handleOpenCreateModel()">Create next level</button>
-    }
-    <button suiButton variant="outlined" (click)="fileInput.click()">Import model file</button>
-    <input #fileInput type="file" accept=".json,application/json" hidden (change)="handleImportModel(fileInput)" />
-  </div>
+<section *transloco="let t" class="p-5">
+  <p class="text-base-content/60 text-sm">{{ t('editor.selectHint') }}</p>
 </section>

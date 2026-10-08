@@ -1,0 +1,15 @@
+@use "../../../../styles/editor-list";
+
+.level-number {
+  width: 1rem;
+  flex-shrink: 0;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.6;
+}
+
+.editor-list-row {
+  margin-inline: -0.1875rem;
+}

@@ -1,46 +1,167 @@
-<aside class="flex h-full w-56 flex-col">
-  <div class="border-base-300 flex flex-col gap-4 border-b p-4">
-    <div class="min-w-0">
-      <p class="text-base-content/55 text-xs font-medium tracking-wider uppercase">Model level</p>
-      <h2 class="truncate font-semibold">{{ workspace.store.currentModel()?.name }}</h2>
-    </div>
+<aside *transloco="let t" class="flex h-full min-h-0 flex-col">
+  <header class="editor-panel-heading">
+    <h2 class="text-base font-semibold">{{ t(isRefinementLevel() ? 'editor.refinements' : 'editor.nodes') }}</h2>
+    <button
+      suiButton
+      severity="neutral"
+      variant="text"
+      size="xs"
+      shape="circle"
+      [attr.aria-label]="t(isRefinementLevel() ? 'editor.closeRefinements' : 'editor.closeNodes')"
+      (click)="closePanel.emit()"
+    >
+      <svg lucideX class="size-4" aria-hidden="true"></svg>
+    </button>
+  </header>
+  <div
+    class="node-catalogue editor-panel-scroll min-h-0 flex-1 overflow-auto"
+    (transitionend)="revealPendingNode()"
+    (scrollend)="revealPendingNode()"
+    [attr.aria-label]="t(isRefinementLevel() ? 'editor.refinements' : 'editor.nodes')"
+  >
+    @for (group of groups(); track group.baseNodeRef ?? group.label) {
+      <section
+        tabindex="-1"
+        (keydown.tab)="handleGroupTab($event)"
+        (keydown.shift.tab)="handleGroupTab($event)"
+        class="node-group"
+        [attr.aria-label]="group.label"
+      >
+        @let key = group.baseNodeRef ?? group.label;
+        <sui-accordion
+          class="node-accordion"
+          size="sm"
+          [value]="!group.items.length || (!search().trim() && collapsedGroups().has(key)) ? [] : [key]"
+          (valueChange)="handleGroupExpansion(key, $event)"
+        >
+          <ng-template suiAccordionHeader let-item let-expanded="expanded">
+            <span class="flex items-center gap-2 pr-7 text-xs font-semibold opacity-60">
+              <span class="shrink-0 transition-transform" [class.rotate-90]="expanded" aria-hidden="true">
+                <svg lucideChevronRight class="size-3.5"></svg>
+              </span>
+              <span class="truncate">{{ item.label }}</span>
+            </span>
+          </ng-template>
+          <ng-template suiAccordionIndicator></ng-template>
+          <ng-template suiAccordionItem [value]="key" [label]="group.label" [disabled]="!group.items.length" [preserveContent]="true">
+            @if (group.items.length) {
+              <sui-list
+                class="editor-list"
+                (keydown)="handleListKey($event)"
+                size="xs"
+                [items]="group.items"
+                [trackBy]="trackNode"
+                [ariaLabel]="group.label"
+                [dividers]="false"
+                [rowHover]="false"
+              >
+                <ng-template suiListItem let-item>
+                  <div
+                    class="editor-list-row"
+                    [class.selected]="workspace.store.currentNodeId() === item.value"
+                    [class.readonly-node]="!workspace.view.editable()"
+                  >
+                    @if (editingId() === item.value) {
+                      <div class="node-name-editor">
+                        <input
+                          suiInput
+                          appAutoselect
+                          [focusOnCreate]="true"
+                          size="sm"
+                          [attr.aria-label]="t('editor.nodeName')"
+                          [ngModel]="draftName()"
+                          (ngModelChange)="draftName.set($event)"
+                          [readOnly]="savingName()"
+                          (keydown.enter)="$event.preventDefault(); handleSaveName(true)"
+                          (keydown.escape)="$event.stopPropagation(); handleCancelRename(true)"
+                          (blur)="handleSaveName()"
+                        />
+                      </div>
+                    } @else {
+                      <button
+                        suiButton
+                        severity="neutral"
+                        variant="text"
+                        class="editor-list-entry"
+                        [attr.aria-current]="workspace.store.currentNodeId() === item.value ? 'page' : null"
+                        (click)="handleSelect(item.value)"
+                        (dblclick)="handleRename(item)"
+                        [attr.data-node-id]="item.value"
+                      >
+                        <svg lucideBox class="editor-list-icon" aria-hidden="true"></svg>
+                        <span class="truncate text-xs font-medium">{{ item.label }}</span>
+                      </button>
+                    }
+                    @if (workspace.view.editable()) {
+                      <div class="editor-list-actions flex gap-0.5">
+                        <button
+                          suiButton
+                          severity="neutral"
+                          variant="text"
+                          size="xs"
+                          shape="circle"
+                          [attr.aria-label]="t('editor.duplicateNamedNode', { name: item.label })"
+                          [suiTooltip]="t('editor.duplicateNode')"
+                          placement="bottom"
+                          [showDelay]="400"
+                          (click)="nodeEditing.duplicate(item.value)"
+                        >
+                          <svg lucideCopy class="size-3.5" aria-hidden="true"></svg>
+                        </button>
+                        <button
+                          suiButton
+                          severity="error"
+                          variant="text"
+                          size="xs"
+                          shape="circle"
+                          [attr.aria-label]="t('editor.removeNamedNode', { name: item.label })"
+                          [suiTooltip]="t('editor.removeNode')"
+                          placement="bottom"
+                          [showDelay]="400"
+                          (click)="nodeEditing.confirmRemoval(item.value)"
+                        >
+                          <svg lucideTrash class="size-3.5" aria-hidden="true"></svg>
+                        </button>
+                      </div>
+                    }
+                  </div>
+                </ng-template>
+              </sui-list>
+            }
+          </ng-template>
+        </sui-accordion>
+        @if (workspace.view.editable() && group.baseNodeRef) {
+          <button
+            suiButton
+            severity="neutral"
+            variant="text"
+            size="xs"
+            shape="circle"
+            class="node-group-add"
+            [tabIndex]="-1"
+            [attr.aria-label]="t('editor.refineNamedNode', { name: group.label })"
+            [disabled]="creating()"
+            (click)="handleRefine(group.baseNodeRef)"
+          >
+            <svg lucidePlus class="size-3.5" aria-hidden="true"></svg>
+          </button>
+        }
+      </section>
+    }
+  </div>
+  <div class="flex flex-col gap-3 p-3">
     <input
       suiInput
       name="search"
-      aria-label="Find a node"
-      placeholder="Find a node…"
+      [attr.aria-label]="t(isRefinementLevel() ? 'editor.findRefinement' : 'editor.findNode')"
+      [placeholder]="t(isRefinementLevel() ? 'editor.findRefinement' : 'editor.findNode')"
       [ngModel]="search()"
       (ngModelChange)="search.set($event)"
       type="search"
       size="sm"
     />
-  </div>
-  <sui-sidebar
-    class="block min-h-0 flex-1 overflow-auto"
-    size="sm"
-    ariaLabel="Model nodes"
-    [groups]="groups()"
-    [value]="workspace.store.currentNodeId()"
-    (valueChange)="handleSelect($event)"
-  >
-    <ng-template [suiSidebarItem]="groups()" let-item>
-      <span class="flex min-w-0 items-start gap-2.5 py-1">
-        <svg lucideBox class="mt-0.5 size-4 shrink-0 opacity-60" aria-hidden="true"></svg>
-        <span class="flex min-w-0 flex-col gap-0.5">
-          <span class="truncate text-sm font-medium">{{ item.label }}</span>
-          <span class="truncate text-xs opacity-60">{{ item.base ? 'refines ' + item.base : 'Base definition' }}</span>
-        </span>
-      </span>
-    </ng-template>
-  </sui-sidebar>
-  <div class="border-base-300 flex flex-col gap-3 border-t p-4">
-    @if (!groups()[0]?.items?.length) {
-      <p class="text-base-content/60 text-sm">No matching nodes.</p>
-    }
-    @if (workspace.view.editable()) {
-      <button suiButton size="sm" class="w-full" (click)="handleCreate()">
-        <svg lucidePlus class="size-4" aria-hidden="true"></svg>Create node
-      </button>
+    @if (!groups().length) {
+      <p class="text-base-content/60 text-sm">{{ t(isRefinementLevel() ? 'editor.noRefinements' : 'editor.noNodes') }}</p>
     }
   </div>
 </aside>

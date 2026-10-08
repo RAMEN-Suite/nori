@@ -1,6 +1,18 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal, type Signal, type WritableSignal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
+  type Signal,
+  type WritableSignal,
+  input,
+  type InputSignal,
+  effect,
+} from '@angular/core';
+import { TranslocoDirective } from '@jsverse/transloco';
 import { FormsModule } from '@angular/forms';
-import { Button, Input, SelectButton, type SelectButtonOption } from '@sushi-kit/angular';
+import { Button, Input, Listbox, type ListboxOption } from '@sushi-kit/angular';
 import { type Node, type NodeSuggestion } from '@ramen-suite/core/model';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { StorageService } from '../../../../services/storage.service';
@@ -10,7 +22,7 @@ import { DialogService } from '../../../../services/dialog.service';
 @Component({
   selector: 'app-create-node',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, Button, Input, SelectButton],
+  imports: [TranslocoDirective, FormsModule, Button, Input, Listbox],
   templateUrl: './create-node.dialog.html',
 })
 export class CreateNodeDialog {
@@ -19,16 +31,22 @@ export class CreateNodeDialog {
   private readonly storage: StorageService = inject(StorageService);
   private readonly navigation: NavigationService = inject(NavigationService);
 
+  public readonly baseNodeId: InputSignal<string | null> = input<string | null>(null);
+
   protected readonly name: WritableSignal<string> = signal('');
   protected readonly base: WritableSignal<string | null> = signal(null);
-  protected readonly choices: Signal<readonly SelectButtonOption[]> = computed((): readonly SelectButtonOption[] =>
+  protected readonly choices: Signal<readonly ListboxOption[]> = computed((): readonly ListboxOption[] =>
     this.workspace.view.nodeSuggestions().map(
-      (node: NodeSuggestion): SelectButtonOption => ({
+      (node: NodeSuggestion): ListboxOption => ({
         value: node.ref,
         label: `${node.name} · ${this.storage.modelsById().get(node.modelId)?.name ?? 'Model'}`,
       }),
     ),
   );
+
+  public constructor() {
+    effect((): void => this.base.set(this.baseNodeId()));
+  }
 
   protected handleBase(value: unknown): void {
     this.base.set(typeof value === 'string' ? value : null);

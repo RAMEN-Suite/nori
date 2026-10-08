@@ -7,6 +7,8 @@
   size="sm"
   shape="circle"
   [attr.aria-label]="t('common.settings')"
+  [attr.aria-keyshortcuts]="shortcut()"
+  [attr.title]="shortcut() ? t('common.settings') + ' (' + shortcut() + ')' : null"
   (click)="handleOpen()"
 >
   <svg lucideSettings class="size-5" aria-hidden="true"></svg>

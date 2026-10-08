@@ -1,7 +1,7 @@
-<div class="flex flex-col gap-4">
+<div *transloco="let t" class="flex flex-col gap-4">
   @if (workspace.view.currentNode()?.attributes?.length) {
     <sui-card size="sm">
-      <h3 class="text-sm font-medium">Defined here</h3>
+      <h3 class="text-sm font-medium">{{ t('editor.definedHere') }}</h3>
       <div class="divide-base-300 divide-y">
         @for (attribute of workspace.view.currentNode()?.attributes; track attribute.id) {
           <app-node-attribute
@@ -20,7 +20,7 @@
     @if (attributes?.length) {
       <sui-card size="sm">
         <div>
-          <h3 class="text-sm font-medium">Inherited from {{ base.node.name }}</h3>
+          <h3 class="text-sm font-medium">{{ t('editor.inheritedFrom', { name: base.node.name }) }}</h3>
           <p class="text-base-content/55 text-xs">{{ storage.modelsById().get(base.modelId)?.name }}</p>
         </div>
         <div class="divide-base-300 divide-y">
@@ -39,7 +39,7 @@
   }
   @if (workspace.view.editable()) {
     <button suiButton severity="neutral" size="sm" variant="outlined" class="w-full" (click)="handleOpenCreateAttribute()">
-      <svg lucidePlus class="size-4" aria-hidden="true"></svg>Add property
+      <svg lucidePlus class="size-4" aria-hidden="true"></svg>{{ t('editor.addProperty') }}
     </button>
   }
 </div>

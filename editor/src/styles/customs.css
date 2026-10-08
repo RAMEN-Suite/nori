@@ -11,10 +11,14 @@ body {
 :root {
   --nori-focus: color-mix(in oklab, var(--color-primary) 70%, transparent);
   --nori-border: var(--sui-color-border);
+  --nori-scrollbar-thumb: color-mix(in oklab, var(--color-base-content) 28%, transparent);
+  --nori-scrollbar-track: color-mix(in oklab, var(--color-base-content) 5%, transparent);
   --nori-surface: color-mix(in oklab, var(--color-base-content) 3%, var(--color-base-100));
   --nori-surface-raised: color-mix(in oklab, var(--color-base-content) 4%, var(--color-base-100));
   --nori-radius: 1.5rem;
   --nori-radius-input: 0.5rem;
+  --nori-selection-background: color-mix(in oklab, var(--color-primary) 10%, transparent);
+  --nori-selection-color: var(--color-primary);
   --nori-project-card-height: 38rem;
   --nori-dialog-width: 48rem;
   --nori-radius-preview: 0.5rem;
@@ -119,4 +123,48 @@ html[data-motion="off"]:root::view-transition-group(*),
 html[data-motion="off"]:root::view-transition-old(*),
 html[data-motion="off"]:root::view-transition-new(*) {
   animation: none;
+}
+
+/* Let the entry card recede before the editor unfolds its own containers. */
+html:active-view-transition-type(open-workspace)::view-transition-group(root),
+html:active-view-transition-type(open-workspace)::view-transition-group(project-form),
+html:active-view-transition-type(open-workspace)::view-transition-group(project-list) {
+  animation-duration: 180ms;
+}
+html:active-view-transition-type(open-workspace)::view-transition-old(root),
+html:active-view-transition-type(open-workspace)::view-transition-old(project-form),
+html:active-view-transition-type(open-workspace)::view-transition-old(project-list) {
+  animation: project-enter-workspace 180ms ease-in both;
+}
+@keyframes project-enter-workspace {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.96) translateY(-0.5rem);
+  }
+}
+
+/* Sushi 0.1.2 has no public token for the Accordion panel's bottom padding. */
+app-side-menu .node-accordion .sui-accordion__panel {
+  padding-bottom: 0;
+}
+
+.editor-panel-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--nori-scrollbar-thumb) var(--nori-scrollbar-track);
+}
+.editor-panel-scroll::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.editor-panel-scroll::-webkit-scrollbar-track {
+  background: var(--nori-scrollbar-track);
+  border-radius: var(--nori-radius-input);
+}
+.editor-panel-scroll::-webkit-scrollbar-thumb {
+  background: var(--nori-scrollbar-thumb);
+  border-radius: var(--nori-radius-input);
 }

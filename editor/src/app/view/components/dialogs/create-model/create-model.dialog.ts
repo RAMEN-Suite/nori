@@ -1,4 +1,17 @@
-import { Component, effect, inject, model, ModelSignal, signal, WritableSignal, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component,
+  effect,
+  inject,
+  model,
+  ModelSignal,
+  signal,
+  WritableSignal,
+  ChangeDetectionStrategy,
+  computed,
+  type Signal,
+} from '@angular/core';
+import { TranslocoDirective } from '@jsverse/transloco';
+import { RAMEN_MODEL } from '@ramen-suite/core/ramen';
 import { Input, Button, Fieldset, FieldsetLegend, Message } from '@sushi-kit/angular';
 
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
@@ -13,7 +26,7 @@ import { StorageService } from '../../../../services/storage.service';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-modal-create-model',
-  imports: [Input, Button, Fieldset, FieldsetLegend, Message, FormsModule],
+  imports: [TranslocoDirective, Input, Button, Fieldset, FieldsetLegend, Message, FormsModule],
   templateUrl: './create-model.dialog.html',
   styleUrl: './create-model.dialog.scss',
 })
@@ -32,6 +45,10 @@ export class CreateModelDialog {
     version: '1.0.0',
     uri: 'https://example.com/',
   });
+
+  protected readonly parentName: Signal<string> = computed(
+    (): string => this.workspace.store.getCreationParent()?.getModel().name ?? RAMEN_MODEL.name,
+  );
 
   public constructor() {
     effect((): void => {

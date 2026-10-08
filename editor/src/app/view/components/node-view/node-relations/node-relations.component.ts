@@ -1,3 +1,5 @@
+import { LucideArrowRight, LucideArrowLeft } from '@lucide/angular';
+import { TranslocoDirective } from '@jsverse/transloco';
 import { Component, DestroyRef, inject, ChangeDetectionStrategy } from '@angular/core';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { Button, Fieldset, FieldsetLegend } from '@sushi-kit/angular';
@@ -9,7 +11,7 @@ import { CreateRelationDialog } from '../../dialogs/create-relation/create-relat
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-node-relations',
-  imports: [Button, Fieldset, FieldsetLegend, NodeRelationComponent],
+  imports: [TranslocoDirective, LucideArrowRight, LucideArrowLeft, Button, Fieldset, FieldsetLegend, NodeRelationComponent],
   templateUrl: './node-relations.component.html',
   styleUrl: './node-relations.component.scss',
 })

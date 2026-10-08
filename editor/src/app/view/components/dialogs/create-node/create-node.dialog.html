@@ -1,27 +1,37 @@
-<form class="flex min-w-80 flex-col gap-5" (ngSubmit)="handleCreate()">
-  <div class="flex flex-col gap-2">
-    <span class="text-sm font-medium">Refines</span>
-    <div class="max-h-56 overflow-y-auto">
-      <sui-select-button
-        orientation="vertical"
-        severity="neutral"
-        size="sm"
-        ariaLabel="Refines"
-        [options]="choices()"
-        [value]="base()"
-        (valueChange)="handleBase($event)"
-      />
-    </div>
-    <p class="text-base-content/60 text-sm">Choose the existing node this new definition specialises.</p>
-  </div>
+<form *transloco="let t" class="flex min-w-0 flex-col gap-5" (ngSubmit)="handleCreate()">
   <label class="flex flex-col gap-2 text-sm font-medium">
-    Node name
-    <input suiInput name="nodeName" [ngModel]="name()" (ngModelChange)="name.set($event)" placeholder="e.g. Manuscript" required />
+    {{ t('editor.nodeName') }}
+    <input
+      suiInput
+      name="nodeName"
+      [ngModel]="name()"
+      (ngModelChange)="name.set($event)"
+      [placeholder]="t('editor.nodePlaceholder')"
+      required
+    />
   </label>
+  <div class="flex flex-col gap-2">
+    <span class="text-sm font-medium">{{ t('editor.baseLabel') }}</span>
+    <p class="text-base-content/60 text-sm">{{ t('editor.baseDescription') }}</p>
+    <sui-listbox
+      [options]="choices()"
+      [value]="base()"
+      (valueChange)="handleBase($event)"
+      [filter]="true"
+      [filterPlaceholder]="t('editor.findNode')"
+      [scrollHeight]="200"
+      [ariaLabel]="t('editor.baseLabel')"
+    />
+    @if (!choices().length) {
+      <p class="text-base-content/60 text-sm">{{ t('editor.noSuggestions') }}</p>
+    }
+  </div>
   <footer class="flex justify-end gap-2">
     <button suiButton severity="neutral" variant="text" type="button" [disabled]="dialogs.pending()" (click)="dialogs.close()">
-      Cancel
+      {{ t('common.cancel') }}
     </button>
-    <button suiButton type="submit" [loading]="dialogs.pending()" [disabled]="!base() || !name().trim()">Create node</button>
+    <button suiButton type="submit" [loading]="dialogs.pending()" [disabled]="!base() || !name().trim()">
+      {{ t('editor.createNode') }}
+    </button>
   </footer>
 </form>

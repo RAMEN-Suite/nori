@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, type Signal, type WritableSignal } from '@angular/core';
 import { Button, Select, type SelectOption } from '@sushi-kit/angular';
-import { type Node, type RelationSuggestion, type RelationInput } from '@ramen-suite/core/model';
+import { ModelRef, type Node, type RelationSuggestion, type RelationInput } from '@ramen-suite/core/model';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { StorageService } from '../../../../services/storage.service';
 import { DialogService } from '../../../../services/dialog.service';
@@ -20,9 +20,11 @@ export class CreateRelationDialog {
   protected readonly target: WritableSignal<string | null> = signal(null);
   protected readonly relation: WritableSignal<string | null> = signal(null);
   protected readonly targets: Signal<readonly SelectOption[]> = computed((): readonly SelectOption[] =>
-    this.workspace.view
-      .resolveReachableNodes(this.direction())
-      .map((node: Node): SelectOption => ({ label: node.name, value: node.id })),
+    this.workspace.view.resolveReachableNodes(this.direction()).map((node: Node): SelectOption => {
+      const ownerId: string | undefined = ModelRef.isQualified(node.id) ? ModelRef.splitQualified(node.id).modelId : undefined;
+      const ownerName: string | undefined = ownerId ? this.storage.modelsById().get(ownerId)?.name : undefined;
+      return { label: ownerName ? `${node.name} · ${ownerName}` : node.name, value: node.id };
+    }),
   );
   protected readonly relations: Signal<readonly RelationSuggestion[]> = computed((): readonly RelationSuggestion[] => {
     const target: string | null = this.target();

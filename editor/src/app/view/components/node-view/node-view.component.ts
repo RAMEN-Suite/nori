@@ -1,3 +1,4 @@
+import { TranslocoDirective } from '@jsverse/transloco';
 import { Component, inject, signal, WritableSignal, ChangeDetectionStrategy } from '@angular/core';
 import { WorkspaceService } from '../../../services/workspace/workspace.service';
 import { FormsModule } from '@angular/forms';
@@ -13,7 +14,16 @@ import { NavigationService } from '../../../services/navigation.service';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-node-editor',
-  imports: [FormsModule, Button, NodeBasicsComponent, Tab, Tabs, NodeAttributesComponent, NodeRelationsComponent],
+  imports: [
+    TranslocoDirective,
+    FormsModule,
+    Button,
+    NodeBasicsComponent,
+    Tab,
+    Tabs,
+    NodeAttributesComponent,
+    NodeRelationsComponent,
+  ],
   templateUrl: './node-view.component.html',
   styleUrl: './node-view.component.scss',
 })

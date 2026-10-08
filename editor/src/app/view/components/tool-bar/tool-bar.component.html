@@ -1,36 +1,135 @@
-<sui-navbar class="border-base-300 bg-base-100 border-b" surface="plain" size="sm" [collapsible]="false" ariaLabel="Project toolbar">
-  <a suiNavbarBrand routerLink="/" class="flex items-center gap-2 font-semibold"
-    ><svg lucideLayers class="text-primary size-5" aria-hidden="true"></svg>Nori</a
-  >
-  <div suiNavbarContent class="flex min-w-0 flex-1 items-center gap-4 overflow-x-auto">
-    <span class="text-base-content/60 hidden max-w-40 truncate text-sm 2xl:block">{{ storage.selectedManifest()?.name }}</span>
-    <app-breadcrumbs />
-  </div>
-  <button
-    suiNavbarAction
+<nav *transloco="let t" class="editor-chrome" [attr.aria-label]="t('editor.toolbar')">
+  <a
     suiButton
+    class="editor-back"
+    aria-keyshortcuts="Alt+ArrowLeft"
+    data-nori-motion
+    routerLink="/"
     severity="neutral"
     variant="text"
     size="sm"
-    shape="square"
-    aria-label="Export model"
-    suiTooltip="Export model"
-    [disabled]="!workspace.view.editable() || !workspace.view.validation()?.valid"
-    (click)="handleExportModel()"
-  >
-    <svg lucideDownload class="size-4" aria-hidden="true"></svg>
-  </button>
-  <button
-    suiNavbarAction
-    suiButton
-    severity="neutral"
-    variant="text"
-    size="sm"
-    shape="square"
-    aria-label="Change theme"
-    suiTooltip="Change theme"
-    (click)="handleToggleTheme()"
-  >
-    <svg lucideSunMoon class="size-4" aria-hidden="true"></svg>
-  </button>
-</sui-navbar>
+    shape="circle"
+    [attr.aria-label]="t('common.back')"
+    ><svg lucideArrowLeft class="size-5" aria-hidden="true"></svg
+  ></a>
+  <sui-card class="editor-tools" data-nori-motion size="xs" variant="border">
+    <div class="editor-tools-content flex items-center gap-1 px-2" data-nori-motion>
+      <span class="max-w-24 truncate px-2 text-sm font-medium sm:max-w-48">{{ storage.selectedManifest()?.name }}</span>
+      <div
+        suiDivider
+        orientation="vertical"
+        class="mx-1 my-0"
+        style="height: 1.5rem; align-self: center; --sui-divider-margin: 0"
+        aria-hidden="true"
+      ></div>
+      <button
+        suiButton
+        severity="neutral"
+        variant="text"
+        size="sm"
+        shape="circle"
+        aria-keyshortcuts="K"
+        [attr.aria-label]="t('editor.catalogue')"
+        [attr.aria-pressed]="catalogueOpen()"
+        [suiTooltip]="t('editor.catalogue') + ' (K)'"
+        placement="bottom"
+        [showDelay]="400"
+        (click)="toggleCatalogue.emit()"
+      >
+        <svg lucidePanelLeft class="size-4" aria-hidden="true"></svg>
+      </button>
+      <button
+        suiButton
+        severity="neutral"
+        variant="text"
+        size="sm"
+        shape="circle"
+        aria-keyshortcuts="M"
+        [attr.aria-label]="t('editor.levels')"
+        [attr.aria-pressed]="levelsOpen()"
+        [suiTooltip]="t('editor.levelsShortcut')"
+        placement="bottom"
+        [showDelay]="400"
+        (click)="toggleLevels.emit()"
+      >
+        <svg lucideLayers class="size-4" aria-hidden="true"></svg>
+      </button>
+      <div
+        suiDivider
+        orientation="vertical"
+        class="mx-1 my-0"
+        style="height: 1.5rem; align-self: center; --sui-divider-margin: 0"
+        aria-hidden="true"
+      ></div>
+      <button
+        suiButton
+        severity="neutral"
+        variant="text"
+        size="sm"
+        shape="circle"
+        aria-keyshortcuts="R"
+        [attr.aria-label]="t('editor.reset')"
+        [suiTooltip]="t('editor.reset') + ' (R)'"
+        placement="bottom"
+        [showDelay]="400"
+        (click)="resetGraph.emit()"
+      >
+        <svg lucideRotateCcw class="size-4" aria-hidden="true"></svg>
+      </button>
+      <button
+        suiButton
+        severity="neutral"
+        variant="text"
+        size="sm"
+        shape="circle"
+        aria-keyshortcuts="F"
+        [attr.aria-label]="t('editor.fit')"
+        [suiTooltip]="t('editor.fit') + ' (F)'"
+        placement="bottom"
+        [showDelay]="400"
+        (click)="fitGraph.emit()"
+      >
+        <svg lucideMaximize class="size-4" aria-hidden="true"></svg>
+      </button>
+      <button
+        suiButton
+        severity="neutral"
+        variant="text"
+        size="sm"
+        shape="circle"
+        aria-keyshortcuts="C"
+        [attr.aria-label]="t('editor.colours')"
+        [suiTooltip]="t('editor.colours') + ' (C)'"
+        placement="bottom"
+        [showDelay]="400"
+        (click)="configureColours.emit()"
+      >
+        <svg lucidePalette class="size-4" aria-hidden="true"></svg>
+      </button>
+      <div
+        suiDivider
+        orientation="vertical"
+        class="mx-1 my-0"
+        style="height: 1.5rem; align-self: center; --sui-divider-margin: 0"
+        aria-hidden="true"
+      ></div>
+      <button
+        suiButton
+        severity="neutral"
+        variant="text"
+        size="sm"
+        shape="circle"
+        aria-keyshortcuts="E"
+        [attr.aria-label]="t('editor.export')"
+        [suiTooltip]="t('editor.export') + ' (E)'"
+        placement="bottom"
+        [showDelay]="400"
+        [disabled]="!canExport()"
+        (click)="handleExportModel()"
+      >
+        <svg lucideDownload class="size-4" aria-hidden="true"></svg>
+      </button>
+    </div>
+  </sui-card>
+  <app-settings-button shortcut="," class="editor-settings" data-nori-motion />
+</nav>

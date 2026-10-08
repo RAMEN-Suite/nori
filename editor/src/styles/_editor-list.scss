@@ -1,0 +1,63 @@
+.editor-list {
+  --radius-field: var(--nori-radius-input);
+  padding: 0.25rem 0;
+}
+.editor-list-row {
+  position: relative;
+  grid-column: 1 / -1;
+  min-width: 0;
+  margin: -0.125rem -0.25rem;
+  border-radius: var(--nori-radius-input);
+  transition: background-color 180ms ease;
+}
+.editor-list-row.selected {
+  background: var(--nori-selection-background);
+  color: var(--nori-selection-color);
+}
+.editor-list-entry {
+  --sui-button-pressed-scale: 1;
+  width: 100%;
+  height: auto;
+  min-height: 2.5rem;
+  padding: 0.5rem var(--editor-list-action-space, 4.5rem) 0.5rem 0.75rem;
+  justify-content: flex-start;
+  gap: 0.875rem;
+  border-radius: var(--nori-radius-input);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  box-shadow: none;
+}
+.editor-list-row:not(.selected) .editor-list-entry:is(:hover, :focus-visible) {
+  background: var(--sui-color-hover);
+}
+.editor-list-actions {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.selected .editor-list-entry:is(:hover, :focus-visible) {
+  background: transparent;
+  color: inherit;
+}
+
+.editor-panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.375rem 0.875rem 0.875rem;
+}
+
+.editor-list-icon {
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+.editor-list-content {
+  padding-inline: 0.875rem;
+  border-inline: 1px solid transparent;
+}

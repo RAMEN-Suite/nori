@@ -1,8 +1,8 @@
 @if (workspace.view.currentNode(); as node) {
-  <section class="flex flex-col gap-4" aria-label="Node details">
+  <section *transloco="let t" class="flex flex-col gap-4" aria-label="Node details">
     <div class="flex items-start justify-between gap-3">
       <div class="min-w-0">
-        <p class="text-base-content/50 mb-1 text-xs font-medium tracking-wider uppercase">Node definition</p>
+        <p class="text-base-content/50 mb-1 text-xs font-medium tracking-wider uppercase">{{ t('editor.nodeDefinition') }}</p>
         <h1 class="text-2xl font-semibold break-words">{{ node.name }}</h1>
       </div>
       @if (workspace.view.editable()) {
@@ -13,8 +13,8 @@
             variant="text"
             size="sm"
             shape="square"
-            aria-label="Rename node"
-            suiTooltip="Rename node"
+            [attr.aria-label]="t('editor.renameNode')"
+            [suiTooltip]="t('editor.renameNode')"
             (click)="isWorkingNameActive.set(true)"
           >
             <svg lucidePencil class="size-4" aria-hidden="true"></svg>
@@ -25,20 +25,20 @@
             variant="text"
             size="sm"
             shape="square"
-            aria-label="Duplicate node"
-            suiTooltip="Duplicate node"
+            [attr.aria-label]="t('editor.duplicateNode')"
+            [suiTooltip]="t('editor.duplicateNode')"
             (click)="handleDuplicateNode()"
           >
             <svg lucideCopy class="size-4" aria-hidden="true"></svg>
           </button>
           <button
             suiButton
-            severity="neutral"
+            severity="error"
             variant="text"
             size="sm"
             shape="square"
-            aria-label="Remove node"
-            suiTooltip="Remove node"
+            [attr.aria-label]="t('editor.removeNode')"
+            [suiTooltip]="t('editor.removeNode')"
             (click)="handleDeleteNode()"
           >
             <svg lucideTrash class="size-4" aria-hidden="true"></svg>
@@ -48,7 +48,8 @@
     </div>
     @if (isWorkingNameActive()) {
       <label class="flex flex-col gap-2 text-sm"
-        >Node name<input
+        >{{ t('editor.nodeName')
+        }}<input
           suiInput
           name="nodeName"
           [ngModel]="workingName()"
@@ -56,8 +57,10 @@
           (keydown.enter)="handleSave()"
       /></label>
       <div class="flex justify-end gap-2">
-        <button suiButton severity="neutral" variant="text" size="sm" (click)="isWorkingNameActive.set(false)">Cancel</button>
-        <button suiButton size="sm" (click)="handleSave()">Save name</button>
+        <button suiButton severity="neutral" variant="text" size="sm" (click)="isWorkingNameActive.set(false)">
+          {{ t('common.cancel') }}
+        </button>
+        <button suiButton size="sm" (click)="handleSave()">{{ t('editor.saveName') }}</button>
       </div>
     }
     @if (workspace.view.resolveNodeBase(node); as base) {
@@ -65,7 +68,7 @@
         <svg lucideGitBranch class="text-base-content/50 mt-0.5 size-4 shrink-0" aria-hidden="true"></svg>
         <div>
           <p>
-            Refines <strong class="font-medium">{{ base.node.name }}</strong>
+            {{ t('editor.refinesLabel') }} <strong class="font-medium">{{ base.node.name }}</strong>
           </p>
           <p class="text-base-content/55 text-xs">{{ storage.modelsById().get(base.modelId)?.name }}</p>
         </div>
@@ -73,12 +76,17 @@
       <p class="text-base-content/55 flex flex-wrap items-center gap-1 text-xs leading-relaxed" aria-label="Inheritance path">
         @for (ancestor of workspace.view.currentNodeChain(); track ancestor.node.id) {
           <span>{{ ancestor.node.name }}</span
-          ><span aria-hidden="true">→</span>
+          ><svg lucideChevronRight class="size-3" aria-hidden="true"></svg>
         }
         <span class="text-base-content font-medium">{{ node.name }}</span>
       </p>
     } @else {
-      <p class="text-base-content/55 text-sm">Base definition in {{ workspace.store.currentModel()?.name }}</p>
+      <p class="text-base-content/55 text-sm">{{ t('editor.baseIn', { name: workspace.store.currentModel()?.name }) }}</p>
+    }
+    @if (workspace.view.editable() && refinement()) {
+      <button suiButton severity="neutral" variant="outlined" size="sm" class="w-full" (click)="handleRefine()">
+        <svg lucideGitBranch class="size-4" aria-hidden="true"></svg>{{ t('editor.refineNode') }}
+      </button>
     }
   </section>
 }

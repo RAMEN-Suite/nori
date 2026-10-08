@@ -1,0 +1,36 @@
+@use "../../../../styles/editor-list";
+
+.node-catalogue {
+  width: 100%;
+}
+.node-group {
+  position: relative;
+}
+.node-accordion {
+  position: relative;
+  z-index: 0;
+  --sui-accordion-background: transparent;
+  --sui-accordion-border-color: transparent;
+  --sui-accordion-content-color: inherit;
+}
+.node-group-add {
+  position: absolute;
+  z-index: 2;
+  top: 0.5rem;
+  right: 0.875rem;
+}
+.readonly-node {
+  --editor-list-action-space: 0.75rem;
+}
+.node-name-editor {
+  display: flex;
+  align-items: center;
+  height: 2.5rem;
+  padding: 0 4.5rem 0 0.75rem;
+
+  input {
+    width: 100%;
+    min-width: 0;
+    max-height: 2rem;
+  }
+}

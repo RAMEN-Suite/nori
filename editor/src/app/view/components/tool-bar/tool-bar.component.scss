@@ -1,28 +1,57 @@
-header {
-  height: 50px;
+.editor-chrome {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  pointer-events: none;
+  min-height: 3.5rem;
+}
+.editor-back {
+  position: absolute;
+  left: 0;
+  pointer-events: auto;
+}
+.editor-settings {
+  position: absolute;
+  right: 0;
+  pointer-events: auto;
+}
+.editor-tools {
+  --sui-card-border-color: var(--nori-border);
+  background: var(--color-base-100);
+  pointer-events: auto;
+  max-width: calc(100% - 6rem);
 }
 
-p-menubar {
-  position: fixed;
-  width: 100%;
-  z-index: 50;
-
-  height: 50px;
-  padding: 5px 12px;
-
-  border-top: 0;
-  border-left: 0;
-  border-right: 0;
-
-  border-radius: 0;
-  font-size: 11pt;
+// Clip the container to unfold it without stretching Sushi controls or text.
+.editor-tools {
+  animation: tools-unfold 900ms 250ms var(--nori-editor-ease) backwards;
 }
-
-p-divider {
-  padding: 0;
+.editor-tools-content {
+  animation: chrome-arrive 360ms 380ms ease-out backwards;
 }
-
-.tool-bar-entrance {
-  animation: slideInDown;
-  animation-duration: 0.75s;
+.editor-back,
+.editor-settings {
+  animation: chrome-arrive 360ms 360ms ease-out backwards;
+}
+@keyframes tools-unfold {
+  from {
+    clip-path: inset(0 49% round var(--nori-radius));
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  to {
+    clip-path: inset(0 0 round var(--nori-radius));
+    opacity: 1;
+  }
+}
+@keyframes chrome-arrive {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }

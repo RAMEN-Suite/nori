@@ -1,4 +1,5 @@
 import { LucidePlus } from '@lucide/angular';
+import { TranslocoDirective } from '@jsverse/transloco';
 import { Component, DestroyRef, inject, ChangeDetectionStrategy } from '@angular/core';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { Card, Button } from '@sushi-kit/angular';
@@ -11,7 +12,7 @@ import { StorageService } from '../../../../services/storage.service';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-node-attributes',
-  imports: [Card, NodeAttributeComponent, Button, LucidePlus],
+  imports: [TranslocoDirective, Card, NodeAttributeComponent, Button, LucidePlus],
   templateUrl: './node-attributes.component.html',
   styleUrl: './node-attributes.component.scss',
 })

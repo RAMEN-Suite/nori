@@ -6,12 +6,19 @@ import {
   inject,
   provideAppInitializer,
 } from '@angular/core';
-import { provideRouter, withHashLocation, withRouterConfig, withViewTransitions } from '@angular/router';
+import {
+  provideRouter,
+  withHashLocation,
+  withRouterConfig,
+  withViewTransitions,
+  type ActivatedRouteSnapshot,
+  type ViewTransitionInfo,
+} from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { ApplicationState } from './states/application.state';
 import { provideTransloco, TranslocoService } from '@jsverse/transloco';
 import { TranslationLoader } from './i18n/translation-loader';
-import { routes } from './app.routes';
+import { routes, PARAMETERS } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -34,8 +41,23 @@ export const appConfig: ApplicationConfig = {
     provideRouter(
       routes,
       withRouterConfig({ paramsInheritanceStrategy: 'always' }),
-      withViewTransitions({ skipInitialTransition: true }),
+      withViewTransitions({
+        skipInitialTransition: true,
+        onViewTransitionCreated: ({ transition, from, to }: ViewTransitionInfo): void => {
+          const preferences: ApplicationState = inject(ApplicationState);
+          if (!preferences.state().animations || (isWorkspaceRoute(from) && isWorkspaceRoute(to))) {
+            transition.skipTransition();
+            return;
+          }
+
+          if (isWorkspaceRoute(to)) transition.types.add('open-workspace');
+        },
+      }),
       ...(window.electron ? [withHashLocation()] : []),
     ),
   ],
 };
+
+function isWorkspaceRoute(route: ActivatedRouteSnapshot): boolean {
+  return route.routeConfig?.path === `ws/:${PARAMETERS.PROJECT}` || route.children.some(isWorkspaceRoute);
+}

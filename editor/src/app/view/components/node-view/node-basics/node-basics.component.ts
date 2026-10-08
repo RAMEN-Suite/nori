@@ -1,8 +1,20 @@
-import { LucidePencil, LucideTrash, LucideCopy, LucideGitBranch } from '@lucide/angular';
-import { type NodeRemovalPreview, Node, UpdateNodeInput } from '@ramen-suite/core/model';
-import { Component, DestroyRef, effect, inject, signal, WritableSignal, ChangeDetectionStrategy } from '@angular/core';
+import { LucidePencil, LucideTrash, LucideCopy, LucideGitBranch, LucideChevronRight } from '@lucide/angular';
+import { Node, UpdateNodeInput, type NodeSuggestion } from '@ramen-suite/core/model';
+import {
+  Component,
+  DestroyRef,
+  effect,
+  inject,
+  signal,
+  WritableSignal,
+  ChangeDetectionStrategy,
+  computed,
+  type Signal,
+} from '@angular/core';
 import { Button, Input, Tooltip } from '@sushi-kit/angular';
 
+import { TranslocoDirective } from '@jsverse/transloco';
+import { CreateNodeDialog } from '../../dialogs/create-node/create-node.dialog';
 import { FormsModule } from '@angular/forms';
 import { StorageService } from '../../../../services/storage.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
@@ -10,14 +22,25 @@ import { WorkspaceService } from '../../../../services/workspace/workspace.servi
 import { DialogService, DialogRef } from '../../../../services/dialog.service';
 import { NodeColorsDialog } from '../../dialogs/node-colors/node-colors.dialog';
 import { NavigationService } from '../../../../services/navigation.service';
-import { ConfirmationButton, ConfirmationDialog, ConfirmationOptions } from '../../dialogs/confirmation/confirmation.dialog';
+import { NodeEditingService } from '../../../../services/workspace/node-editing.service';
 
 import { Transformer } from '../../../../core/helper/Transformer';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-node-basics',
-  imports: [Button, Input, Tooltip, FormsModule, LucidePencil, LucideTrash, LucideCopy, LucideGitBranch],
+  imports: [
+    TranslocoDirective,
+    LucideChevronRight,
+    Button,
+    Input,
+    Tooltip,
+    FormsModule,
+    LucidePencil,
+    LucideTrash,
+    LucideCopy,
+    LucideGitBranch,
+  ],
   templateUrl: './node-basics.component.html',
   styleUrl: './node-basics.component.scss',
 })
@@ -30,8 +53,30 @@ export class NodeBasicsComponent {
   protected readonly dialogService: DialogService = inject(DialogService);
   protected dialogRef: DialogRef | null = null;
 
+  private readonly nodeEditing: NodeEditingService = inject(NodeEditingService);
+
   protected readonly workingName: WritableSignal<string | null> = signal(null);
   protected readonly isWorkingNameActive: WritableSignal<boolean> = signal(false);
+
+  protected readonly refinement: Signal<NodeSuggestion | undefined> = computed((): NodeSuggestion | undefined => {
+    const node: Node | null = this.workspace.view.currentNode();
+    return this.workspace.view
+      .nodeSuggestions()
+      .find(
+        (suggestion: NodeSuggestion): boolean =>
+          suggestion.nodeId === node?.id && suggestion.modelId === this.workspace.store.currentModel()?.id,
+      );
+  });
+
+  protected handleRefine(): void {
+    const suggestion: NodeSuggestion | undefined = this.refinement();
+    if (!suggestion) return;
+
+    this.dialogService.open(CreateNodeDialog, {
+      headerKey: 'editor.refineNode',
+      inputValues: { baseNodeId: suggestion.ref },
+    });
+  }
 
   public constructor() {
     effect((): void => {
@@ -55,49 +100,12 @@ export class NodeBasicsComponent {
   protected async handleDuplicateNode(): Promise<void> {
     const selectedId: string | null = this.workspace.store.currentNodeId();
     if (!selectedId) return;
-    try {
-      const copy: Node = await this.workspace.actions.duplicateNode(selectedId);
-      await this.navigation.navigateToNode(this.workspace.store.currentSlot(), copy.id);
-    } catch (error: unknown) {
-      this.storage.reportError(error);
-    }
+    await this.nodeEditing.duplicate(selectedId);
   }
 
   protected handleDeleteNode(): void {
-    const selectedNode: Node | null = this.workspace.view.currentNode();
-    if (!selectedNode) return;
-
-    const preview: NodeRemovalPreview = this.workspace.actions.previewNodeRemoval(selectedNode.id);
-    const acceptButton: ConfirmationButton = {
-      label: preview.nodes.length > 1 || preview.relations.length ? 'Remove with dependants' : 'Remove',
-      size: 'sm',
-      severity: 'error',
-      variant: 'outlined',
-      click: async (): Promise<void> => {
-        if (!selectedNode.id) return;
-        await this.workspace.actions.removeNode(selectedNode.id, true);
-        const selectedSlot: number = this.workspace.store.currentSlot();
-        void this.navigation.navigateToSlot(selectedSlot);
-      },
-    };
-    const cancelButton: ConfirmationButton = {
-      label: `Cancel`,
-      size: 'sm',
-      variant: 'outlined',
-      click: (): void => this.dialogRef?.close(),
-    };
-
-    const options: ConfirmationOptions = {
-      title: 'Deleting Node',
-      message: `Remove ${selectedNode.name}? This removes ${preview.nodes.length} nodes and ${preview.relations.length} relationships, including dependent refinements.`,
-
-      justify: 'justify-around',
-      buttons: [[cancelButton], [acceptButton]],
-    };
-
-    this.dialogRef = this.dialogService.open(ConfirmationDialog, {
-      inputValues: { options },
-    });
+    const selectedId: string | null = this.workspace.store.currentNodeId();
+    if (selectedId) this.nodeEditing.confirmRemoval(selectedId);
   }
 
   protected async handleSave(): Promise<void> {
