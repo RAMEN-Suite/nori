@@ -1,23 +1,19 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { Button, SelectButton, type SelectButtonOption } from '@sushi-kit/angular';
-import { APP_THEME, ApplicationState } from '../../../../states/application.state';
-import { DialogService } from '../../../../services/dialog.service';
+import { Card, Radio, Toggle, List, ListItemTemplate } from '@sushi-kit/angular';
+import { LucidePalette, LucidePlay, LucideSlidersHorizontal } from '@lucide/angular';
+import { APP_THEMES, type AppTheme } from '../../../../models/Appearance';
+import { ApplicationState } from '../../../../states/application.state';
 
 @Component({
   selector: 'app-settings',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Button, SelectButton],
+  imports: [Card, Radio, Toggle, List, ListItemTemplate, LucidePalette, LucidePlay, LucideSlidersHorizontal],
   templateUrl: './settings.dialog.html',
+  styleUrl: './settings.dialog.scss',
 })
 export class SettingsDialog {
   protected readonly appState: ApplicationState = inject(ApplicationState);
-  protected readonly dialogs: DialogService = inject(DialogService);
-  protected readonly themes: readonly SelectButtonOption[] = [
-    { label: 'Light', value: APP_THEME.LIGHT },
-    { label: 'Dark', value: APP_THEME.DARK },
-  ];
 
-  protected handleTheme(value: unknown): void {
-    if (value === APP_THEME.LIGHT || value === APP_THEME.DARK) this.appState.setTheme(value);
-  }
+  protected readonly themes: readonly AppTheme[] = APP_THEMES;
+  protected readonly animationSettings: readonly string[] = ['animations'];
 }

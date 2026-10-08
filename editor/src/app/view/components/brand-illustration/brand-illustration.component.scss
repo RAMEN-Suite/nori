@@ -290,10 +290,3 @@
     display: none;
   }
 }
-
-@media (prefers-reduced-motion: reduce) {
-  :host * {
-    animation: none;
-    transition: none;
-  }
-}

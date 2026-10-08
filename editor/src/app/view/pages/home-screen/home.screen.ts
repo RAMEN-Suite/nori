@@ -1,18 +1,9 @@
 import { Component, inject, OnInit, ChangeDetectionStrategy, signal, type WritableSignal } from '@angular/core';
 import { WindowState } from '../../../states/window.state';
 import { Button, Card, Message } from '@sushi-kit/angular';
-import {
-  LucideBookOpen,
-  LucideGitFork,
-  LucideFolderOpen,
-  LucidePlus,
-  LucideSunMoon,
-  LucideSettings,
-  LucideArrowUpRight,
-} from '@lucide/angular';
+import { LucideFolderOpen, LucidePlus, LucideSettings, LucideArrowUpRight } from '@lucide/angular';
 import { environment } from '../../../../environments/environment';
 import { RouterLink } from '@angular/router';
-import { ApplicationState } from '../../../states/application.state';
 import { DialogService } from '../../../services/dialog.service';
 import { StorageService } from '../../../services/storage.service';
 import { NavigationService } from '../../../services/navigation.service';
@@ -30,11 +21,8 @@ import { SettingsDialog } from '../../components/dialogs/settings/settings.dialo
     BrandIllustrationComponent,
     ExternalLinkDirective,
     RouterLink,
-    LucideBookOpen,
-    LucideGitFork,
     LucideFolderOpen,
     LucidePlus,
-    LucideSunMoon,
     LucideSettings,
     LucideArrowUpRight,
   ],
@@ -45,7 +33,6 @@ export class HomeScreen implements OnInit {
   protected readonly environment: typeof environment = environment;
 
   private readonly windowState: WindowState = inject(WindowState);
-  private readonly appState: ApplicationState = inject(ApplicationState);
   private readonly dialogs: DialogService = inject(DialogService);
   private readonly storage: StorageService = inject(StorageService);
   private readonly navigation: NavigationService = inject(NavigationService);
@@ -84,9 +71,5 @@ export class HomeScreen implements OnInit {
     } finally {
       this.importing.set(false);
     }
-  }
-
-  protected handleToggleTheme(): void {
-    this.appState.toggleTheme();
   }
 }

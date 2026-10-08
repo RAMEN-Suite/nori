@@ -19,11 +19,6 @@
   line-height: 1;
 }
 
-.home-pane {
-  --sui-card-border-color: var(--nori-border);
-  background: var(--nori-surface);
-}
-
 .home-heading {
   animation: content-arrive 650ms 120ms ease-out both;
 }
@@ -62,12 +57,5 @@
   .home-intro {
     width: 84%;
     margin-inline: 10% 6%;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .home-screen * {
-    animation: none;
-    transition: none;
   }
 }

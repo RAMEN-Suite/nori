@@ -1,49 +1,8 @@
 <main class="home-screen relative isolate flex min-h-full flex-col overflow-y-auto">
-  <header class="home-chrome flex items-center justify-between px-5 py-4 sm:px-6">
-    <sui-card class="home-pane" size="xs" variant="border">
-      <nav class="flex items-center gap-2 px-3" aria-label="RAMEN resources">
-        <a
-          suiButton
-          severity="neutral"
-          variant="text"
-          size="sm"
-          shape="circle"
-          aria-label="RAMEN Suite on GitHub"
-          [appExternalLink]="environment.repositoryURL"
-        >
-          <svg lucideGitFork class="size-4" aria-hidden="true"></svg>
-        </a>
-        <a
-          suiButton
-          severity="neutral"
-          variant="text"
-          size="sm"
-          shape="circle"
-          aria-label="RAMEN Schemas"
-          [appExternalLink]="environment.schemaURL"
-        >
-          <svg lucideBookOpen class="size-4" aria-hidden="true"></svg>
-        </a>
-      </nav>
-    </sui-card>
-    <sui-card class="home-pane" size="xs" variant="border">
-      <div class="flex items-center gap-2 px-3">
-        <button
-          suiButton
-          severity="neutral"
-          variant="text"
-          size="sm"
-          shape="circle"
-          aria-label="Change theme"
-          (click)="handleToggleTheme()"
-        >
-          <svg lucideSunMoon class="size-4" aria-hidden="true"></svg>
-        </button>
-        <button suiButton severity="neutral" variant="text" size="sm" shape="circle" aria-label="Settings" (click)="handleSettings()">
-          <svg lucideSettings class="size-4" aria-hidden="true"></svg>
-        </button>
-      </div>
-    </sui-card>
+  <header class="home-chrome flex justify-end px-5 py-5 sm:px-6" data-nori-motion>
+    <button suiButton severity="neutral" variant="text" size="sm" shape="circle" aria-label="Settings" (click)="handleSettings()">
+      <svg lucideSettings class="size-5" aria-hidden="true"></svg>
+    </button>
   </header>
 
   <section
@@ -52,12 +11,12 @@
   >
     <div class="home-brand flex flex-col items-center justify-center gap-5 text-center md:gap-3">
       <app-brand-illustration />
-      <div class="home-heading">
+      <div class="home-heading" data-nori-motion>
         <h1 id="home-title" class="home-title">Nori</h1>
       </div>
     </div>
 
-    <sui-card class="home-actions mx-auto block w-full max-w-md" size="lg" variant="border">
+    <sui-card class="home-actions mx-auto block w-full max-w-md" data-nori-motion size="lg" variant="border">
       <div class="flex flex-col gap-4">
         <div class="flex flex-col gap-4">
           <h2 class="home-action-title">Modelling Data</h2>
@@ -89,7 +48,7 @@
     </sui-card>
   </section>
 
-  <footer class="home-chrome text-base-content/50 flex justify-center py-4 text-xs tracking-wide">
+  <footer data-nori-motion class="home-chrome text-base-content/50 flex justify-center py-4 text-xs tracking-wide">
     <span>Version {{ environment.appVersion }}</span>
   </footer>
 </main>

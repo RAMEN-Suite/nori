@@ -3,7 +3,7 @@ import { DialogHostComponent } from './view/components/dialogs/host/dialog-host.
 import { TitleBarComponent } from './view/components/window/title-bar/title-bar.component';
 import { RouterOutlet } from '@angular/router';
 import { StorageService } from './services/storage.service';
-import { APP_THEME, ApplicationState } from './states/application.state';
+import { ApplicationState } from './states/application.state';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -24,9 +24,9 @@ export class App {
 
     effect((): void => {
       const html: HTMLElement = this.document.documentElement;
-      const isDark: boolean = this.editorState.state().theme === APP_THEME.DARK;
-      html.classList.toggle('dark', isDark);
-      html.dataset['theme'] = isDark ? 'sushi-dark' : 'sushi';
+      html.classList.toggle('dark', this.editorState.theme().colourScheme === 'dark');
+      html.dataset['theme'] = this.editorState.theme().sushiTheme;
+      html.dataset['motion'] = this.editorState.state().animations ? 'on' : 'off';
     });
   }
 }

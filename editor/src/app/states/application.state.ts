@@ -1,38 +1,71 @@
-import { effect, inject, Injectable, signal, WritableSignal } from '@angular/core';
+import { computed, DestroyRef, effect, inject, Injectable, signal, type Signal, type WritableSignal } from '@angular/core';
 import { LocalStorageService } from '../services/local-storage.service';
-
-export enum APP_THEME {
-  LIGHT = 'light',
-  DARK = 'dark',
-}
+import { APP_THEME, APP_THEMES, DEFAULT_THEME, type AppTheme } from '../models/Appearance';
 
 interface State {
-  theme: APP_THEME;
+  readonly theme: APP_THEME;
+  readonly animations: boolean;
 }
 
 const defaultState: State = {
-  theme: APP_THEME.LIGHT,
+  theme: DEFAULT_THEME.id,
+  animations: !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
 };
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class ApplicationState {
   private static readonly STORAGE_KEY: string = 'application';
 
   private readonly storageService: LocalStorageService = inject(LocalStorageService);
-  public readonly state: WritableSignal<State> = signal({ ...defaultState });
+  private readonly preferences: WritableSignal<State> = signal(defaultState);
+
+  private readonly colourPreference: MediaQueryList = window.matchMedia('(prefers-color-scheme: dark)');
+  private readonly systemDark: WritableSignal<boolean> = signal(this.colourPreference.matches);
+
+  public readonly state: Signal<State> = this.preferences.asReadonly();
+  public readonly theme: Signal<AppTheme> = computed((): AppTheme => {
+    const selected: AppTheme = APP_THEMES.find((theme: AppTheme): boolean => theme.id === this.state().theme) ?? DEFAULT_THEME;
+    if (selected.id !== APP_THEME.SYSTEM) return selected;
+
+    return (
+      APP_THEMES.find((theme: AppTheme): boolean => theme.id === (this.systemDark() ? APP_THEME.DARK : APP_THEME.LIGHT)) ??
+      DEFAULT_THEME
+    );
+  });
 
   public constructor() {
-    this.state.set(this.storageService.get(ApplicationState.STORAGE_KEY) ?? defaultState);
+    const updateSystemTheme: (event: MediaQueryListEvent) => void = (event: MediaQueryListEvent): void =>
+      this.systemDark.set(event.matches);
+    this.colourPreference.addEventListener('change', updateSystemTheme);
+    inject(DestroyRef).onDestroy((): void => this.colourPreference.removeEventListener('change', updateSystemTheme));
+
+    this.preferences.set(this.restorePreferences());
     effect((): void => this.storageService.set(ApplicationState.STORAGE_KEY, this.state()));
   }
 
   public toggleTheme(): void {
-    this.setTheme(this.state().theme === APP_THEME.DARK ? APP_THEME.LIGHT : APP_THEME.DARK);
+    this.setTheme(this.theme().colourScheme === 'dark' ? APP_THEME.LIGHT : APP_THEME.DARK);
   }
 
   public setTheme(theme: APP_THEME): void {
-    this.state.update((s: State): State => ({ ...s, theme: theme }));
+    this.preferences.update((state: State): State => ({ ...state, theme }));
+  }
+
+  public setAnimations(animations: boolean): void {
+    this.preferences.update((state: State): State => ({ ...state, animations }));
+  }
+
+  private restorePreferences(): State {
+    const stored: unknown = this.storageService.get(ApplicationState.STORAGE_KEY);
+    if (typeof stored !== 'object' || stored === null) return defaultState;
+
+    const theme: AppTheme | undefined =
+      'theme' in stored ? APP_THEMES.find((candidate: AppTheme): boolean => candidate.id === stored.theme) : undefined;
+    const animations: unknown = 'animations' in stored ? stored.animations : undefined;
+
+    return {
+      theme: theme?.id ?? defaultState.theme,
+      animations: typeof animations === 'boolean' ? animations : defaultState.animations,
+    };
   }
 }

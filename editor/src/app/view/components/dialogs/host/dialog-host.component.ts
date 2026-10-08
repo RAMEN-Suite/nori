@@ -11,6 +11,7 @@ import { DialogService } from '../../../../services/dialog.service';
   template: `
     <sui-dialog
       #dialog="suiDialog"
+      style="--sui-dialog-width: var(--nori-dialog-width); --sui-dialog-radius: var(--nori-radius)"
       [open]="dialogs.current() !== null"
       [ariaLabel]="dialogs.current()?.title || 'Confirm action'"
       [closeOnEscape]="!dialogs.pending()"
