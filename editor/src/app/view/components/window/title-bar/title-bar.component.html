@@ -1,7 +1,11 @@
-<header class="title-bar bg-base-200 flex h-9 items-center justify-between px-3">
-  <span>{{ windowState.state().title }} — Nori</span>
+<header class="title-bar bg-base-200 grid h-9 grid-cols-[minmax(5rem,1fr)_minmax(0,auto)_minmax(5rem,1fr)] items-center gap-2 px-3">
+  <div aria-hidden="true"></div>
+  <div class="flex min-w-0 items-center justify-center gap-2 text-xs font-medium">
+    <svg lucideNetwork class="size-3.5 shrink-0 opacity-60" aria-hidden="true"></svg>
+    <span class="truncate">{{ windowState.fullTitle() }}</span>
+  </div>
   @if (hasControls) {
-    <div class="window-buttons flex gap-1">
+    <div class="window-buttons flex justify-end gap-1">
       <button suiButton size="xs" variant="text" (click)="electron.minimizeApplication()">Minimise</button>
       <button suiButton size="xs" variant="text" (click)="electron.maximizeApplication()">Maximise</button>
       <button suiButton size="xs" variant="text" severity="error" (click)="electron.closeApplication()">Close</button>

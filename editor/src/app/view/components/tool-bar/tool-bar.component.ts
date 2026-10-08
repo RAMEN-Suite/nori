@@ -1,7 +1,7 @@
 import { LucideDownload, LucideSunMoon, LucideLayers } from '@lucide/angular';
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { Button, Navbar, NavbarBrand, NavbarContent, NavbarAction, Tooltip } from '@sushi-kit/angular';
-import { APP_THEME, ApplicationState } from '../../../states/application.state';
+import { ApplicationState } from '../../../states/application.state';
 import { BreadcrumbsComponent } from '../breadcrumb/breadcrumbs.component';
 import { RouterLink } from '@angular/router';
 import { ModelRecord } from '../../../models/ModelRecord';
@@ -30,7 +30,6 @@ import { StorageService } from '../../../services/storage.service';
   styleUrl: './tool-bar.component.scss',
 })
 export class ToolBarComponent {
-  protected readonly APP_THEME: typeof APP_THEME = APP_THEME;
   protected readonly appState: ApplicationState = inject(ApplicationState);
 
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
@@ -52,7 +51,6 @@ export class ToolBarComponent {
   }
 
   protected handleToggleTheme(): void {
-    const isDark: boolean = this.appState.state().theme === APP_THEME.DARK;
-    this.appState.setTheme(isDark ? APP_THEME.LIGHT : APP_THEME.DARK);
+    this.appState.toggleTheme();
   }
 }

@@ -1,0 +1,109 @@
+<div class="brand-emblem relative flex shrink-0 items-center justify-center">
+  <div class="brand-grid pointer-events-none absolute inset-0" aria-hidden="true"></div>
+  <svg class="brand-graph absolute" viewBox="0 0 640 560" fill="none" aria-hidden="true" focusable="false">
+    <defs>
+      <mask [id]="maskId" maskUnits="userSpaceOnUse" x="0" y="0" width="640" height="560">
+        <rect width="640" height="560" fill="white" />
+        <rect x="153" y="136" width="334" height="288" fill="black" />
+        <rect x="136" y="369" width="17" height="55" fill="black" />
+        @for (node of graphNodes; track $index) {
+          <g [attr.transform]="'translate(' + node.x + ' ' + node.y + ')'" [style.--float-delay]="node.delay">
+            <circle class="brand-graph-node" [attr.r]="node.radius + 1" fill="black" />
+          </g>
+        }
+      </mask>
+    </defs>
+    <g class="brand-graph-lines" [attr.mask]="'url(#' + maskId + ')'">
+      <path
+        d="M70 90L165 50L245 85L95 180L70 90 M165 50L165 136 M245 85L190 136 M95 180L153 180 M245 85Q380 30 535 155 M535 155L600 240L545 340L535 155 M545 340L610 380L600 240 M535 155L487 155 M545 340L487 390 M95 180L60 345L85 455L170 470 M60 345L28 445L85 455 M85 455L136 405 M170 470L200 424 M70 90L10 80 M245 85L290 70 M535 155L520 80 M600 240L598 102 M600 240L632 82 M28 445L4 500 M170 470L97 535 M85 455L97 535"
+      />
+    </g>
+    @for (node of graphNodes; track $index) {
+      <g [attr.transform]="'translate(' + node.x + ' ' + node.y + ')'" [style.--float-delay]="node.delay">
+        <g class="brand-graph-node">
+          <circle [attr.r]="node.radius" />
+          <g [attr.transform]="'scale(' + (node.radius + 8) / 32 + ')'">
+            <path
+              class="brand-graph-focus"
+              [style.--focus-delay]="$index * 6 + 's'"
+              vector-effect="non-scaling-stroke"
+              d="M-32 -20V-32H-20 M20 -32H32V-20 M32 20V32H20 M-20 32H-32V20"
+            />
+          </g>
+        </g>
+      </g>
+    }
+    <g class="brand-graph-edit brand-edit-float" style="--edit-delay: 0s; --float-delay: 0s">
+      <path class="brand-edit-edge" pathLength="1" d="M64.2 103.8L15.6 219.9" />
+      <circle class="brand-edit-node" cx="11" cy="231" r="12" />
+      <path class="brand-edit-edge brand-edit-extension" pathLength="1" d="M3 240L-29 277 M17 241L42 290" />
+      <g class="brand-edit-node brand-edit-extension-nodes">
+        <circle cx="-36" cy="284" r="10" />
+        <circle cx="47" cy="300" r="11" />
+      </g>
+    </g>
+    <g class="brand-graph-edit brand-edit-float" style="--edit-delay: 24s; --float-delay: -12s">
+      <path class="brand-edit-edge" pathLength="1" d="M556 162L630 187" />
+      <circle class="brand-edit-node" cx="643" cy="191" r="14" />
+    </g>
+    <g class="brand-graph-edit brand-edit-float" style="--edit-delay: 48s; --float-delay: -24s">
+      <path class="brand-edit-edge" pathLength="1" d="M42 341L-10 329" />
+      <circle class="brand-edit-node" cx="-22" cy="326" r="12" />
+      <path class="brand-edit-edge brand-edit-extension" pathLength="1" d="M-29 336L-49 366 M-32 320L-62 300" />
+      <g class="brand-edit-node brand-edit-extension-nodes">
+        <circle cx="-55" cy="375" r="10" />
+        <circle cx="-70" cy="295" r="9" />
+      </g>
+    </g>
+    <g class="brand-graph-objects">
+      <foreignObject x="-65" y="35" width="75" height="100">
+        <sui-card class="brand-preview" size="xs" variant="border">
+          <div class="brand-text-preview flex flex-col gap-[5px] px-px py-[3px]">
+            <span class="brand-text-title mb-[3px] w-[55%]"></span>
+            <span></span><span></span><span class="w-3/5"></span> <span></span><span class="w-4/5"></span> <span></span
+            ><span class="w-3/5"></span>
+          </div>
+        </sui-card>
+      </foreignObject>
+      <foreignObject x="290" y="15" width="76" height="100">
+        <sui-card class="brand-preview" size="xs" variant="border">
+          <div class="brand-text-preview flex flex-col gap-[5px] px-px py-[3px]">
+            <span class="brand-text-title mb-[3px] w-[55%]"></span>
+            <span></span><span class="w-4/5"></span><span></span> <span class="w-3/5"></span><span></span>
+            <span class="w-4/5"></span>
+          </div>
+        </sui-card>
+      </foreignObject>
+      <foreignObject x="520" y="0" width="144" height="112">
+        <sui-card class="brand-preview" size="xs" variant="border">
+          <div class="brand-picture relative overflow-hidden rounded">
+            <img class="block h-[86px] w-full object-cover" src="images/home/pine-landscape.jpg" width="128" height="86" alt="" />
+            <span class="brand-image-region brand-image-region-tree"></span>
+            <span class="brand-image-region brand-image-region-lantern"></span>
+          </div>
+        </sui-card>
+      </foreignObject>
+      <foreignObject x="-50" y="500" width="108" height="64">
+        <sui-card class="brand-preview" size="xs" variant="border">
+          <div class="flex items-center gap-2">
+            <sui-avatar size="xs" shape="circle"><img src="images/home/portrait-a.jpg" width="32" height="32" alt="" /></sui-avatar>
+            <div class="brand-person-lines flex flex-1 flex-col gap-[7px]"><span></span><span class="w-[65%]"></span></div>
+          </div>
+        </sui-card>
+      </foreignObject>
+      <foreignObject x="40" y="535" width="114" height="64">
+        <sui-card class="brand-preview" size="xs" variant="border">
+          <div class="flex items-center gap-2">
+            <sui-avatar size="xs" shape="circle"><img src="images/home/portrait-b.jpg" width="32" height="32" alt="" /></sui-avatar>
+            <div class="brand-person-lines flex flex-1 flex-col gap-[7px]"><span></span><span class="w-[65%]"></span></div>
+          </div>
+        </sui-card>
+      </foreignObject>
+    </g>
+  </svg>
+  <svg class="brand-frame pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 320 280" fill="none" aria-hidden="true">
+    <path d="M18 64V18H64 M256 18H302V64 M302 216V262H256 M64 262H4V216" />
+  </svg>
+  <span class="brand-kana absolute" lang="ja" aria-hidden="true">ノリ</span>
+  <img class="brand-logo relative" src="images/ramen.svg" width="300" height="240" alt="" />
+</div>

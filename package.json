@@ -1,6 +1,6 @@
 {
   "name": "nori",
-  "productName": "Nori - A Model Layering Tool",
+  "productName": "Nori",
   "description": "Tool for (multi-level) modelling objects across heterogeneous domains in the Digital Humanities.",
   "author": {
     "name": "Sebastian Enns, TH Mittelhessen",
@@ -8,7 +8,7 @@
     "url": "https://www.sebenns.com"
   },
   "license": "Apache-2.0",
-  "version": "2026.0.1",
+  "version": "0.1.0",
   "main": "dist/electron/index.js",
   "private": true,
   "scripts": {

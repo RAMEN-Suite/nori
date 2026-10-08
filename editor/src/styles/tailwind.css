@@ -2,3 +2,8 @@
 @import "@sushi-kit/angular/styles.css";
 
 @custom-variant dark (&:where([data-theme="sushi-dark"], [data-theme="sushi-dark"] *));
+
+@theme static {
+  --font-display: "Gruppo", sans-serif;
+  --font-sans: "Roboto Flex", ui-sans-serif, system-ui, sans-serif;
+}

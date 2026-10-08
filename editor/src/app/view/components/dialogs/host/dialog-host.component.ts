@@ -9,26 +9,26 @@ import { DialogService } from '../../../../services/dialog.service';
   selector: 'app-dialog-host',
   imports: [NgComponentOutlet, Dialog, DialogHeader, DialogBody, Message],
   template: `
-    @if (dialogs.current(); as current) {
-      <sui-dialog
-        #dialog="suiDialog"
-        [open]="true"
-        [ariaLabel]="current.title || 'Confirm action'"
-        [closeOnEscape]="!dialogs.pending()"
-        [closeOnBackdrop]="false"
-        (closed)="handleClosed(dialog)"
-      >
-        @if (current.title) {
-          <header suiDialogHeader>{{ current.title }}</header>
-        }
-        <div suiDialogBody>
+    <sui-dialog
+      #dialog="suiDialog"
+      [open]="dialogs.current() !== null"
+      [ariaLabel]="dialogs.current()?.title || 'Confirm action'"
+      [closeOnEscape]="!dialogs.pending()"
+      [closeOnBackdrop]="false"
+      (closed)="handleClosed(dialog)"
+    >
+      @if (dialogs.current()?.title; as title) {
+        <header suiDialogHeader>{{ title }}</header>
+      }
+      <div suiDialogBody>
+        @if (dialogs.current(); as current) {
           @if (dialogs.error(); as error) {
             <p suiMessage severity="error">{{ error }}</p>
           }
           <ng-container [ngComponentOutlet]="current.component" [ngComponentOutletInputs]="current.inputs" />
-        </div>
-      </sui-dialog>
-    }
+        }
+      </div>
+    </sui-dialog>
   `,
 })
 export class DialogHostComponent {

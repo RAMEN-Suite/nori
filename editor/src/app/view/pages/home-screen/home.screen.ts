@@ -1,34 +1,92 @@
-import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectionStrategy, signal, type WritableSignal } from '@angular/core';
 import { WindowState } from '../../../states/window.state';
-import { Button } from '@sushi-kit/angular';
+import { Button, Card, Message } from '@sushi-kit/angular';
+import {
+  LucideBookOpen,
+  LucideGitFork,
+  LucideFolderOpen,
+  LucidePlus,
+  LucideSunMoon,
+  LucideSettings,
+  LucideArrowUpRight,
+} from '@lucide/angular';
 import { environment } from '../../../../environments/environment';
 import { RouterLink } from '@angular/router';
-import { APP_THEME, ApplicationState } from '../../../states/application.state';
+import { ApplicationState } from '../../../states/application.state';
+import { DialogService } from '../../../services/dialog.service';
+import { StorageService } from '../../../services/storage.service';
+import { NavigationService } from '../../../services/navigation.service';
+import { BrandIllustrationComponent } from '../../components/brand-illustration/brand-illustration.component';
+import { ExternalLinkDirective } from '../../../directives/external-link.directive';
+import { SettingsDialog } from '../../components/dialogs/settings/settings.dialog';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-home',
-  imports: [Button, RouterLink],
+  imports: [
+    Button,
+    Card,
+    Message,
+    BrandIllustrationComponent,
+    ExternalLinkDirective,
+    RouterLink,
+    LucideBookOpen,
+    LucideGitFork,
+    LucideFolderOpen,
+    LucidePlus,
+    LucideSunMoon,
+    LucideSettings,
+    LucideArrowUpRight,
+  ],
   templateUrl: './home.screen.html',
   styleUrl: './home.screen.scss',
 })
 export class HomeScreen implements OnInit {
   protected readonly environment: typeof environment = environment;
-  protected readonly APP_THEME: typeof APP_THEME = APP_THEME;
 
-  protected readonly windowState: WindowState = inject(WindowState);
-  protected readonly appState: ApplicationState = inject(ApplicationState);
+  private readonly windowState: WindowState = inject(WindowState);
+  private readonly appState: ApplicationState = inject(ApplicationState);
+  private readonly dialogs: DialogService = inject(DialogService);
+  private readonly storage: StorageService = inject(StorageService);
+  private readonly navigation: NavigationService = inject(NavigationService);
+
+  protected readonly importing: WritableSignal<boolean> = signal(false);
+  protected readonly importError: WritableSignal<string | null> = signal(null);
+
+  protected readonly resources: readonly { readonly label: string; readonly url: string }[] = [
+    { label: 'RAMEN Schema', url: environment.schemaURL },
+    { label: 'RAMEN Suite', url: environment.repositoryURL },
+    { label: 'RAMEN Core', url: environment.coreURL },
+  ];
 
   public ngOnInit(): void {
-    this.windowState.setTitle('Nori - A Model Layering Tool');
+    this.windowState.setTitle('');
   }
 
-  protected handleOpenRepository(): void {
-    if (window.electron) void window.electron.openExternal(environment.repositoryURL);
-    else window.open(environment.repositoryURL, '_blank', 'noopener,noreferrer');
+  protected handleSettings(): void {
+    this.dialogs.open(SettingsDialog, { header: 'Settings' });
+  }
+
+  protected async handleImport(input: HTMLInputElement): Promise<void> {
+    const file: File | undefined = input.files?.[0];
+    input.value = '';
+    if (!file || this.importing()) return;
+
+    this.importing.set(true);
+    this.importError.set(null);
+
+    try {
+      const contents: unknown = JSON.parse(await file.text());
+      const projectId: string = await this.storage.importRecord(contents);
+      await this.navigation.navigateToProject(projectId);
+    } catch (error: unknown) {
+      this.importError.set(error instanceof Error ? error.message : 'The model could not be imported.');
+    } finally {
+      this.importing.set(false);
+    }
   }
 
   protected handleToggleTheme(): void {
-    this.appState.setTheme(this.appState.state().theme === APP_THEME.DARK ? APP_THEME.LIGHT : APP_THEME.DARK);
+    this.appState.toggleTheme();
   }
 }

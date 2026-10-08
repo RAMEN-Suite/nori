@@ -28,6 +28,10 @@ export class ApplicationState {
     effect((): void => this.storageService.set(ApplicationState.STORAGE_KEY, this.state()));
   }
 
+  public toggleTheme(): void {
+    this.setTheme(this.state().theme === APP_THEME.DARK ? APP_THEME.LIGHT : APP_THEME.DARK);
+  }
+
   public setTheme(theme: APP_THEME): void {
     this.state.update((s: State): State => ({ ...s, theme: theme }));
   }

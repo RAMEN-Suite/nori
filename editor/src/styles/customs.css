@@ -9,8 +9,22 @@ body {
   color: var(--color-base-content);
 }
 :root {
+  --nori-focus: color-mix(in oklab, var(--color-primary) 70%, transparent);
+  --nori-border: var(--sui-color-border);
+  --nori-surface: color-mix(in oklab, var(--color-base-content) 3%, var(--color-base-100));
+  --nori-surface-raised: color-mix(in oklab, var(--color-base-content) 4%, var(--color-base-100));
+  --nori-radius: 1.5rem;
+  --nori-radius-preview: 0.5rem;
+  --nori-preview-border: color-mix(in oklab, var(--color-base-content) 18%, transparent);
+  --nori-preview-opacity: 0.8;
+  --nori-graph-fill: color-mix(in oklab, var(--color-base-content) 4%, var(--color-base-100));
+  --nori-region-fill: color-mix(in oklab, var(--color-primary) 28%, transparent);
+  --nori-grid: color-mix(in oklab, var(--color-base-content) 6%, transparent);
   --title-bar-height: 0px;
   --tool-bar-height: 0px;
+}
+[suiButton]:not(:disabled):not([aria-disabled="true"]) {
+  cursor: pointer;
 }
 .main-window {
   height: calc(100dvh - var(--title-bar-height) - var(--tool-bar-height));
