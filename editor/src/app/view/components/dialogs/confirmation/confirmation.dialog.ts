@@ -5,6 +5,7 @@ import { DialogService } from '../../../../services/dialog.service';
 export interface ConfirmationOptions {
   title: string;
   message: string;
+  plainText?: boolean;
   justify?: 'justify-center' | 'justify-between' | 'justify-around';
   buttons: ConfirmationButton[][];
 }

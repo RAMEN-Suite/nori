@@ -3,6 +3,8 @@
   <div class="flex min-w-0 items-center justify-center gap-2 text-xs font-medium">
     @if (windowState.state().icon === 'folder-plus') {
       <svg lucideFolderPlus class="size-3.5 shrink-0 opacity-60" aria-hidden="true"></svg>
+    } @else if (windowState.state().icon === 'folder-open') {
+      <svg lucideFolderOpen class="size-3.5 shrink-0 opacity-60" aria-hidden="true"></svg>
     } @else {
       <svg lucideNetwork class="size-3.5 shrink-0 opacity-60" aria-hidden="true"></svg>
     }

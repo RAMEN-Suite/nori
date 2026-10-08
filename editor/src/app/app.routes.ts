@@ -1,8 +1,7 @@
 import { Routes } from '@angular/router';
 import { HomeScreen } from './view/pages/home-screen/home.screen';
 import { WorkspaceScreen } from './view/pages/workspace-screen/workspace.screen';
-import { StartScreen } from './view/pages/start-screen/start.screen';
-import { OpenScreen } from './view/pages/open-screen/open.screen';
+import { ProjectEntryScreen } from './view/pages/project-entry/project-entry.screen';
 import { hasWorkspace } from './guards/workspace.guard';
 import { NodeViewComponent } from './view/components/node-view/node-view.component';
 import { SlotViewComponent } from './view/components/slot-view/slot-view.component';
@@ -15,8 +14,8 @@ export const PARAMETERS: Readonly<{ PROJECT: string; SLOT: string; NODE: string 
 
 export const routes: Routes = [
   { path: '', component: HomeScreen },
-  { path: 'start', component: StartScreen },
-  { path: 'open', component: OpenScreen },
+  { path: 'start', component: ProjectEntryScreen },
+  { path: 'open', component: ProjectEntryScreen },
   {
     path: `ws/:${PARAMETERS.PROJECT}`,
     canActivate: [hasWorkspace],

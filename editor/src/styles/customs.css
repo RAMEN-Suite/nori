@@ -15,6 +15,7 @@ body {
   --nori-surface-raised: color-mix(in oklab, var(--color-base-content) 4%, var(--color-base-100));
   --nori-radius: 1.5rem;
   --nori-radius-input: 0.5rem;
+  --nori-project-card-height: 38rem;
   --nori-dialog-width: 48rem;
   --nori-radius-preview: 0.5rem;
   --nori-preview-border: color-mix(in oklab, var(--color-base-content) 18%, transparent);
@@ -59,12 +60,15 @@ html[data-motion="off"] [data-nori-motion] {
   transition: none;
 }
 
-/* Project creation enters from below while the surrounding page changes directly. */
-::view-transition-group(project-form) {
-  animation: none;
+/* The selected entry card arrives from below. Revealing its alternative slides the existing card left without resizing it. */
+::view-transition-group(project-form),
+::view-transition-group(project-list) {
+  animation-duration: 520ms;
+  animation-timing-function: cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
-::view-transition-new(project-form) {
+::view-transition-new(project-form),
+::view-transition-new(project-list) {
   animation: project-form-arrive 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -80,6 +84,7 @@ html[data-motion="off"] [data-nori-motion] {
 }
 
 ::view-transition-old(project-form),
+::view-transition-old(project-list),
 ::view-transition-old(root) {
   animation: none;
   opacity: 0;
@@ -89,8 +94,32 @@ html[data-motion="off"] [data-nori-motion] {
   animation: none;
 }
 
-html[data-motion="off"]::view-transition-group(*),
-html[data-motion="off"]::view-transition-old(*),
-html[data-motion="off"]::view-transition-new(*) {
+html:active-view-transition-type(add-open-card)::view-transition-new(project-form),
+html:active-view-transition-type(add-create-card)::view-transition-new(project-list) {
+  animation: none;
+}
+
+html:active-view-transition-type(add-open-card)::view-transition-new(project-list) {
+  animation: project-card-reveal 520ms cubic-bezier(0.25, 0.8, 0.25, 1) both;
+}
+
+html:active-view-transition-type(add-create-card)::view-transition-new(project-form) {
+  animation: project-card-reveal 520ms cubic-bezier(0.25, 0.8, 0.25, 1) both;
+}
+
+@keyframes project-card-reveal {
+  from {
+    opacity: 0;
+    transform: translateX(var(--project-reveal-offset, 4rem));
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+html[data-motion="off"]:root::view-transition-group(*),
+html[data-motion="off"]:root::view-transition-old(*),
+html[data-motion="off"]:root::view-transition-new(*) {
   animation: none;
 }

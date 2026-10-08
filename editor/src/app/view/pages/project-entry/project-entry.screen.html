@@ -1,0 +1,50 @@
+<main *transloco="let t" class="home-screen relative isolate flex min-h-full flex-col overflow-y-auto">
+  <header class="home-chrome flex items-center justify-between px-5 py-5 sm:px-6">
+    <button suiButton severity="neutral" variant="text" size="sm" routerLink="/" [disabled]="busy()">
+      <svg lucideArrowLeft class="size-4" aria-hidden="true"></svg>{{ t('create.back') }}
+    </button>
+    <button
+      suiButton
+      severity="neutral"
+      variant="text"
+      size="sm"
+      shape="circle"
+      [attr.aria-label]="t('common.settings')"
+      (click)="handleSettings()"
+    >
+      <svg lucideSettings class="size-5" aria-hidden="true"></svg>
+    </button>
+  </header>
+
+  <section
+    class="entry-layout mx-auto my-auto w-full px-5 py-8"
+    [class.entry-layout--open]="initial === 'open'"
+    [class.entry-layout--expanded]="expanded()"
+    [attr.aria-label]="t('home.actions')"
+  >
+    <ng-container [ngTemplateOutlet]="initial === 'create' ? createCard : openCard" />
+    @if (expanded()) {
+      <ng-container [ngTemplateOutlet]="initial === 'create' ? openCard : createCard" />
+    }
+    <ng-template #createCard>
+      <app-project-create
+        [alternativeVisible]="!expanded()"
+        [disabled]="busy()"
+        (showAlternative)="handleReveal()"
+        (busyChange)="busy.set($event)"
+      />
+    </ng-template>
+    <ng-template #openCard>
+      <app-project-open
+        [alternativeVisible]="!expanded()"
+        [disabled]="busy()"
+        (showAlternative)="handleReveal()"
+        (busyChange)="busy.set($event)"
+      />
+    </ng-template>
+  </section>
+
+  <footer class="home-chrome text-base-content/50 flex justify-center py-4 text-xs tracking-wide">
+    <span>{{ t('common.version', { version: environment.appVersion }) }}</span>
+  </footer>
+</main>

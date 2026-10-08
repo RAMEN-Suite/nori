@@ -3,7 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslocoService } from '@jsverse/transloco';
 import { Title } from '@angular/platform-browser';
 
-export type WindowIcon = 'network' | 'folder-plus';
+export type WindowIcon = 'network' | 'folder-plus' | 'folder-open';
 
 interface State {
   title: string;

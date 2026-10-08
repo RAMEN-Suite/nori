@@ -1,12 +1,19 @@
-import { Component, inject, OnInit, ChangeDetectionStrategy, signal, type WritableSignal } from '@angular/core';
-import { WindowState } from '../../../states/window.state';
+import {
+  Component,
+  inject,
+  ChangeDetectionStrategy,
+  signal,
+  input,
+  output,
+  type InputSignal,
+  type OutputEmitterRef,
+  type WritableSignal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Input, Textarea, Button, Checkbox, Message, Card } from '@sushi-kit/angular';
 
-import { RouterLink } from '@angular/router';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
-import { LucideArrowLeft, LucidePlus, LucideSettings } from '@lucide/angular';
-import { environment } from '../../../../environments/environment';
+import { LucidePlus } from '@lucide/angular';
 
 import { CATALOG, EXAMPLES } from '../../../../data/CATALOG';
 import { RAMEN_MODEL } from '@ramen-suite/core/ramen';
@@ -14,37 +21,36 @@ import { Model } from '@ramen-suite/core/model';
 import { CreateManifest, StorageService } from '../../../services/storage.service';
 import { Manifest } from '../../../models/Manifest';
 import { NavigationService } from '../../../services/navigation.service';
-import { DialogService } from '../../../services/dialog.service';
-import { SettingsDialog } from '../../components/dialogs/settings/settings.dialog';
+import { ProjectAlternativeComponent } from '../project-alternative/project-alternative.component';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'app-create',
+  selector: 'app-project-create',
   imports: [
+    ProjectAlternativeComponent,
     FormsModule,
     Input,
     Textarea,
     Button,
     Checkbox,
-    RouterLink,
     Message,
     Card,
     TranslocoDirective,
-    LucideArrowLeft,
     LucidePlus,
-    LucideSettings,
   ],
-  templateUrl: './start.screen.html',
-  styleUrl: '../project-entry.scss',
+  templateUrl: './project-create.component.html',
+  styleUrl: '../../pages/project-entry.scss',
 })
-export class StartScreen implements OnInit {
-  private readonly dialogs: DialogService = inject(DialogService);
+export class ProjectCreateComponent {
   private readonly translations: TranslocoService = inject(TranslocoService);
-  protected readonly environment: typeof environment = environment;
 
-  protected readonly windowState: WindowState = inject(WindowState);
   protected readonly storage: StorageService = inject(StorageService);
   protected readonly navigation: NavigationService = inject(NavigationService);
+
+  public readonly alternativeVisible: InputSignal<boolean> = input(true);
+  public readonly disabled: InputSignal<boolean> = input(false);
+  public readonly showAlternative: OutputEmitterRef<void> = output();
+  public readonly busyChange: OutputEmitterRef<boolean> = output<boolean>();
 
   protected readonly manifest: CreateManifest = {
     name: '',
@@ -60,14 +66,6 @@ export class StartScreen implements OnInit {
 
   protected isCreatingExample: boolean = false;
 
-  public ngOnInit(): void {
-    this.windowState.setTitleKey('create.windowTitle', 'folder-plus');
-  }
-
-  protected handleSettings(): void {
-    this.dialogs.open(SettingsDialog, { headerKey: 'common.settings' });
-  }
-
   protected isProjectNameValid(): boolean {
     return this.manifest.name.trim().length >= 3;
   }
@@ -82,7 +80,7 @@ export class StartScreen implements OnInit {
   }
 
   protected async handleCreateProject(): Promise<void> {
-    if (!this.isFormValid() || this.pending()) return;
+    if (!this.isFormValid() || this.pending() || this.disabled()) return;
 
     this.manifest.name = this.manifest.name.trim();
     this.manifest.description = this.manifest.description.trim();
@@ -95,6 +93,7 @@ export class StartScreen implements OnInit {
     const example: Model | undefined = this.isCreatingExample ? EXAMPLES.at(0) : undefined;
 
     this.pending.set(true);
+    this.busyChange.emit(true);
     this.error.set(null);
     try {
       const manifest: Manifest = await this.storage.createProject(this.manifest, this.selectedMetamodel, example);
@@ -103,6 +102,7 @@ export class StartScreen implements OnInit {
       this.error.set(this.translations.translate('create.error'));
     } finally {
       this.pending.set(false);
+      this.busyChange.emit(false);
     }
   }
 }

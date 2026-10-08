@@ -1,0 +1,77 @@
+<sui-card *transloco="let t" class="home-actions create-card block w-full" size="lg" variant="border">
+  <form #projectForm="ngForm" class="project-content project-form flex flex-col gap-5" (ngSubmit)="handleCreateProject()">
+    <div class="project-heading flex flex-col gap-3">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <h1 id="create-title" class="home-action-title">{{ t('create.title') }}</h1>
+        <span [class.invisible]="!alternativeVisible()" [attr.inert]="alternativeVisible() ? null : ''">
+          <app-project-alternative
+            current="create"
+            [disabled]="!alternativeVisible() || pending() || disabled()"
+            (selected)="showAlternative.emit()"
+          />
+        </span>
+      </div>
+      <p class="text-base-content/65 leading-relaxed">{{ t('create.description') }}</p>
+    </div>
+    <div class="flex flex-col gap-5">
+      <label class="flex flex-col gap-2">
+        <span class="font-medium">{{ t('create.name') }}</span>
+        <input
+          suiInput
+          [fluid]="true"
+          name="name"
+          maxlength="70"
+          [(ngModel)]="manifest.name"
+          required
+          minlength="3"
+          [disabled]="pending() || disabled()"
+          [placeholder]="t('create.namePlaceholder')"
+          aria-describedby="project-name-hint"
+        />
+        <span id="project-name-hint" class="text-base-content/55 text-xs">{{ t('create.nameHint') }}</span>
+      </label>
+      <label class="flex flex-col gap-2">
+        <span class="font-medium"
+          >{{ t('create.summary') }} <span class="text-base-content/50 font-normal">{{ t('create.optional') }}</span></span
+        >
+        <textarea
+          suiTextarea
+          [fluid]="true"
+          name="description"
+          rows="2"
+          [placeholder]="t('create.summaryPlaceholder')"
+          maxlength="140"
+          [(ngModel)]="manifest.description"
+          [disabled]="pending() || disabled()"
+        ></textarea>
+      </label>
+      <label class="flex cursor-pointer items-start gap-3 py-2">
+        <input
+          suiCheckbox
+          class="shrink-0"
+          type="checkbox"
+          name="example"
+          [(ngModel)]="isCreatingExample"
+          [disabled]="pending() || disabled()"
+        />
+        <span class="flex flex-col gap-1">
+          <span class="font-medium">{{ t('create.example') }}</span>
+          <span class="text-base-content/60 text-sm">{{ t('create.exampleDescription') }}</span>
+        </span>
+      </label>
+    </div>
+    @if (error(); as message) {
+      <p suiMessage severity="error" role="alert">{{ message }}</p>
+    }
+    <button
+      suiButton
+      class="mt-auto"
+      size="lg"
+      type="submit"
+      [loading]="pending()"
+      [disabled]="!projectForm.valid || !isFormValid() || pending() || disabled()"
+    >
+      <svg lucidePlus class="size-4" aria-hidden="true"></svg>{{ t(pending() ? 'create.creating' : 'home.create') }}
+    </button>
+  </form>
+</sui-card>

@@ -1,6 +1,12 @@
 <section class="flex max-w-lg flex-col gap-5">
-  <h2 class="text-xl font-semibold">{{ options()?.title }}</h2>
-  <p [innerHTML]="options()?.message"></p>
+  @if (options()?.title) {
+    <h2 class="text-xl font-semibold">{{ options()?.title }}</h2>
+  }
+  @if (options()?.plainText) {
+    <p class="break-words">{{ options()?.message }}</p>
+  } @else {
+    <p [innerHTML]="options()?.message"></p>
+  }
   <footer class="flex justify-end gap-3">
     @for (group of options()?.buttons; track $index) {
       @for (button of group; track button.label) {

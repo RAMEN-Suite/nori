@@ -1,0 +1,112 @@
+<sui-card *transloco="let t" class="home-actions open-card block w-full" size="lg" variant="border">
+  <div class="project-content flex flex-col gap-5">
+    <div class="project-heading flex flex-col gap-3">
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <h1 id="open-title" class="home-action-title">{{ t('open.title') }}</h1>
+        <span [class.invisible]="!alternativeVisible()" [attr.inert]="alternativeVisible() ? null : ''">
+          <app-project-alternative
+            current="open"
+            [disabled]="!alternativeVisible() || busy() || disabled()"
+            (selected)="showAlternative.emit()"
+          />
+        </span>
+      </div>
+      <p class="text-base-content/65 leading-relaxed">{{ t('open.description') }}</p>
+    </div>
+
+    <label class="flex flex-col gap-2">
+      <span class="font-medium">{{ t('open.search') }}</span>
+      <input
+        suiInput
+        type="search"
+        name="search"
+        [fluid]="true"
+        [disabled]="busy() || disabled()"
+        [placeholder]="t('open.searchPlaceholder')"
+        [ngModel]="searchInput()"
+        (ngModelChange)="searchInput.set($event)"
+      />
+    </label>
+    @if (error(); as message) {
+      <p suiMessage severity="error" role="alert">{{ message }}</p>
+    }
+    @if (loading()) {
+      <p class="text-base-content/60 py-8 text-center" role="status">{{ t('open.loading') }}</p>
+    } @else if (filteredManifests().length) {
+      <sui-list
+        class="project-list min-h-0 flex-1 overflow-y-auto"
+        size="xs"
+        [items]="filteredManifests()"
+        [trackBy]="trackProject"
+        [ariaLabel]="t('open.projects')"
+        [dividers]="true"
+        [rowHover]="false"
+      >
+        <ng-template suiListItem let-project>
+          <div class="project-row">
+            <button
+              suiButton
+              type="button"
+              severity="neutral"
+              variant="text"
+              class="project-entry"
+              [disabled]="busy() || disabled()"
+              [attr.aria-label]="t('open.openProject', { name: project.name })"
+              (click)="handleOpenProject(project.projectId)"
+            >
+              <svg lucideFolderOpen class="project-icon size-5 shrink-0" aria-hidden="true"></svg>
+              <span class="flex min-w-0 flex-1 flex-col gap-1 text-left">
+                <span class="truncate font-semibold">{{ project.name }}</span>
+                @if (project.description) {
+                  <span class="line-clamp-2 text-sm font-normal opacity-65">{{ project.description }}</span>
+                }
+                <span class="text-xs font-normal opacity-50"
+                  >{{ t('open.updated') }}
+                  <time [attr.datetime]="project.updatedAt">{{ project.updatedAt | date: 'dd.MM.yyyy' }}</time></span
+                >
+              </span>
+            </button>
+            <div class="project-actions flex items-center gap-1">
+              <button
+                suiButton
+                severity="neutral"
+                variant="text"
+                size="sm"
+                shape="circle"
+                [attr.aria-label]="t('open.duplicateProject', { name: project.name })"
+                [suiTooltip]="t('open.duplicate')"
+                placement="bottom"
+                [showDelay]="400"
+                [disabled]="busy() || disabled()"
+                (click)="handleDuplicateProject(project.projectId)"
+              >
+                <svg lucideCopy class="size-4" aria-hidden="true"></svg>
+              </button>
+              <button
+                suiButton
+                severity="error"
+                variant="text"
+                size="sm"
+                shape="circle"
+                [attr.aria-label]="t('open.removeProject', { name: project.name })"
+                [suiTooltip]="t('open.remove')"
+                placement="bottom"
+                [showDelay]="400"
+                [disabled]="busy() || disabled()"
+                (click)="handleRemoveProject(project)"
+              >
+                <svg lucideTrash class="size-4" aria-hidden="true"></svg>
+              </button>
+            </div>
+          </div>
+        </ng-template>
+      </sui-list>
+    } @else {
+      <div class="flex flex-col items-center gap-3 py-8 text-center" role="status">
+        <svg lucideSearch class="text-base-content/35 size-8" aria-hidden="true"></svg>
+        <p class="font-medium">{{ t(hasProjects() ? 'open.noMatches' : 'open.empty') }}</p>
+        <p class="text-base-content/60 text-sm">{{ t(hasProjects() ? 'open.noMatchesHint' : 'open.emptyHint') }}</p>
+      </div>
+    }
+  </div>
+</sui-card>

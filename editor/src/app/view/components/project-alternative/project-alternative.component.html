@@ -1,0 +1,16 @@
+<button
+  *transloco="let t"
+  suiButton
+  type="button"
+  severity="neutral"
+  variant="text"
+  size="sm"
+  [disabled]="disabled()"
+  (click)="selected.emit()"
+>
+  @if (current() === 'create') {
+    <svg lucideFolderOpen class="size-4" aria-hidden="true"></svg>{{ t('home.open') }}
+  } @else {
+    <svg lucideFolderPlus class="size-4" aria-hidden="true"></svg>{{ t('home.create') }}
+  }
+</button>

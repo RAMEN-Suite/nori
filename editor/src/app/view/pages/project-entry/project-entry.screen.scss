@@ -1,0 +1,37 @@
+.entry-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 1.5rem;
+  max-width: 38.5rem;
+}
+
+.entry-layout--open {
+  max-width: 50.5rem;
+}
+
+.entry-layout--expanded {
+  max-width: 82rem;
+}
+
+@media (min-width: 1024px) {
+  /* Keep each card's width unchanged while the pair moves into position. */
+  .entry-layout {
+    --entry-content-width: calc(min(82rem, 100vw) - 4rem);
+    max-width: calc(var(--entry-content-width) * 0.45 + 2.5rem);
+  }
+
+  .entry-layout--open {
+    max-width: calc(var(--entry-content-width) * 0.55 + 2.5rem);
+  }
+
+  .entry-layout--expanded {
+    max-width: 82rem;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  }
+
+  .entry-layout--expanded.entry-layout--open {
+    max-width: 82rem;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  }
+}
