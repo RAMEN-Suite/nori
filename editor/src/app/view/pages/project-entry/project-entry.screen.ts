@@ -4,7 +4,6 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { LucideArrowLeft } from '@lucide/angular';
 import { Button } from '@sushi-kit/angular';
-import { environment } from '../../../../environments/environment';
 import { ApplicationState } from '../../../states/application.state';
 import { WindowState } from '../../../states/window.state';
 import { SettingsButtonComponent } from '../../components/settings-button/settings-button.component';
@@ -34,7 +33,6 @@ export class ProjectEntryScreen implements OnInit {
   private readonly preferences: ApplicationState = inject(ApplicationState);
   private readonly document: Document = inject(DOCUMENT);
 
-  protected readonly environment: typeof environment = environment;
   protected readonly initial: 'create' | 'open' = this.route.snapshot.routeConfig?.path === 'open' ? 'open' : 'create';
   protected readonly expanded: WritableSignal<boolean> = signal(false);
   protected readonly busy: WritableSignal<boolean> = signal(false);

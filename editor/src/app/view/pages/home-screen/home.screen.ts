@@ -36,8 +36,6 @@ export class HomeScreen implements OnInit {
   private readonly storage: StorageService = inject(StorageService);
   private readonly navigation: NavigationService = inject(NavigationService);
 
-  protected readonly environment: typeof environment = environment;
-
   protected readonly importing: WritableSignal<boolean> = signal(false);
   protected readonly importError: WritableSignal<string | null> = signal(null);
 

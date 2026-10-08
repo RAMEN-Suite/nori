@@ -1,3 +1,4 @@
+import { VersionFooterComponent } from './view/components/version-footer/version-footer.component';
 import { Component, DOCUMENT, effect, inject, ChangeDetectionStrategy } from '@angular/core';
 import { DialogHostComponent } from './view/components/dialogs/host/dialog-host.component';
 import { TitleBarComponent } from './view/components/window/title-bar/title-bar.component';
@@ -8,7 +9,7 @@ import { ApplicationState } from './states/application.state';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-root',
-  imports: [DialogHostComponent, TitleBarComponent, RouterOutlet],
+  imports: [DialogHostComponent, TitleBarComponent, RouterOutlet, VersionFooterComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
