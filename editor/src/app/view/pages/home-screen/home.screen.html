@@ -1,16 +1,6 @@
-<main *transloco="let t" class="home-screen relative isolate flex min-h-full flex-col overflow-y-auto">
-  <header class="home-chrome flex justify-end px-5 py-5 sm:px-6" data-nori-motion>
-    <button
-      suiButton
-      severity="neutral"
-      variant="text"
-      size="sm"
-      shape="circle"
-      [attr.aria-label]="t('common.settings')"
-      (click)="handleSettings()"
-    >
-      <svg lucideSettings class="size-5" aria-hidden="true"></svg>
-    </button>
+<main *transloco="let t" class="entry-screen relative isolate flex min-h-full flex-col overflow-y-auto">
+  <header class="entry-chrome flex justify-end px-5 py-5 sm:px-6" data-nori-motion>
+    <app-settings-button />
   </header>
 
   <section
@@ -24,7 +14,7 @@
       </div>
     </div>
 
-    <sui-card class="home-actions mx-auto block w-full max-w-md" data-nori-motion size="lg" variant="border">
+    <sui-card class="entry-card home-actions mx-auto block w-full max-w-md" data-nori-motion size="lg" variant="border">
       <div class="flex flex-col gap-4">
         <div class="flex flex-col gap-4">
           <h2 class="home-action-title">{{ t('home.title') }}</h2>
@@ -40,10 +30,10 @@
           }
         </nav>
         <nav class="flex flex-col gap-3" [attr.aria-label]="t('home.actions')">
-          <button suiButton size="lg" severity="neutral" variant="outlined" routerLink="/open">
+          <button suiButton size="lg" severity="neutral" variant="outlined" routerLink="/open" [disabled]="importing()">
             <svg lucideFolderOpen class="size-4" aria-hidden="true"></svg>{{ t('home.open') }}
           </button>
-          <button suiButton size="lg" routerLink="/start">
+          <button suiButton size="lg" routerLink="/start" [disabled]="importing()">
             <svg lucidePlus class="size-4" aria-hidden="true"></svg>{{ t('home.create') }}
           </button>
           <button suiButton severity="neutral" variant="link" [loading]="importing()" [disabled]="importing()" (click)="modelFile.click()">
@@ -52,13 +42,13 @@
           <input #modelFile type="file" accept=".json,application/json" hidden (change)="handleImport(modelFile)" />
         </nav>
         @if (importError()) {
-          <p suiMessage severity="error">{{ importError() }}</p>
+          <p suiMessage severity="error" role="alert">{{ importError() }}</p>
         }
       </div>
     </sui-card>
   </section>
 
-  <footer data-nori-motion class="home-chrome text-base-content/50 flex justify-center py-4 text-xs tracking-wide">
+  <footer data-nori-motion class="entry-chrome text-base-content/50 flex justify-center py-4 text-xs tracking-wide">
     <span>{{ t('common.version', { version: environment.appVersion }) }}</span>
   </footer>
 </main>

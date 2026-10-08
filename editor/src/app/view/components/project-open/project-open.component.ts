@@ -5,9 +5,9 @@ import {
   DestroyRef,
   inject,
   OnInit,
-  signal,
   input,
   output,
+  signal,
   type InputSignal,
   type OutputEmitterRef,
   type Signal,
@@ -16,8 +16,8 @@ import {
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
-import { Button, Card, Input, List, ListItemTemplate, Message, Tooltip } from '@sushi-kit/angular';
 import { LucideCopy, LucideFolderOpen, LucideSearch, LucideTrash } from '@lucide/angular';
+import { Button, Card, Input, List, ListItemTemplate, Message, Tooltip } from '@sushi-kit/angular';
 import { type Manifest } from '../../../models/Manifest';
 import { DialogService, type DialogRef } from '../../../services/dialog.service';
 import { NavigationService } from '../../../services/navigation.service';
@@ -29,10 +29,9 @@ import { ProjectAlternativeComponent } from '../project-alternative/project-alte
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-project-open',
   imports: [
-    ProjectAlternativeComponent,
     FormsModule,
-    TranslocoDirective,
     DatePipe,
+    TranslocoDirective,
     Button,
     Card,
     Input,
@@ -44,29 +43,31 @@ import { ProjectAlternativeComponent } from '../project-alternative/project-alte
     LucideFolderOpen,
     LucideSearch,
     LucideTrash,
+    ProjectAlternativeComponent,
   ],
   templateUrl: './project-open.component.html',
-  styleUrls: ['../../pages/project-entry.scss', './project-open.component.scss'],
+  styleUrls: ['../../pages/entry-shell.scss', '../../pages/project-entry.scss', './project-open.component.scss'],
 })
 export class ProjectOpenComponent implements OnInit {
   private readonly storage: StorageService = inject(StorageService);
   private readonly navigation: NavigationService = inject(NavigationService);
   private readonly dialogs: DialogService = inject(DialogService);
   private readonly translations: TranslocoService = inject(TranslocoService);
-  private dialogRef: DialogRef | null = null;
 
   public readonly alternativeVisible: InputSignal<boolean> = input(true);
   public readonly disabled: InputSignal<boolean> = input(false);
   public readonly showAlternative: OutputEmitterRef<void> = output();
   public readonly busyChange: OutputEmitterRef<boolean> = output<boolean>();
 
-  protected readonly searchInput: WritableSignal<string> = signal('');
+  private dialogRef: DialogRef | null = null;
+
+  protected readonly query: WritableSignal<string> = signal('');
   protected readonly loading: WritableSignal<boolean> = signal(true);
   protected readonly busy: WritableSignal<boolean> = signal(false);
   protected readonly error: WritableSignal<string | null> = signal(null);
-  protected readonly hasProjects: Signal<boolean> = computed((): boolean => this.storage.manifests().length > 0);
-  protected readonly filteredManifests: Signal<readonly Manifest[]> = computed((): readonly Manifest[] => {
-    const query: string = this.searchInput().trim().toLocaleLowerCase();
+  protected readonly hasSavedProjects: Signal<boolean> = computed((): boolean => this.storage.manifests().length > 0);
+  protected readonly projects: Signal<readonly Manifest[]> = computed((): readonly Manifest[] => {
+    const query: string = this.query().trim().toLocaleLowerCase();
     return this.storage
       .manifests()
       .filter((project: Manifest): boolean => `${project.name} ${project.description}`.toLocaleLowerCase().includes(query));
@@ -83,14 +84,16 @@ export class ProjectOpenComponent implements OnInit {
   }
 
   protected async handleOpenProject(projectId: string): Promise<void> {
-    await this.run((): Promise<void> => this.navigation.navigateToProject(projectId), 'open.openError');
+    await this.runProjectAction((): Promise<void> => this.navigation.navigateToProject(projectId), 'open.openError');
   }
 
   protected async handleDuplicateProject(projectId: string): Promise<void> {
-    await this.run((): Promise<void> => this.storage.duplicateProject(projectId), 'open.duplicateError');
+    await this.runProjectAction((): Promise<void> => this.storage.duplicateProject(projectId), 'open.duplicateError');
   }
 
   protected handleRemoveProject(project: Manifest): void {
+    if (this.busy() || this.disabled()) return;
+
     const options: ConfirmationOptions = {
       title: '',
       message: this.translations.translate('open.removeMessage', { name: project.name }),
@@ -125,8 +128,9 @@ export class ProjectOpenComponent implements OnInit {
     }
   }
 
-  private async run(action: () => Promise<void>, errorKey: string): Promise<void> {
+  private async runProjectAction(action: () => Promise<void>, errorKey: string): Promise<void> {
     if (this.busy() || this.disabled()) return;
+
     this.busy.set(true);
     this.busyChange.emit(true);
     this.error.set(null);

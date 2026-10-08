@@ -1,44 +1,42 @@
-import { Component, inject, OnInit, ChangeDetectionStrategy, signal, type WritableSignal } from '@angular/core';
-import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
-import { WindowState } from '../../../states/window.state';
-import { Button, Card, Message } from '@sushi-kit/angular';
-import { LucideFolderOpen, LucidePlus, LucideSettings, LucideArrowUpRight } from '@lucide/angular';
-import { environment } from '../../../../environments/environment';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal, type WritableSignal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { DialogService } from '../../../services/dialog.service';
-import { StorageService } from '../../../services/storage.service';
-import { NavigationService } from '../../../services/navigation.service';
-import { BrandIllustrationComponent } from '../../components/brand-illustration/brand-illustration.component';
+import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
+import { LucideArrowUpRight, LucideFolderOpen, LucidePlus } from '@lucide/angular';
+import { Button, Card, Message } from '@sushi-kit/angular';
+import { environment } from '../../../../environments/environment';
 import { ExternalLinkDirective } from '../../../directives/external-link.directive';
-import { SettingsDialog } from '../../components/dialogs/settings/settings.dialog';
+import { NavigationService } from '../../../services/navigation.service';
+import { StorageService } from '../../../services/storage.service';
+import { WindowState } from '../../../states/window.state';
+import { BrandIllustrationComponent } from '../../components/brand-illustration/brand-illustration.component';
+import { SettingsButtonComponent } from '../../components/settings-button/settings-button.component';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-home',
   imports: [
+    RouterLink,
     TranslocoDirective,
     Button,
     Card,
     Message,
-    BrandIllustrationComponent,
-    ExternalLinkDirective,
-    RouterLink,
+    LucideArrowUpRight,
     LucideFolderOpen,
     LucidePlus,
-    LucideSettings,
-    LucideArrowUpRight,
+    ExternalLinkDirective,
+    BrandIllustrationComponent,
+    SettingsButtonComponent,
   ],
   templateUrl: './home.screen.html',
-  styleUrls: ['../project-entry.scss', './home.screen.scss'],
+  styleUrls: ['../entry-shell.scss', './home.screen.scss'],
 })
 export class HomeScreen implements OnInit {
-  protected readonly environment: typeof environment = environment;
-
   private readonly windowState: WindowState = inject(WindowState);
   private readonly translations: TranslocoService = inject(TranslocoService);
-  private readonly dialogs: DialogService = inject(DialogService);
   private readonly storage: StorageService = inject(StorageService);
   private readonly navigation: NavigationService = inject(NavigationService);
+
+  protected readonly environment: typeof environment = environment;
 
   protected readonly importing: WritableSignal<boolean> = signal(false);
   protected readonly importError: WritableSignal<string | null> = signal(null);
@@ -51,10 +49,6 @@ export class HomeScreen implements OnInit {
 
   public ngOnInit(): void {
     this.windowState.setTitle('');
-  }
-
-  protected handleSettings(): void {
-    this.dialogs.open(SettingsDialog, { headerKey: 'common.settings' });
   }
 
   protected async handleImport(input: HTMLInputElement): Promise<void> {

@@ -1,19 +1,9 @@
-<main *transloco="let t" class="home-screen relative isolate flex min-h-full flex-col overflow-y-auto">
-  <header class="home-chrome flex items-center justify-between px-5 py-5 sm:px-6">
+<main *transloco="let t" class="entry-screen relative isolate flex min-h-full flex-col overflow-y-auto">
+  <header class="entry-chrome flex items-center justify-between px-5 py-5 sm:px-6">
     <button suiButton severity="neutral" variant="text" size="sm" routerLink="/" [disabled]="busy()">
       <svg lucideArrowLeft class="size-4" aria-hidden="true"></svg>{{ t('create.back') }}
     </button>
-    <button
-      suiButton
-      severity="neutral"
-      variant="text"
-      size="sm"
-      shape="circle"
-      [attr.aria-label]="t('common.settings')"
-      (click)="handleSettings()"
-    >
-      <svg lucideSettings class="size-5" aria-hidden="true"></svg>
-    </button>
+    <app-settings-button />
   </header>
 
   <section
@@ -30,7 +20,7 @@
       <app-project-create
         [alternativeVisible]="!expanded()"
         [disabled]="busy()"
-        (showAlternative)="handleReveal()"
+        (showAlternative)="handleShowAlternative()"
         (busyChange)="busy.set($event)"
       />
     </ng-template>
@@ -38,13 +28,13 @@
       <app-project-open
         [alternativeVisible]="!expanded()"
         [disabled]="busy()"
-        (showAlternative)="handleReveal()"
+        (showAlternative)="handleShowAlternative()"
         (busyChange)="busy.set($event)"
       />
     </ng-template>
   </section>
 
-  <footer class="home-chrome text-base-content/50 flex justify-center py-4 text-xs tracking-wide">
+  <footer class="entry-chrome text-base-content/50 flex justify-center py-4 text-xs tracking-wide">
     <span>{{ t('common.version', { version: environment.appVersion }) }}</span>
   </footer>
 </main>

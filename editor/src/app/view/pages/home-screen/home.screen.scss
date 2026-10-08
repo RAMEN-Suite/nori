@@ -1,3 +1,19 @@
+.home-title {
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 8vw, 6rem);
+  font-weight: 400;
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+
+.home-action-title {
+  font-size: clamp(1.75rem, 3.2vw, 2.75rem);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
 .home-heading {
   animation: content-arrive 650ms 120ms ease-out both;
 }
@@ -6,7 +22,7 @@
   animation: content-arrive 650ms 260ms ease-out both;
 }
 
-.home-chrome {
+.entry-chrome {
   animation: content-arrive 650ms 380ms ease-out both;
 }
 

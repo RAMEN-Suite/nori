@@ -1,0 +1,26 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+:host(app-home),
+:host(app-project-entry) {
+  height: calc(100dvh - var(--title-bar-height));
+}
+
+.entry-screen {
+  --radius-box: var(--nori-radius);
+  --radius-field: var(--nori-radius);
+  --radius-selector: var(--nori-radius);
+  height: 100%;
+  background: var(--color-base-100);
+}
+
+.entry-card {
+  --sui-card-border-color: var(--nori-border);
+  background: var(--nori-surface-raised);
+}
+
+.entry-chrome {
+  flex-shrink: 0;
+}

@@ -2,13 +2,12 @@ import { ChangeDetectionStrategy, Component, DOCUMENT, inject, OnInit, signal, t
 import { NgTemplateOutlet } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
+import { LucideArrowLeft } from '@lucide/angular';
 import { Button } from '@sushi-kit/angular';
-import { LucideArrowLeft, LucideSettings } from '@lucide/angular';
 import { environment } from '../../../../environments/environment';
 import { ApplicationState } from '../../../states/application.state';
 import { WindowState } from '../../../states/window.state';
-import { DialogService } from '../../../services/dialog.service';
-import { SettingsDialog } from '../../components/dialogs/settings/settings.dialog';
+import { SettingsButtonComponent } from '../../components/settings-button/settings-button.component';
 import { ProjectCreateComponent } from '../../components/project-create/project-create.component';
 import { ProjectOpenComponent } from '../../components/project-open/project-open.component';
 
@@ -22,17 +21,16 @@ import { ProjectOpenComponent } from '../../components/project-open/project-open
     TranslocoDirective,
     Button,
     LucideArrowLeft,
-    LucideSettings,
+    SettingsButtonComponent,
     ProjectCreateComponent,
     ProjectOpenComponent,
   ],
   templateUrl: './project-entry.screen.html',
-  styleUrls: ['../project-entry.scss', './project-entry.screen.scss'],
+  styleUrls: ['../entry-shell.scss', './project-entry.screen.scss'],
 })
 export class ProjectEntryScreen implements OnInit {
   private readonly route: ActivatedRoute = inject(ActivatedRoute);
-  private readonly windows: WindowState = inject(WindowState);
-  private readonly dialogs: DialogService = inject(DialogService);
+  private readonly windowState: WindowState = inject(WindowState);
   private readonly preferences: ApplicationState = inject(ApplicationState);
   private readonly document: Document = inject(DOCUMENT);
 
@@ -42,17 +40,13 @@ export class ProjectEntryScreen implements OnInit {
   protected readonly busy: WritableSignal<boolean> = signal(false);
 
   public ngOnInit(): void {
-    this.windows.setTitleKey(
+    this.windowState.setTitleKey(
       this.initial === 'create' ? 'create.windowTitle' : 'open.title',
       this.initial === 'create' ? 'folder-plus' : 'folder-open',
     );
   }
 
-  protected handleSettings(): void {
-    this.dialogs.open(SettingsDialog, { headerKey: 'common.settings' });
-  }
-
-  protected handleReveal(): void {
+  protected handleShowAlternative(): void {
     if (this.expanded() || this.busy()) return;
     if (!this.preferences.state().animations || !('startViewTransition' in this.document)) {
       this.expanded.set(true);

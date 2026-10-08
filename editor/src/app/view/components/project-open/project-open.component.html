@@ -1,8 +1,8 @@
-<sui-card *transloco="let t" class="home-actions open-card block w-full" size="lg" variant="border">
+<sui-card *transloco="let t" class="entry-card open-card block w-full" size="lg" variant="border">
   <div class="project-content flex flex-col gap-5">
     <div class="project-heading flex flex-col gap-3">
       <div class="flex flex-wrap items-center justify-between gap-3">
-        <h1 id="open-title" class="home-action-title">{{ t('open.title') }}</h1>
+        <h1 id="open-title" class="project-title">{{ t('open.title') }}</h1>
         <span [class.invisible]="!alternativeVisible()" [attr.inert]="alternativeVisible() ? null : ''">
           <app-project-alternative
             current="open"
@@ -23,8 +23,8 @@
         [fluid]="true"
         [disabled]="busy() || disabled()"
         [placeholder]="t('open.searchPlaceholder')"
-        [ngModel]="searchInput()"
-        (ngModelChange)="searchInput.set($event)"
+        [ngModel]="query()"
+        (ngModelChange)="query.set($event)"
       />
     </label>
     @if (error(); as message) {
@@ -32,11 +32,11 @@
     }
     @if (loading()) {
       <p class="text-base-content/60 py-8 text-center" role="status">{{ t('open.loading') }}</p>
-    } @else if (filteredManifests().length) {
+    } @else if (projects().length) {
       <sui-list
         class="project-list min-h-0 flex-1 overflow-y-auto"
         size="xs"
-        [items]="filteredManifests()"
+        [items]="projects()"
         [trackBy]="trackProject"
         [ariaLabel]="t('open.projects')"
         [dividers]="true"
@@ -104,8 +104,8 @@
     } @else {
       <div class="flex flex-col items-center gap-3 py-8 text-center" role="status">
         <svg lucideSearch class="text-base-content/35 size-8" aria-hidden="true"></svg>
-        <p class="font-medium">{{ t(hasProjects() ? 'open.noMatches' : 'open.empty') }}</p>
-        <p class="text-base-content/60 text-sm">{{ t(hasProjects() ? 'open.noMatchesHint' : 'open.emptyHint') }}</p>
+        <p class="font-medium">{{ t(hasSavedProjects() ? 'open.noMatches' : 'open.empty') }}</p>
+        <p class="text-base-content/60 text-sm">{{ t(hasSavedProjects() ? 'open.noMatchesHint' : 'open.emptyHint') }}</p>
       </div>
     }
   </div>

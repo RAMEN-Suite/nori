@@ -1,0 +1,13 @@
+<button
+  *transloco="let t"
+  suiButton
+  type="button"
+  severity="neutral"
+  variant="text"
+  size="sm"
+  shape="circle"
+  [attr.aria-label]="t('common.settings')"
+  (click)="handleOpen()"
+>
+  <svg lucideSettings class="size-5" aria-hidden="true"></svg>
+</button>

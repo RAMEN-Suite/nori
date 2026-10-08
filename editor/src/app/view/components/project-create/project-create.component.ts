@@ -1,107 +1,86 @@
 import {
+  ChangeDetectionStrategy,
   Component,
   inject,
-  ChangeDetectionStrategy,
-  signal,
   input,
   output,
+  signal,
   type InputSignal,
   type OutputEmitterRef,
   type WritableSignal,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { Input, Textarea, Button, Checkbox, Message, Card } from '@sushi-kit/angular';
-
+import { FormsModule, type NgForm } from '@angular/forms';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { LucidePlus } from '@lucide/angular';
-
-import { CATALOG, EXAMPLES } from '../../../../data/CATALOG';
+import { type Model } from '@ramen-suite/core/model';
 import { RAMEN_MODEL } from '@ramen-suite/core/ramen';
-import { Model } from '@ramen-suite/core/model';
-import { CreateManifest, StorageService } from '../../../services/storage.service';
-import { Manifest } from '../../../models/Manifest';
+import { Button, Card, Checkbox, Input, Message, Textarea } from '@sushi-kit/angular';
+import { createCorrespondenceModel } from '../../../../data/correspondence';
+import { type Manifest } from '../../../models/Manifest';
 import { NavigationService } from '../../../services/navigation.service';
+import { StorageService, type CreateManifest } from '../../../services/storage.service';
 import { ProjectAlternativeComponent } from '../project-alternative/project-alternative.component';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-project-create',
   imports: [
-    ProjectAlternativeComponent,
     FormsModule,
-    Input,
-    Textarea,
-    Button,
-    Checkbox,
-    Message,
-    Card,
     TranslocoDirective,
+    Button,
+    Card,
+    Checkbox,
+    Input,
+    Message,
+    Textarea,
     LucidePlus,
+    ProjectAlternativeComponent,
   ],
   templateUrl: './project-create.component.html',
-  styleUrl: '../../pages/project-entry.scss',
+  styleUrls: ['../../pages/entry-shell.scss', '../../pages/project-entry.scss'],
 })
 export class ProjectCreateComponent {
   private readonly translations: TranslocoService = inject(TranslocoService);
-
-  protected readonly storage: StorageService = inject(StorageService);
-  protected readonly navigation: NavigationService = inject(NavigationService);
+  private readonly storage: StorageService = inject(StorageService);
+  private readonly navigation: NavigationService = inject(NavigationService);
 
   public readonly alternativeVisible: InputSignal<boolean> = input(true);
   public readonly disabled: InputSignal<boolean> = input(false);
   public readonly showAlternative: OutputEmitterRef<void> = output();
   public readonly busyChange: OutputEmitterRef<boolean> = output<boolean>();
 
-  protected readonly manifest: CreateManifest = {
-    name: '',
-    description: '',
-    metamodelName: '',
-    metamodelId: '',
-    metamodelVersion: '',
-  };
-  protected readonly metamodels: readonly Model[] = CATALOG;
-  protected selectedMetamodel: Model = RAMEN_MODEL;
-  protected readonly pending: WritableSignal<boolean> = signal(false);
+  protected readonly draft: Pick<CreateManifest, 'name' | 'description'> = { name: '', description: '' };
+  protected readonly busy: WritableSignal<boolean> = signal(false);
   protected readonly error: WritableSignal<string | null> = signal(null);
+  protected useExample: boolean = false;
 
-  protected isCreatingExample: boolean = false;
-
-  protected isProjectNameValid(): boolean {
-    return this.manifest.name.trim().length >= 3;
+  protected isNameValid(): boolean {
+    return this.draft.name.trim().length >= 3;
   }
 
-  protected isMetamodelValid(): boolean {
-    const model: Model = this.selectedMetamodel;
-    return this.metamodels.some((m: Model): boolean => m.id === model.id && m.version === model.version);
-  }
+  protected async handleCreateProject(form: NgForm): Promise<void> {
+    if (form.invalid || !this.isNameValid() || this.busy() || this.disabled()) return;
 
-  protected isFormValid(): boolean {
-    return this.isProjectNameValid() && this.isMetamodelValid();
-  }
+    const input: CreateManifest = {
+      name: this.draft.name.trim(),
+      description: this.draft.description.trim(),
+      metamodelName: RAMEN_MODEL.name,
+      metamodelId: RAMEN_MODEL.id,
+      metamodelVersion: RAMEN_MODEL.version,
+    };
+    const example: Model | undefined = this.useExample ? createCorrespondenceModel() : undefined;
 
-  protected async handleCreateProject(): Promise<void> {
-    if (!this.isFormValid() || this.pending() || this.disabled()) return;
-
-    this.manifest.name = this.manifest.name.trim();
-    this.manifest.description = this.manifest.description.trim();
-
-    const { id, version, name } = this.selectedMetamodel;
-    this.manifest.metamodelId = id;
-    this.manifest.metamodelVersion = version;
-    this.manifest.metamodelName = name;
-
-    const example: Model | undefined = this.isCreatingExample ? EXAMPLES.at(0) : undefined;
-
-    this.pending.set(true);
+    this.busy.set(true);
     this.busyChange.emit(true);
     this.error.set(null);
+
     try {
-      const manifest: Manifest = await this.storage.createProject(this.manifest, this.selectedMetamodel, example);
+      const manifest: Manifest = await this.storage.createProject(input, RAMEN_MODEL, example);
       await this.navigation.navigateToProject(manifest.projectId);
     } catch {
       this.error.set(this.translations.translate('create.error'));
     } finally {
-      this.pending.set(false);
+      this.busy.set(false);
       this.busyChange.emit(false);
     }
   }
