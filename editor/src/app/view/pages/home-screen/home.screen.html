@@ -1,6 +1,14 @@
-<main class="home-screen relative isolate flex min-h-full flex-col overflow-y-auto">
+<main *transloco="let t" class="home-screen relative isolate flex min-h-full flex-col overflow-y-auto">
   <header class="home-chrome flex justify-end px-5 py-5 sm:px-6" data-nori-motion>
-    <button suiButton severity="neutral" variant="text" size="sm" shape="circle" aria-label="Settings" (click)="handleSettings()">
+    <button
+      suiButton
+      severity="neutral"
+      variant="text"
+      size="sm"
+      shape="circle"
+      [attr.aria-label]="t('common.settings')"
+      (click)="handleSettings()"
+    >
       <svg lucideSettings class="size-5" aria-hidden="true"></svg>
     </button>
   </header>
@@ -19,25 +27,27 @@
     <sui-card class="home-actions mx-auto block w-full max-w-md" data-nori-motion size="lg" variant="border">
       <div class="flex flex-col gap-4">
         <div class="flex flex-col gap-4">
-          <h2 class="home-action-title">Modelling Data</h2>
+          <h2 class="home-action-title">{{ t('home.title') }}</h2>
           <p class="text-base-content/65 leading-relaxed">
-            Turn people, places and sources into a connected model for your digital edition.
+            {{ t('home.description') }}
           </p>
         </div>
-        <nav class="flex flex-wrap gap-2" aria-label="Explore RAMEN">
+        <nav class="flex flex-wrap gap-2" [attr.aria-label]="t('home.resources')">
           @for (resource of resources; track resource.url) {
             <a suiButton severity="neutral" variant="soft" size="xs" [appExternalLink]="resource.url">
               {{ resource.label }}<svg lucideArrowUpRight class="size-3" aria-hidden="true"></svg>
             </a>
           }
         </nav>
-        <nav class="flex flex-col gap-3" aria-label="Project actions">
+        <nav class="flex flex-col gap-3" [attr.aria-label]="t('home.actions')">
           <button suiButton size="lg" severity="neutral" variant="outlined" routerLink="/open">
-            <svg lucideFolderOpen class="size-4" aria-hidden="true"></svg>Open project
+            <svg lucideFolderOpen class="size-4" aria-hidden="true"></svg>{{ t('home.open') }}
           </button>
-          <button suiButton size="lg" routerLink="/start"><svg lucidePlus class="size-4" aria-hidden="true"></svg>Create project</button>
+          <button suiButton size="lg" routerLink="/start">
+            <svg lucidePlus class="size-4" aria-hidden="true"></svg>{{ t('home.create') }}
+          </button>
           <button suiButton severity="neutral" variant="link" [loading]="importing()" [disabled]="importing()" (click)="modelFile.click()">
-            Import model
+            {{ t('home.import') }}
           </button>
           <input #modelFile type="file" accept=".json,application/json" hidden (change)="handleImport(modelFile)" />
         </nav>
@@ -49,6 +59,6 @@
   </section>
 
   <footer data-nori-motion class="home-chrome text-base-content/50 flex justify-center py-4 text-xs tracking-wide">
-    <span>Version {{ environment.appVersion }}</span>
+    <span>{{ t('common.version', { version: environment.appVersion }) }}</span>
   </footer>
 </main>

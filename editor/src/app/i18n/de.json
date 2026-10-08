@@ -1,0 +1,47 @@
+{
+  "common": {
+    "settings": "Einstellungen",
+    "confirm": "Aktion bestätigen",
+    "version": "Version {{version}}",
+    "minimise": "Minimieren",
+    "maximise": "Maximieren",
+    "close": "Schließen"
+  },
+  "home": {
+    "windowTitle": "Daten modellieren mit Nori",
+    "title": "Daten modellieren",
+    "description": "Verbinde Personen, Orte und Quellen zu einem Modell für deine digitale Edition.",
+    "resources": "RAMEN entdecken",
+    "actions": "Projektaktionen",
+    "open": "Projekt öffnen",
+    "create": "Projekt erstellen",
+    "import": "Modell importieren",
+    "importError": "Das Modell konnte nicht importiert werden."
+  },
+  "settings": {
+    "theme": "Darstellung",
+    "behaviour": "Verhalten",
+    "animations": "Animationen",
+    "animationsDescription": "Noris Oberfläche animieren.",
+    "language": "Sprache",
+    "themeOptions": {
+      "system": {
+        "name": "System",
+        "description": "Der Darstellung deines Geräts folgen."
+      },
+      "light": {
+        "name": "Hell",
+        "description": "Helle Flächen, dezente Details."
+      },
+      "dark": {
+        "name": "Dunkel",
+        "description": "Gedämpfte Flächen für ruhiges Arbeiten."
+      }
+    },
+    "languageOptions": {
+      "system": "System",
+      "de": "Deutsch",
+      "en": "English"
+    }
+  }
+}

@@ -2,6 +2,7 @@ import { Injectable, signal, type Type, type WritableSignal } from '@angular/cor
 
 export interface DialogOptions {
   readonly header?: string;
+  readonly headerKey?: string;
   readonly inputValues?: Record<string, unknown>;
 }
 
@@ -12,6 +13,7 @@ export interface DialogRef {
 export interface OpenDialog {
   readonly component: Type<unknown>;
   readonly title: string;
+  readonly titleKey: string | null;
   readonly inputs: Record<string, unknown>;
 }
 
@@ -24,7 +26,12 @@ export class DialogService {
 
   public open(component: Type<unknown>, options: DialogOptions = {}): DialogRef {
     this.error.set(null);
-    const dialog: OpenDialog = { component, title: options.header ?? '', inputs: options.inputValues ?? {} };
+    const dialog: OpenDialog = {
+      component,
+      title: options.header ?? '',
+      titleKey: options.headerKey ?? null,
+      inputs: options.inputValues ?? {},
+    };
     this.current.set(dialog);
     return {
       close: (): void => {

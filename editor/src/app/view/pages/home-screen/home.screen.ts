@@ -1,4 +1,5 @@
 import { Component, inject, OnInit, ChangeDetectionStrategy, signal, type WritableSignal } from '@angular/core';
+import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { WindowState } from '../../../states/window.state';
 import { Button, Card, Message } from '@sushi-kit/angular';
 import { LucideFolderOpen, LucidePlus, LucideSettings, LucideArrowUpRight } from '@lucide/angular';
@@ -15,6 +16,7 @@ import { SettingsDialog } from '../../components/dialogs/settings/settings.dialo
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-home',
   imports: [
+    TranslocoDirective,
     Button,
     Card,
     Message,
@@ -33,6 +35,7 @@ export class HomeScreen implements OnInit {
   protected readonly environment: typeof environment = environment;
 
   private readonly windowState: WindowState = inject(WindowState);
+  private readonly translations: TranslocoService = inject(TranslocoService);
   private readonly dialogs: DialogService = inject(DialogService);
   private readonly storage: StorageService = inject(StorageService);
   private readonly navigation: NavigationService = inject(NavigationService);
@@ -51,7 +54,7 @@ export class HomeScreen implements OnInit {
   }
 
   protected handleSettings(): void {
-    this.dialogs.open(SettingsDialog, { header: 'Settings' });
+    this.dialogs.open(SettingsDialog, { headerKey: 'common.settings' });
   }
 
   protected async handleImport(input: HTMLInputElement): Promise<void> {
@@ -66,8 +69,8 @@ export class HomeScreen implements OnInit {
       const contents: unknown = JSON.parse(await file.text());
       const projectId: string = await this.storage.importRecord(contents);
       await this.navigation.navigateToProject(projectId);
-    } catch (error: unknown) {
-      this.importError.set(error instanceof Error ? error.message : 'The model could not be imported.');
+    } catch {
+      this.importError.set(this.translations.translate('home.importError'));
     } finally {
       this.importing.set(false);
     }

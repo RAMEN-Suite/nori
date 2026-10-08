@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { TranslocoPipe } from '@jsverse/transloco';
 import { NgComponentOutlet } from '@angular/common';
 import { Dialog, DialogHeader, DialogBody, Message } from '@sushi-kit/angular';
 import { DialogService } from '../../../../services/dialog.service';
@@ -7,19 +8,19 @@ import { DialogService } from '../../../../services/dialog.service';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-dialog-host',
-  imports: [NgComponentOutlet, Dialog, DialogHeader, DialogBody, Message],
+  imports: [TranslocoPipe, NgComponentOutlet, Dialog, DialogHeader, DialogBody, Message],
   template: `
     <sui-dialog
       #dialog="suiDialog"
       style="--sui-dialog-width: var(--nori-dialog-width); --sui-dialog-radius: var(--nori-radius)"
       [open]="dialogs.current() !== null"
-      [ariaLabel]="dialogs.current()?.title || 'Confirm action'"
+      [ariaLabel]="dialogs.current()?.title || (dialogs.current()?.titleKey || 'common.confirm' | transloco)"
       [closeOnEscape]="!dialogs.pending()"
       [closeOnBackdrop]="false"
       (closed)="handleClosed(dialog)"
     >
-      @if (dialogs.current()?.title; as title) {
-        <header suiDialogHeader>{{ title }}</header>
+      @if (dialogs.current(); as current) {
+        <header suiDialogHeader>{{ current.titleKey ? (current.titleKey | transloco) : current.title }}</header>
       }
       <div suiDialogBody>
         @if (dialogs.current(); as current) {

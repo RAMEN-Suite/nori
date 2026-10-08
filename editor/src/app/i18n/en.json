@@ -1,0 +1,47 @@
+{
+  "common": {
+    "settings": "Settings",
+    "confirm": "Confirm action",
+    "version": "Version {{version}}",
+    "minimise": "Minimise",
+    "maximise": "Maximise",
+    "close": "Close"
+  },
+  "home": {
+    "windowTitle": "Modelling Data with Nori",
+    "title": "Modelling Data",
+    "description": "Turn people, places and sources into a connected model for your digital edition.",
+    "resources": "Explore RAMEN",
+    "actions": "Project actions",
+    "open": "Open project",
+    "create": "Create project",
+    "import": "Import model",
+    "importError": "The model could not be imported."
+  },
+  "settings": {
+    "theme": "Theme",
+    "behaviour": "Behaviour",
+    "animations": "Animations",
+    "animationsDescription": "Animate Nori’s interface.",
+    "language": "Language",
+    "themeOptions": {
+      "system": {
+        "name": "System",
+        "description": "Follow your device’s appearance."
+      },
+      "light": {
+        "name": "Light",
+        "description": "Bright surfaces, quiet details."
+      },
+      "dark": {
+        "name": "Dark",
+        "description": "Muted surfaces for a softer workspace."
+      }
+    },
+    "languageOptions": {
+      "system": "System",
+      "de": "Deutsch",
+      "en": "English"
+    }
+  }
+}

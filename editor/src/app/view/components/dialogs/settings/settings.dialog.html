@@ -1,10 +1,10 @@
-<div class="flex min-w-0 flex-col gap-6">
+<div *transloco="let t" class="flex min-w-0 flex-col gap-6">
   <fieldset class="flex min-w-0 flex-col gap-3">
     <legend class="mb-3 flex items-center gap-2 text-sm font-medium">
-      <svg lucidePalette class="size-4 opacity-60" aria-hidden="true"></svg>Theme
+      <svg lucidePalette class="size-4 opacity-60" aria-hidden="true"></svg>{{ t('settings.theme') }}
     </legend>
     <sui-card size="xs" variant="border">
-      <sui-list size="xs" [items]="themes" ariaLabel="Theme" [dividers]="true" [rowHover]="true">
+      <sui-list size="xs" [items]="themes" [ariaLabel]="t('settings.theme')" [dividers]="true" [rowHover]="true">
         <ng-template suiListItem let-theme>
           <label class="settings-row">
             <span
@@ -16,8 +16,10 @@
               <span class="settings-swatch-content"><span></span><span></span><span></span></span>
             </span>
             <span class="flex min-w-0 flex-1 flex-col gap-0">
-              <span class="text-sm leading-snug font-medium">{{ theme.name }}</span>
-              <span class="text-xs leading-snug text-(--color-base-content)/65">{{ theme.description }}</span>
+              <span class="text-sm leading-snug font-medium">{{ t('settings.themeOptions.' + theme.id + '.name') }}</span>
+              <span class="text-xs leading-snug text-(--color-base-content)/65">{{
+                t('settings.themeOptions.' + theme.id + '.description')
+              }}</span>
             </span>
             <span class="settings-control">
               <input
@@ -26,7 +28,7 @@
                 name="theme"
                 severity="neutral"
                 [value]="theme.id"
-                [attr.aria-label]="theme.name"
+                [attr.aria-label]="t('settings.themeOptions.' + theme.id + '.name')"
                 [checked]="appState.state().theme === theme.id"
                 (change)="appState.setTheme(theme.id)"
               />
@@ -37,27 +39,44 @@
     </sui-card>
   </fieldset>
 
+  <section class="flex min-w-0 flex-col gap-3" aria-labelledby="settings-language">
+    <h3 id="settings-language" class="flex items-center gap-2 text-sm font-medium">
+      <svg lucideLanguages class="size-4 opacity-60" aria-hidden="true"></svg>{{ t('settings.language') }}
+    </h3>
+    <sui-select
+      ariaLabelledby="settings-language"
+      [fluid]="true"
+      [options]="[
+        { value: 'system', label: t('settings.languageOptions.system') },
+        { value: 'de', label: t('settings.languageOptions.de') },
+        { value: 'en', label: t('settings.languageOptions.en') },
+      ]"
+      [value]="appState.state().language"
+      (valueChange)="handleLanguage($event)"
+    />
+  </section>
+
   <section class="flex flex-col gap-3" aria-labelledby="settings-behaviour">
     <h3 id="settings-behaviour" class="flex items-center gap-2 text-sm font-medium">
-      <svg lucideSlidersHorizontal class="size-4 opacity-60" aria-hidden="true"></svg>Behaviour
+      <svg lucideSlidersHorizontal class="size-4 opacity-60" aria-hidden="true"></svg>{{ t('settings.behaviour') }}
     </h3>
     <sui-card size="xs" variant="border">
-      <sui-list size="xs" [items]="animationSettings" ariaLabel="Behaviour settings" [dividers]="true" [rowHover]="true">
+      <sui-list size="xs" [items]="animationSettings" [ariaLabel]="t('settings.behaviour')" [dividers]="true" [rowHover]="true">
         <ng-template suiListItem>
           <label class="settings-row">
             <span class="settings-visual" aria-hidden="true">
               <svg lucidePlay class="size-5 opacity-60"></svg>
             </span>
             <span class="flex min-w-0 flex-1 flex-col gap-0">
-              <span class="text-sm leading-snug font-medium">Animations</span>
-              <span class="text-xs leading-snug text-(--color-base-content)/65">Animate Nori’s interface.</span>
+              <span class="text-sm leading-snug font-medium">{{ t('settings.animations') }}</span>
+              <span class="text-xs leading-snug text-(--color-base-content)/65">{{ t('settings.animationsDescription') }}</span>
             </span>
             <span class="settings-control">
               <input
                 suiToggle
                 type="checkbox"
                 severity="neutral"
-                aria-label="Animations"
+                [attr.aria-label]="t('settings.animations')"
                 [checked]="appState.state().animations"
                 (change)="appState.setAnimations($event.target.checked)"
               />

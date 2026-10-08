@@ -6,9 +6,11 @@
   </div>
   @if (hasControls) {
     <div class="window-buttons flex justify-end gap-1">
-      <button suiButton size="xs" variant="text" (click)="electron.minimizeApplication()">Minimise</button>
-      <button suiButton size="xs" variant="text" (click)="electron.maximizeApplication()">Maximise</button>
-      <button suiButton size="xs" variant="text" severity="error" (click)="electron.closeApplication()">Close</button>
+      <button suiButton size="xs" variant="text" (click)="electron.minimizeApplication()">{{ 'common.minimise' | transloco }}</button>
+      <button suiButton size="xs" variant="text" (click)="electron.maximizeApplication()">{{ 'common.maximise' | transloco }}</button>
+      <button suiButton size="xs" variant="text" severity="error" (click)="electron.closeApplication()">
+        {{ 'common.close' | transloco }}
+      </button>
     </div>
   }
 </header>
