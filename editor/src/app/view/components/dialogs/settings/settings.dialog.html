@@ -1,4 +1,21 @@
 <div *transloco="let t" class="flex min-w-0 flex-col gap-6">
+  <section class="flex min-w-0 flex-col gap-3" aria-labelledby="settings-language">
+    <h3 id="settings-language" class="flex items-center gap-2 text-sm font-medium">
+      <svg lucideLanguages class="size-4 opacity-60" aria-hidden="true"></svg>{{ t('settings.language') }}
+    </h3>
+    <sui-select
+      ariaLabelledby="settings-language"
+      [fluid]="true"
+      [options]="[
+        { value: 'system', label: t('settings.languageOptions.system') },
+        { value: 'de', label: t('settings.languageOptions.de') },
+        { value: 'en', label: t('settings.languageOptions.en') },
+      ]"
+      [value]="appState.state().language"
+      (valueChange)="handleLanguage($event)"
+    />
+  </section>
+
   <fieldset class="flex min-w-0 flex-col gap-3">
     <legend class="mb-3 flex items-center gap-2 text-sm font-medium">
       <svg lucidePalette class="size-4 opacity-60" aria-hidden="true"></svg>{{ t('settings.theme') }}
@@ -38,23 +55,6 @@
       </sui-list>
     </sui-card>
   </fieldset>
-
-  <section class="flex min-w-0 flex-col gap-3" aria-labelledby="settings-language">
-    <h3 id="settings-language" class="flex items-center gap-2 text-sm font-medium">
-      <svg lucideLanguages class="size-4 opacity-60" aria-hidden="true"></svg>{{ t('settings.language') }}
-    </h3>
-    <sui-select
-      ariaLabelledby="settings-language"
-      [fluid]="true"
-      [options]="[
-        { value: 'system', label: t('settings.languageOptions.system') },
-        { value: 'de', label: t('settings.languageOptions.de') },
-        { value: 'en', label: t('settings.languageOptions.en') },
-      ]"
-      [value]="appState.state().language"
-      (valueChange)="handleLanguage($event)"
-    />
-  </section>
 
   <section class="flex flex-col gap-3" aria-labelledby="settings-behaviour">
     <h3 id="settings-behaviour" class="flex items-center gap-2 text-sm font-medium">

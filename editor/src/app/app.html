@@ -1,5 +1,5 @@
 @if (isElectronRuntime) {
-  <app-title-bar />
+  <app-title-bar [style.visibility]="dialogs.current() ? 'hidden' : null" />
 }
 <router-outlet />
 

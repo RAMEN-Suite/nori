@@ -2,13 +2,22 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { NgComponentOutlet } from '@angular/common';
 import { Dialog, DialogHeader, DialogBody, Message } from '@sushi-kit/angular';
+import { TitleBarComponent } from '../../window/title-bar/title-bar.component';
 import { DialogService } from '../../../../services/dialog.service';
 
 /** Hosts reusable Nori forms inside Sushi's accessible dialog. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-dialog-host',
-  imports: [TranslocoPipe, NgComponentOutlet, Dialog, DialogHeader, DialogBody, Message],
+  imports: [TranslocoPipe, NgComponentOutlet, Dialog, DialogHeader, DialogBody, Message, TitleBarComponent],
+  styles: `
+    .dialog-window-chrome {
+      position: fixed;
+      inset: 0 0 auto;
+      height: var(--title-bar-height);
+      z-index: 1;
+    }
+  `,
   template: `
     <sui-dialog
       #dialog="suiDialog"
@@ -19,6 +28,9 @@ import { DialogService } from '../../../../services/dialog.service';
       [closeOnBackdrop]="false"
       (closed)="handleClosed(dialog)"
     >
+      @if (isElectronRuntime && dialogs.current()) {
+        <app-title-bar class="dialog-window-chrome" />
+      }
       @if (dialogs.current(); as current) {
         <header suiDialogHeader>{{ current.titleKey ? (current.titleKey | transloco) : current.title }}</header>
       }
@@ -34,6 +46,8 @@ import { DialogService } from '../../../../services/dialog.service';
   `,
 })
 export class DialogHostComponent {
+  // Native modal dialogs own the top layer; window chrome must be inside it.
+  protected readonly isElectronRuntime: boolean = !!window.electron;
   protected readonly dialogs: DialogService = inject(DialogService);
 
   protected handleClosed(dialog: Dialog): void {

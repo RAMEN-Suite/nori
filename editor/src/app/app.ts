@@ -2,6 +2,7 @@ import { Component, DOCUMENT, effect, inject, ChangeDetectionStrategy } from '@a
 import { DialogHostComponent } from './view/components/dialogs/host/dialog-host.component';
 import { TitleBarComponent } from './view/components/window/title-bar/title-bar.component';
 import { RouterOutlet } from '@angular/router';
+import { DialogService } from './services/dialog.service';
 import { StorageService } from './services/storage.service';
 import { ApplicationState } from './states/application.state';
 
@@ -13,6 +14,7 @@ import { ApplicationState } from './states/application.state';
   styleUrl: './app.scss',
 })
 export class App {
+  protected readonly dialogs: DialogService = inject(DialogService);
   protected readonly storage: StorageService = inject(StorageService);
   private readonly editorState: ApplicationState = inject(ApplicationState);
   private readonly document: Document = inject(DOCUMENT);
