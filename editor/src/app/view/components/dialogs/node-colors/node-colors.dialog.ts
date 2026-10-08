@@ -1,4 +1,5 @@
 import { Component, computed, inject, signal, type Signal, type WritableSignal, ChangeDetectionStrategy } from '@angular/core';
+import { TranslocoDirective } from '@jsverse/transloco';
 import { ColorPicker, Button } from '@sushi-kit/angular';
 import { type Node } from '@ramen-suite/core/model';
 import { DialogService } from '../../../../services/dialog.service';
@@ -9,7 +10,7 @@ import iwanthue from 'iwanthue';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-set-colors',
-  imports: [ColorPicker, Button],
+  imports: [ColorPicker, Button, TranslocoDirective],
   templateUrl: './node-colors.dialog.html',
   styleUrl: './node-colors.dialog.scss',
 })
@@ -17,7 +18,9 @@ export class NodeColorsDialog {
   protected readonly dialogRef: DialogService = inject(DialogService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   protected readonly colours: WritableSignal<NodeColors> = signal(structuredClone(this.workspace.store.currentNodeColors()));
-  protected readonly nodeColorOptions: Signal<readonly Node[]> = computed((): readonly Node[] => this.workspace.view.baseNodes());
+  protected readonly nodeColorOptions: Signal<readonly Node[]> = computed((): readonly Node[] =>
+    this.workspace.view.baseModel() ? this.workspace.view.baseNodes() : this.workspace.view.currentNodes(),
+  );
 
   protected handleGenerateColors(): void {
     const nodes: readonly Node[] = this.nodeColorOptions();

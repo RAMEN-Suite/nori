@@ -1,6 +1,8 @@
 import {
   AfterViewInit,
   Component,
+  output,
+  type OutputEmitterRef,
   DestroyRef,
   effect,
   ElementRef,
@@ -15,6 +17,9 @@ import {
   ChangeDetectionStrategy,
   ViewEncapsulation,
 } from '@angular/core';
+import { ApplicationState } from '../../../../states/application.state';
+import { TranslocoService } from '@jsverse/transloco';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import * as d3 from 'd3';
 import { ZoomTransform } from 'd3';
 import { GraphData } from '../../../../core/utils/ModelGraph';
@@ -35,20 +40,15 @@ import {
   ViewportSize,
 } from './graph.types';
 
-import { buildRenderModel, getViewportSize } from './graph.layout';
+import { buildRenderModel, getViewportSize, setNodePosition } from './graph.layout';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
+import { getLinkPath } from './graph.geometry';
+import { positionLinkLabels } from './graph.labels';
 import { ModelRef } from '@ramen-suite/core/model';
 import { StorageService } from '../../../../services/storage.service';
-import { type ModelRecord, NodeColors } from '../../../../models/ModelRecord';
+import { type ModelRecord, type GraphView, NodeColors } from '../../../../models/ModelRecord';
 
 import { NavigationService } from '../../../../services/navigation.service';
-
-interface LineEnds {
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
-}
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -59,6 +59,8 @@ interface LineEnds {
   styleUrl: './graph.component.scss',
 })
 export class GraphComponent implements AfterViewInit {
+  private readonly appearance: ApplicationState = inject(ApplicationState);
+  private readonly translations: TranslocoService = inject(TranslocoService);
   private readonly storage: StorageService = inject(StorageService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   protected readonly destroyRef: DestroyRef = inject(DestroyRef);
@@ -88,9 +90,15 @@ export class GraphComponent implements AfterViewInit {
   private readonly frames: Set<number> = new Set();
   private lastGraphDataRef?: GraphData;
   private lastSettingsRef?: GraphLayoutSettings;
+  private recordId: string | null = null;
   private currentTransform: ZoomTransform = d3.zoomIdentity;
 
+  public readonly nodeSelected: OutputEmitterRef<void> = output();
+
   public constructor() {
+    this.translations.langChanges$.pipe(takeUntilDestroyed()).subscribe((): void => {
+      if (this.nodeSelection) this.updateNodeLabels(this.nodeSelection);
+    });
     this.registerHoverEffect();
     this.registerColorChangesEffect();
     this.registerGraphChangesEffect();
@@ -111,29 +119,25 @@ export class GraphComponent implements AfterViewInit {
     effect((): void => {
       const data: GraphData = this.graphData();
       const settings: GraphLayoutSettings = this.settings();
+      const recordId: string | null = this.workspace.store.currentModelRecord()?.modelId ?? null;
 
       if (!this.rootGroupSelection) return;
 
       const hasGraphChanged: boolean = this.lastGraphDataRef !== data;
       const haveSettingsChanged: boolean = this.lastSettingsRef !== settings;
-      if (!hasGraphChanged && !haveSettingsChanged) return;
+      if (!hasGraphChanged && !haveSettingsChanged && this.recordId === recordId) return;
 
       this.lastGraphDataRef = data;
       this.lastSettingsRef = settings;
 
-      if (hasGraphChanged) {
-        this.svgSelection?.interrupt();
-        if (this.zoomBehavior) this.svgSelection?.call(this.zoomBehavior.transform, d3.zoomIdentity);
-      }
-
-      this.render(data, true);
+      this.render(data);
       this.refreshHover();
     });
   }
 
   public ngAfterViewInit(): void {
     this.mountSvg();
-    this.render(this.graphData(), true);
+    this.render(this.graphData());
     this.destroyRef.onDestroy((): void => this.cleanup());
   }
 
@@ -158,6 +162,9 @@ export class GraphComponent implements AfterViewInit {
       .on('zoom', (event: ZoomEvent): void => {
         this.currentTransform = event.transform;
         this.rootGroupSelection?.attr('transform', event.transform.toString());
+      })
+      .on('end', (event: ZoomEvent): void => {
+        if (event.sourceEvent) this.saveView();
       });
 
     this.svgSelection.call(this.zoomBehavior);
@@ -169,7 +176,6 @@ export class GraphComponent implements AfterViewInit {
       this.scheduleFrame((): void => {
         this.isResizeRenderPending = false;
         this.updateViewBox();
-        this.render(this.graphData(), false);
       });
     });
 
@@ -177,42 +183,63 @@ export class GraphComponent implements AfterViewInit {
     this.updateViewBox();
   }
 
-  private render(data: GraphData, shouldFit: boolean): void {
+  private render(data: GraphData, reset: boolean = false): void {
     if (!this.rootGroupSelection) return;
-
+    const record: ModelRecord | null = untracked((): ModelRecord | null => this.workspace.store.currentModelRecord());
+    const recordId: string | null = record?.modelId ?? null;
+    const changedLevel: boolean = this.recordId !== recordId;
+    const saved: GraphView | undefined = changedLevel ? record?.view?.graph : undefined;
+    const previous: RenderModel | undefined = changedLevel || reset ? undefined : this.renderModel;
     const viewport: ViewportSize = getViewportSize(this.getHostElement());
     const model: RenderModel = buildRenderModel({ data, settings: this.settings(), viewport });
+    this.restorePositions(model, previous, saved);
+    this.recordId = recordId;
     this.renderModel = model;
-
     this.linkSelection = this.drawLinks(this.rootGroupSelection, model.links);
     this.nodeSelection = this.drawNodes(this.rootGroupSelection, model.nodes);
-
     this.updateLinkPositions();
     this.updateNodePositions();
     this.updateNodeColorsOnly();
+    this.refreshHover();
 
-    this.rootGroupSelection.attr('transform', this.currentTransform.toString());
-    if (!shouldFit) return;
+    this.restoreViewport(saved, !previous?.nodes.length);
+    if (record) this.saveView();
+  }
 
-    this.scheduleFrame((): void => {
-      this.scheduleFrame((): void => {
-        this.fitToLayoutAnimated(180);
-      });
-    });
+  private restorePositions(model: RenderModel, previous: RenderModel | undefined, saved: GraphView | undefined): void {
+    for (const node of model.nodes) {
+      const position: { x: number; y: number } | undefined = previous?.nodesById.get(node.id) ?? saved?.positions[node.id];
+      if (position) setNodePosition(node, position.x, position.y);
+    }
+  }
+
+  private restoreViewport(saved: GraphView | undefined, fit: boolean): void {
+    if (saved) {
+      this.applyViewTransform(d3.zoomIdentity.translate(saved.viewport.x, saved.viewport.y).scale(saved.viewport.scale), 0);
+    } else if (fit) {
+      this.fitToLayoutAnimated(0);
+    }
+  }
+
+  private saveView(): void {
+    if (!this.renderModel || !this.recordId) return;
+    const positions: GraphView['positions'] = Object.fromEntries(
+      this.renderModel.nodes.map((node: PositionedNode): [string, { x: number; y: number }] => [
+        node.id,
+        { x: node.x, y: node.y },
+      ]),
+    );
+    const graph: GraphView = {
+      positions,
+      viewport: { x: this.currentTransform.x, y: this.currentTransform.y, scale: this.currentTransform.k },
+    };
+    void this.workspace.actions
+      .updateGraphView(this.recordId, graph)
+      .catch((error: unknown): void => this.storage.reportError(error));
   }
 
   private updateNodeColorsOnly(): void {
-    this.nodeSelection
-      ?.select('rect')
-      .style('--g-node-fill', (node: PositionedNode): string => this.getNodeColor(this.resolveNodeForColor(node)));
-  }
-
-  private resolveNodeForColor(node: PositionedNode): PositionedNode {
-    const model: RenderModel | undefined = this.renderModel;
-    if (!model) return node;
-    const realId: string | undefined = node.ghost?.realNodeId;
-    if (!realId) return node;
-    return model.nodesById.get(realId) ?? node;
+    this.nodeSelection?.select('rect').style('--g-node-fill', (node: PositionedNode): string => this.getNodeColor(node));
   }
 
   private refreshHover(): void {
@@ -224,10 +251,17 @@ export class GraphComponent implements AfterViewInit {
 
   private drawLinks(rootGroupSelection: RootSelection, links: ResolvedLink[]): LinkSelection {
     const merged: LinkSelection = rootGroupSelection
-      .selectAll<SVGLineElement, ResolvedLink>('line.link')
+      .selectAll<SVGPathElement, ResolvedLink>('path.link')
       .data(links, (link: ResolvedLink): string => link.id)
       .join(
-        (enter) => enter.append('line').attr('class', 'link').attr('marker-end', 'url(#g-arrow)'),
+        (enter) =>
+          enter
+            .append('path')
+            .attr('class', 'link')
+            .attr('fill', 'none')
+            .style('--graph-arrival-delay', (_link: ResolvedLink, index: number): string => `${220 + Math.min(index, 8) * 25}ms`)
+            .attr('data-nori-motion', '')
+            .attr('marker-end', 'url(#g-arrow)'),
         (update) => update,
         (exit) => exit.remove(),
       );
@@ -235,10 +269,17 @@ export class GraphComponent implements AfterViewInit {
     rootGroupSelection
       .selectAll<SVGTextElement, ResolvedLink>('text.link-label')
       .data(links, (link: ResolvedLink): string => link.id)
-      .join('text')
-      .attr('class', 'link-label')
+      .join(
+        (enter) =>
+          enter
+            .append('text')
+            .attr('class', 'link-label')
+            .attr('data-nori-motion', '')
+            .style('--graph-arrival-delay', (_link: ResolvedLink, index: number): string => `${380 + Math.min(index, 8) * 25}ms`),
+        (update) => update,
+        (exit) => exit.remove(),
+      )
       .text((link: ResolvedLink): string => link.label);
-    merged.classed('is-ghost', (link: ResolvedLink): boolean => link.meta?.kind === 'ghost-self');
     return merged;
   }
 
@@ -251,21 +292,27 @@ export class GraphComponent implements AfterViewInit {
           const g: NodeSelection = enter
             .append('g')
             .attr('class', 'node')
+            .style(
+              '--graph-arrival-delay',
+              (_node: PositionedNode, index: number): string => `${100 + Math.min(index, 8) * 30}ms`,
+            )
+            .attr('data-nori-motion', '')
             .call(this.createDragBehavior())
             .on('mouseenter', this.handleNodeHover.bind(this))
             .on('mouseleave', this.handleNodeLeave.bind(this))
             .on('click', this.handleNodeClick.bind(this));
 
-          g.append('rect').attr('x', -80).attr('y', -32).attr('width', 160).attr('height', 64).attr('rx', 10);
+          const content: NodeSelection = g.append('g').attr('class', 'node-content').attr('data-nori-motion', '');
+          content
+            .append('rect')
+            .attr('x', -80)
+            .attr('y', -32)
+            .attr('width', 160)
+            .attr('height', 64)
+            .style('rx', 'var(--nori-radius-input)');
           g.append('title');
-          g.append('text').attr('class', 'node-base').attr('dy', 17).attr('text-anchor', 'middle');
-
-          g.append('text')
-            .attr('dx', 0)
-            .attr('dy', -4)
-            .attr('text-anchor', 'middle')
-            .attr('font-size', 12)
-            .attr('pointer-events', 'none');
+          content.append('text').attr('class', 'node-base').attr('dy', 17).attr('text-anchor', 'middle');
+          content.append('text').attr('dy', -4).attr('text-anchor', 'middle').attr('font-size', 16);
 
           return g;
         },
@@ -273,6 +320,7 @@ export class GraphComponent implements AfterViewInit {
         (exit) => exit.remove(),
       );
 
+    merged.attr('role', 'button').attr('tabindex', 0).on('keydown', this.handleNodeKeyDown.bind(this));
     this.updateNodeLabels(merged);
 
     return merged;
@@ -284,14 +332,18 @@ export class GraphComponent implements AfterViewInit {
       .text((node: PositionedNode): string => (node.label.length > 20 ? `${node.label.slice(0, 19)}…` : node.label));
     merged
       .select('text.node-base')
-      .text((node: PositionedNode): string => (node.baseName ? `refines ${node.baseName.slice(0, 19)}` : 'Base definition'));
+      .text((node: PositionedNode): string =>
+        node.baseName
+          ? this.translations.translate('editor.refines', { name: node.baseName.slice(0, 19) })
+          : this.translations.translate('editor.baseNode'),
+      );
     merged
       .select('title')
       .text(
         (node: PositionedNode): string =>
-          `${node.label} · ${node.modelName}${node.baseName ? ` · refines ${node.baseName}` : ''}`,
+          `${node.label} · ${node.modelName}${node.baseName ? ` · ${this.translations.translate('editor.refines', { name: node.baseName })}` : ''}`,
       );
-    merged.classed('is-ghost', (node: PositionedNode): boolean => !!node.ghost);
+    merged.attr('aria-label', (node: PositionedNode): string => `${node.label}, ${node.baseName || node.modelName}`);
   }
 
   private drawArrowMarker(): void {
@@ -339,28 +391,11 @@ export class GraphComponent implements AfterViewInit {
     this.svgSelection.attr('viewBox', `0 0 ${viewport.width} ${viewport.height}`);
   }
 
-  private computeTrimmedEnds(sourceX: number, sourceY: number, targetX: number, targetY: number): LineEnds {
-    const dx: number = targetX - sourceX;
-    const dy: number = targetY - sourceY;
-    const length: number = Math.hypot(dx, dy);
-    if (length < 0.001) return { x1: sourceX, y1: sourceY, x2: targetX, y2: targetY };
-
-    const ux: number = dx / length;
-    const uy: number = dy / length;
-    const edge: number = Math.min(80 / Math.abs(ux), 32 / Math.abs(uy));
-    return { x1: sourceX + ux * edge, y1: sourceY + uy * edge, x2: targetX - ux * (edge + 5), y2: targetY - uy * (edge + 5) };
-  }
-
   private updateLinkPositions(): void {
-    const trim: (sx: number, sy: number, tx: number, ty: number) => LineEnds = this.computeTrimmedEnds.bind(this);
-    this.linkSelection?.each(function (this: SVGLineElement, link: ResolvedLink): void {
-      const ends: LineEnds = trim(link.source.x, link.source.y, link.target.x, link.target.y);
-      d3.select(this).attr('x1', ends.x1).attr('y1', ends.y1).attr('x2', ends.x2).attr('y2', ends.y2);
-    });
-    this.rootGroupSelection
-      ?.selectAll<SVGTextElement, ResolvedLink>('text.link-label')
-      .attr('x', (link: ResolvedLink): number => (link.source.x + link.target.x) / 2 + 8)
-      .attr('y', (link: ResolvedLink): number => (link.source.y + link.target.y) / 2);
+    if (!this.linkSelection || !this.rootGroupSelection || !this.renderModel) return;
+    const nodes: PositionedNode[] = this.renderModel.nodes;
+    this.linkSelection.attr('d', (link: ResolvedLink): string => getLinkPath(link, nodes));
+    positionLinkLabels(this.rootGroupSelection, this.linkSelection, nodes);
   }
 
   private updateNodePositions(): void {
@@ -381,12 +416,13 @@ export class GraphComponent implements AfterViewInit {
       .on('end', (_event: d3.D3DragEvent<SVGGElement, PositionedNode, unknown>, node: PositionedNode) => {
         node.baseX = node.x;
         node.baseY = node.y;
+        this.saveView();
       });
   }
 
   private applySelectedHighlight(nodeId: string | null): void {
     this.nodeSelection?.classed('is-selected', (node: PositionedNode): boolean => {
-      const resolvedId: string = node.ghost?.realNodeId ?? node.id;
+      const resolvedId: string = node.id;
       return resolvedId === nodeId;
     });
   }
@@ -407,12 +443,8 @@ export class GraphComponent implements AfterViewInit {
       }
     }
 
-    const isNodeRelated: (candidate: PositionedNode) => boolean = (candidate: PositionedNode): boolean => {
-      const realId: string | undefined = candidate.ghost?.realNodeId;
-      if (!realId) return relatedNodeIds.has(candidate.id);
-      if (realId === nodeId) return true;
-      return relatedNodeIds.has(candidate.id);
-    };
+    const isNodeRelated: (candidate: PositionedNode) => boolean = (candidate: PositionedNode): boolean =>
+      relatedNodeIds.has(candidate.id);
 
     this.nodeSelection
       ?.classed('is-dimmed', (candidate: PositionedNode): boolean => !isNodeRelated(candidate))
@@ -428,6 +460,15 @@ export class GraphComponent implements AfterViewInit {
     this.linkSelection?.classed('is-dimmed', false).classed('is-highlighted', false);
   }
 
+  public fitView(): void {
+    this.fitToLayoutAnimated(this.appearance.state().animations ? 400 : 0);
+    if (!this.appearance.state().animations) this.saveView();
+  }
+
+  public resetView(): void {
+    this.render(this.graphData(), true);
+  }
+
   private fitToLayoutAnimated(durationMilliseconds: number = 180): void {
     if (!this.svgSelection || !this.zoomBehavior || !this.rootGroupSelection) return;
 
@@ -435,7 +476,8 @@ export class GraphComponent implements AfterViewInit {
     if (!rootGroupElement) return;
 
     const viewport: ViewportSize = getViewportSize(this.getHostElement());
-    const padding: GraphPadding = this.settings().padding;
+    const padding: GraphPadding =
+      viewport.width > 720 ? this.settings().padding : { ...this.settings().padding, left: 24, right: 24 };
 
     const contentBox: DOMRect = rootGroupElement.getBBox();
     if (contentBox.width <= 0 || contentBox.height <= 0) return;
@@ -454,11 +496,23 @@ export class GraphComponent implements AfterViewInit {
 
     const targetTransform: d3.ZoomTransform = d3.zoomIdentity.translate(translateX, translateY).scale(clampedScale);
 
+    this.applyViewTransform(targetTransform, durationMilliseconds);
+  }
+
+  private applyViewTransform(transform: ZoomTransform, duration: number): void {
+    if (!this.svgSelection || !this.zoomBehavior) return;
+    this.svgSelection.interrupt();
+    if (duration === 0) {
+      this.svgSelection.call(this.zoomBehavior.transform, transform);
+      return;
+    }
+
     this.svgSelection
       .transition()
-      .duration(durationMilliseconds)
+      .duration(duration)
       .ease(d3.easeCubicInOut)
-      .call(this.zoomBehavior.transform, targetTransform);
+      .call(this.zoomBehavior.transform, transform)
+      .on('end', (): void => this.saveView());
   }
 
   private scheduleFrame(action: () => void): void {
@@ -488,7 +542,7 @@ export class GraphComponent implements AfterViewInit {
   }
 
   protected handleNodeHover(_: MouseEvent, node: PositionedNode): void {
-    const realId: string = node.ghost?.realNodeId ?? node.id;
+    const realId: string = node.id;
     this.applyHoverHighlight(realId);
   }
 
@@ -496,10 +550,18 @@ export class GraphComponent implements AfterViewInit {
     this.refreshHover();
   }
 
-  protected handleNodeClick(event: MouseEvent, node: PositionedNode): void {
+  private handleNodeKeyDown(event: KeyboardEvent, node: PositionedNode): void {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+
+    event.preventDefault();
+    this.handleNodeClick(event, node);
+  }
+
+  protected handleNodeClick(event: MouseEvent | KeyboardEvent, node: PositionedNode): void {
     event.stopPropagation();
+    this.nodeSelected.emit();
     const selectedSlot: number = this.workspace.store.currentSlot();
-    const resolvedId: string = node.ghost?.realNodeId ?? node.id;
+    const resolvedId: string = node.id;
     if (ModelRef.isQualified(resolvedId)) {
       const { modelId, refId } = ModelRef.splitQualified(resolvedId);
       const record: ModelRecord | undefined = this.storage
@@ -516,7 +578,7 @@ export class GraphComponent implements AfterViewInit {
     if (!(target instanceof Element)) return;
 
     const isOnNode: boolean = !!target.closest('g.node');
-    const isOnLink: boolean = !!target.closest('line.link');
+    const isOnLink: boolean = !!target.closest('path.link');
     if (isOnNode || isOnLink) return;
 
     const selectedSlot: number = this.workspace.store.currentSlot();

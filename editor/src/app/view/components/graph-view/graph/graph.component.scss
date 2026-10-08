@@ -9,10 +9,13 @@ app-graph {
   .node {
     cursor: pointer;
   }
+  .node-content {
+    animation: graph-node-arrive 500ms var(--graph-arrival-delay, 180ms) var(--nori-editor-ease) backwards;
+  }
   .node rect {
     fill: var(--color-base-100);
     stroke: var(--g-node-fill, var(--color-base-300));
-    stroke-width: 1;
+    stroke-width: 1.5;
   }
   .node text {
     fill: var(--color-base-content);
@@ -20,10 +23,14 @@ app-graph {
     pointer-events: none;
   }
   .node .node-base {
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 400;
     opacity: 0.6;
   }
+  .node:focus-visible {
+    outline: none;
+  }
+  .node:focus-visible rect,
   .node.is-selected rect {
     stroke: var(--color-primary);
     stroke-width: 2;
@@ -31,20 +38,53 @@ app-graph {
   .link {
     stroke: var(--color-base-content);
     stroke-opacity: 0.3;
+    animation: graph-edge-arrive 420ms var(--graph-arrival-delay, 220ms) var(--nori-editor-ease) backwards;
   }
   .link-label {
+    animation: graph-label-arrive 280ms var(--graph-arrival-delay, 380ms) ease-out backwards;
     fill: var(--color-base-content);
-    font-size: 9px;
+    font-size: 12px;
     paint-order: stroke;
     stroke: var(--color-base-200);
+    font-weight: 500;
+    text-anchor: middle;
     stroke-width: 4px;
     stroke-linejoin: round;
     pointer-events: none;
   }
   .is-dimmed {
-    opacity: 0.25;
+    opacity: 0.55;
   }
-  .is-ghost {
-    opacity: 0.5;
+}
+
+// Reveal each card around its own centre; the translated graph node stays fixed.
+@keyframes graph-node-arrive {
+  from {
+    clip-path: inset(0 49% round var(--nori-radius-input)) fill-box;
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  to {
+    clip-path: inset(0 0 round var(--nori-radius-input)) fill-box;
+    opacity: 1;
+  }
+}
+// SVG opacity includes the marker, so the edge and arrowhead appear together.
+@keyframes graph-edge-arrive {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes graph-label-arrive {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }

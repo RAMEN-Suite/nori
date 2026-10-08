@@ -2,10 +2,8 @@ import { GraphData, GraphLink, GraphNode } from '../../../../core/utils/ModelGra
 import { D3ZoomEvent, DragBehavior, Selection, ZoomBehavior } from 'd3';
 
 export type GraphPadding = Readonly<{ top: number; right: number; bottom: number; left: number }>;
-export type GraphLayout = 'treeTopDown' | 'clusterTopDown';
 
 export type GraphLayoutSettings = Readonly<{
-  layout: GraphLayout;
   padding: GraphPadding;
 
   nodeRadius: number;
@@ -21,12 +19,11 @@ export type GraphLayoutSettings = Readonly<{
 
 export const DEFAULT_GRAPH_PADDING: GraphPadding = { top: 20, right: 40, bottom: 20, left: 40 };
 export const DEFAULT_GRAPH_LAYOUT_SETTINGS: GraphLayoutSettings = {
-  layout: 'clusterTopDown',
   padding: DEFAULT_GRAPH_PADDING,
 
   nodeRadius: 15,
-  nodeSeparation: 200,
-  layerGap: 140,
+  nodeSeparation: 280,
+  layerGap: 210,
 
   areIsolatedNodesHidden: false,
   isolatedColumns: 5,
@@ -35,24 +32,18 @@ export const DEFAULT_GRAPH_LAYOUT_SETTINGS: GraphLayoutSettings = {
   isolatedAreaGap: 100,
 };
 
-export type GhostNodeMeta = Readonly<{
-  kind: 'ghost';
-  realNodeId: string;
-  selfLinkId: string;
-}>;
 export type PositionedNode = GraphNode & {
   x: number;
   y: number;
   baseX: number;
   baseY: number;
-  ghost?: GhostNodeMeta;
 };
 
-export type ResolvedLinkMeta = Readonly<{ kind: 'ghost-self' }>;
 export type ResolvedLink = Omit<GraphLink, 'source' | 'target'> & {
   source: PositionedNode;
   target: PositionedNode;
-  meta?: ResolvedLinkMeta;
+  loopIndex?: number;
+  curveOffset?: number;
 };
 
 export type RenderModel = Readonly<{
@@ -70,7 +61,7 @@ export type SVGSelection = Selection<SVGSVGElement, unknown, null, undefined>;
 export type RootSelection = Selection<SVGGElement, unknown, null, undefined>;
 
 export type NodeSelection = Selection<SVGGElement, PositionedNode, SVGGElement, unknown>;
-export type LinkSelection = Selection<SVGLineElement, ResolvedLink, SVGGElement, unknown>;
+export type LinkSelection = Selection<SVGPathElement, ResolvedLink, SVGGElement, unknown>;
 
 export type ZoomBehaviour = ZoomBehavior<SVGSVGElement, unknown>;
 export type ZoomEvent = D3ZoomEvent<SVGSVGElement, unknown>;

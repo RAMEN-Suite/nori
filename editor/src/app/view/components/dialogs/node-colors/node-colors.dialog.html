@@ -1,4 +1,4 @@
-<div class="flex max-h-96 min-w-80 flex-col gap-4 overflow-auto">
+<div *transloco="let t" class="flex max-h-96 min-w-80 flex-col gap-4 overflow-auto">
   @for (option of nodeColorOptions(); track option.id) {
     <label class="flex items-center justify-between gap-4" [for]="option.id"
       >{{ option.name }}
@@ -6,7 +6,7 @@
     </label>
   }
   <footer class="flex justify-end gap-3">
-    <button suiButton variant="outlined" (click)="handleGenerateColors()">Generate colours</button>
-    <button suiButton (click)="handleSaveChanges()">Save colours</button>
+    <button suiButton variant="outlined" (click)="handleGenerateColors()">{{ t('editor.generateColours') }}</button>
+    <button suiButton (click)="handleSaveChanges()">{{ t('editor.saveColours') }}</button>
   </footer>
 </div>
