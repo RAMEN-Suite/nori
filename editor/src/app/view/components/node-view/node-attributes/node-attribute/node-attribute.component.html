@@ -1,53 +1,65 @@
-<div class="flex min-h-8.5 flex-row items-center gap-5">
-  <div class="flex flex-1 items-center justify-end gap-4">
-    @if (attribute()?.isKey) {
-      <span suiTooltip="Key property" placement="bottom" class="text-xs">Key</span>
-    } @else if (attribute()?.isReadOnly) {
-      <span suiTooltip="Read-only property" placement="bottom" class="text-xs">Read-only</span>
-    }
-  </div>
-  <div class="flex flex-9 flex-row items-center">
-    <div class="flex flex-6 wrap-anywhere">
-      {{ attribute()?.name }}
+@if (attribute(); as property) {
+  <div class="flex items-start justify-between gap-3">
+    <div class="min-w-0">
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-sm font-medium break-words">{{ property.name }}</span>
+        @if (property.isKey) {
+          <span suiBadge size="xs" severity="neutral" variant="soft">Key</span>
+        }
+        @if (property.isReadOnly) {
+          <span suiBadge size="xs" severity="neutral" variant="soft">Read-only</span>
+        }
+      </div>
+      <p class="text-base-content/55 mt-1 text-xs break-words">
+        {{ formatAttributeType(property.bounds, workspace.view.resolveTypeLabel(property.typeId, modelId() ?? '')) }}
+      </p>
+      @if (property.bounds.upperBound !== 1 && property.isOrdered) {
+        <p class="text-base-content/55 text-xs">Ordered values</p>
+      }
+      @if (property.bounds.upperBound !== 1 && property.isUnique) {
+        <p class="text-base-content/55 text-xs">Unique values</p>
+      }
     </div>
-    <div class="flex flex-1 justify-center">:</div>
-    <div class="flex flex-5 items-center font-light font-stretch-semi-expanded">
-      @let bounds = attribute()?.bounds ?? { lowerBound: 0, upperBound: 0 };
-      @let dataType = workspace.view.resolveTypeLabel(attribute()?.typeId ?? '', modelId() ?? '');
-      @let chip = getCollectionChip(attribute());
-
-      <span [innerHTML]="formatAttributeType(bounds, dataType)"></span>
-
-      @if (chip) {
-        <sui-chip
-          [label]="chip.tooltip"
-          [suiTooltip]="chip.tooltip"
-          placement="bottom"
-          showDelay="500"
-          class="ms-2 mt-0.5 cursor-help px-3! py-1! text-xs"
-        />
+    <div class="flex shrink-0 gap-0.5">
+      @if (workspace.view.editable() && workspace.store.currentSlot() === modelSlot()) {
+        <button
+          suiButton
+          severity="neutral"
+          size="sm"
+          variant="text"
+          shape="square"
+          [attr.aria-label]="'Edit ' + property.name"
+          suiTooltip="Edit property"
+          (click)="handleOpenUpdateAttribute()"
+        >
+          <svg lucidePencil class="size-4" aria-hidden="true"></svg>
+        </button>
+        <button
+          suiButton
+          severity="neutral"
+          size="sm"
+          variant="text"
+          shape="square"
+          [attr.aria-label]="'Remove ' + property.name"
+          suiTooltip="Remove property"
+          (click)="handleDeleteAttribute()"
+        >
+          <svg lucideTrash class="size-4" aria-hidden="true"></svg>
+        </button>
+      } @else {
+        <button
+          suiButton
+          severity="neutral"
+          size="sm"
+          variant="text"
+          shape="square"
+          [attr.aria-label]="'Go to source of ' + property.name"
+          suiTooltip="Go to source"
+          (click)="handleOpenQualifiedReference()"
+        >
+          <svg lucideArrowUpRight class="size-4" aria-hidden="true"></svg>
+        </button>
       }
     </div>
   </div>
-  <div class="flex flex-2 justify-center">
-    @if (workspace.view.editable() && workspace.store.currentSlot() === modelSlot()) {
-      <div class="flex justify-center">
-        <button suiButton size="sm" variant="text" (click)="handleOpenUpdateAttribute()">Edit</button>
-        <button suiButton severity="error" size="sm" variant="text" (click)="handleDeleteAttribute()">Remove</button>
-      </div>
-    } @else {
-      <button
-        suiButton
-        suiTooltip="Jump to Source"
-        placement="bottom"
-        showDelay="500"
-        size="sm"
-        variant="text"
-        [disabled]="modelSlot() === 0"
-        (click)="handleOpenQualifiedReference()"
-      >
-        Jump to Source
-      </button>
-    }
-  </div>
-</div>
+}

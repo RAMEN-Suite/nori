@@ -1,10 +1,11 @@
+import { LucideMaximize, LucidePalette, LucideEyeOff } from '@lucide/angular';
 import { Component, computed, DestroyRef, inject, Signal, signal, WritableSignal, ChangeDetectionStrategy } from '@angular/core';
 import { GraphComponent } from '../graph/graph.component';
 import { Model } from '@ramen-suite/core/model';
 import { ModelGraph, GraphData, GraphLink, GraphNode } from '../../../../core/utils/ModelGraph';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { DEFAULT_GRAPH_LAYOUT_SETTINGS, GraphLayout, GraphLayoutSettings } from '../graph/graph.types';
-import { Button } from '@sushi-kit/angular';
+import { Button, Tooltip } from '@sushi-kit/angular';
 import { DialogService, DialogRef } from '../../../../services/dialog.service';
 import { NodeColorsDialog } from '../../dialogs/node-colors/node-colors.dialog';
 
@@ -18,7 +19,7 @@ interface LayoutOption {
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-visualizer',
-  imports: [GraphComponent, Button],
+  imports: [GraphComponent, Button, Tooltip, LucideMaximize, LucidePalette, LucideEyeOff],
   templateUrl: './graph-menu.component.html',
   styleUrl: './graph-menu.component.scss',
 })
@@ -82,7 +83,9 @@ export class GraphMenuComponent {
   }
 
   private computeGraphKey(data: GraphData): string {
-    const nodeKeyParts: string[] = [...data.nodes].map((n: GraphNode): string => `${n.id}|${n.label}|${n.superType}`);
+    const nodeKeyParts: string[] = [...data.nodes].map(
+      (n: GraphNode): string => `${n.id}|${n.label}|${n.superType}|${n.baseName}|${n.modelName}`,
+    );
     const nodeKey: string = nodeKeyParts.sort().join(',');
 
     const linkKeyParts: string[] = [...data.links].map((l: GraphLink): string => `${l.id}|${l.label}|${l.source}->${l.target}`);

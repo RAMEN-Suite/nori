@@ -203,7 +203,7 @@ export class GraphComponent implements AfterViewInit {
 
   private updateNodeColorsOnly(): void {
     this.nodeSelection
-      ?.select('circle')
+      ?.select('rect')
       .style('--g-node-fill', (node: PositionedNode): string => this.getNodeColor(this.resolveNodeForColor(node)));
   }
 
@@ -232,6 +232,12 @@ export class GraphComponent implements AfterViewInit {
         (exit) => exit.remove(),
       );
 
+    rootGroupSelection
+      .selectAll<SVGTextElement, ResolvedLink>('text.link-label')
+      .data(links, (link: ResolvedLink): string => link.id)
+      .join('text')
+      .attr('class', 'link-label')
+      .text((link: ResolvedLink): string => link.label);
     merged.classed('is-ghost', (link: ResolvedLink): boolean => link.meta?.kind === 'ghost-self');
     return merged;
   }
@@ -250,11 +256,13 @@ export class GraphComponent implements AfterViewInit {
             .on('mouseleave', this.handleNodeLeave.bind(this))
             .on('click', this.handleNodeClick.bind(this));
 
-          g.append('circle');
+          g.append('rect').attr('x', -80).attr('y', -32).attr('width', 160).attr('height', 64).attr('rx', 10);
+          g.append('title');
+          g.append('text').attr('class', 'node-base').attr('dy', 17).attr('text-anchor', 'middle');
 
           g.append('text')
             .attr('dx', 0)
-            .attr('dy', 35)
+            .attr('dy', -4)
             .attr('text-anchor', 'middle')
             .attr('font-size', 12)
             .attr('pointer-events', 'none');
@@ -265,11 +273,25 @@ export class GraphComponent implements AfterViewInit {
         (exit) => exit.remove(),
       );
 
-    merged.select('circle').attr('r', this.settings().nodeRadius);
-    merged.select('text').text((node: PositionedNode): string => node.label);
-    merged.classed('is-ghost', (node: PositionedNode): boolean => !!node.ghost);
+    this.updateNodeLabels(merged);
 
     return merged;
+  }
+
+  private updateNodeLabels(merged: NodeSelection): void {
+    merged
+      .select('text:not(.node-base)')
+      .text((node: PositionedNode): string => (node.label.length > 20 ? `${node.label.slice(0, 19)}…` : node.label));
+    merged
+      .select('text.node-base')
+      .text((node: PositionedNode): string => (node.baseName ? `refines ${node.baseName.slice(0, 19)}` : 'Base definition'));
+    merged
+      .select('title')
+      .text(
+        (node: PositionedNode): string =>
+          `${node.label} · ${node.modelName}${node.baseName ? ` · refines ${node.baseName}` : ''}`,
+      );
+    merged.classed('is-ghost', (node: PositionedNode): boolean => !!node.ghost);
   }
 
   private drawArrowMarker(): void {
@@ -298,11 +320,11 @@ export class GraphComponent implements AfterViewInit {
       .data([0])
       .join('path')
       .attr('d', 'M 0 0 L 10 5 L 0 10 z')
-      .attr('fill', 'var(--g-link-stroke)');
+      .attr('fill', 'var(--color-base-content)');
   }
 
   private getNodeColor(node: PositionedNode): string {
-    return this.superTypeColors()[node.superType] ?? 'currentColor';
+    return this.superTypeColors()[node.superType] ?? 'var(--color-base-300)';
   }
 
   private getHostElement(): HTMLDivElement {
@@ -317,62 +339,28 @@ export class GraphComponent implements AfterViewInit {
     this.svgSelection.attr('viewBox', `0 0 ${viewport.width} ${viewport.height}`);
   }
 
-  private computeTrimmedEnds(
-    sourceX: number,
-    sourceY: number,
-    targetX: number,
-    targetY: number,
-    sourceTrimPixels: number,
-    targetTrimPixels: number,
-  ): { x1: number; y1: number; x2: number; y2: number } {
-    const deltaX: number = targetX - sourceX;
-    const deltaY: number = targetY - sourceY;
-    const length: number = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+  private computeTrimmedEnds(sourceX: number, sourceY: number, targetX: number, targetY: number): LineEnds {
+    const dx: number = targetX - sourceX;
+    const dy: number = targetY - sourceY;
+    const length: number = Math.hypot(dx, dy);
+    if (length < 0.001) return { x1: sourceX, y1: sourceY, x2: targetX, y2: targetY };
 
-    if (!Number.isFinite(length) || length <= 0.0001) {
-      return { x1: sourceX, y1: sourceY, x2: targetX, y2: targetY };
-    }
-
-    const unitX: number = deltaX / length;
-    const unitY: number = deltaY / length;
-
-    return {
-      x1: sourceX + unitX * sourceTrimPixels,
-      y1: sourceY + unitY * sourceTrimPixels,
-      x2: targetX - unitX * targetTrimPixels,
-      y2: targetY - unitY * targetTrimPixels,
-    };
+    const ux: number = dx / length;
+    const uy: number = dy / length;
+    const edge: number = Math.min(80 / Math.abs(ux), 32 / Math.abs(uy));
+    return { x1: sourceX + ux * edge, y1: sourceY + uy * edge, x2: targetX - ux * (edge + 5), y2: targetY - uy * (edge + 5) };
   }
 
   private updateLinkPositions(): void {
-    const nodeRadius: number = this.settings().nodeRadius;
-    const arrowTrimPixels: number = 5;
-
-    const computeTrimmedEnds: (
-      sourceX: number,
-      sourceY: number,
-      targetX: number,
-      targetY: number,
-      sourceTrim: number,
-      targetTrim: number,
-    ) => LineEnds = this.computeTrimmedEnds.bind(this);
-
+    const trim: (sx: number, sy: number, tx: number, ty: number) => LineEnds = this.computeTrimmedEnds.bind(this);
     this.linkSelection?.each(function (this: SVGLineElement, link: ResolvedLink): void {
-      const trimmed: LineEnds = computeTrimmedEnds(
-        link.source.x,
-        link.source.y,
-        link.target.x,
-        link.target.y,
-        nodeRadius + 1,
-        nodeRadius + arrowTrimPixels,
-      );
-
-      d3.select<SVGLineElement, ResolvedLink>(this)
-        .attr('x1', trimmed.x1)
-        .attr('y1', trimmed.y1)
-        .attr('x2', trimmed.x2)
-        .attr('y2', trimmed.y2);
+      const ends: LineEnds = trim(link.source.x, link.source.y, link.target.x, link.target.y);
+      d3.select(this).attr('x1', ends.x1).attr('y1', ends.y1).attr('x2', ends.x2).attr('y2', ends.y2);
     });
+    this.rootGroupSelection
+      ?.selectAll<SVGTextElement, ResolvedLink>('text.link-label')
+      .attr('x', (link: ResolvedLink): number => (link.source.x + link.target.x) / 2 + 8)
+      .attr('y', (link: ResolvedLink): number => (link.source.y + link.target.y) / 2);
   }
 
   private updateNodePositions(): void {

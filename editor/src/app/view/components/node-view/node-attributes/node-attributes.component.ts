@@ -1,6 +1,7 @@
+import { LucidePlus } from '@lucide/angular';
 import { Component, DestroyRef, inject, ChangeDetectionStrategy } from '@angular/core';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
-import { Fieldset, FieldsetLegend, Button } from '@sushi-kit/angular';
+import { Card, Button } from '@sushi-kit/angular';
 import { NodeAttributeComponent } from './node-attribute/node-attribute.component';
 
 import { CreateAttributeDialog } from '../../dialogs/create-attribute/create-attribute.dialog';
@@ -10,7 +11,7 @@ import { StorageService } from '../../../../services/storage.service';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-node-attributes',
-  imports: [Fieldset, FieldsetLegend, NodeAttributeComponent, Button],
+  imports: [Card, NodeAttributeComponent, Button, LucidePlus],
   templateUrl: './node-attributes.component.html',
   styleUrl: './node-attributes.component.scss',
 })

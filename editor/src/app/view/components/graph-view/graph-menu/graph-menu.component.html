@@ -1,31 +1,67 @@
-<div class="grid h-full grid-rows-[1fr_auto]">
+<div class="grid h-full grid-rows-[auto_1fr_auto]">
+  <header class="flex items-center justify-between gap-3 px-5 py-4">
+    <div>
+      <h2 class="text-sm font-semibold">{{ workspace.store.currentModel()?.name }}</h2>
+      <p class="text-base-content/50 text-xs">
+        {{ graphData().nodes.length }} nodes · {{ graphData().links.length }}
+        {{ graphData().links.length === 1 ? 'relationship' : 'relationships' }}
+      </p>
+    </div>
+    <button
+      suiButton
+      severity="neutral"
+      variant="text"
+      size="sm"
+      shape="square"
+      aria-label="Fit graph"
+      suiTooltip="Fit graph"
+      (click)="handleLayoutReset()"
+    >
+      <svg lucideMaximize class="size-4" aria-hidden="true"></svg>
+    </button>
+  </header>
   <div class="min-h-0 overflow-hidden"><app-graph [graphData]="graphData()" [settings]="settings()" /></div>
-  <footer class="border-base-300 bg-base-100 flex flex-wrap items-center justify-between gap-3 border-t p-3">
-    <div class="flex gap-2">
+  <footer class="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
+    <div class="flex gap-1">
       @for (layout of layoutOptions; track layout.mode) {
         <button
           suiButton
+          severity="neutral"
           size="sm"
-          variant="outlined"
+          [variant]="settings().layout === layout.mode ? 'soft' : 'text'"
           [attr.aria-pressed]="settings().layout === layout.mode"
           (click)="handleSelectLayoutMode(layout.mode)"
         >
           {{ layout.label }}
         </button>
       }
+    </div>
+    <div class="flex gap-1">
       <button
         suiButton
+        severity="neutral"
         size="sm"
+        shape="square"
         variant="text"
+        aria-label="Hide isolated nodes"
+        suiTooltip="Hide isolated nodes"
         [attr.aria-pressed]="settings().areIsolatedNodesHidden"
         (click)="handleToggleOption('areIsolatedNodesHidden')"
       >
-        Hide isolated nodes
+        <svg lucideEyeOff class="size-4" aria-hidden="true"></svg>
       </button>
-    </div>
-    <div class="flex gap-2">
-      <button suiButton size="sm" variant="outlined" (click)="handleOpenColorsDialog()">Colours</button>
-      <button suiButton size="sm" variant="outlined" (click)="handleLayoutReset()">Reset layout</button>
+      <button
+        suiButton
+        severity="neutral"
+        size="sm"
+        shape="square"
+        variant="text"
+        aria-label="Node colours"
+        suiTooltip="Node colours"
+        (click)="handleOpenColorsDialog()"
+      >
+        <svg lucidePalette class="size-4" aria-hidden="true"></svg>
+      </button>
     </div>
   </footer>
 </div>

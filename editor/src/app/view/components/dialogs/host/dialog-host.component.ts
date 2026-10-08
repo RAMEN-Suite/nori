@@ -15,7 +15,7 @@ import { DialogService } from '../../../../services/dialog.service';
         [open]="true"
         [ariaLabel]="current.title || 'Confirm action'"
         [closeOnEscape]="!dialogs.pending()"
-        [closeOnBackdrop]="!dialogs.pending()"
+        [closeOnBackdrop]="false"
         (closed)="handleClosed(dialog)"
       >
         @if (current.title) {

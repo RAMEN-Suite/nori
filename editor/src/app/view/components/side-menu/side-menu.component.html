@@ -1,29 +1,46 @@
-<aside class="flex h-full flex-col gap-5 overflow-auto p-4" aria-label="Model nodes">
-  <label class="flex flex-col gap-2"
-    >Find a node
-    <input suiInput name="search" [ngModel]="search()" (ngModelChange)="search.set($event)" type="search" />
-  </label>
-  <section class="flex flex-col gap-2" aria-label="Current nodes">
-    <h2 class="font-semibold">Nodes</h2>
-    @for (node of nodes(); track node.id) {
-      <button
-        suiButton
-        variant="text"
-        [attr.aria-current]="workspace.store.currentNodeId() === node.id ? 'page' : null"
-        (click)="handleSelect(node)"
-      >
-        {{ node.name }}
-      </button>
-    } @empty {
-      <p class="text-sm opacity-70">No nodes yet.</p>
+<aside class="flex h-full w-56 flex-col">
+  <div class="border-base-300 flex flex-col gap-4 border-b p-4">
+    <div class="min-w-0">
+      <p class="text-base-content/55 text-xs font-medium tracking-wider uppercase">Model level</p>
+      <h2 class="truncate font-semibold">{{ workspace.store.currentModel()?.name }}</h2>
+    </div>
+    <input
+      suiInput
+      name="search"
+      aria-label="Find a node"
+      placeholder="Find a node…"
+      [ngModel]="search()"
+      (ngModelChange)="search.set($event)"
+      type="search"
+      size="sm"
+    />
+  </div>
+  <sui-sidebar
+    class="block min-h-0 flex-1 overflow-auto"
+    size="sm"
+    ariaLabel="Model nodes"
+    [groups]="groups()"
+    [value]="workspace.store.currentNodeId()"
+    (valueChange)="handleSelect($event)"
+  >
+    <ng-template [suiSidebarItem]="groups()" let-item>
+      <span class="flex min-w-0 items-start gap-2.5 py-1">
+        <svg lucideBox class="mt-0.5 size-4 shrink-0 opacity-60" aria-hidden="true"></svg>
+        <span class="flex min-w-0 flex-col gap-0.5">
+          <span class="truncate text-sm font-medium">{{ item.label }}</span>
+          <span class="truncate text-xs opacity-60">{{ item.base ? 'refines ' + item.base : 'Base definition' }}</span>
+        </span>
+      </span>
+    </ng-template>
+  </sui-sidebar>
+  <div class="border-base-300 flex flex-col gap-3 border-t p-4">
+    @if (!groups()[0]?.items?.length) {
+      <p class="text-base-content/60 text-sm">No matching nodes.</p>
     }
-  </section>
-  @if (workspace.view.editable()) {
-    <section class="flex flex-col gap-2" aria-label="Node suggestions">
-      <h2 class="font-semibold">Create from</h2>
-      @for (base of suggestions(); track base.ref) {
-        <button suiButton variant="outlined" size="sm" (click)="handleCreateNode(base)">+ {{ base.name }}</button>
-      }
-    </section>
-  }
+    @if (workspace.view.editable()) {
+      <button suiButton size="sm" class="w-full" (click)="handleCreate()">
+        <svg lucidePlus class="size-4" aria-hidden="true"></svg>Create node
+      </button>
+    }
+  </div>
 </aside>

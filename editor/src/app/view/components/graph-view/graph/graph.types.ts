@@ -25,13 +25,13 @@ export const DEFAULT_GRAPH_LAYOUT_SETTINGS: GraphLayoutSettings = {
   padding: DEFAULT_GRAPH_PADDING,
 
   nodeRadius: 15,
-  nodeSeparation: 60,
-  layerGap: 70,
+  nodeSeparation: 200,
+  layerGap: 140,
 
   areIsolatedNodesHidden: false,
   isolatedColumns: 5,
-  isolatedRowGap: 80,
-  isolatedColumnGap: 80,
+  isolatedRowGap: 110,
+  isolatedColumnGap: 200,
   isolatedAreaGap: 100,
 };
 

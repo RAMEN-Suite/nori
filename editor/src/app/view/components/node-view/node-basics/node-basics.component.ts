@@ -1,6 +1,7 @@
+import { LucidePencil, LucideTrash, LucideCopy, LucideGitBranch } from '@lucide/angular';
 import { type NodeRemovalPreview, Node, UpdateNodeInput } from '@ramen-suite/core/model';
 import { Component, DestroyRef, effect, inject, signal, WritableSignal, ChangeDetectionStrategy } from '@angular/core';
-import { Button, Chip, Input } from '@sushi-kit/angular';
+import { Button, Input, Tooltip } from '@sushi-kit/angular';
 
 import { FormsModule } from '@angular/forms';
 import { StorageService } from '../../../../services/storage.service';
@@ -16,12 +17,12 @@ import { Transformer } from '../../../../core/helper/Transformer';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-node-basics',
-  imports: [Button, Chip, Input, FormsModule],
+  imports: [Button, Input, Tooltip, FormsModule, LucidePencil, LucideTrash, LucideCopy, LucideGitBranch],
   templateUrl: './node-basics.component.html',
   styleUrl: './node-basics.component.scss',
 })
 export class NodeBasicsComponent {
-  private readonly storage: StorageService = inject(StorageService);
+  protected readonly storage: StorageService = inject(StorageService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   protected readonly navigation: NavigationService = inject(NavigationService);
 

@@ -15,12 +15,6 @@ body {
 .main-window {
   height: calc(100dvh - var(--title-bar-height) - var(--tool-bar-height));
 }
-.card {
-  background: var(--color-base-100);
-  border: 1px solid var(--color-base-300);
-  padding: 2rem;
-  border-radius: var(--radius-box);
-}
 .background-circle {
   position: absolute;
   left: 50%;

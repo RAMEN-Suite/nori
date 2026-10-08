@@ -1,5 +1,6 @@
+import { LucidePencil, LucideTrash, LucideArrowUpRight } from '@lucide/angular';
 import { Component, DestroyRef, inject, input, InputSignal, model, ModelSignal, ChangeDetectionStrategy } from '@angular/core';
-import { Button, Tooltip, Chip } from '@sushi-kit/angular';
+import { Button, Tooltip, Badge } from '@sushi-kit/angular';
 
 import { Bounds, Attribute } from '@ramen-suite/core/model';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
@@ -8,20 +9,10 @@ import { DialogService, DialogRef } from '../../../../../services/dialog.service
 import { CreateAttributeDialog } from '../../../dialogs/create-attribute/create-attribute.dialog';
 import { ConfirmationButton, ConfirmationDialog, ConfirmationOptions } from '../../../dialogs/confirmation/confirmation.dialog';
 
-const FORMATS: Readonly<{ EXCLAMATION: string; LIST: string; UPPER_BOUND: string }> = {
-  EXCLAMATION: "<span class='font-bold ms-1 text-red-500 font-stretch-200%'>!</span>",
-  LIST: "<span class='font-bold me-1'>[</span>%s<span class='font-bold ms-1'>]</span>",
-  UPPER_BOUND: "<span class='font-bold'>(%s)</span>",
-};
-
-interface AttributeChip {
-  tooltip: string;
-}
-
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-node-attribute',
-  imports: [Button, Tooltip, Chip],
+  imports: [Button, Tooltip, Badge, LucidePencil, LucideTrash, LucideArrowUpRight],
   templateUrl: './node-attribute.component.html',
   styleUrl: './node-attribute.component.scss',
 })
@@ -47,26 +38,8 @@ export class NodeAttributeComponent {
   }
 
   protected formatAttributeType(bounds: Bounds, typeName: string): string {
-    const { lowerBound, upperBound } = bounds;
-    const isRequired: boolean = lowerBound > 0;
-    const requiredSuffix: string = isRequired ? FORMATS.EXCLAMATION : '';
-
-    if (upperBound === 1) {
-      return `${typeName}${requiredSuffix}`;
-    }
-
-    if (upperBound === -1) {
-      const listName: string = FORMATS.LIST.replace('%s', typeName);
-      return `${listName}${requiredSuffix}`;
-    }
-
-    if (upperBound > 1) {
-      const listName: string = FORMATS.LIST.replace('%s', typeName);
-      const upperBoundSuffix: string = FORMATS.UPPER_BOUND.replace('%s', String(upperBound));
-      return `${listName}${upperBoundSuffix}${requiredSuffix}`;
-    }
-
-    return `${typeName}${requiredSuffix}`;
+    const upper: string = bounds.upperBound === -1 ? '*' : String(bounds.upperBound);
+    return `${typeName} · ${bounds.lowerBound}..${upper}`;
   }
 
   protected handleOpenUpdateAttribute(): void {
@@ -121,15 +94,8 @@ export class NodeAttributeComponent {
   protected handleOpenQualifiedReference(): void {
     const slot: number | undefined = this.modelSlot();
     const nodeId: string | undefined = this.nodeId();
-    if (!slot || !nodeId || slot === 0) return;
+    if (!nodeId) return;
 
     void this.navigation.navigateToNode(slot, nodeId);
-  }
-
-  protected getCollectionChip(attribute: Attribute | undefined): AttributeChip | null {
-    if (!attribute || attribute.bounds.upperBound === 1) return null;
-    if (attribute.isOrdered) return { tooltip: 'List preserves element order' };
-    if (attribute.isUnique) return { tooltip: 'List contains no duplicates' };
-    return null;
   }
 }

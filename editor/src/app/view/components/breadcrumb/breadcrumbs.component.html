@@ -1,8 +1,9 @@
-<nav class="flex flex-wrap items-center gap-2" aria-label="Model levels">
+<nav class="flex items-center gap-1" aria-label="Model levels">
   @for (record of storage.records(); track record.modelId) {
     <button
       suiButton
-      [variant]="workspace.store.currentSlot() === record.slot ? 'outlined' : 'text'"
+      severity="neutral"
+      [variant]="workspace.store.currentSlot() === record.slot ? 'soft' : 'text'"
       size="sm"
       [attr.aria-current]="workspace.store.currentSlot() === record.slot ? 'page' : null"
       (click)="handleSelect(record.slot)"
@@ -12,11 +13,44 @@
   }
   @if (workspace.view.editable()) {
     @if (workspace.store.currentModelRecord(); as record) {
-      <button suiButton variant="text" size="sm" (click)="handleEdit(record)">Edit level</button>
-      <button suiButton variant="text" size="sm" severity="error" [disabled]="!canRemove(record)" (click)="handleRemove(record)">
-        Remove level
+      <span class="bg-base-300 mx-2 h-5 w-px" aria-hidden="true"></span>
+      <button
+        suiButton
+        severity="neutral"
+        variant="text"
+        size="sm"
+        shape="square"
+        aria-label="Edit level"
+        suiTooltip="Edit level"
+        (click)="handleEdit(record)"
+      >
+        <svg lucidePencil class="size-4" aria-hidden="true"></svg>
+      </button>
+      <button
+        suiButton
+        severity="neutral"
+        variant="text"
+        size="sm"
+        shape="square"
+        aria-label="Remove level"
+        suiTooltip="Remove level"
+        [disabled]="!canRemove(record)"
+        (click)="handleRemove(record)"
+      >
+        <svg lucideTrash class="size-4" aria-hidden="true"></svg>
       </button>
     }
-    <button suiButton variant="outlined" size="sm" (click)="handleCreate()">+ Level</button>
+    <button
+      suiButton
+      severity="neutral"
+      variant="text"
+      size="sm"
+      shape="square"
+      aria-label="Create next level"
+      suiTooltip="Create next level"
+      (click)="handleCreate()"
+    >
+      <svg lucidePlus class="size-4" aria-hidden="true"></svg>
+    </button>
   }
 </nav>

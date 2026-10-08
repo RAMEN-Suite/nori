@@ -100,6 +100,16 @@ export class WorkspaceView {
     (): Node | null => this.currentNodeChain().at(-1)?.node ?? null,
   );
 
+  public resolveNodeBase(node: Node): NodeLevel | null {
+    const reference: string | undefined = node.superTypes[0];
+    const current: Model | null = this.store.currentModel();
+    if (!reference || !current || !this.editable()) return null;
+
+    const ref: string = ModelRef.isQualified(reference) ? reference : ModelRef.qualify(current.id, reference);
+    const base: Node | undefined = this.store.getDraft().getNode(ref);
+    return base ? { modelId: ModelRef.splitQualified(ref).modelId, node: base } : null;
+  }
+
   public resolveAllowedRelations(target: string, direction: 'IN' | 'OUT'): readonly RelationSuggestion[] {
     const node: Node | null = this.currentNode();
     if (!node || !this.validation()?.valid) return [];

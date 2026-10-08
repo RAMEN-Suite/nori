@@ -1,44 +1,50 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, type Signal, type WritableSignal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Button, Input } from '@sushi-kit/angular';
-import { type Node, type NodeSuggestion } from '@ramen-suite/core/model';
+import { Button, Input, Sidebar, SidebarItemTemplate, type SidebarGroup, type NavbarItem } from '@sushi-kit/angular';
+import { LucideBox, LucidePlus } from '@lucide/angular';
+import { type Node } from '@ramen-suite/core/model';
 import { WorkspaceService } from '../../../services/workspace/workspace.service';
-import { StorageService } from '../../../services/storage.service';
 import { NavigationService } from '../../../services/navigation.service';
+import { DialogService } from '../../../services/dialog.service';
+import { CreateNodeDialog } from '../dialogs/create-node/create-node.dialog';
+
+interface NodeItem extends NavbarItem<string> {
+  readonly base: string;
+}
 
 @Component({
   selector: 'app-side-menu',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, Button, Input],
+  imports: [FormsModule, Button, Input, Sidebar, SidebarItemTemplate, LucideBox, LucidePlus],
   templateUrl: './side-menu.component.html',
   styleUrl: './side-menu.component.scss',
 })
 export class SideMenuComponent {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
-  protected readonly storage: StorageService = inject(StorageService);
   private readonly navigation: NavigationService = inject(NavigationService);
+  private readonly dialogs: DialogService = inject(DialogService);
   protected readonly search: WritableSignal<string> = signal('');
-  protected readonly nodes: Signal<readonly Node[]> = computed((): readonly Node[] => {
+  protected readonly groups: Signal<readonly SidebarGroup<NodeItem>[]> = computed((): readonly SidebarGroup<NodeItem>[] => {
     const query: string = this.search().trim().toLowerCase();
-    return this.workspace.view.currentNodes().filter((node: Node): boolean => node.name.toLowerCase().includes(query));
-  });
-  protected readonly suggestions: Signal<readonly NodeSuggestion[]> = computed((): readonly NodeSuggestion[] => {
-    const query: string = this.search().trim().toLowerCase();
-    return this.workspace.view
-      .nodeSuggestions()
-      .filter((node: NodeSuggestion): boolean => node.name.toLowerCase().includes(query));
+    const items: NodeItem[] = this.workspace.view
+      .currentNodes()
+      .filter((node: Node): boolean => node.name.toLowerCase().includes(query))
+      .map(
+        (node: Node): NodeItem => ({
+          value: node.id,
+          label: node.name,
+          base: this.workspace.view.resolveNodeBase(node)?.node.name ?? '',
+        }),
+      );
+
+    return [{ label: 'Nodes', items }];
   });
 
-  protected async handleCreateNode(base: NodeSuggestion): Promise<void> {
-    try {
-      const node: Node = await this.workspace.actions.createNode({ name: `New${base.name}`, baseNodeId: base.ref });
-      await this.navigation.navigateToNode(this.workspace.store.currentSlot(), node.id);
-    } catch (error: unknown) {
-      this.storage.reportError(error);
-    }
+  protected handleCreate(): void {
+    this.dialogs.open(CreateNodeDialog, { header: 'Create node' });
   }
 
-  protected async handleSelect(node: Node): Promise<void> {
-    await this.navigation.navigateToNode(this.workspace.store.currentSlot(), node.id);
+  protected async handleSelect(id: string | number | null): Promise<void> {
+    if (typeof id === 'string') await this.navigation.navigateToNode(this.workspace.store.currentSlot(), id);
   }
 }

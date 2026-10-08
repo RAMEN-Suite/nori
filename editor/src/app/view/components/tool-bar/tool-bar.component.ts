@@ -1,5 +1,6 @@
+import { LucideDownload, LucideSunMoon, LucideLayers } from '@lucide/angular';
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
-import { Button } from '@sushi-kit/angular';
+import { Button, Navbar, NavbarBrand, NavbarContent, NavbarAction, Tooltip } from '@sushi-kit/angular';
 import { APP_THEME, ApplicationState } from '../../../states/application.state';
 import { BreadcrumbsComponent } from '../breadcrumb/breadcrumbs.component';
 import { RouterLink } from '@angular/router';
@@ -12,7 +13,19 @@ import { StorageService } from '../../../services/storage.service';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-tool-bar',
-  imports: [Button, BreadcrumbsComponent, RouterLink],
+  imports: [
+    Button,
+    Navbar,
+    NavbarBrand,
+    NavbarContent,
+    NavbarAction,
+    Tooltip,
+    BreadcrumbsComponent,
+    RouterLink,
+    LucideDownload,
+    LucideSunMoon,
+    LucideLayers,
+  ],
   templateUrl: './tool-bar.component.html',
   styleUrl: './tool-bar.component.scss',
 })

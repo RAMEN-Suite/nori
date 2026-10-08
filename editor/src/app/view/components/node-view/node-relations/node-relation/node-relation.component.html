@@ -11,6 +11,17 @@
     }
   </div>
   @if (workspace.view.editable()) {
-    <button suiButton severity="error" size="sm" variant="text" (click)="handleDeleteRelation()">Remove</button>
+    <button
+      suiButton
+      severity="neutral"
+      size="sm"
+      variant="text"
+      shape="square"
+      aria-label="Remove relationship"
+      suiTooltip="Remove relationship"
+      (click)="handleDeleteRelation()"
+    >
+      <svg lucideTrash class="size-4" aria-hidden="true"></svg>
+    </button>
   }
 </div>

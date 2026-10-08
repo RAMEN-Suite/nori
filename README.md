@@ -1,6 +1,5 @@
 # Nori – A Model Layering Tool
 
-
 Nori is a tool for **multi-level modelling of objects across heterogeneous domains**, developed for use in domains such as the **Digital Humanities**.
 
 It can be used both as:

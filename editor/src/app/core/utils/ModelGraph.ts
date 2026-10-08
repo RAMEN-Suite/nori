@@ -5,6 +5,8 @@ export interface GraphNode {
   readonly kind: 'Node';
   readonly label: string;
   readonly superType: string;
+  readonly baseName: string;
+  readonly modelName: string;
 }
 
 export interface GraphLink {
@@ -28,7 +30,7 @@ export class ModelGraph {
     const nodes: Map<string, GraphNode> = new Map();
     const definitions: Map<string, Model> = new Map(models.map((item: Model): [string, Model] => [item.id, item]));
     for (const item of model.classifiers) {
-      if (item.kind === 'Node') nodes.set(item.id, this.projectNode(item, item.id));
+      if (item.kind === 'Node') nodes.set(item.id, this.projectNode(item, item.id, model.id, definitions));
     }
     for (const relation of model.relations) {
       for (const ref of [relation.from.nodeId, relation.to.nodeId]) {
@@ -37,7 +39,7 @@ export class ModelGraph {
         const node: Node | undefined = definitions
           .get(modelId)
           ?.classifiers.find((item): item is Node => item.kind === 'Node' && item.id === refId);
-        if (node) nodes.set(ref, this.projectNode(node, ref));
+        if (node) nodes.set(ref, this.projectNode(node, ref, modelId, definitions));
       }
     }
 
@@ -53,7 +55,21 @@ export class ModelGraph {
     return { nodes: [...nodes.values()], links };
   }
 
-  private projectNode(node: Node, id: string): GraphNode {
-    return { id, kind: 'Node', label: node.name, superType: ModelRef.localId(node.superTypes[0] ?? node.id) };
+  private projectNode(node: Node, id: string, ownerId: string, models: ReadonlyMap<string, Model>): GraphNode {
+    const base: string | undefined = node.superTypes[0];
+    const ref: string | undefined = base && (ModelRef.isQualified(base) ? base : ModelRef.qualify(ownerId, base));
+    const owner: { modelId: string; refId: string } | undefined = ref ? ModelRef.splitQualified(ref) : undefined;
+    const baseName: string = owner
+      ? (models.get(owner.modelId)?.classifiers.find((item): boolean => item.id === owner.refId)?.name ?? '')
+      : '';
+
+    return {
+      id,
+      kind: 'Node',
+      label: node.name,
+      superType: ModelRef.localId(base ?? node.id),
+      baseName,
+      modelName: models.get(ownerId)?.name ?? '',
+    };
   }
 }

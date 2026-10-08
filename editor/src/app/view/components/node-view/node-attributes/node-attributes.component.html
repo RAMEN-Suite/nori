@@ -1,51 +1,45 @@
-@let currentNode = workspace.view.currentNode;
-
-<div class="flex flex-col gap-3">
-  @for (item of workspace.view.currentNodeChain(); track item.node.id) {
-    @let inheritedAttributes = workspace.view.inheritedAttributes().get(item.node.id);
-
-    @if (inheritedAttributes && inheritedAttributes.length > 0) {
-      <fieldset suiFieldset>
-        <legend suiFieldsetLegend>
-          <div class="max-w-100 truncate text-nowrap select-none">
-            Prescribed by <span class="font-extrabold">{{ item.node.name }}</span> in
-            <span class="font-extrabold"> {{ storage.modelsById().get(item.modelId)?.name }} </span>
-          </div>
-        </legend>
-        <div class="my-2 flex flex-col items-center">
-          <div class="flex w-full flex-col gap-2">
-            @for (item of inheritedAttributes; track item.attribute.name) {
-              <app-node-attribute [attribute]="item.attribute" [modelId]="item.modelId" [modelSlot]="item.slot" [nodeId]="item.nodeId" />
-            }
-          </div>
-        </div>
-      </fieldset>
-    }
+<div class="flex flex-col gap-4">
+  @if (workspace.view.currentNode()?.attributes?.length) {
+    <sui-card size="sm">
+      <h3 class="text-sm font-medium">Defined here</h3>
+      <div class="divide-base-300 divide-y">
+        @for (attribute of workspace.view.currentNode()?.attributes; track attribute.id) {
+          <app-node-attribute
+            class="block py-3"
+            [attribute]="attribute"
+            [modelSlot]="workspace.store.currentSlot()"
+            [modelId]="workspace.store.currentModel()?.id"
+            [nodeId]="workspace.store.currentNodeId() ?? undefined"
+          />
+        }
+      </div>
+    </sui-card>
   }
-
-  @if (currentNode()?.attributes?.length) {
-    <fieldset suiFieldset>
-      <legend suiFieldsetLegend>
-        Attributes in <span class="font-bold">{{ workspace.view.currentNode()?.name }}</span>
-      </legend>
-      <div class="my-2 flex flex-col items-center">
-        <div class="flex w-full flex-col gap-2">
-          @for (attribute of currentNode()?.attributes; track attribute.name) {
+  @for (base of workspace.view.currentNodeChain(); track base.node.id) {
+    @let attributes = workspace.view.inheritedAttributes().get(base.node.id);
+    @if (attributes?.length) {
+      <sui-card size="sm">
+        <div>
+          <h3 class="text-sm font-medium">Inherited from {{ base.node.name }}</h3>
+          <p class="text-base-content/55 text-xs">{{ storage.modelsById().get(base.modelId)?.name }}</p>
+        </div>
+        <div class="divide-base-300 divide-y">
+          @for (item of attributes; track item.attribute.id) {
             <app-node-attribute
-              [attribute]="attribute"
-              [modelSlot]="workspace.store.currentSlot()"
-              [modelId]="workspace.store.currentModel()?.id"
-              [nodeId]="workspace.store.currentNodeId() ?? undefined"
+              class="block py-3"
+              [attribute]="item.attribute"
+              [modelId]="item.modelId"
+              [modelSlot]="item.slot"
+              [nodeId]="item.nodeId"
             />
           }
         </div>
-      </div>
-    </fieldset>
+      </sui-card>
+    }
   }
-
   @if (workspace.view.editable()) {
-    <div class="mt-3 flex flex-col items-center justify-center gap-3">
-      <button suiButton class="w-full" variant="outlined" (click)="handleOpenCreateAttribute()">Add Attribute</button>
-    </div>
+    <button suiButton severity="neutral" size="sm" variant="outlined" class="w-full" (click)="handleOpenCreateAttribute()">
+      <svg lucidePlus class="size-4" aria-hidden="true"></svg>Add property
+    </button>
   }
 </div>

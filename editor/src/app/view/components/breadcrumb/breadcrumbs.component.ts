@@ -1,5 +1,6 @@
+import { LucidePencil, LucideTrash, LucidePlus } from '@lucide/angular';
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { Button } from '@sushi-kit/angular';
+import { Button, Tooltip } from '@sushi-kit/angular';
 import { StorageService } from '../../../services/storage.service';
 import { WorkspaceService } from '../../../services/workspace/workspace.service';
 import { NavigationService } from '../../../services/navigation.service';
@@ -12,7 +13,7 @@ import { type ModelRemovalPreview } from '@ramen-suite/core/model';
 @Component({
   selector: 'app-breadcrumbs',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Button],
+  imports: [Button, Tooltip, LucidePencil, LucideTrash, LucidePlus],
   templateUrl: './breadcrumbs.component.html',
   styleUrl: './breadcrumbs.component.scss',
 })

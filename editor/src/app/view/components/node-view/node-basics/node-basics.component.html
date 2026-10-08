@@ -1,31 +1,84 @@
 @if (workspace.view.currentNode(); as node) {
   <section class="flex flex-col gap-4" aria-label="Node details">
+    <div class="flex items-start justify-between gap-3">
+      <div class="min-w-0">
+        <p class="text-base-content/50 mb-1 text-xs font-medium tracking-wider uppercase">Node definition</p>
+        <h1 class="text-2xl font-semibold break-words">{{ node.name }}</h1>
+      </div>
+      @if (workspace.view.editable()) {
+        <div class="flex shrink-0 gap-0.5">
+          <button
+            suiButton
+            severity="neutral"
+            variant="text"
+            size="sm"
+            shape="square"
+            aria-label="Rename node"
+            suiTooltip="Rename node"
+            (click)="isWorkingNameActive.set(true)"
+          >
+            <svg lucidePencil class="size-4" aria-hidden="true"></svg>
+          </button>
+          <button
+            suiButton
+            severity="neutral"
+            variant="text"
+            size="sm"
+            shape="square"
+            aria-label="Duplicate node"
+            suiTooltip="Duplicate node"
+            (click)="handleDuplicateNode()"
+          >
+            <svg lucideCopy class="size-4" aria-hidden="true"></svg>
+          </button>
+          <button
+            suiButton
+            severity="neutral"
+            variant="text"
+            size="sm"
+            shape="square"
+            aria-label="Remove node"
+            suiTooltip="Remove node"
+            (click)="handleDeleteNode()"
+          >
+            <svg lucideTrash class="size-4" aria-hidden="true"></svg>
+          </button>
+        </div>
+      }
+    </div>
     @if (isWorkingNameActive()) {
-      <label class="flex flex-col gap-2"
-        >Node name
-        <input
+      <label class="flex flex-col gap-2 text-sm"
+        >Node name<input
           suiInput
           name="nodeName"
           [ngModel]="workingName()"
           (ngModelChange)="workingName.set($event)"
           (keydown.enter)="handleSave()"
-        />
-      </label>
-      <button suiButton (click)="handleSave()">Save name</button>
-    } @else {
-      <h1 class="text-3xl">{{ node.name }}</h1>
-    }
-    @if (workspace.view.editable()) {
-      <div class="flex flex-wrap gap-2">
-        <button suiButton variant="outlined" size="sm" (click)="isWorkingNameActive.set(true)">Rename</button>
-        <button suiButton variant="outlined" size="sm" (click)="handleDuplicateNode()">Duplicate</button>
-        <button suiButton variant="outlined" size="sm" severity="error" (click)="handleDeleteNode()">Remove</button>
+      /></label>
+      <div class="flex justify-end gap-2">
+        <button suiButton severity="neutral" variant="text" size="sm" (click)="isWorkingNameActive.set(false)">Cancel</button>
+        <button suiButton size="sm" (click)="handleSave()">Save name</button>
       </div>
     }
-    <div class="flex flex-wrap items-center gap-2">
-      @for (base of workspace.view.currentNodeChain(); track base.node.id) {
-        <sui-chip>Inherits {{ base.node.name }}</sui-chip>
-      }
-    </div>
+    @if (workspace.view.resolveNodeBase(node); as base) {
+      <div class="flex items-start gap-2 text-sm">
+        <svg lucideGitBranch class="text-base-content/50 mt-0.5 size-4 shrink-0" aria-hidden="true"></svg>
+        <div>
+          <p>
+            Refines <strong class="font-medium">{{ base.node.name }}</strong>
+          </p>
+          <p class="text-base-content/55 text-xs">{{ storage.modelsById().get(base.modelId)?.name }}</p>
+        </div>
+      </div>
+      <p class="text-base-content/55 flex flex-wrap items-center gap-1 text-xs leading-relaxed" aria-label="Inheritance path">
+        @for (ancestor of workspace.view.currentNodeChain(); track ancestor.node.id) {
+          <span>{{ ancestor.node.name }}</span
+          ><span aria-hidden="true">→</span>
+        }
+        <span class="text-base-content font-medium">{{ node.name }}</span>
+      </p>
+    } @else {
+      <p class="text-base-content/55 text-sm">Base definition in {{ workspace.store.currentModel()?.name }}</p>
+    }
   </section>
 }

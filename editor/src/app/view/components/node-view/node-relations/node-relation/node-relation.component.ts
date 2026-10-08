@@ -1,7 +1,8 @@
+import { LucideTrash } from '@lucide/angular';
 import { type RelationRemovalPreview, Relation } from '@ramen-suite/core/model';
 import { Component, DestroyRef, inject, input, InputSignal, ChangeDetectionStrategy } from '@angular/core';
 
-import { Button } from '@sushi-kit/angular';
+import { Button, Tooltip } from '@sushi-kit/angular';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
 import { DialogService, DialogRef } from '../../../../../services/dialog.service';
 import { ConfirmationButton, ConfirmationDialog, ConfirmationOptions } from '../../../dialogs/confirmation/confirmation.dialog';
@@ -9,7 +10,7 @@ import { ConfirmationButton, ConfirmationDialog, ConfirmationOptions } from '../
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-node-relation',
-  imports: [Button],
+  imports: [Button, Tooltip, LucideTrash],
   templateUrl: './node-relation.component.html',
   styleUrl: './node-relation.component.scss',
 })

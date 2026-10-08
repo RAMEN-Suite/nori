@@ -1,13 +1,15 @@
-<section class="bg-base-100 flex h-full flex-col gap-5 overflow-auto p-5" aria-label="Node editor">
+<section class="bg-base-100 flex h-full flex-col gap-6 overflow-auto p-5" aria-label="Node editor">
   <app-node-basics />
   <sui-tabs [value]="activeTab()" (valueChange)="handleTab($event)">
     <ng-template suiTab value="attributes" label="Properties"><app-node-attributes /></ng-template>
     <ng-template suiTab value="relations" label="Relationships"><app-node-relations /></ng-template>
   </sui-tabs>
   <footer class="mt-auto flex flex-wrap items-center justify-between gap-3">
-    <button suiButton variant="outlined" (click)="handleCloseView()">Close view</button>
+    <button suiButton severity="neutral" variant="text" size="sm" (click)="handleCloseView()">Close view</button>
     @if (workspace.view.validation(); as validation) {
-      <span>{{ validation.valid ? 'Model is valid' : validation.diagnostics.length + ' validation findings' }}</span>
+      <span class="text-base-content/60 text-xs">{{
+        validation.valid ? 'Model is valid' : validation.diagnostics.length + ' validation findings'
+      }}</span>
       @if (!validation.valid) {
         <ul class="w-full text-sm" aria-label="Validation findings">
           @for (diagnostic of validation.diagnostics; track $index) {
