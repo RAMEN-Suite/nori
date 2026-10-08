@@ -1,7 +1,11 @@
 <header class="title-bar bg-base-200 grid h-9 grid-cols-[minmax(5rem,1fr)_minmax(0,auto)_minmax(5rem,1fr)] items-center gap-2 px-3">
   <div aria-hidden="true"></div>
   <div class="flex min-w-0 items-center justify-center gap-2 text-xs font-medium">
-    <svg lucideNetwork class="size-3.5 shrink-0 opacity-60" aria-hidden="true"></svg>
+    @if (windowState.state().icon === 'folder-plus') {
+      <svg lucideFolderPlus class="size-3.5 shrink-0 opacity-60" aria-hidden="true"></svg>
+    } @else {
+      <svg lucideNetwork class="size-3.5 shrink-0 opacity-60" aria-hidden="true"></svg>
+    }
     <span class="truncate">{{ windowState.fullTitle() }}</span>
   </div>
   @if (hasControls) {

@@ -43,5 +43,20 @@
       "de": "Deutsch",
       "en": "English"
     }
+  },
+  "create": {
+    "title": "Create project",
+    "description": "Create a data model for your digital edition.",
+    "back": "Back",
+    "name": "Project name",
+    "namePlaceholder": "My first Digital Edition!",
+    "nameHint": "3–70 characters. You can change the name later.",
+    "summary": "Description",
+    "optional": "(optional)",
+    "example": "Start with a correspondence example",
+    "exampleDescription": "Explore letters, people and places in a ready-made model. Leave unchecked to start with an empty model.",
+    "creating": "Creating…",
+    "error": "The project could not be created. Please try again.",
+    "windowTitle": "Create a new project"
   }
 }

@@ -6,7 +6,7 @@ import {
   inject,
   provideAppInitializer,
 } from '@angular/core';
-import { provideRouter, withHashLocation, withRouterConfig } from '@angular/router';
+import { provideRouter, withHashLocation, withRouterConfig, withViewTransitions } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { ApplicationState } from './states/application.state';
 import { provideTransloco, TranslocoService } from '@jsverse/transloco';
@@ -34,6 +34,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(
       routes,
       withRouterConfig({ paramsInheritanceStrategy: 'always' }),
+      withViewTransitions({ skipInitialTransition: true }),
       ...(window.electron ? [withHashLocation()] : []),
     ),
   ],

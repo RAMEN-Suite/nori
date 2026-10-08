@@ -1,9 +1,12 @@
-import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectionStrategy, signal, type WritableSignal } from '@angular/core';
 import { WindowState } from '../../../states/window.state';
 import { FormsModule } from '@angular/forms';
-import { Input, Textarea, Button, Checkbox, Message } from '@sushi-kit/angular';
+import { Input, Textarea, Button, Checkbox, Message, Card } from '@sushi-kit/angular';
 
 import { RouterLink } from '@angular/router';
+import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
+import { LucideArrowLeft, LucidePlus, LucideSettings } from '@lucide/angular';
+import { environment } from '../../../../environments/environment';
 
 import { CATALOG, EXAMPLES } from '../../../../data/CATALOG';
 import { RAMEN_MODEL } from '@ramen-suite/core/ramen';
@@ -11,15 +14,34 @@ import { Model } from '@ramen-suite/core/model';
 import { CreateManifest, StorageService } from '../../../services/storage.service';
 import { Manifest } from '../../../models/Manifest';
 import { NavigationService } from '../../../services/navigation.service';
+import { DialogService } from '../../../services/dialog.service';
+import { SettingsDialog } from '../../components/dialogs/settings/settings.dialog';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-create',
-  imports: [FormsModule, Input, Textarea, Button, Checkbox, RouterLink, Message],
+  imports: [
+    FormsModule,
+    Input,
+    Textarea,
+    Button,
+    Checkbox,
+    RouterLink,
+    Message,
+    Card,
+    TranslocoDirective,
+    LucideArrowLeft,
+    LucidePlus,
+    LucideSettings,
+  ],
   templateUrl: './start.screen.html',
-  styleUrl: './start.screen.scss',
+  styleUrl: '../project-entry.scss',
 })
 export class StartScreen implements OnInit {
+  private readonly dialogs: DialogService = inject(DialogService);
+  private readonly translations: TranslocoService = inject(TranslocoService);
+  protected readonly environment: typeof environment = environment;
+
   protected readonly windowState: WindowState = inject(WindowState);
   protected readonly storage: StorageService = inject(StorageService);
   protected readonly navigation: NavigationService = inject(NavigationService);
@@ -33,13 +55,17 @@ export class StartScreen implements OnInit {
   };
   protected readonly metamodels: readonly Model[] = CATALOG;
   protected selectedMetamodel: Model = RAMEN_MODEL;
-  protected pending: boolean = false;
+  protected readonly pending: WritableSignal<boolean> = signal(false);
+  protected readonly error: WritableSignal<string | null> = signal(null);
 
   protected isCreatingExample: boolean = false;
-  protected isSubmitted: boolean = false;
 
   public ngOnInit(): void {
-    this.windowState.setTitle('Create Project');
+    this.windowState.setTitleKey('create.windowTitle', 'folder-plus');
+  }
+
+  protected handleSettings(): void {
+    this.dialogs.open(SettingsDialog, { headerKey: 'common.settings' });
   }
 
   protected isProjectNameValid(): boolean {
@@ -56,8 +82,7 @@ export class StartScreen implements OnInit {
   }
 
   protected async handleCreateProject(): Promise<void> {
-    this.isSubmitted = true;
-    if (!this.isFormValid()) return;
+    if (!this.isFormValid() || this.pending()) return;
 
     this.manifest.name = this.manifest.name.trim();
     this.manifest.description = this.manifest.description.trim();
@@ -69,14 +94,15 @@ export class StartScreen implements OnInit {
 
     const example: Model | undefined = this.isCreatingExample ? EXAMPLES.at(0) : undefined;
 
-    this.pending = true;
+    this.pending.set(true);
+    this.error.set(null);
     try {
       const manifest: Manifest = await this.storage.createProject(this.manifest, this.selectedMetamodel, example);
       await this.navigation.navigateToProject(manifest.projectId);
-    } catch (error: unknown) {
-      this.storage.reportError(error);
+    } catch {
+      this.error.set(this.translations.translate('create.error'));
     } finally {
-      this.pending = false;
+      this.pending.set(false);
     }
   }
 }

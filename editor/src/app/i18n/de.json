@@ -43,5 +43,20 @@
       "de": "Deutsch",
       "en": "English"
     }
+  },
+  "create": {
+    "title": "Projekt erstellen",
+    "description": "Erstelle ein Datenmodell für deine digitale Edition.",
+    "back": "Zurück",
+    "name": "Projektname",
+    "namePlaceholder": "Meine erste digitale Edition!",
+    "nameHint": "3–70 Zeichen. Du kannst den Namen später ändern.",
+    "summary": "Beschreibung",
+    "optional": "(optional)",
+    "example": "Mit einem Briefwechsel-Beispiel starten",
+    "exampleDescription": "Entdecke Briefe, Personen und Orte in einem fertigen Modell. Ohne Auswahl startest du mit einem leeren Modell.",
+    "creating": "Wird erstellt…",
+    "error": "Das Projekt konnte nicht erstellt werden. Bitte versuche es erneut.",
+    "windowTitle": "Neues Projekt erstellen"
   }
 }

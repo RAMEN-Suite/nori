@@ -1,0 +1,41 @@
+:host {
+  display: block;
+  height: calc(100dvh - var(--title-bar-height));
+}
+
+.home-screen {
+  --radius-box: var(--nori-radius);
+  --radius-field: var(--nori-radius);
+  --radius-selector: var(--nori-radius);
+  height: 100%;
+  background: var(--color-base-100);
+}
+
+.home-title {
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 8vw, 6rem);
+  font-weight: 400;
+  letter-spacing: -0.035em;
+  line-height: 1;
+}
+
+.home-action-title {
+  font-size: clamp(1.75rem, 3.2vw, 2.75rem);
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1.08;
+  text-wrap: balance;
+}
+
+.home-actions {
+  --sui-card-border-color: var(--nori-border);
+  background: var(--nori-surface-raised);
+}
+
+.home-chrome {
+  flex-shrink: 0;
+}
+
+.create-card {
+  view-transition-name: project-form;
+}

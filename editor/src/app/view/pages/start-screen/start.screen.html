@@ -1,22 +1,76 @@
-<main class="main-window mx-auto flex max-w-2xl flex-col justify-center gap-5 overflow-auto p-6">
-  <h1 class="text-3xl">Create a Nori project</h1>
-  <form class="flex flex-col gap-5" (ngSubmit)="handleCreateProject()">
-    <label class="flex flex-col gap-2"
-      >Project name
-      <input suiInput name="name" maxlength="70" [(ngModel)]="manifest.name" required minlength="3" />
-    </label>
-    <label class="flex flex-col gap-2"
-      >Description
-      <textarea suiTextarea name="description" maxlength="140" [(ngModel)]="manifest.description"></textarea>
-    </label>
-    <p>Based on the RAMEN reference model.</p>
-    <label><input suiCheckbox type="checkbox" name="example" [(ngModel)]="isCreatingExample" /> Start with a correspondence example</label>
-    @if (storage.error(); as error) {
-      <p suiMessage severity="error">{{ error }}</p>
-    }
-    <footer class="flex justify-between gap-3">
-      <button suiButton variant="outlined" type="button" routerLink="/">Cancel</button>
-      <button suiButton type="submit" [disabled]="!isFormValid() || pending">{{ pending ? 'Creating…' : 'Create project' }}</button>
-    </footer>
-  </form>
+<main *transloco="let t" class="home-screen relative isolate flex min-h-full flex-col overflow-y-auto">
+  <header class="home-chrome flex items-center justify-between px-5 py-5 sm:px-6">
+    <button suiButton severity="neutral" variant="text" size="sm" routerLink="/" [disabled]="pending()">
+      <svg lucideArrowLeft class="size-4" aria-hidden="true"></svg>{{ t('create.back') }}
+    </button>
+    <button
+      suiButton
+      severity="neutral"
+      variant="text"
+      size="sm"
+      shape="circle"
+      [attr.aria-label]="t('common.settings')"
+      (click)="handleSettings()"
+    >
+      <svg lucideSettings class="size-5" aria-hidden="true"></svg>
+    </button>
+  </header>
+
+  <section class="create-intro mx-auto my-auto flex w-full flex-col items-center px-5 py-8" aria-labelledby="create-title">
+    <sui-card class="home-actions create-card mx-auto block w-full max-w-xl" size="lg" variant="border">
+      <form #projectForm="ngForm" class="flex flex-col gap-5" (ngSubmit)="handleCreateProject()">
+        <div class="flex flex-col gap-3">
+          <h1 id="create-title" class="home-action-title">{{ t('create.title') }}</h1>
+          <p class="text-base-content/65 leading-relaxed">{{ t('create.description') }}</p>
+        </div>
+        <label class="flex flex-col gap-2">
+          <span class="font-medium">{{ t('create.name') }}</span>
+          <input
+            suiInput
+            [fluid]="true"
+            name="name"
+            maxlength="70"
+            [(ngModel)]="manifest.name"
+            required
+            minlength="3"
+            [disabled]="pending()"
+            [placeholder]="t('create.namePlaceholder')"
+            aria-describedby="project-name-hint"
+          />
+          <span id="project-name-hint" class="text-base-content/55 text-xs">{{ t('create.nameHint') }}</span>
+        </label>
+        <label class="flex flex-col gap-2">
+          <span class="font-medium"
+            >{{ t('create.summary') }} <span class="text-base-content/50 font-normal">{{ t('create.optional') }}</span></span
+          >
+          <textarea
+            suiTextarea
+            [fluid]="true"
+            name="description"
+            rows="2"
+            maxlength="140"
+            [(ngModel)]="manifest.description"
+            [disabled]="pending()"
+          ></textarea>
+        </label>
+        <label class="flex cursor-pointer items-start gap-3 py-2">
+          <input suiCheckbox class="shrink-0" type="checkbox" name="example" [(ngModel)]="isCreatingExample" [disabled]="pending()" />
+          <span class="flex flex-col gap-1">
+            <span class="font-medium">{{ t('create.example') }}</span>
+            <span class="text-base-content/60 text-sm">{{ t('create.exampleDescription') }}</span>
+          </span>
+        </label>
+        @if (error(); as message) {
+          <p suiMessage severity="error" role="alert">{{ message }}</p>
+        }
+        <button suiButton size="lg" type="submit" [loading]="pending()" [disabled]="!projectForm.valid || !isFormValid() || pending()">
+          <svg lucidePlus class="size-4" aria-hidden="true"></svg>{{ t(pending() ? 'create.creating' : 'home.create') }}
+        </button>
+      </form>
+    </sui-card>
+  </section>
+
+  <footer class="home-chrome text-base-content/50 flex justify-center py-4 text-xs tracking-wide">
+    <span>{{ t('common.version', { version: environment.appVersion }) }}</span>
+  </footer>
 </main>

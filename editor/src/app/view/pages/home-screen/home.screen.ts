@@ -29,7 +29,7 @@ import { SettingsDialog } from '../../components/dialogs/settings/settings.dialo
     LucideArrowUpRight,
   ],
   templateUrl: './home.screen.html',
-  styleUrl: './home.screen.scss',
+  styleUrls: ['../project-entry.scss', './home.screen.scss'],
 })
 export class HomeScreen implements OnInit {
   protected readonly environment: typeof environment = environment;
