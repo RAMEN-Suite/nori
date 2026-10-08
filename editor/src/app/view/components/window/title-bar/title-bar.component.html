@@ -1,41 +1,10 @@
-<header class="min-h-9">
-  <p-menubar>
-    <ng-template #start>
-      <div class="absolute left-1/2 -translate-x-1/2">
-        <i [class]="windowState.state().icon"></i>
-        <span class="ml-3">{{ windowState.state().title }}</span>
-      </div>
-    </ng-template>
-    <ng-template #end>
-      @if (hasControls) {
-        <div class="window-buttons ml-2 flex items-center">
-          <p-divider layout="vertical"></p-divider>
-          <p-button
-            icon="pi pi-minus"
-            severity="primary"
-            variant="text"
-            size="small"
-            fluid="true"
-            (click)="electron.minimizeApplication()"
-          />
-          <p-button
-            icon="pi pi-expand"
-            severity="primary"
-            variant="text"
-            size="small"
-            fluid="true"
-            (click)="electron.maximizeApplication()"
-          />
-          <p-button
-            icon="pi pi-times"
-            severity="danger"
-            variant="text"
-            size="small"
-            fluid="true"
-            (click)="electron.closeApplication()"
-          />
-        </div>
-      }
-    </ng-template>
-  </p-menubar>
+<header class="title-bar bg-base-200 flex h-9 items-center justify-between px-3">
+  <span>{{ windowState.state().title }} — Nori</span>
+  @if (hasControls) {
+    <div class="window-buttons flex gap-1">
+      <button suiButton size="xs" variant="text" (click)="electron.minimizeApplication()">Minimise</button>
+      <button suiButton size="xs" variant="text" (click)="electron.maximizeApplication()">Maximise</button>
+      <button suiButton size="xs" variant="text" severity="error" (click)="electron.closeApplication()">Close</button>
+    </div>
+  }
 </header>

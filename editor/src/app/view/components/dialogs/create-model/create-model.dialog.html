@@ -1,8 +1,9 @@
 <div class="flex max-w-140 min-w-140 flex-col gap-2">
-  <p-fieldset legend="Basics">
+  <fieldset suiFieldset>
+    <legend suiFieldsetLegend>Basics</legend>
     <div class="flex flex-col gap-3">
       <div class="flex flex-col gap-2">
-        <p-ifta-label>
+        <div class="flex flex-col gap-2">
           <input
             #nameModel="ngModel"
             [(ngModel)]="draftModel().name"
@@ -11,24 +12,24 @@
             name="name"
             maxlength="70"
             autocomplete="off"
-            pInputText
-            fluid
+            suiInput
             required
           />
           <label for="name">Model Name</label>
-        </p-ifta-label>
+        </div>
 
         @if ((nameModel.touched || isSubmitted) && !isModelNameValid()) {
-          <p-message severity="error" size="small" variant="simple"> Model name must be at least 3 characters. </p-message>
+          <p suiMessage severity="error" size="sm" variant="soft">Model name must be at least 3 characters.</p>
         }
       </div>
     </div>
-  </p-fieldset>
+  </fieldset>
 
-  <p-fieldset legend="Semantics">
+  <fieldset suiFieldset>
+    <legend suiFieldsetLegend>Semantics</legend>
     <div class="flex flex-col gap-3">
       <div class="flex flex-col gap-2">
-        <p-ifta-label>
+        <div class="flex flex-col gap-2">
           <input
             #versionModel="ngModel"
             [(ngModel)]="draftModel().version"
@@ -38,25 +39,21 @@
             placeholder="1.0.0"
             autocomplete="off"
             name="version"
-            pInputText
+            suiInput
             required
-            fluid
           />
           <label for="version">Model Version</label>
-        </p-ifta-label>
+        </div>
 
         @if ((versionModel.touched || isSubmitted) && !isVersionValid()) {
-          <p-message severity="error" size="small" variant="simple">
+          <p suiMessage severity="error" size="sm" variant="soft">
             Version must comply to
-            <a href="https://semver.org/" class="text-primary" target="_blank">
-              semantic versioning
-              <i class="pi pi-external-link" style="font-size: 8pt"></i>
-            </a>
-          </p-message>
+            <a href="https://semver.org/" class="text-primary" target="_blank"> semantic versioning </a>
+          </p>
         }
       </div>
       <div class="flex flex-col gap-2">
-        <p-ifta-label>
+        <div class="flex flex-col gap-2">
           <input
             #uriModel="ngModel"
             [(ngModel)]="draftModel().uri"
@@ -65,31 +62,28 @@
             id="uri"
             autocomplete="off"
             name="uri"
-            pInputText
+            suiInput
             required
-            fluid
           />
           <label for="uri">Model URI</label>
-        </p-ifta-label>
+        </div>
 
         @if ((uriModel.touched || isSubmitted) && !isUriValid()) {
-          <p-message severity="error" size="small" variant="simple">
-            Expected an absolute URI with a scheme, e.g. 'https://example.com'.
-          </p-message>
+          <p suiMessage severity="error" size="sm" variant="soft">Expected an absolute URI with a scheme, e.g. 'https://example.com'.</p>
         }
       </div>
     </div>
-  </p-fieldset>
+  </fieldset>
 
   <div class="mt-4 flex flex-row justify-between gap-2">
     <div class="flex gap-2">
-      <p-button label="Cancel" outlined (click)="handleCloseModal()" />
+      <button suiButton variant="outlined" (click)="handleCloseModal()">Cancel</button>
     </div>
 
     @if (currentSlot() === undefined) {
-      <p-button label="Create Project Model" outlined (click)="handleCreateModel()" [disabled]="!isFormValid()" />
+      <button suiButton variant="outlined" (click)="handleCreateModel()" [disabled]="!isFormValid()">Create Project Model</button>
     } @else {
-      <p-button label="Update Project Model" outlined (click)="handleUpdateModel()" [disabled]="!isFormValid()" />
+      <button suiButton variant="outlined" (click)="handleUpdateModel()" [disabled]="!isFormValid()">Update Project Model</button>
     }
   </div>
 </div>

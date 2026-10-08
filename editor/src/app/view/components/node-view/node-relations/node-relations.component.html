@@ -3,16 +3,15 @@
 
 <div class="flex flex-col gap-3">
   @if (hasRelationsOut) {
-    <p-fieldset>
-      <ng-template #header>
+    <fieldset suiFieldset>
+      <legend suiFieldsetLegend>
         <div class="flex flex-row items-center gap-3">
           <div class="flex flex-row">
-            <i class="pi pi-circle-fill" style="font-size: 10pt"></i>
-            <i class="pi pi-arrow-right" style="font-size: 10pt"></i>
+            <span aria-hidden="true">→</span>
           </div>
           <span class="">Outgoing Relations</span>
         </div>
-      </ng-template>
+      </legend>
       <div class="my-2 flex flex-col items-center">
         <div class="flex w-full flex-col gap-2">
           @for (relation of workspace.view.currentNodeRelationsOut(); track relation.id) {
@@ -20,20 +19,19 @@
           }
         </div>
       </div>
-    </p-fieldset>
+    </fieldset>
   }
 
   @if (hasRelationsIn) {
-    <p-fieldset>
-      <ng-template #header>
+    <fieldset suiFieldset>
+      <legend suiFieldsetLegend>
         <div class="flex flex-row items-center gap-3">
           <div class="flex flex-row">
-            <i class="pi pi-arrow-right" style="font-size: 10pt"></i>
-            <i class="pi pi-circle-fill" style="font-size: 10pt"></i>
+            <span aria-hidden="true">→</span>
           </div>
           <span class="">Incoming Relations</span>
         </div>
-      </ng-template>
+      </legend>
       <div class="my-2 flex flex-col items-center">
         <div class="flex w-full flex-col gap-2">
           @for (relation of workspace.view.currentNodeRelationsIn(); track relation.id) {
@@ -41,10 +39,12 @@
           }
         </div>
       </div>
-    </p-fieldset>
+    </fieldset>
   }
 
-  <div class="mt-3 flex flex-col items-center justify-center gap-3">
-    <p-button label="Add Relationship" class="w-full" variant="outlined" fluid (click)="handleOpenCreateRelation()" />
-  </div>
+  @if (workspace.view.editable()) {
+    <div class="mt-3 flex flex-col items-center justify-center gap-3">
+      <button suiButton class="w-full" variant="outlined" (click)="handleOpenCreateRelation()">Add Relationship</button>
+    </div>
+  }
 </div>

@@ -1,10 +1,9 @@
-import { Component, inject, input, InputSignal } from '@angular/core';
-import { Button, ButtonSeverity } from 'primeng/button';
-import { DynamicDialogRef } from 'primeng/dynamicdialog';
+import { ChangeDetectionStrategy, Component, inject, input, type InputSignal } from '@angular/core';
+import { Button, type ButtonSeverity } from '@sushi-kit/angular';
+import { DialogService } from '../../../../services/dialog.service';
 
 export interface ConfirmationOptions {
   title: string;
-  icon: string;
   message: string;
   justify?: 'justify-center' | 'justify-between' | 'justify-around';
   buttons: ConfirmationButton[][];
@@ -15,17 +14,29 @@ export interface ConfirmationButton {
   severity?: ButtonSeverity;
   styleClass?: string;
   variant?: 'outlined' | 'text';
-  size?: 'small' | 'large';
-  click?: () => void;
+  size?: 'sm' | 'lg';
+  click?: () => void | Promise<void>;
 }
 
 @Component({
-  selector: 'app-unsaved-changes',
+  selector: 'app-confirmation',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [Button],
   templateUrl: './confirmation.dialog.html',
   styleUrl: './confirmation.dialog.scss',
 })
 export class ConfirmationDialog {
-  protected readonly dialogRef: DynamicDialogRef = inject(DynamicDialogRef);
-  public options: InputSignal<ConfirmationOptions | undefined> = input();
+  protected readonly dialogs: DialogService = inject(DialogService);
+  public readonly options: InputSignal<ConfirmationOptions | undefined> = input();
+
+  protected async handleAction(button: ConfirmationButton): Promise<void> {
+    if (!button.click) {
+      this.dialogs.close();
+      return;
+    }
+
+    await this.dialogs.run(async (): Promise<void> => {
+      await button.click?.();
+    });
+  }
 }

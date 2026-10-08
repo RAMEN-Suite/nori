@@ -10,14 +10,14 @@ export class LocalStorageService {
 
     try {
       return JSON.parse(raw) as T;
-    } catch (error: unknown) {
+    } catch {
       console.warn(`[LocalStorage] Invalid JSON for key "${key}", removing.`);
       localStorage.removeItem(key);
       return fallback;
     }
   }
 
-  set<T>(key: string, value: T): void {
+  public set(key: string, value: unknown): void {
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch (error: unknown) {
@@ -25,7 +25,7 @@ export class LocalStorageService {
     }
   }
 
-  remove(key: string): void {
+  public remove(key: string): void {
     localStorage.removeItem(key);
   }
 }

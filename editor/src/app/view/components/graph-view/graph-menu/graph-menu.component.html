@@ -1,74 +1,31 @@
 <div class="grid h-full grid-rows-[1fr_auto]">
-  <div class="min-h-0 overflow-hidden">
-    <app-graph [graphData]="graphData()" [settings]="settings()" />
-  </div>
-
-  <div class="min-h-15">
-    <p-menubar>
-      <ng-template #start>
-        <div class="flex flex-row gap-2">
-          <div class="flex">
-            <p-select-button
-              [options]="layoutOptions"
-              optionLabel="label"
-              optionValue="mode"
-              [ngModel]="settings().layout"
-              (ngModelChange)="handleSelectLayoutMode($event)"
-              [allowEmpty]="false"
-            >
-              <ng-template #item let-option>
-                <div class="flex flex-row items-center justify-center gap-2">
-                  <i [class]="option.icon"></i>
-                  <span>{{ option.label }}</span>
-                </div>
-              </ng-template>
-            </p-select-button>
-          </div>
-
-          @for (item of toggleOptions; track item.option) {
-            <div class="flex">
-              <p-toggle-button
-                [ngModel]="settings()[item.option]"
-                (ngModelChange)="handleToggleOption(item.option)"
-                [pTooltip]="item.tooltip"
-                tooltipPosition="top"
-                positionTop="-5"
-              >
-                <ng-template #content let-isChecked>
-                  @if (isChecked) {
-                    <i [class]="item.onIcon"></i>
-                  } @else {
-                    <i [class]="item.offIcon"></i>
-                  }
-                </ng-template>
-              </p-toggle-button>
-            </div>
-          }
-        </div>
-      </ng-template>
-      <ng-template #end>
-        <div class="flex flex-row gap-3">
-          <p-button
-            variant="outlined"
-            icon="pi pi-palette"
-            styleClass="px-5! py-2!"
-            pTooltip="Change Colors"
-            tooltipPosition="top"
-            positionTop="-5"
-            (click)="handleOpenColorsDialog()"
-          />
-          <p-button
-            variant="outlined"
-            icon="pi pi-refresh"
-            styleClass="px-5! py-2!"
-            pTooltip="Reset Layout"
-            tooltipPosition="top"
-            positionTop="-5"
-            positionLeft="-10"
-            (click)="handleLayoutReset()"
-          />
-        </div>
-      </ng-template>
-    </p-menubar>
-  </div>
+  <div class="min-h-0 overflow-hidden"><app-graph [graphData]="graphData()" [settings]="settings()" /></div>
+  <footer class="border-base-300 bg-base-100 flex flex-wrap items-center justify-between gap-3 border-t p-3">
+    <div class="flex gap-2">
+      @for (layout of layoutOptions; track layout.mode) {
+        <button
+          suiButton
+          size="sm"
+          variant="outlined"
+          [attr.aria-pressed]="settings().layout === layout.mode"
+          (click)="handleSelectLayoutMode(layout.mode)"
+        >
+          {{ layout.label }}
+        </button>
+      }
+      <button
+        suiButton
+        size="sm"
+        variant="text"
+        [attr.aria-pressed]="settings().areIsolatedNodesHidden"
+        (click)="handleToggleOption('areIsolatedNodesHidden')"
+      >
+        Hide isolated nodes
+      </button>
+    </div>
+    <div class="flex gap-2">
+      <button suiButton size="sm" variant="outlined" (click)="handleOpenColorsDialog()">Colours</button>
+      <button suiButton size="sm" variant="outlined" (click)="handleLayoutReset()">Reset layout</button>
+    </div>
+  </footer>
 </div>

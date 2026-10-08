@@ -1,65 +1,29 @@
-<p-scroll-panel class="h-full min-h-0 select-none" style="--p-scrollpanel-bar-size: 4px" [hidden]="workspace.store.currentModel() === null">
-  <div class="flex flex-col gap-5 px-4 py-4">
-    <div class="flex flex-col">
-      <p-ifta-label>
-        <input pInputText id="filter" fluid [(ngModel)]="searchInput" />
-        <label for="filter">Filter Nodes</label>
-      </p-ifta-label>
-    </div>
-    <p-panel-menu [model]="filteredMenuItems()" multiple>
-      <ng-template #item let-item>
-        <div class="cursor-pointer">
-          @if (item.isCategory) {
-            <div pRipple class="mb-1.5 flex flex-row items-center justify-between border-b border-(--p-menubar-border-color) px-2 py-1.5">
-              <div class="flex font-bold wrap-anywhere font-stretch-semi-condensed">
-                {{ item.label }}
-              </div>
-              <div class="flex">
-                <p-button
-                  [pTooltip]="item.button"
-                  tooltipPosition="right"
-                  icon="pi pi-plus"
-                  size="small"
-                  (click)="$event.stopPropagation(); handleCreateNode(item.id)"
-                  text
-                />
-              </div>
-            </div>
-          } @else {
-            <div
-              pRipple
-              tabindex="0"
-              class="px-1 py-1.5"
-              [class.active]="item.isActive"
-              (contextmenu)="handleContextMenu($event, item)"
-              (click)="handleSelectPanelItem(item)"
-              (keydown.enter)="handleSelectPanelItem(item)"
-            >
-              <span class="flex items-center gap-3 wrap-anywhere">
-                <i class="pi pi-chevron-right" style="font-size: 8pt !important"></i>
-                {{ item.label }}
-              </span>
-            </div>
-          }
-        </div>
-      </ng-template>
-    </p-panel-menu>
-  </div>
-</p-scroll-panel>
-
-<p-context-menu #contextMenuRef [model]="contextMenu()" appendTo="body">
-  <ng-template #item let-item>
-    <div
-      pRipple
-      class="flex max-w-50! cursor-pointer flex-row items-center justify-start gap-3 px-2 py-2 select-none"
-      [class.text-(--p-red-500)]="item.severity === 'error'"
-    >
-      <div class="flex flex-2 items-center justify-center">
-        <span [class]="item.icon"></span>
-      </div>
-      <div class="flex flex-10 items-center truncate">
-        <span class="truncate text-sm">{{ item.label }}</span>
-      </div>
-    </div>
-  </ng-template>
-</p-context-menu>
+<aside class="flex h-full flex-col gap-5 overflow-auto p-4" aria-label="Model nodes">
+  <label class="flex flex-col gap-2"
+    >Find a node
+    <input suiInput name="search" [ngModel]="search()" (ngModelChange)="search.set($event)" type="search" />
+  </label>
+  <section class="flex flex-col gap-2" aria-label="Current nodes">
+    <h2 class="font-semibold">Nodes</h2>
+    @for (node of nodes(); track node.id) {
+      <button
+        suiButton
+        variant="text"
+        [attr.aria-current]="workspace.store.currentNodeId() === node.id ? 'page' : null"
+        (click)="handleSelect(node)"
+      >
+        {{ node.name }}
+      </button>
+    } @empty {
+      <p class="text-sm opacity-70">No nodes yet.</p>
+    }
+  </section>
+  @if (workspace.view.editable()) {
+    <section class="flex flex-col gap-2" aria-label="Node suggestions">
+      <h2 class="font-semibold">Create from</h2>
+      @for (base of suggestions(); track base.ref) {
+        <button suiButton variant="outlined" size="sm" (click)="handleCreateNode(base)">+ {{ base.name }}</button>
+      }
+    </section>
+  }
+</aside>

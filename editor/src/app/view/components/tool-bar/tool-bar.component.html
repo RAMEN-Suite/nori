@@ -1,56 +1,16 @@
-@let isDark = appState.state().theme === APP_THEME.DARK;
-
-<header animate.enter="tool-bar-entrance">
-  <p-menubar>
-    <ng-template #start>
-      <div class="flex cursor-pointer flex-row items-center select-none" routerLink="/" role="link" tabindex="0" aria-label="Go to home">
-        <svg width="24" height="24" class="mx-3 mb-1" role="img" aria-label="NORI logo">
-          <use href="images/ramen.svg#ramen-logo"></use>
-        </svg>
-        <span class="font-bold uppercase">Nori</span>
-      </div>
-      <p-divider layout="vertical"></p-divider>
-      <app-breadcrumbs />
-    </ng-template>
-    <ng-template #end>
-      <div class="ml-2 flex items-center gap-2">
-        <p-divider layout="vertical"></p-divider>
-        <p-button
-          icon="pi pi-upload"
-          aria-label="Export Model"
-          pTooltip="Export Current Model"
-          tooltipPosition="bottom"
-          positionTop="15"
-          variant="text"
-          size="small"
-          fluid
-          [disabled]="!workspace.store.currentModel()"
-          (click)="handleExportModel()"
-        />
-        <p-button
-          [icon]="isDark ? 'pi pi-moon' : 'pi pi-sun'"
-          aria-label="Toggle Theme"
-          pTooltip="Toggle Theme"
-          tooltipPosition="bottom"
-          positionTop="15"
-          variant="text"
-          size="small"
-          fluid
-          (click)="handleToggleTheme()"
-        />
-        <p-button
-          icon="pi pi-cog"
-          aria-label="Open Settings"
-          pTooltip="Settings"
-          tooltipPosition="bottom"
-          positionTop="15"
-          positionLeft="-10"
-          variant="text"
-          size="small"
-          fluid
-          [disabled]="true"
-        />
-      </div>
-    </ng-template>
-  </p-menubar>
+<header class="border-base-300 bg-base-100 flex flex-wrap items-center justify-between gap-3 border-b p-3">
+  <a class="font-semibold" routerLink="/">Nori</a>
+  <app-breadcrumbs />
+  <div class="flex gap-2">
+    <button
+      suiButton
+      size="sm"
+      variant="outlined"
+      [disabled]="!workspace.view.editable() || !workspace.view.validation()?.valid"
+      (click)="handleExportModel()"
+    >
+      Export model
+    </button>
+    <button suiButton size="sm" variant="text" (click)="handleToggleTheme()">Change theme</button>
+  </div>
 </header>

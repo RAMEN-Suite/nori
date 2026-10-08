@@ -1,67 +1,50 @@
 import { app, BrowserWindow, screen } from 'electron';
-import { DEVELOPMENT_PATH, PRELOAD_PATH, PRODUCTION_PATH } from '../static/PATHS';
-import * as process from 'node:process';
+import { DEVELOPMENT_PATH, PRELOAD_PATH, STATIC_PATH } from '../static/PATHS';
 
 export class Application {
-  protected readonly title: string = '';
-  protected readonly isProduction: boolean;
-  protected window: BrowserWindow;
+  private readonly title: string;
+  private readonly isProduction: boolean;
+  private window: BrowserWindow | null = null;
 
-  constructor(title: string, isProduction: boolean) {
+  public constructor(title: string, isProduction: boolean) {
     this.title = title;
     this.isProduction = isProduction;
-    this.init();
+    void app.whenReady().then((): void => this.createWindow());
+    app.on('window-all-closed', (): void => {
+      if (process.platform !== 'darwin') app.quit();
+    });
+    app.on('activate', (): void => {
+      if (BrowserWindow.getAllWindows().length === 0) this.createWindow();
+    });
   }
 
-  public getWindow(): BrowserWindow {
+  public getWindow(): BrowserWindow | null {
     return this.window;
   }
 
-  public init(): void {
-    this.initAppListener();
-  }
-
-  protected initAppListener(): void {
-    app.on('ready', () => this.createWindow());
-
-    app.on('window-all-closed', () => {
-      if (process.platform !== 'darwin') {
-        app.quit();
-      }
-    });
-
-    app.on('activate', () => {
-      if (BrowserWindow.getAllWindows().length === 0) {
-        this.createWindow();
-      }
-    });
-  }
-
-  protected createWindow(): void {
+  private createWindow(): void {
     const { width, height } = screen.getPrimaryDisplay().workAreaSize;
-    const screenWidth: number = Math.floor(width * 0.9);
-    const screenHeight: number = Math.floor(height * 0.9);
-
-    this.window = new BrowserWindow({
-      height: screenHeight,
-      width: screenWidth,
-      minWidth: Math.min(1280, screenWidth),
-      minHeight: Math.min(720, screenHeight),
-      useContentSize: true,
+    const window: BrowserWindow = new BrowserWindow({
+      width: Math.floor(width * 0.9),
+      height: Math.floor(height * 0.9),
+      minWidth: Math.min(1280, width),
+      minHeight: Math.min(720, height),
+      title: this.title,
       center: true,
       autoHideMenuBar: true,
       titleBarStyle: 'hiddenInset',
-      webPreferences: {
-        preload: PRELOAD_PATH,
-        webSecurity: this.isProduction,
-      },
+      webPreferences: { preload: PRELOAD_PATH, contextIsolation: true, nodeIntegration: false, sandbox: true },
+    });
+    this.window = window;
+    window.on('closed', (): void => {
+      this.window = null;
+    });
+    window.webContents.setWindowOpenHandler((): { action: 'deny' } => ({ action: 'deny' }));
+    window.webContents.on('will-navigate', (event: Electron.Event, url: string): void => {
+      if (url !== window.webContents.getURL()) event.preventDefault();
     });
 
-    if (this.isProduction) {
-      this.window.setMenu(null);
-    }
-
-    const url: string = this.isProduction ? PRODUCTION_PATH : DEVELOPMENT_PATH;
-    this.window.loadURL(url);
+    const loaded: Promise<void> = this.isProduction ? window.loadFile(STATIC_PATH) : window.loadURL(DEVELOPMENT_PATH);
+    void loaded.catch((error: unknown): void => console.error('Could not load Nori:', error));
   }
 }

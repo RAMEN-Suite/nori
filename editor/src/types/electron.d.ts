@@ -5,12 +5,10 @@ declare global {
   }
 }
 
+/** The desktop bridge exposes only actions used by the editor. */
 export interface Electron {
-  on: (channel: string, func: (...args: any[]) => void) => void;
-
-  send: (channel: string, data?: any) => void;
-  sendSync: <T>(channel: string, data?: any) => T;
-  invoke: <T>(channel: string, data?: any) => Promise<T>;
-
-  removeListener: (channel: string, func: (...args: any[]) => void) => void;
+  minimise(): void;
+  maximise(): void;
+  close(): void;
+  openExternal(url: string): Promise<void>;
 }

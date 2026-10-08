@@ -1,37 +1,24 @@
-import { Component, computed, DestroyRef, inject, Signal, signal, WritableSignal } from '@angular/core';
+import { Component, computed, DestroyRef, inject, Signal, signal, WritableSignal, ChangeDetectionStrategy } from '@angular/core';
 import { GraphComponent } from '../graph/graph.component';
-import { GModel } from '@ramen-suite/core/gcore';
-import { GModelGraph, GraphData, GraphLink, GraphNode } from '../../../../core/utils/GModelGraph';
+import { Model } from '@ramen-suite/core/model';
+import { ModelGraph, GraphData, GraphLink, GraphNode } from '../../../../core/utils/ModelGraph';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
-import { FormsModule } from '@angular/forms';
-import { Menubar } from 'primeng/menubar';
 import { DEFAULT_GRAPH_LAYOUT_SETTINGS, GraphLayout, GraphLayoutSettings } from '../graph/graph.types';
-import { SelectButton } from 'primeng/selectbutton';
-import { ToggleButton } from 'primeng/togglebutton';
-import { Tooltip } from 'primeng/tooltip';
-import { Button } from 'primeng/button';
-import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { Button } from '@sushi-kit/angular';
+import { DialogService, DialogRef } from '../../../../services/dialog.service';
 import { NodeColorsDialog } from '../../dialogs/node-colors/node-colors.dialog';
 
 type LayoutToggleOption = 'areIsolatedNodesHidden';
 
-interface ToggleOption {
-  onIcon: string;
-  offIcon: string;
-  tooltip: string;
-  option: LayoutToggleOption;
-}
-
 interface LayoutOption {
   label: string;
-  icon: string;
   mode: GraphLayout;
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-visualizer',
-  imports: [GraphComponent, FormsModule, Menubar, SelectButton, ToggleButton, Tooltip, Button],
-  providers: [DialogService],
+  imports: [GraphComponent, Button],
   templateUrl: './graph-menu.component.html',
   styleUrl: './graph-menu.component.scss',
 })
@@ -40,30 +27,21 @@ export class GraphMenuComponent {
 
   protected readonly destroyRef: DestroyRef = inject(DestroyRef);
   protected readonly dialogService: DialogService = inject(DialogService);
-  protected dialogRef: DynamicDialogRef | null = null;
+  protected dialogRef: DialogRef | null = null;
 
   protected layoutOptions: LayoutOption[] = [
-    { label: 'Cluster', icon: 'pi pi-share-alt', mode: 'clusterTopDown' },
-    { label: 'Tree', icon: 'pi pi-sitemap', mode: 'treeTopDown' },
+    { label: 'Cluster', mode: 'clusterTopDown' },
+    { label: 'Tree', mode: 'treeTopDown' },
   ];
 
-  protected toggleOptions: ToggleOption[] = [
-    {
-      onIcon: 'pi pi-eye-slash',
-      offIcon: 'pi pi-eye',
-      tooltip: 'Toggle Isolated Nodes',
-      option: 'areIsolatedNodesHidden',
-    },
-  ];
-
-  protected settings: WritableSignal<GraphLayoutSettings> = signal({
+  protected readonly settings: WritableSignal<GraphLayoutSettings> = signal({
     ...DEFAULT_GRAPH_LAYOUT_SETTINGS,
     padding: { ...DEFAULT_GRAPH_LAYOUT_SETTINGS.padding },
   });
 
-  protected graphData: Signal<GraphData> = computed((): GraphData => {
-    const model: GModel | null = this.workspace.store.currentModel();
-    const graphData: GraphData = new GModelGraph().build(model);
+  protected readonly graphData: Signal<GraphData> = computed((): GraphData => {
+    const model: Model | null = this.workspace.store.currentModel();
+    const graphData: GraphData = new ModelGraph().build(model, this.workspace.store.getModels());
 
     const key: string = this.computeGraphKey(graphData);
     if (key === this.previousKey) return this.previousData;
@@ -77,7 +55,7 @@ export class GraphMenuComponent {
   private previousKey: string = '';
   private previousData: GraphData = { nodes: [], links: [] };
 
-  constructor() {
+  public constructor() {
     this.destroyRef.onDestroy((): void => {
       this.dialogRef?.close();
       this.dialogRef = null;
@@ -96,10 +74,6 @@ export class GraphMenuComponent {
     this.dialogRef?.close();
     this.dialogRef = this.dialogService.open(NodeColorsDialog, {
       header: 'Configure Node Colors',
-      closeOnEscape: true,
-      dismissableMask: true,
-      draggable: true,
-      closable: true,
     });
   }
 
@@ -108,10 +82,10 @@ export class GraphMenuComponent {
   }
 
   private computeGraphKey(data: GraphData): string {
-    const nodeKeyParts: string[] = [...data.nodes].map((n: GraphNode): string => `${n.id}|${n.label}`);
+    const nodeKeyParts: string[] = [...data.nodes].map((n: GraphNode): string => `${n.id}|${n.label}|${n.superType}`);
     const nodeKey: string = nodeKeyParts.sort().join(',');
 
-    const linkKeyParts: string[] = [...data.links].map((l: GraphLink): string => `${l.id}|${l.source}->${l.target}`);
+    const linkKeyParts: string[] = [...data.links].map((l: GraphLink): string => `${l.id}|${l.label}|${l.source}->${l.target}`);
     const linkKey: string = linkKeyParts.sort().join(',');
 
     return `n:${data.nodes.length}:${nodeKey}#l:${data.links.length}:${linkKey}`;

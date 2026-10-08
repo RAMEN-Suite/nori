@@ -1,44 +1,39 @@
-import { Component, effect, inject, model, ModelSignal, signal, WritableSignal } from '@angular/core';
-import { InputText } from 'primeng/inputtext';
-import { Button } from 'primeng/button';
+import { Component, effect, inject, model, ModelSignal, signal, WritableSignal, ChangeDetectionStrategy } from '@angular/core';
+import { Input, Button, Fieldset, FieldsetLegend, Message } from '@sushi-kit/angular';
+
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
-import { Fieldset } from 'primeng/fieldset';
-import { IftaLabel } from 'primeng/iftalabel';
-import { Message } from 'primeng/message';
+
 import { FormsModule } from '@angular/forms';
-import { REGEXP } from '@ramen-suite/core/gcore';
-import { DynamicDialogRef } from 'primeng/dynamicdialog';
+import { DialogService } from '../../../../services/dialog.service';
 import { CreateSlotInput } from '../../../../services/workspace/workspace.actions';
-import { ActivatedRoute } from '@angular/router';
 import { NavigationService } from '../../../../services/navigation.service';
 import { ModelRecord } from '../../../../models/ModelRecord';
 import { StorageService } from '../../../../services/storage.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-modal-create-model',
-  imports: [InputText, Button, Fieldset, IftaLabel, Message, FormsModule],
+  imports: [Input, Button, Fieldset, FieldsetLegend, Message, FormsModule],
   templateUrl: './create-model.dialog.html',
   styleUrl: './create-model.dialog.scss',
 })
 export class CreateModelDialog {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   protected readonly storage: StorageService = inject(StorageService);
-  protected readonly dialogRef: DynamicDialogRef = inject(DynamicDialogRef);
+  protected readonly dialogRef: DialogService = inject(DialogService);
 
-  protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
   protected readonly navigation: NavigationService = inject(NavigationService);
 
   protected isSubmitted: boolean = false;
 
-  public currentSlot: ModelSignal<number | undefined> = model();
-  protected draftModel: WritableSignal<CreateSlotInput> = signal({
+  public readonly currentSlot: ModelSignal<number | undefined> = model();
+  protected readonly draftModel: WritableSignal<CreateSlotInput> = signal({
     name: '',
-    description: '',
     version: '1.0.0',
     uri: 'https://example.com/',
   });
 
-  constructor() {
+  public constructor() {
     effect((): void => {
       const currentSlot: number | undefined = this.currentSlot();
       if (!currentSlot) return;
@@ -62,12 +57,12 @@ export class CreateModelDialog {
 
   protected isVersionValid(): boolean {
     const version: string = this.draftModel().version.trim();
-    return version !== '' && REGEXP.SEMANTIC_VER.test(version);
+    return version !== '' && /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[\da-zA-Z.-]+)?(?:\+[\da-zA-Z.-]+)?$/.test(version);
   }
 
   protected isUriValid(): boolean {
     const uri: string = this.draftModel().uri.trim();
-    return uri !== '' && REGEXP.VALID_URI.test(uri);
+    return uri !== '' && URL.canParse(uri);
   }
 
   protected isFormValid(): boolean {
@@ -82,9 +77,10 @@ export class CreateModelDialog {
     this.isSubmitted = true;
     if (!this.isFormValid()) return;
 
-    const createdSlot: number = await this.workspace.actions.createSlot(this.draftModel());
-    void this.navigation.navigateToSlot(this.activatedRoute, createdSlot);
-    this.dialogRef.close();
+    await this.dialogRef.run(async (): Promise<void> => {
+      const createdSlot: number = await this.workspace.actions.createSlot(this.draftModel());
+      await this.navigation.navigateToSlot(createdSlot);
+    });
   }
 
   public async handleUpdateModel(): Promise<void> {
@@ -94,7 +90,8 @@ export class CreateModelDialog {
     const currentSlot: number | undefined = this.currentSlot();
     if (!currentSlot) return;
 
-    void this.workspace.actions.updateSlot(currentSlot, this.draftModel());
-    this.dialogRef.close();
+    await this.dialogRef.run(async (): Promise<void> => {
+      await this.workspace.actions.updateSlot(currentSlot, this.draftModel());
+    });
   }
 }

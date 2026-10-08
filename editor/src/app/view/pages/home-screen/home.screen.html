@@ -1,26 +1,24 @@
-@let isDark = appState.state().theme === APP_THEME.DARK;
-
 <main #main class="main-window relative flex flex-col items-center justify-center gap-y-10 text-center">
   <header class="flex flex-col items-center gap-y-2" animate.enter="logo-entrance">
     <div class="flex flex-col items-center gap-3">
-      <svg width="126" height="126" aria-label="NORI Logo" role="img">
+      <svg width="126" height="126" aria-label="Nori Logo" role="img">
         <use href="images/ramen.svg#ramen-logo"></use>
       </svg>
-      <h1 class="text-5xl font-light font-stretch-semi-expanded select-none">NORI</h1>
+      <h1 class="text-5xl font-light font-stretch-semi-expanded select-none">Nori</h1>
     </div>
 
     <span class="text-sm opacity-50"> Version {{ environment.appVersion }} </span>
   </header>
 
   <section class="flex flex-col" role="navigation" aria-label="Project actions" animate.enter="menu-entrance">
-    <p-button variant="text" size="large" icon="pi pi-folder-plus" label="Create a new Project" [routerLink]="'start'" />
-    <p-button variant="text" size="large" icon="pi pi-folder" label="Open an existing Project" [routerLink]="'open'" />
-    <p-button variant="text" size="large" icon="pi pi-download" label="Import a Project" [disabled]="true" />
+    <button suiButton variant="text" size="lg" [routerLink]="'start'">Create a new Project</button>
+    <button suiButton variant="text" size="lg" [routerLink]="'open'">Open an existing Project</button>
+    <button suiButton variant="text" size="lg" [disabled]="true">Import a Project</button>
   </section>
 
   <section class="mt-10 flex flex-col" role="navigation" aria-label="Secondary actions" animate.enter="sub-menu-entrance">
-    <p-button variant="text" size="small" [icon]="isDark ? 'pi pi-moon' : 'pi pi-sun'" label="Change Theme" (click)="handleToggleTheme()" />
-    <p-button variant="text" size="small" icon="pi pi-github" label="Ramen Suite" (click)="handleOpenRepository()" />
+    <button suiButton variant="text" size="sm" (click)="handleToggleTheme()">Change Theme</button>
+    <button suiButton variant="text" size="sm" (click)="handleOpenRepository()">Ramen Suite</button>
   </section>
 
   <div class="background-circle h-170 w-170" aria-hidden="true" animate.enter="logo-entrance"></div>

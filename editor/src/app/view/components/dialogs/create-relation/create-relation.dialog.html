@@ -1,96 +1,25 @@
-<div class="flex w-120 flex-col">
-  <p-fieldset legend="Basics">
-    <div class="flex flex-col gap-3">
-      <div class="flex flex-row gap-2">
-        <p-button
-          styleClass="h-full! border-(--p-autocomplete-dropdown-border-color)! border!"
-          severity="secondary"
-          (click)="handleChangeDirection()"
-          pTooltip="Change Direction"
-          tooltipPosition="bottom"
-          showDelay="500"
-          positionTop="10"
-        >
-          <div class="flex min-w-11 flex-col items-center justify-center gap-2">
-            @let isInbound = selectedDirection() === 'IN';
-            <div class="flex items-center gap-1">
-              <i class="pi pi-circle-fill mt-0.5" style="font-size: 8pt"></i>
-              <i class="pi pi-arrow-right mt-0.5" [class.rotate-180]="isInbound" style="font-size: 8pt"></i>
-            </div>
-            <span class="text-xs">{{ isInbound ? 'FROM' : 'TO' }}</span>
-          </div>
-        </p-button>
-
-        <p-ifta-label class="flex grow">
-          <p-auto-complete
-            [ngModel]="selectedTargetNode()"
-            [suggestions]="filteredReachableNodes()"
-            (completeMethod)="handleAutoComplete($event)"
-            (ngModelChange)="handleSelectTargetNode($event)"
-            id="relationTarget"
-            name="relationTarget"
-            optionLabel="name"
-            appendTo="body"
-            dropdown
-            fluid
-          />
-          <label for="relationTarget">Select Node as Target</label>
-        </p-ifta-label>
-      </div>
-
-      <p-ifta-label>
-        <p-select
-          [options]="allowedRelations()"
-          [ngModel]="selectedRelation()"
-          (ngModelChange)="handleSelectRelation($event)"
-          id="relationship"
-          name="relationship"
-          appendTo="body"
-          fluid
-        >
-          <ng-template #selectedItem let-item>
-            @let isReversed = item.direction !== 'OUT';
-
-            <div class="flex w-full max-w-90 min-w-0 items-center gap-2 overflow-hidden">
-              <i class="pi pi-circle-fill mt-0.5 shrink-0" style="font-size: 8pt"></i>
-
-              <div class="flex shrink-0 items-center whitespace-nowrap" [class.flex-row-reverse]="isReversed">
-                <i class="pi pi-ellipsis-h mt-0.5" style="font-size: 8pt"></i>
-                <span class="mx-1">[ :{{ item.relationName }} ]</span>
-                <i class="pi pi-arrow-right mt-0.5" [class.rotate-180]="isReversed" style="font-size: 8pt"></i>
-              </div>
-
-              <span class="min-w-0 flex-1 truncate">
-                {{ selectedTargetNode()?.name }}
-              </span>
-            </div>
-          </ng-template>
-
-          <ng-template #item let-item>
-            @let isReversed = item.direction !== 'OUT';
-
-            <div class="flex w-full max-w-90 min-w-0 items-center gap-2 overflow-hidden">
-              <i class="pi pi-circle-fill mt-0.5 shrink-0" style="font-size: 8pt"></i>
-
-              <div class="flex shrink-0 items-center whitespace-nowrap" [class.flex-row-reverse]="isReversed">
-                <i class="pi pi-ellipsis-h mt-0.5" style="font-size: 8pt"></i>
-                <span class="mx-1">[ :{{ item.relationName }} ]</span>
-                <i class="pi pi-arrow-right mt-0.5" [class.rotate-180]="isReversed" style="font-size: 8pt"></i>
-              </div>
-
-              <span class="min-w-0 flex-1 truncate">
-                {{ selectedTargetNode()?.name }}
-              </span>
-            </div>
-          </ng-template>
-        </p-select>
-        <label for="relationship">Select a Relationship</label>
-      </p-ifta-label>
-    </div>
-  </p-fieldset>
-
-  <div class="mt-4 flex flex-row justify-between gap-2">
-    <p-button label="Cancel" outlined (click)="handleCloseModal()" />
-    <p-button label="Add Relation" outlined (click)="handleCreateRelation()" [disabled]="!isFormValid()" />
+<div class="flex min-w-80 flex-col gap-5">
+  <button suiButton variant="outlined" (click)="handleDirection()">
+    {{ direction() === 'OUT' ? 'Outgoing relationship' : 'Incoming relationship' }}
+  </button>
+  <div class="flex flex-col gap-2">
+    <span>Connected node </span
+    ><sui-select ariaLabel="Connected node" [options]="targets()" [value]="target()" (valueChange)="handleTarget($event)" />
   </div>
+  <div class="flex flex-col gap-2">
+    <span>Permitted relationship </span
+    ><sui-select
+      ariaLabel="Permitted relationship"
+      [options]="relationOptions()"
+      [value]="relation()"
+      (valueChange)="handleRelation($event)"
+    />
+  </div>
+  @if (!targets().length) {
+    <p>No permitted connections in this direction.</p>
+  }
+  <footer class="flex justify-end gap-3">
+    <button suiButton variant="outlined" (click)="dialogRef.close()" [disabled]="dialogRef.pending()">Cancel</button>
+    <button suiButton (click)="handleSave()" [disabled]="!relation() || dialogRef.pending()">Add relationship</button>
+  </footer>
 </div>

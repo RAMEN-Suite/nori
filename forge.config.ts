@@ -20,7 +20,7 @@ const config: ForgeConfig = {
       config: {
         repository: {
           owner: '',
-          name: 'NORI',
+          name: 'Nori',
         },
         prerelease: false,
         draft: true,

@@ -1,29 +1,32 @@
-import { Component, DOCUMENT, effect, inject } from '@angular/core';
-import { ButtonModule } from 'primeng/button';
+import { Component, DOCUMENT, effect, inject, ChangeDetectionStrategy } from '@angular/core';
+import { DialogHostComponent } from './view/components/dialogs/host/dialog-host.component';
 import { TitleBarComponent } from './view/components/window/title-bar/title-bar.component';
 import { RouterOutlet } from '@angular/router';
+import { StorageService } from './services/storage.service';
 import { APP_THEME, ApplicationState } from './states/application.state';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-root',
-  imports: [ButtonModule, TitleBarComponent, RouterOutlet],
-  providers: [],
+  imports: [DialogHostComponent, TitleBarComponent, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
 export class App {
+  protected readonly storage: StorageService = inject(StorageService);
   private readonly editorState: ApplicationState = inject(ApplicationState);
   private readonly document: Document = inject(DOCUMENT);
   protected readonly isElectronRuntime: boolean = !!window.electron;
 
-  constructor() {
+  public constructor() {
     const titleBarHeight: string = this.isElectronRuntime ? '36px' : '0px';
-    this.document.documentElement.style.setProperty('--p-title-bar-h', titleBarHeight);
+    this.document.documentElement.style.setProperty('--title-bar-height', titleBarHeight);
 
     effect((): void => {
       const html: HTMLElement = this.document.documentElement;
       const isDark: boolean = this.editorState.state().theme === APP_THEME.DARK;
       html.classList.toggle('dark', isDark);
+      html.dataset['theme'] = isDark ? 'sushi-dark' : 'sushi';
     });
   }
 }

@@ -1,56 +1,16 @@
-<div class="flex min-h-8.5 items-center gap-5">
-  <div class="flex flex-10 items-center gap-1">
+<div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+  <div class="flex min-w-0 flex-wrap items-center gap-2 text-sm">
     @if (!isOutgoing()) {
-      <div class="flex flex-6 justify-center">
-        <div class="wrap-anywhere">{{ resolveNode(relation()?.from?.nodeId ?? '') }}</div>
-      </div>
+      <span>{{ resolveNode(relation()?.from?.nodeId ?? '') }}</span>
+      <span aria-hidden="true">→</span>
     }
-
-    <div class="flex flex-6 items-center justify-center gap-2 text-sm select-none">
-      <div class="flex items-center gap-1">
-        @if (isOutgoing()) {
-          <i
-            class="pi pi-circle-fill mt-0.5 cursor-help"
-            style="font-size: 8pt"
-            [pTooltip]="resolveNode(relation()?.from?.nodeId ?? '')"
-            positionTop="15"
-            tooltipPosition="bottom"
-          ></i>
-        }
-        <i class="pi pi-ellipsis-h mt-0.5" style="font-size: 8pt"></i>
-      </div>
-
-      <div class="flex items-center">
-        [
-        <div class="mx-1 max-w-35 truncate">:{{ resolveRelationName(relation()) }}</div>
-        ]
-      </div>
-
-      <div class="flex items-center gap-1">
-        <i class="pi pi-arrow-right mt-0.5" style="font-size: 8pt"></i>
-        @if (!isOutgoing()) {
-          <i
-            class="pi pi-circle-fill mt-0.5 cursor-help"
-            style="font-size: 8pt"
-            [pTooltip]="resolveNode(relation()?.to?.nodeId ?? '')"
-            positionTop="15"
-            tooltipPosition="bottom"
-          ></i>
-        }
-      </div>
-    </div>
-
+    <span class="font-medium">{{ resolveRelationName(relation()) }}</span>
     @if (isOutgoing()) {
-      <div class="flex flex-6 justify-center">
-        <div class="wrap-anywhere">
-          {{ resolveNode(relation()?.to?.nodeId ?? '') }}
-        </div>
-      </div>
+      <span aria-hidden="true">→</span>
+      <span>{{ resolveNode(relation()?.to?.nodeId ?? '') }}</span>
     }
   </div>
-
-  <div class="flex flex-2 justify-center">
-    <!-- <p-button icon="pi pi-pencil" size="small" variant="text" /> -->
-    <p-button icon="pi pi-trash" severity="danger" size="small" variant="text" (click)="handleDeleteRelation()" />
-  </div>
+  @if (workspace.view.editable()) {
+    <button suiButton severity="error" size="sm" variant="text" (click)="handleDeleteRelation()">Remove</button>
+  }
 </div>

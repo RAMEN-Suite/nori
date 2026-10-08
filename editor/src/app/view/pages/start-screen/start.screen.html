@@ -1,93 +1,22 @@
-<main class="main-window mx-auto flex max-w-2xl items-center">
-  <section class="card flex w-full flex-col gap-5" animate.enter="card-entrance" aria-label="Create project">
-    <header>
-      <h1 class="block text-center text-3xl font-light">Creating a NORI Project</h1>
-    </header>
-
-    <p-fieldset legend="Basics">
-      <div class="flex flex-col gap-3">
-        <div class="flex flex-col gap-2">
-          <p-ifta-label>
-            <input
-              pInputText
-              #nameModel="ngModel"
-              id="name"
-              name="name"
-              maxlength="70"
-              autocomplete="off"
-              [(ngModel)]="manifest.name"
-              [invalid]="(nameModel.touched || isSubmitted) && !isProjectNameValid()"
-              fluid
-              required
-            />
-            <label for="name">Project Name</label>
-          </p-ifta-label>
-
-          @if ((nameModel.touched || isSubmitted) && !isProjectNameValid()) {
-            <p-message severity="error" size="small" variant="simple"> Project name must be at least 3 characters. </p-message>
-          }
-        </div>
-
-        <p-ifta-label>
-          <textarea
-            pTextarea
-            id="description"
-            name="description"
-            [(ngModel)]="manifest.description"
-            maxlength="140"
-            autocomplete="off"
-            fluid
-          ></textarea>
-          <label for="description">Project Description</label>
-        </p-ifta-label>
-      </div>
-    </p-fieldset>
-
-    <p-fieldset legend="Modelling">
-      <div class="flex flex-col gap-3">
-        <div class="flex flex-col gap-2">
-          <p-ifta-label>
-            <p-select
-              id="metamodel"
-              name="metamodel"
-              #metamodelModel="ngModel"
-              [(ngModel)]="selectedMetamodel"
-              [options]="metamodels"
-              [invalid]="(metamodelModel.touched || isSubmitted) && !isMetamodelValid()"
-              fluid
-            >
-              <ng-template #selectedItem let-model>
-                {{ model.name }} <span class="text-xs opacity-70">(v.{{ model.version }})</span>
-              </ng-template>
-
-              <ng-template #item let-model>
-                {{ model.name }} <span class="ms-1 text-xs opacity-70">(v.{{ model.version }})</span>
-              </ng-template>
-            </p-select>
-            <label for="metamodel">Metamodel</label>
-          </p-ifta-label>
-
-          @if ((metamodelModel.touched || isSubmitted) && !isMetamodelValid()) {
-            <p-message severity="error" size="small" variant="simple"> Please select a valid metamodel. </p-message>
-          }
-        </div>
-
-        <div class="flex items-center gap-3">
-          <p-check-box id="example" name="example" [(ngModel)]="isCreatingExample" binary />
-          <label for="example" class="cursor-pointer text-sm select-none" (click)="isCreatingExample = !isCreatingExample">
-            Create an example model based on the selected metamodel.
-          </label>
-        </div>
-      </div>
-    </p-fieldset>
-
-    <footer class="mt-4 flex items-center justify-between gap-5">
-      <div class="button-group flex gap-5">
-        <p-button label="Cancel" outlined [routerLink]="'/'" />
-        <p-button label="Open Project" outlined [routerLink]="'/open'" />
-      </div>
-
-      <p-button label="Finish Setup" outlined type="button" [disabled]="!isFormValid()" (click)="handleCreateProject()" />
+<main class="main-window mx-auto flex max-w-2xl flex-col justify-center gap-5 overflow-auto p-6">
+  <h1 class="text-3xl">Create a Nori project</h1>
+  <form class="flex flex-col gap-5" (ngSubmit)="handleCreateProject()">
+    <label class="flex flex-col gap-2"
+      >Project name
+      <input suiInput name="name" maxlength="70" [(ngModel)]="manifest.name" required minlength="3" />
+    </label>
+    <label class="flex flex-col gap-2"
+      >Description
+      <textarea suiTextarea name="description" maxlength="140" [(ngModel)]="manifest.description"></textarea>
+    </label>
+    <p>Based on the RAMEN reference model.</p>
+    <label><input suiCheckbox type="checkbox" name="example" [(ngModel)]="isCreatingExample" /> Start with a correspondence example</label>
+    @if (storage.error(); as error) {
+      <p suiMessage severity="error">{{ error }}</p>
+    }
+    <footer class="flex justify-between gap-3">
+      <button suiButton variant="outlined" type="button" routerLink="/">Cancel</button>
+      <button suiButton type="submit" [disabled]="!isFormValid() || pending">{{ pending ? 'Creating…' : 'Create project' }}</button>
     </footer>
-  </section>
+  </form>
 </main>

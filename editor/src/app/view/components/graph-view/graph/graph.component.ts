@@ -12,20 +12,20 @@ import {
   untracked,
   viewChild,
   WritableSignal,
+  ChangeDetectionStrategy,
+  ViewEncapsulation,
 } from '@angular/core';
 import * as d3 from 'd3';
 import { ZoomTransform } from 'd3';
-import { GraphData } from '../../../../core/utils/GModelGraph';
-import type {
-  LinkSelection,
-  NodeDrag,
-  NodeSelection,
-  RootSelection,
-  SVGSelection,
-  ZoomBehaviour,
-  ZoomEvent,
-} from './graph.types';
+import { GraphData } from '../../../../core/utils/ModelGraph';
 import {
+  type LinkSelection,
+  type NodeDrag,
+  type NodeSelection,
+  type RootSelection,
+  type SVGSelection,
+  type ZoomBehaviour,
+  type ZoomEvent,
   DEFAULT_GRAPH_LAYOUT_SETTINGS,
   GraphLayoutSettings,
   GraphPadding,
@@ -34,24 +34,36 @@ import {
   ResolvedLink,
   ViewportSize,
 } from './graph.types';
+
 import { buildRenderModel, getViewportSize } from './graph.layout';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
-import { NodeColors } from '../../../../models/ModelRecord';
-import { ActivatedRoute } from '@angular/router';
+import { ModelRef } from '@ramen-suite/core/model';
+import { StorageService } from '../../../../services/storage.service';
+import { type ModelRecord, NodeColors } from '../../../../models/ModelRecord';
+
 import { NavigationService } from '../../../../services/navigation.service';
 
+interface LineEnds {
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+}
+
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-graph',
+  encapsulation: ViewEncapsulation.None,
   imports: [],
   templateUrl: './graph.component.html',
   styleUrl: './graph.component.scss',
 })
 export class GraphComponent implements AfterViewInit {
+  private readonly storage: StorageService = inject(StorageService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   protected readonly destroyRef: DestroyRef = inject(DestroyRef);
 
   protected readonly navigation: NavigationService = inject(NavigationService);
-  protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
 
   protected svgSelection?: SVGSelection;
   protected rootGroupSelection?: RootSelection;
@@ -67,17 +79,18 @@ export class GraphComponent implements AfterViewInit {
   protected readonly host: Signal<ElementRef<HTMLDivElement> | undefined> = viewChild('host');
   protected readonly superTypeColors: WritableSignal<NodeColors> = signal({});
 
-  public graphData: InputSignal<GraphData> = input({ nodes: [], links: [] } as GraphData);
-  public settings: InputSignal<GraphLayoutSettings> = input({
+  public readonly graphData: InputSignal<GraphData> = input({ nodes: [], links: [] } as GraphData);
+  public readonly settings: InputSignal<GraphLayoutSettings> = input({
     ...DEFAULT_GRAPH_LAYOUT_SETTINGS,
     padding: { ...DEFAULT_GRAPH_LAYOUT_SETTINGS.padding },
   });
 
+  private readonly frames: Set<number> = new Set();
   private lastGraphDataRef?: GraphData;
   private lastSettingsRef?: GraphLayoutSettings;
   private currentTransform: ZoomTransform = d3.zoomIdentity;
 
-  constructor() {
+  public constructor() {
     this.registerHoverEffect();
     this.registerColorChangesEffect();
     this.registerGraphChangesEffect();
@@ -110,7 +123,7 @@ export class GraphComponent implements AfterViewInit {
 
       if (hasGraphChanged) {
         this.svgSelection?.interrupt();
-        this.svgSelection?.call(this.zoomBehavior!.transform, d3.zoomIdentity);
+        if (this.zoomBehavior) this.svgSelection?.call(this.zoomBehavior.transform, d3.zoomIdentity);
       }
 
       this.render(data, true);
@@ -153,7 +166,7 @@ export class GraphComponent implements AfterViewInit {
       if (this.isResizeRenderPending) return;
       this.isResizeRenderPending = true;
 
-      window.requestAnimationFrame((): void => {
+      this.scheduleFrame((): void => {
         this.isResizeRenderPending = false;
         this.updateViewBox();
         this.render(this.graphData(), false);
@@ -181,8 +194,8 @@ export class GraphComponent implements AfterViewInit {
     this.rootGroupSelection.attr('transform', this.currentTransform.toString());
     if (!shouldFit) return;
 
-    window.requestAnimationFrame((): void => {
-      window.requestAnimationFrame((): void => {
+    this.scheduleFrame((): void => {
+      this.scheduleFrame((): void => {
         this.fitToLayoutAnimated(180);
       });
     });
@@ -199,7 +212,7 @@ export class GraphComponent implements AfterViewInit {
     if (!model) return node;
     const realId: string | undefined = node.ghost?.realNodeId;
     if (!realId) return node;
-    return (model.nodesById.get(realId) as PositionedNode | undefined) ?? node;
+    return model.nodesById.get(realId) ?? node;
   }
 
   private refreshHover(): void {
@@ -229,7 +242,7 @@ export class GraphComponent implements AfterViewInit {
       .data(nodes, (node: PositionedNode): string => node.id)
       .join(
         (enter) => {
-          const g = enter
+          const g: NodeSelection = enter
             .append('g')
             .attr('class', 'node')
             .call(this.createDragBehavior())
@@ -253,7 +266,7 @@ export class GraphComponent implements AfterViewInit {
       );
 
     merged.select('circle').attr('r', this.settings().nodeRadius);
-    merged.select('text').text((node: PositionedNode): string => node.label ?? node.id);
+    merged.select('text').text((node: PositionedNode): string => node.label);
     merged.classed('is-ghost', (node: PositionedNode): boolean => !!node.ghost);
 
     return merged;
@@ -262,9 +275,12 @@ export class GraphComponent implements AfterViewInit {
   private drawArrowMarker(): void {
     if (!this.svgSelection) return;
 
-    const defs = this.svgSelection.selectAll<SVGDefsElement, unknown>('defs').data([0]).join('defs');
+    const defs: d3.Selection<SVGDefsElement, number, SVGSVGElement, unknown> = this.svgSelection
+      .selectAll<SVGDefsElement, unknown>('defs')
+      .data([0])
+      .join('defs');
 
-    const marker = defs
+    const marker: d3.Selection<SVGMarkerElement, number, SVGDefsElement, number> = defs
       .selectAll<SVGMarkerElement, unknown>('marker#g-arrow')
       .data([0])
       .join('marker')
@@ -332,10 +348,17 @@ export class GraphComponent implements AfterViewInit {
     const nodeRadius: number = this.settings().nodeRadius;
     const arrowTrimPixels: number = 5;
 
-    const computeTrimmedEnds = this.computeTrimmedEnds.bind(this);
+    const computeTrimmedEnds: (
+      sourceX: number,
+      sourceY: number,
+      targetX: number,
+      targetY: number,
+      sourceTrim: number,
+      targetTrim: number,
+    ) => LineEnds = this.computeTrimmedEnds.bind(this);
 
     this.linkSelection?.each(function (this: SVGLineElement, link: ResolvedLink): void {
-      const trimmed = computeTrimmedEnds(
+      const trimmed: LineEnds = computeTrimmedEnds(
         link.source.x,
         link.source.y,
         link.target.x,
@@ -433,7 +456,7 @@ export class GraphComponent implements AfterViewInit {
     const availableHeight: number = Math.max(1, viewport.height - padding.top - padding.bottom);
 
     const rawScale: number = Math.min(availableWidth / contentBox.width, availableHeight / contentBox.height);
-    const clampedScale: number = Math.max(0.2, Math.min(4, rawScale));
+    const clampedScale: number = Math.max(0.2, Math.min(1, rawScale));
 
     const translateX: number =
       padding.left + (availableWidth - contentBox.width * clampedScale) / 2 - contentBox.x * clampedScale;
@@ -450,7 +473,18 @@ export class GraphComponent implements AfterViewInit {
       .call(this.zoomBehavior.transform, targetTransform);
   }
 
+  private scheduleFrame(action: () => void): void {
+    const id: number = window.requestAnimationFrame((): void => {
+      this.frames.delete(id);
+      if (!this.destroyRef.destroyed) action();
+    });
+    this.frames.add(id);
+  }
+
   private cleanup(): void {
+    for (const id of this.frames) window.cancelAnimationFrame(id);
+    this.frames.clear();
+    this.svgSelection?.interrupt();
     this.resizeObserver?.disconnect();
     this.resizeObserver = undefined;
 
@@ -478,7 +512,15 @@ export class GraphComponent implements AfterViewInit {
     event.stopPropagation();
     const selectedSlot: number = this.workspace.store.currentSlot();
     const resolvedId: string = node.ghost?.realNodeId ?? node.id;
-    void this.navigation.navigateToNode(this.activatedRoute, selectedSlot, resolvedId);
+    if (ModelRef.isQualified(resolvedId)) {
+      const { modelId, refId } = ModelRef.splitQualified(resolvedId);
+      const record: ModelRecord | undefined = this.storage
+        .records()
+        .find((item: ModelRecord): boolean => item.gmodel.id === modelId);
+      if (record) void this.navigation.navigateToNode(record.slot, refId);
+      return;
+    }
+    void this.navigation.navigateToNode(selectedSlot, resolvedId);
   }
 
   private handleBackgroundClick(event: MouseEvent): void {
@@ -490,6 +532,6 @@ export class GraphComponent implements AfterViewInit {
     if (isOnNode || isOnLink) return;
 
     const selectedSlot: number = this.workspace.store.currentSlot();
-    void this.navigation.navigateToSlot(this.activatedRoute, selectedSlot);
+    void this.navigation.navigateToSlot(selectedSlot);
   }
 }

@@ -1,65 +1,42 @@
-import { Component, computed, inject, OnDestroy, OnInit, Signal } from '@angular/core';
-import { DynamicDialogRef } from 'primeng/dynamicdialog';
-import { GNode } from '@ramen-suite/core/gcore';
+import { Component, computed, inject, signal, type Signal, type WritableSignal, ChangeDetectionStrategy } from '@angular/core';
+import { ColorPicker, Button } from '@sushi-kit/angular';
+import { type Node } from '@ramen-suite/core/model';
+import { DialogService } from '../../../../services/dialog.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
-import { ScrollPanel } from 'primeng/scrollpanel';
-import { InputText } from 'primeng/inputtext';
-import { IftaLabel } from 'primeng/iftalabel';
-import { ColorPicker } from 'primeng/colorpicker';
-import { FormsModule } from '@angular/forms';
-import { Button } from 'primeng/button';
-import { NodeColors } from '../../../../models/ModelRecord';
+import { type NodeColors } from '../../../../models/ModelRecord';
 import iwanthue from 'iwanthue';
 
-interface NodeColorOption {
-  id: string;
-  name: string;
-}
-
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-set-colors',
-  imports: [ScrollPanel, InputText, IftaLabel, ColorPicker, FormsModule, Button],
+  imports: [ColorPicker, Button],
   templateUrl: './node-colors.dialog.html',
   styleUrl: './node-colors.dialog.scss',
 })
-export class NodeColorsDialog implements OnInit, OnDestroy {
-  protected readonly dialogRef: DynamicDialogRef = inject(DynamicDialogRef);
+export class NodeColorsDialog {
+  protected readonly dialogRef: DialogService = inject(DialogService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
+  protected readonly colours: WritableSignal<NodeColors> = signal(structuredClone(this.workspace.store.currentNodeColors()));
+  protected readonly nodeColorOptions: Signal<readonly Node[]> = computed((): readonly Node[] => this.workspace.view.baseNodes());
 
-  protected currentColors: NodeColors = {};
+  protected handleGenerateColors(): void {
+    const nodes: readonly Node[] = this.nodeColorOptions();
+    if (!nodes.length) return;
 
-  protected readonly nodeColorOptions: Signal<NodeColorOption[]> = computed((): NodeColorOption[] => {
-    const baseNodes: ReadonlyArray<GNode> = this.workspace.view.baseNodes();
-    return baseNodes.map((n: GNode): NodeColorOption => ({ id: n.id, name: n.name }));
-  });
-
-  public ngOnInit(): void {
-    this.currentColors = this.workspace.store.currentNodeColors();
+    const palette: string[] = iwanthue(nodes.length, { colorSpace: 'colorblind' });
+    this.colours.set(
+      Object.fromEntries(nodes.map((node: Node, index: number): [string, string] => [node.id, palette[index] ?? '#64748b'])),
+    );
   }
 
-  public ngOnDestroy(): void {
-    void this.handleSaveChanges();
+  protected handleColorChange(id: string, colour: string): void {
+    this.colours.update((colours: NodeColors): NodeColors => ({ ...colours, [id]: colour }));
   }
 
-  protected async handleGenerateColors(): Promise<void> {
-    const baseNodes: ReadonlyArray<GNode> = this.workspace.view.baseNodes();
-    const colors: string[] = iwanthue(baseNodes.length, { colorSpace: 'colorblind' });
-    const colorMap: NodeColors = {};
-
-    for (const [index, node] of baseNodes.entries()) {
-      colorMap[node.id] = colors[index] ?? '';
-    }
-
-    this.workspace.store.setCurrentNodeColors(colorMap);
-    await this.workspace.actions.updateNodeColors();
-  }
-
-  protected async handleColorChange(baseId: string, hexColor: string): Promise<void> {
-    this.workspace.store.updateCurrentNodeColors(baseId, hexColor);
-  }
-
-  protected handleSaveChanges(): void {
-    void this.workspace.actions.updateNodeColors();
-    this.dialogRef.close();
+  protected async handleSaveChanges(): Promise<void> {
+    await this.dialogRef.run(async (): Promise<void> => {
+      this.workspace.store.setCurrentNodeColors(this.colours());
+      await this.workspace.actions.updateNodeColors();
+    });
   }
 }

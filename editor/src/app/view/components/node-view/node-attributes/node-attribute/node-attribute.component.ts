@@ -1,50 +1,45 @@
-import { Component, DestroyRef, inject, input, InputSignal, model, ModelSignal } from '@angular/core';
-import { Button } from 'primeng/button';
-import { Tooltip } from 'primeng/tooltip';
-import { Bounds, GAttribute } from '@ramen-suite/core/gcore';
+import { Component, DestroyRef, inject, input, InputSignal, model, ModelSignal, ChangeDetectionStrategy } from '@angular/core';
+import { Button, Tooltip, Chip } from '@sushi-kit/angular';
+
+import { Bounds, Attribute } from '@ramen-suite/core/model';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
 import { NavigationService } from '../../../../../services/navigation.service';
-import { ActivatedRoute } from '@angular/router';
-import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { DialogService, DialogRef } from '../../../../../services/dialog.service';
 import { CreateAttributeDialog } from '../../../dialogs/create-attribute/create-attribute.dialog';
-import {
-  ConfirmationButton,
-  ConfirmationDialog,
-  ConfirmationOptions,
-} from '../../../dialogs/confirmation/confirmation.dialog';
-import { Chip } from 'primeng/chip';
+import { ConfirmationButton, ConfirmationDialog, ConfirmationOptions } from '../../../dialogs/confirmation/confirmation.dialog';
 
-const FORMATS = {
+const FORMATS: Readonly<{ EXCLAMATION: string; LIST: string; UPPER_BOUND: string }> = {
   EXCLAMATION: "<span class='font-bold ms-1 text-red-500 font-stretch-200%'>!</span>",
   LIST: "<span class='font-bold me-1'>[</span>%s<span class='font-bold ms-1'>]</span>",
   UPPER_BOUND: "<span class='font-bold'>(%s)</span>",
 };
 
-type AttributeChip = { icon: string; tooltip: string };
+interface AttributeChip {
+  tooltip: string;
+}
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-node-attribute',
   imports: [Button, Tooltip, Chip],
-  providers: [DialogService],
   templateUrl: './node-attribute.component.html',
   styleUrl: './node-attribute.component.scss',
 })
 export class NodeAttributeComponent {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   protected readonly navigation: NavigationService = inject(NavigationService);
-  protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
 
   protected readonly destroyRef: DestroyRef = inject(DestroyRef);
   protected readonly dialogService: DialogService = inject(DialogService);
-  protected dialogRef: DynamicDialogRef | null = null;
+  protected dialogRef: DialogRef | null = null;
 
-  public nodeId: InputSignal<string | undefined> = input();
-  public modelId: InputSignal<string | undefined> = input();
-  public modelSlot: InputSignal<number> = input(0);
+  public readonly nodeId: InputSignal<string | undefined> = input();
+  public readonly modelId: InputSignal<string | undefined> = input();
+  public readonly modelSlot: InputSignal<number> = input(0);
 
-  public attribute: ModelSignal<GAttribute | undefined> = model();
+  public readonly attribute: ModelSignal<Attribute | undefined> = model();
 
-  constructor() {
+  public constructor() {
     this.destroyRef.onDestroy((): void => {
       this.dialogRef?.close();
       this.dialogRef = null;
@@ -75,22 +70,19 @@ export class NodeAttributeComponent {
   }
 
   protected handleOpenUpdateAttribute(): void {
-    const currentAttribute: GAttribute | undefined = this.attribute();
+    const currentAttribute: Attribute | undefined = this.attribute();
     if (!currentAttribute) return;
 
     this.dialogRef?.close();
     this.dialogRef = this.dialogService.open(CreateAttributeDialog, {
       header: 'Edit Attribute',
-      closeOnEscape: true,
-      draggable: true,
-      modal: true,
-      closable: true,
+
       inputValues: { currentAttribute },
     });
   }
 
-  protected async handleDeleteAttribute(): Promise<void> {
-    const currentAttribute: GAttribute | undefined = this.attribute();
+  protected handleDeleteAttribute(): void {
+    const currentAttribute: Attribute | undefined = this.attribute();
     if (!currentAttribute) return;
 
     const currentNodeId: string | null = this.workspace.store.currentNodeId();
@@ -98,16 +90,16 @@ export class NodeAttributeComponent {
 
     const acceptButton: ConfirmationButton = {
       label: 'Yes, I want delete it',
-      size: 'small',
-      severity: 'danger',
+      size: 'sm',
+      severity: 'error',
       variant: 'outlined',
       click: async (): Promise<void> => {
-        await this.workspace.actions.removeAttribute(currentNodeId, currentAttribute.name);
+        await this.workspace.actions.removeAttribute(currentNodeId, currentAttribute.id);
       },
     };
     const cancelButton: ConfirmationButton = {
       label: `Cancel`,
-      size: 'small',
+      size: 'sm',
       variant: 'outlined',
       click: (): void => this.dialogRef?.close(),
     };
@@ -116,16 +108,12 @@ export class NodeAttributeComponent {
       title: 'Deleting Attribute',
       message: `Do you really want to delete <span class="font-bold font-stretch-semi-expanded">${currentAttribute.name}</span>? <br />
       Once deleted, it is gone forever.`,
-      icon: 'pi-trash',
+
       justify: 'justify-around',
       buttons: [[cancelButton], [acceptButton]],
     };
 
     this.dialogRef = this.dialogService.open(ConfirmationDialog, {
-      showHeader: false,
-      closeOnEscape: true,
-      dismissableMask: true,
-      closable: true,
       inputValues: { options },
     });
   }
@@ -135,12 +123,13 @@ export class NodeAttributeComponent {
     const nodeId: string | undefined = this.nodeId();
     if (!slot || !nodeId || slot === 0) return;
 
-    void this.navigation.navigateToNode(this.activatedRoute, slot, nodeId);
+    void this.navigation.navigateToNode(slot, nodeId);
   }
 
-  protected getCollectionChip(attribute: GAttribute | undefined): AttributeChip | null {
-    if (attribute?.isOrdered) return { icon: 'pi pi-sort-alt', tooltip: 'List preserves element order' };
-    if (attribute?.isUnique) return { icon: 'pi pi-globe', tooltip: 'List contains no duplicates' };
+  protected getCollectionChip(attribute: Attribute | undefined): AttributeChip | null {
+    if (!attribute || attribute.bounds.upperBound === 1) return null;
+    if (attribute.isOrdered) return { tooltip: 'List preserves element order' };
+    if (attribute.isUnique) return { tooltip: 'List contains no duplicates' };
     return null;
   }
 }

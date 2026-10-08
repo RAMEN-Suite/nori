@@ -1,19 +1,15 @@
-import { Component, DestroyRef, inject, input, InputSignal } from '@angular/core';
-import { GRelation } from '@ramen-suite/core/gcore';
-import { Button } from 'primeng/button';
+import { type RelationRemovalPreview, Relation } from '@ramen-suite/core/model';
+import { Component, DestroyRef, inject, input, InputSignal, ChangeDetectionStrategy } from '@angular/core';
+
+import { Button } from '@sushi-kit/angular';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
-import { Tooltip } from 'primeng/tooltip';
-import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import {
-  ConfirmationButton,
-  ConfirmationDialog,
-  ConfirmationOptions,
-} from '../../../dialogs/confirmation/confirmation.dialog';
+import { DialogService, DialogRef } from '../../../../../services/dialog.service';
+import { ConfirmationButton, ConfirmationDialog, ConfirmationOptions } from '../../../dialogs/confirmation/confirmation.dialog';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-node-relation',
-  imports: [Button, Tooltip],
-  providers: [DialogService],
+  imports: [Button],
   templateUrl: './node-relation.component.html',
   styleUrl: './node-relation.component.scss',
 })
@@ -22,12 +18,12 @@ export class NodeRelationComponent {
 
   protected readonly destroyRef: DestroyRef = inject(DestroyRef);
   protected readonly dialogService: DialogService = inject(DialogService);
-  protected dialogRef: DynamicDialogRef | null = null;
+  protected dialogRef: DialogRef | null = null;
 
-  public relation: InputSignal<GRelation | undefined> = input();
-  public isOutgoing: InputSignal<boolean> = input(false);
+  public readonly relation: InputSignal<Relation | undefined> = input();
+  public readonly isOutgoing: InputSignal<boolean> = input(false);
 
-  constructor() {
+  public constructor() {
     this.destroyRef.onDestroy((): void => {
       this.dialogRef?.close();
       this.dialogRef = null;
@@ -35,48 +31,46 @@ export class NodeRelationComponent {
   }
 
   protected resolveNode(nodeId: string): string {
-    return this.workspace.view.currentNodesById().get(nodeId)?.name ?? 'Unknown';
+    return this.workspace.view.editable()
+      ? (this.workspace.store.getDraft().getNode(nodeId)?.name ?? nodeId)
+      : (this.workspace.view.currentNodesById().get(nodeId)?.name ?? nodeId);
   }
 
-  protected resolveRelationName(relation?: GRelation): string {
+  protected resolveRelationName(relation?: Relation): string {
     if (!relation) return '';
     return this.workspace.view.resolveBaseRelationName(relation);
   }
 
-  protected async handleDeleteRelation(): Promise<void> {
-    const currentRelation: GRelation | undefined = this.relation();
+  protected handleDeleteRelation(): void {
+    const currentRelation: Relation | undefined = this.relation();
     if (!currentRelation) return;
 
+    const preview: RelationRemovalPreview = this.workspace.actions.previewRelationRemoval(currentRelation.id);
     const acceptButton: ConfirmationButton = {
-      label: 'Yes, I want delete it',
-      size: 'small',
-      severity: 'danger',
+      label: preview.relations.length > 1 ? 'Remove with refinements' : 'Remove',
+      size: 'sm',
+      severity: 'error',
       variant: 'outlined',
       click: async (): Promise<void> => {
-        await this.workspace.actions.removeRelation(currentRelation.id);
+        await this.workspace.actions.removeRelation(currentRelation.id, true);
       },
     };
     const cancelButton: ConfirmationButton = {
       label: `Cancel`,
-      size: 'small',
+      size: 'sm',
       variant: 'outlined',
       click: (): void => this.dialogRef?.close(),
     };
 
     const options: ConfirmationOptions = {
       title: 'Deleting Relation',
-      message: `Do you really want to delete <span class="font-bold font-stretch-semi-expanded">${currentRelation.name}</span>? <br />
-      Once deleted, it is gone forever.`,
-      icon: 'pi-trash',
+      message: `Remove ${currentRelation.name}? This removes ${preview.relations.length} relationships, including dependent refinements.`,
+
       justify: 'justify-around',
       buttons: [[cancelButton], [acceptButton]],
     };
 
     this.dialogRef = this.dialogService.open(ConfirmationDialog, {
-      showHeader: false,
-      closeOnEscape: true,
-      dismissableMask: true,
-      closable: true,
       inputValues: { options },
     });
   }

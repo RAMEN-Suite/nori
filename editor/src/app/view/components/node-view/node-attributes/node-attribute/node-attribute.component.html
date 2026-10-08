@@ -1,9 +1,9 @@
 <div class="flex min-h-8.5 flex-row items-center gap-5">
   <div class="flex flex-1 items-center justify-end gap-4">
     @if (attribute()?.isKey) {
-      <i pTooltip="Key Attribute" tooltipPosition="bottom" positionTop="12" showDelay="500" class="pi pi-key cursor-help"></i>
+      <span suiTooltip="Key property" placement="bottom" class="text-xs">Key</span>
     } @else if (attribute()?.isReadOnly) {
-      <i pTooltip="ReadOnly Attribute" tooltipPosition="bottom" positionTop="12" showDelay="500" class="pi pi-eye cursor-help"></i>
+      <span suiTooltip="Read-only property" placement="bottom" class="text-xs">Read-only</span>
     }
   </div>
   <div class="flex flex-9 flex-row items-center">
@@ -19,11 +19,10 @@
       <span [innerHTML]="formatAttributeType(bounds, dataType)"></span>
 
       @if (chip) {
-        <p-chip
-          [icon]="chip.icon"
-          [pTooltip]="chip.tooltip"
-          tooltipPosition="bottom"
-          positionTop="12"
+        <sui-chip
+          [label]="chip.tooltip"
+          [suiTooltip]="chip.tooltip"
+          placement="bottom"
           showDelay="500"
           class="ms-2 mt-0.5 cursor-help px-3! py-1! text-xs"
         />
@@ -31,23 +30,24 @@
     </div>
   </div>
   <div class="flex flex-2 justify-center">
-    @if (workspace.store.currentSlot() === modelSlot()) {
+    @if (workspace.view.editable() && workspace.store.currentSlot() === modelSlot()) {
       <div class="flex justify-center">
-        <p-button icon="pi pi-pencil" size="small" variant="text" (click)="handleOpenUpdateAttribute()" />
-        <p-button icon="pi pi-trash" severity="danger" size="small" variant="text" (click)="handleDeleteAttribute()" />
+        <button suiButton size="sm" variant="text" (click)="handleOpenUpdateAttribute()">Edit</button>
+        <button suiButton severity="error" size="sm" variant="text" (click)="handleDeleteAttribute()">Remove</button>
       </div>
     } @else {
-      <p-button
-        pTooltip="Jump to Source"
-        tooltipPosition="bottom"
-        positionTop="12"
+      <button
+        suiButton
+        suiTooltip="Jump to Source"
+        placement="bottom"
         showDelay="500"
-        icon="pi pi-reply"
-        size="small"
+        size="sm"
         variant="text"
         [disabled]="modelSlot() === 0"
         (click)="handleOpenQualifiedReference()"
-      />
+      >
+        Jump to Source
+      </button>
     }
   </div>
 </div>

@@ -1,15 +1,21 @@
-import { Component, computed, DestroyRef, inject, OnInit, Signal, signal, WritableSignal } from '@angular/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  OnInit,
+  Signal,
+  signal,
+  WritableSignal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { StorageService } from '../../../services/storage.service';
 import { WindowState } from '../../../states/window.state';
-import { InputText } from 'primeng/inputtext';
+import { Input, Button } from '@sushi-kit/angular';
 import { FormsModule } from '@angular/forms';
-import { Button } from 'primeng/button';
+
 import { RouterLink } from '@angular/router';
-import { InputGroup } from 'primeng/inputgroup';
-import { InputGroupAddon } from 'primeng/inputgroupaddon';
-import { Fieldset } from 'primeng/fieldset';
 import { Manifest } from '../../../models/Manifest';
-import { ScrollPanel } from 'primeng/scrollpanel';
 import { DatePipe } from '@angular/common';
 import { NavigationService } from '../../../services/navigation.service';
 import {
@@ -17,24 +23,12 @@ import {
   ConfirmationDialog,
   ConfirmationOptions,
 } from '../../components/dialogs/confirmation/confirmation.dialog';
-import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { Tooltip } from 'primeng/tooltip';
+import { DialogService, DialogRef } from '../../../services/dialog.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-open-screen',
-  imports: [
-    InputText,
-    Button,
-    RouterLink,
-    InputGroup,
-    InputGroupAddon,
-    Fieldset,
-    FormsModule,
-    ScrollPanel,
-    DatePipe,
-    Tooltip,
-  ],
-  providers: [DialogService],
+  imports: [Input, Button, RouterLink, FormsModule, DatePipe],
   templateUrl: './open.screen.html',
   styleUrl: './open.screen.scss',
 })
@@ -46,7 +40,7 @@ export class OpenScreen implements OnInit {
 
   protected readonly destroyRef: DestroyRef = inject(DestroyRef);
   protected readonly dialogService: DialogService = inject(DialogService);
-  protected dialogRef: DynamicDialogRef | null = null;
+  protected dialogRef: DialogRef | null = null;
 
   protected readonly searchInput: WritableSignal<string> = signal('');
   protected readonly filteredManifests: Signal<Manifest[]> = computed((): Manifest[] => {
@@ -61,7 +55,7 @@ export class OpenScreen implements OnInit {
     });
   });
 
-  constructor() {
+  public constructor() {
     this.destroyRef.onDestroy((): void => {
       this.dialogRef?.close();
       this.dialogRef = null;
@@ -69,7 +63,7 @@ export class OpenScreen implements OnInit {
   }
 
   public ngOnInit(): void {
-    this.windowState.setTitle('Open Project', 'pi pi-folder-open');
+    this.windowState.setTitle('Open Project');
     void this.storage.refreshManifests();
   }
 
@@ -79,18 +73,17 @@ export class OpenScreen implements OnInit {
 
   protected handleDeleteProject(manifest: Manifest): void {
     const acceptButton: ConfirmationButton = {
-      label: 'Yes, I want delete it',
-      size: 'small',
-      severity: 'danger',
+      label: 'Remove project',
+      size: 'sm',
+      severity: 'error',
       variant: 'outlined',
-      click: (): void => {
-        void this.storage.removeProject(manifest.projectId);
-        this.dialogRef?.close();
+      click: async (): Promise<void> => {
+        await this.storage.removeProject(manifest.projectId);
       },
     };
     const cancelButton: ConfirmationButton = {
       label: `Cancel`,
-      size: 'small',
+      size: 'sm',
       variant: 'outlined',
       click: (): void => this.dialogRef?.close(),
     };
@@ -99,21 +92,21 @@ export class OpenScreen implements OnInit {
       title: 'Deleting Project',
       message: `Do you really want to delete <span class="font-bold font-stretch-semi-expanded">${manifest.name}</span>? <br />
       Once deleted, it is gone forever.`,
-      icon: 'pi-trash',
+
       justify: 'justify-around',
       buttons: [[cancelButton], [acceptButton]],
     };
 
     this.dialogRef = this.dialogService.open(ConfirmationDialog, {
-      showHeader: false,
-      closeOnEscape: true,
-      dismissableMask: true,
-      closable: true,
       inputValues: { options },
     });
   }
 
-  protected handleDuplicateProject(manifest: Manifest): void {
-    void this.storage.duplicateProject(manifest.projectId);
+  protected async handleDuplicateProject(manifest: Manifest): Promise<void> {
+    try {
+      await this.storage.duplicateProject(manifest.projectId);
+    } catch (error: unknown) {
+      this.storage.reportError(error);
+    }
   }
 }

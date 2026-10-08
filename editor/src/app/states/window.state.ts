@@ -3,12 +3,10 @@ import { Title } from '@angular/platform-browser';
 
 interface State {
   title: string;
-  icon: string;
 }
 
 const defaultState: State = {
   title: '',
-  icon: '',
 };
 
 @Injectable({
@@ -18,11 +16,11 @@ export class WindowState {
   private readonly titleService: Title = inject(Title);
   public readonly state: WritableSignal<State> = signal({ ...defaultState });
 
-  constructor() {
+  public constructor() {
     effect((): void => this.titleService.setTitle(this.state().title));
   }
 
-  public setTitle(title: string, icon: string): void {
-    this.state.update((s: State): State => ({ ...s, title, icon }));
+  public setTitle(title: string): void {
+    this.state.update((s: State): State => ({ ...s, title }));
   }
 }

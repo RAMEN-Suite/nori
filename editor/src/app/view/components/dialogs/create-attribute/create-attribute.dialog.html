@@ -1,110 +1,30 @@
-<div class="flex max-w-140 min-w-140 flex-col">
-  <div class="flex flex-col gap-3">
-    <p-fieldset legend="Basics">
-      <div class="flex flex-col gap-2">
-        <div class="flex flex-row gap-3">
-          <div class="flex basis-full flex-col gap-2">
-            <p-ifta-label class="flex basis-full">
-              <input
-                #nameModel="ngModel"
-                [(ngModel)]="draftAttribute().name"
-                (blur)="handleTransformName()"
-                [invalid]="(nameModel.touched || isSubmitted) && (!isUnique() || !isNameValid() || !isNotRole())"
-                id="attributeName"
-                name="attributeName"
-                maxlength="32"
-                pInputText
-                fluid
-                required
-              />
-              <label for="attributeName">Attribute Name</label>
-            </p-ifta-label>
-
-            @if (nameModel.touched || isSubmitted) {
-              @if (!isUnique()) {
-                <p-message severity="error" size="small" variant="simple"> Attribute does already exist. </p-message>
-              }
-
-              @if (!isNameValid()) {
-                <p-message severity="error" size="small" variant="simple"> Name cannot be empty. </p-message>
-              }
-
-              @if (!isNotRole()) {
-                <p-message severity="error" size="small" variant="simple"> Name is reserved by relations. </p-message>
-              }
-            }
-          </div>
-          <div class="flex basis-full flex-col gap-2">
-            <p-ifta-label class="flex basis-full">
-              <p-auto-complete
-                [ngModel]="formatTypeLabel(draftAttribute().typeId)"
-                [suggestions]="filteredDataTypeOptions()"
-                (completeMethod)="handleAutoComplete($event)"
-                (ngModelChange)="handleSelectType($event)"
-                (onBlur)="handleSelectOnBlur($event)"
-                [invalid]="isSubmitted && !isTypeValid()"
-                id="attributeType"
-                name="attributeType"
-                optionLabel="label"
-                optionValue="value"
-                dropdown
-                fluid
-                required
-              />
-              <label for="attributeType">Attribute Type</label>
-            </p-ifta-label>
-
-            @if (isSubmitted && !isTypeValid()) {
-              <p-message severity="error" size="small" variant="simple">
-                Please <span class="font-bold">select</span> an attribute type.
-              </p-message>
-            }
-          </div>
-        </div>
-      </div>
-    </p-fieldset>
-
-    @for (category of renderedOptions; track category.label) {
-      @let isCategoryDisabled = category.isDisabled !== undefined && category.isDisabled();
-
-      @if (category.isVisible() && !isCategoryDisabled) {
-        <p-fieldset [legend]="category.label" animate.enter="options-entrance">
-          <div class="flex flex-col gap-2">
-            @for (option of category.options; track option.label) {
-              @let isOptionDisabled = option.isDisabled !== undefined && option.isDisabled();
-
-              <div class="flex flex-row items-center gap-4" [class.cursor-not-allowed]="isOptionDisabled">
-                <i class="pi" [ngClass]="option.icon"></i>
-                <div [class.text-muted-color]="isOptionDisabled" [innerHTML]="option.label" class="flex-6"></div>
-                <div class="flex-6 justify-center">
-                  <p-select-button
-                    [(ngModel)]="option.isChecked"
-                    [options]="selectOptions"
-                    [disabled]="option.isDisabled !== undefined && option.isDisabled()"
-                    (ngModelChange)="handleSelectOption(option)"
-                    [allowEmpty]="false"
-                    optionLabel="label"
-                    optionValue="value"
-                    fluid
-                    size="small"
-                    styleClass="p-1!"
-                  />
-                </div>
-              </div>
-            }
-          </div>
-        </p-fieldset>
-      }
-    }
+<form class="flex min-w-80 flex-col gap-5" (ngSubmit)="handleSave()">
+  <label class="flex flex-col gap-2"
+    >Property name
+    <input suiInput name="name" [(ngModel)]="name" required />
+  </label>
+  <div class="flex flex-col gap-2">
+    <span>Data type </span
+    ><sui-select ariaLabel="Data type" [options]="typeOptions()" [value]="typeId" (valueChange)="handleType($event)" />
   </div>
-
-  <div class="mt-4 flex flex-row justify-between gap-2">
-    <p-button label="Cancel" outlined (click)="handleCloseModal()" />
-
-    @if (currentAttribute() === undefined) {
-      <p-button label="Add Attribute" outlined (click)="handleCreateAttribute()" [disabled]="!isFormValid()" />
-    } @else {
-      <p-button label="Update Attribute" outlined (click)="handleUpdateAttribute()" [disabled]="!isFormValid()" />
-    }
+  <div class="grid grid-cols-2 gap-4">
+    <label class="flex flex-col gap-2"
+      >Minimum count
+      <input suiInput type="number" name="minimum" min="0" [(ngModel)]="lowerBound" required />
+    </label>
+    <label class="flex flex-col gap-2"
+      >Maximum count (−1: unlimited)
+      <input suiInput type="number" name="maximum" min="-1" [(ngModel)]="upperBound" required />
+    </label>
   </div>
-</div>
+  <div class="grid grid-cols-2 gap-3">
+    <label><input suiCheckbox type="checkbox" name="key" [(ngModel)]="isKey" /> Key</label>
+    <label><input suiCheckbox type="checkbox" name="readonly" [(ngModel)]="isReadOnly" /> Read only</label>
+    <label><input suiCheckbox type="checkbox" name="unique" [(ngModel)]="isUnique" /> Unique list values</label>
+    <label><input suiCheckbox type="checkbox" name="ordered" [(ngModel)]="isOrdered" /> Ordered list</label>
+  </div>
+  <footer class="flex justify-end gap-3">
+    <button suiButton type="button" variant="outlined" (click)="dialogRef.close()" [disabled]="dialogRef.pending()">Cancel</button>
+    <button suiButton type="submit" [disabled]="!name.trim() || !typeId || dialogRef.pending()">Save property</button>
+  </footer>
+</form>

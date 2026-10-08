@@ -1,316 +1,85 @@
-import { Component, effect, inject, input, InputSignal, signal, WritableSignal } from '@angular/core';
-import { WorkspaceService } from '../../../../services/workspace/workspace.service';
-import { Fieldset } from 'primeng/fieldset';
-import { IftaLabel } from 'primeng/iftalabel';
-import { InputText } from 'primeng/inputtext';
-import { AutoComplete, AutoCompleteCompleteEvent } from 'primeng/autocomplete';
-import { SelectButton } from 'primeng/selectbutton';
-import { Button } from 'primeng/button';
-import { Bounds, GAttribute, GDataType, TypeRef } from '@ramen-suite/core/gcore';
-import { Builtins } from '@ramen-suite/core/gcore';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  type InputSignal,
+  type Signal,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { QualifiedParts, Reference } from '@ramen-suite/core/gcore';
-import { DynamicDialogRef } from 'primeng/dynamicdialog';
-import { Transformer } from '../../../../core/helper/Transformer';
-import { NgClass } from '@angular/common';
-import { Message } from 'primeng/message';
-import { CreateAttributeInput } from '@ramen-suite/core/gcore';
-import { SemanticHelper } from '@ramen-suite/core/gcore';
-
-interface RenderedOption {
-  label: string;
-  icon: string;
-  onCheck?: () => void;
-  onUncheck?: () => void;
-  isChecked: WritableSignal<boolean>;
-  isDisabled?: WritableSignal<boolean>;
-}
-
-interface RenderedCategory {
-  label: string;
-  options: RenderedOption[];
-  isVisible: WritableSignal<boolean>;
-  isDisabled?: WritableSignal<boolean>;
-}
-
-type RenderedAttributes = Required<Pick<GAttribute, 'isUnique' | 'isOrdered' | 'isKey' | 'isReadOnly'>>;
-type AttributeOptions = { [p in keyof RenderedAttributes]: WritableSignal<boolean> } & {
-  isRequired: WritableSignal<boolean>;
-  isList: WritableSignal<boolean>;
-};
-
-interface GenericOption<T> {
-  label: string;
-  value: T;
-}
+import { Button, Checkbox, Input, Select, type SelectOption } from '@sushi-kit/angular';
+import { type Attribute, type AttributeInput, type DataTypeSuggestion, DataTypes } from '@ramen-suite/core/model';
+import { WorkspaceService } from '../../../../services/workspace/workspace.service';
+import { DialogService } from '../../../../services/dialog.service';
 
 @Component({
   selector: 'app-create-attribute',
-  imports: [Fieldset, IftaLabel, InputText, AutoComplete, SelectButton, Button, FormsModule, NgClass, Message],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [FormsModule, Button, Checkbox, Input, Select],
   templateUrl: './create-attribute.dialog.html',
   styleUrl: './create-attribute.dialog.scss',
 })
 export class CreateAttributeDialog {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
-  protected readonly dialogRef: DynamicDialogRef = inject(DynamicDialogRef);
+  protected readonly dialogRef: DialogService = inject(DialogService);
+  public readonly currentAttribute: InputSignal<Attribute | undefined> = input();
 
-  protected isSubmitted: boolean = false;
+  protected name: string = '';
+  protected typeId: string = DataTypes.String;
+  protected lowerBound: number = 0;
+  protected upperBound: number = 1;
+  protected isKey: boolean = false;
+  protected isReadOnly: boolean = false;
+  protected isUnique: boolean = true;
+  protected isOrdered: boolean = false;
+  protected readonly typeOptions: Signal<readonly SelectOption[]> = computed((): readonly SelectOption[] =>
+    this.workspace.view
+      .dataTypeSuggestions()
+      .map((type: DataTypeSuggestion): SelectOption => ({ label: type.name, value: type.ref })),
+  );
 
-  protected readonly filteredDataTypeOptions: WritableSignal<GenericOption<string>[]> = signal([]);
-  protected readonly dataTypeOptions: WritableSignal<GenericOption<string>[]> = signal([]);
+  public constructor() {
+    effect((): void => {
+      const attribute: Attribute | undefined = this.currentAttribute();
+      if (!attribute) return;
 
-  public currentAttribute: InputSignal<GAttribute | undefined> = input();
-  protected draftAttribute: WritableSignal<GAttribute> = signal({
-    name: '',
-    typeId: '',
-    bounds: { lowerBound: 0, upperBound: 1 },
-  });
-
-  protected readonly attributeOptions: AttributeOptions = {
-    isKey: signal(false),
-    isOrdered: signal(false),
-    isReadOnly: signal(false),
-    isRequired: signal(false),
-    isUnique: signal(false),
-    isList: signal(false),
-  };
-
-  protected readonly selectOptions: GenericOption<boolean>[] = [
-    { label: 'Yes', value: true },
-    { label: 'No', value: false },
-  ];
-
-  protected readonly renderedOptions: RenderedCategory[] = [
-    {
-      label: 'Advanced Options',
-      options: [
-        {
-          label: `Attribute is <span class="font-bold">required</span>?`,
-          icon: 'pi-exclamation-circle',
-          isChecked: this.attributeOptions.isRequired,
-          onUncheck: (): void => {
-            this.attributeOptions.isKey.set(false);
-          },
-        },
-        {
-          label: `Attribute is a <span class="font-bold">list</span>?`,
-          icon: 'pi-list',
-          isChecked: this.attributeOptions.isList,
-          isDisabled: this.attributeOptions.isKey,
-          onCheck: (): void => {
-            this.attributeOptions.isKey.set(false);
-          },
-          onUncheck: (): void => {
-            this.attributeOptions.isOrdered.set(false);
-            this.attributeOptions.isUnique.set(false);
-          },
-        },
-        {
-          label: `Attribute is <span class="font-bold">read only</span>?`,
-          icon: 'pi-pen-to-square',
-          isChecked: this.attributeOptions.isReadOnly,
-          isDisabled: this.attributeOptions.isKey,
-        },
-      ],
-      isVisible: signal(true),
-    },
-    {
-      label: 'Key Options',
-      options: [
-        {
-          label: `Attribute is an <span class="font-bold">identifier</span>?`,
-          icon: 'pi-key',
-          isChecked: this.attributeOptions.isKey,
-          onCheck: (): void => {
-            this.attributeOptions.isRequired.set(true);
-            this.attributeOptions.isList.set(false);
-            this.attributeOptions.isOrdered.set(false);
-            this.attributeOptions.isUnique.set(false);
-            this.attributeOptions.isReadOnly.set(true);
-          },
-        },
-      ],
-      isVisible: this.attributeOptions.isRequired,
-      isDisabled: this.attributeOptions.isList,
-    },
-    {
-      label: 'List Options',
-      options: [
-        {
-          label: `List is <span class="font-bold">ordered</span>?`,
-          icon: 'pi-sort-alt',
-          isChecked: this.attributeOptions.isOrdered,
-          onCheck: (): void => {
-            this.attributeOptions.isList.set(true);
-            this.attributeOptions.isKey.set(false);
-          },
-        },
-        {
-          label: `Elements are <span class="font-bold">unique</span>?`,
-          icon: 'pi-globe',
-          isChecked: this.attributeOptions.isUnique,
-          onCheck: (): void => {
-            this.attributeOptions.isList.set(true);
-            this.attributeOptions.isKey.set(false);
-          },
-        },
-      ],
-      isVisible: this.attributeOptions.isList,
-      isDisabled: this.attributeOptions.isKey,
-    },
-  ];
-
-  constructor() {
-    effect((): void => this.registerDataTypesEffect());
-    effect((): void => this.registerCurrentAttributeEffect());
-  }
-
-  protected registerDataTypesEffect(): void {
-    const options: GenericOption<string>[] = [];
-
-    const builtinTypes: string[] = Array.from(Builtins.set);
-    for (const type of builtinTypes) options.push({ label: type, value: type });
-
-    const globalTypes: GDataType[] = this.workspace.view.globalDataTypes();
-    for (const type of globalTypes) options.push({ label: type.name, value: type.id });
-
-    this.dataTypeOptions.set(options);
-    this.filteredDataTypeOptions.set(options);
-  }
-
-  protected registerCurrentAttributeEffect(): void {
-    const attribute: GAttribute | undefined = this.currentAttribute();
-    if (!attribute) return;
-
-    this.draftAttribute.set(structuredClone(attribute));
-    this.attributeOptions.isKey.set(!!attribute.isKey);
-    this.attributeOptions.isReadOnly.set(!!attribute.isReadOnly);
-    this.attributeOptions.isUnique.set(!!attribute.isUnique);
-    this.attributeOptions.isOrdered.set(!!attribute.isOrdered);
-
-    const { lowerBound, upperBound } = attribute.bounds;
-    const isList: boolean = upperBound > 1 || upperBound === SemanticHelper.UNBOUNDED;
-    const isRequired: boolean = lowerBound === 1;
-
-    this.attributeOptions.isList.set(isList);
-    this.attributeOptions.isRequired.set(isRequired);
-  }
-
-  protected formatTypeLabel(typeRef: TypeRef): string {
-    if (!typeRef) return '';
-
-    if (Reference.isQualified(typeRef)) {
-      const parts: QualifiedParts = Reference.splitQualified(typeRef);
-      return this.workspace.view.resolveTypeLabel(parts.refId, parts.modelId);
-    }
-
-    const modelId: string | undefined = this.workspace.store.currentModel()?.id;
-    return modelId ? this.workspace.view.resolveTypeLabel(typeRef, modelId) : '';
-  }
-
-  protected handleSelectOption(option: RenderedOption): void {
-    if (option.isChecked() && option.onCheck !== undefined) return option.onCheck();
-    else if (option.onUncheck !== undefined) return option.onUncheck();
-  }
-
-  protected handleAutoComplete($event: AutoCompleteCompleteEvent): void {
-    const options: GenericOption<string>[] = this.dataTypeOptions().filter((option: GenericOption<string>): boolean => {
-      return option.label.toLowerCase().includes($event.query.trim().toLowerCase());
+      this.name = attribute.name;
+      this.typeId = attribute.typeId;
+      this.lowerBound = attribute.bounds.lowerBound;
+      this.upperBound = attribute.bounds.upperBound;
+      this.isKey = attribute.isKey ?? false;
+      this.isReadOnly = attribute.isReadOnly ?? false;
+      this.isUnique = attribute.isUnique ?? true;
+      this.isOrdered = attribute.isOrdered ?? false;
     });
-    this.filteredDataTypeOptions.set(options);
   }
 
-  protected handleSelectOnBlur($event: Event): void {
-    const input: HTMLInputElement = $event.target as HTMLInputElement;
-    const options: GenericOption<string>[] = this.dataTypeOptions().filter((option: GenericOption<string>): boolean => {
-      return option.label.toLowerCase().includes(input.value.trim().toLowerCase());
-    });
-
-    if (!options[0] || options.length !== 1) return;
-    this.handleSelectType(options[0].value);
+  protected handleType(value: unknown): void {
+    if (typeof value === 'string') this.typeId = value;
   }
 
-  protected handleSelectType(typeId: TypeRef): void {
-    this.draftAttribute.update((attribute: GAttribute): GAttribute => ({ ...attribute, typeId }));
-  }
+  protected async handleSave(): Promise<void> {
+    const nodeId: string | null = this.workspace.store.currentNodeId();
+    if (!nodeId || !this.name.trim()) return;
 
-  protected handleTransformName(): void {
-    if (this.draftAttribute().name.trim() === '') return;
-    const transformed: string = Transformer.toCamelName(this.draftAttribute().name);
-    this.draftAttribute.update((a: GAttribute): GAttribute => ({ ...a, name: transformed }));
-  }
-
-  protected isNameValid(): boolean {
-    const attributeName: string = this.draftAttribute().name.toLowerCase().trim();
-    return attributeName.length > 0;
-  }
-
-  protected isUnique(): boolean {
-    const currentAttribute: GAttribute | undefined = this.currentAttribute();
-    if (currentAttribute && currentAttribute.name === this.draftAttribute().name) return true;
-
-    const attributeName: string = this.draftAttribute().name.toLowerCase().trim();
-    return !this.workspace.view.inheritedAttributeNames().has(attributeName);
-  }
-
-  protected isNotRole(): boolean {
-    const attributeName: string = this.draftAttribute().name.toLowerCase().trim();
-    const roleNames: ReadonlySet<string> = this.workspace.view.currentRelationRoles();
-    return !roleNames.has(attributeName);
-  }
-
-  protected isTypeValid(): boolean {
-    return !!this.draftAttribute().typeId;
-  }
-
-  protected isFormValid(): boolean {
-    return this.isTypeValid() && this.isNotRole() && this.isNameValid() && this.isUnique();
-  }
-
-  protected handleCloseModal(): void {
-    this.dialogRef.close();
-  }
-
-  protected async handleCreateAttribute(): Promise<void> {
-    this.isSubmitted = true;
-    if (!this.isFormValid()) return;
-
-    const currentNodeId: string | null = this.workspace.store.currentNodeId();
-    if (!currentNodeId) return;
-
-    const input: CreateAttributeInput = this.getCreateAttributeInput();
-    void this.workspace.actions.createAttribute(currentNodeId, input);
-    this.dialogRef.close();
-  }
-
-  protected handleUpdateAttribute(): void {
-    this.isSubmitted = true;
-    if (!this.isFormValid()) return;
-
-    const currentAttribute: GAttribute | undefined = this.currentAttribute();
-    const currentNodeId: string | null = this.workspace.store.currentNodeId();
-    if (!currentNodeId || !currentAttribute) return;
-
-    const input: CreateAttributeInput = this.getCreateAttributeInput();
-    void this.workspace.actions.updateAttribute(currentNodeId, currentAttribute.name, input);
-    this.dialogRef.close();
-  }
-
-  private getCreateAttributeInput(): CreateAttributeInput {
-    const bounds: Bounds = this.getAttributeBounds();
-    return {
-      ...this.draftAttribute(),
-      isKey: this.attributeOptions.isKey(),
-      isOrdered: this.attributeOptions.isOrdered(),
-      isUnique: this.attributeOptions.isUnique(),
-      isReadOnly: this.attributeOptions.isReadOnly(),
-      bounds,
+    const existing: Attribute | undefined = this.currentAttribute();
+    const input: AttributeInput = {
+      name: this.name.trim(),
+      typeId: this.typeId,
+      bounds: { lowerBound: this.lowerBound, upperBound: this.upperBound },
+      isKey: this.isKey,
+      isReadOnly: this.isReadOnly,
+      isUnique: this.isUnique,
+      isOrdered: this.isOrdered,
+      constraints: existing?.constraints,
     };
-  }
 
-  private getAttributeBounds(): Bounds {
-    const lowerBound: number = this.attributeOptions.isRequired() ? 1 : 0;
-    const upperBound: number = this.attributeOptions.isList() ? SemanticHelper.UNBOUNDED : 1;
-    return { lowerBound, upperBound };
+    await this.dialogRef.run(async (): Promise<void> => {
+      if (existing)
+        await this.workspace.actions.updateAttribute(nodeId, existing.id, { ...input, constraints: existing.constraints });
+      else await this.workspace.actions.createAttribute(nodeId, input);
+    });
   }
 }

@@ -1,13 +1,12 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { Menubar } from 'primeng/menubar';
-import { Button } from 'primeng/button';
-import { Divider } from 'primeng/divider';
+import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Button } from '@sushi-kit/angular';
 import { ElectronService } from '../../../../services/electron.service';
 import { WindowState } from '../../../../states/window.state';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-title-bar',
-  imports: [Menubar, Button, Divider],
+  imports: [Button],
   templateUrl: './title-bar.component.html',
   styleUrl: './title-bar.component.scss',
 })
@@ -17,7 +16,7 @@ export class TitleBarComponent implements OnInit {
 
   protected hasControls: boolean = false;
 
-  public async ngOnInit(): Promise<void> {
+  public ngOnInit(): void {
     this.hasControls = window.platform !== 'darwin';
   }
 }

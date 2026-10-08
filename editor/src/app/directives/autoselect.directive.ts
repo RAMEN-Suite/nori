@@ -1,13 +1,10 @@
 import { Directive, ElementRef, inject } from '@angular/core';
 
-@Directive({
-  selector: '[autoselect]',
-  host: { '(focus)': 'onFocus()' },
-})
+@Directive({ selector: '[appAutoselect]', host: { '(focus)': 'onFocus()' } })
 export class AutoselectDirective {
-  private elementRef: ElementRef = inject(ElementRef);
+  private readonly element: ElementRef<HTMLInputElement> = inject<ElementRef<HTMLInputElement>>(ElementRef);
 
   public onFocus(): void {
-    this.elementRef.nativeElement.select();
+    this.element.nativeElement.select();
   }
 }

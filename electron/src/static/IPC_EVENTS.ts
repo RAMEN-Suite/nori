@@ -1,4 +1,9 @@
-export const APPLICATION_IPC = {
+export const APPLICATION_IPC: Readonly<{
+  APPLICATION_CLOSE: string;
+  APPLICATION_MINIMIZE: string;
+  APPLICATION_MAXIMIZE: string;
+  APPLICATION_OPEN_URL: string;
+}> = {
   APPLICATION_CLOSE: 'application:close',
   APPLICATION_MINIMIZE: 'application:minimize',
   APPLICATION_MAXIMIZE: 'application:maximize',

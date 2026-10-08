@@ -1,86 +1,31 @@
-@let currentNode = workspace.view.currentNode;
-
-<p-panel class="basis-full p-0!">
-  <ng-template #header>
-    <div class="flex basis-full flex-row justify-between gap-3">
-      <p-inplace class="basis-100" [active]="isWorkingNameActive()" (onActivate)="isWorkingNameActive.set(true)">
-        <ng-template #display>
-          <div class="max-w-100 min-w-100 truncate">
-            <span class="cursor-pointer text-4xl">{{ currentNode()?.name }}</span>
-          </div>
-        </ng-template>
-        <ng-template #content>
-          <input
-            [pAutoFocus]="isWorkingNameActive()"
-            [ngModel]="currentNode()?.name"
-            (ngModelChange)="workingName.set($event)"
-            (keydown.enter)="handleSave()"
-            (blur)="handleSave()"
-            maxlength="40"
-            pInputText
-            id="nodeName"
-            name="nodeName"
-            autoselect
-            fluid
-          />
-        </ng-template>
-      </p-inplace>
-
-      <div class="flex flex-row gap-2">
-        @if (!isWorkingNameActive()) {
-          <p-button
-            pTooltip="Edit Node Name"
-            tooltipPosition="bottom"
-            positionTop="10"
-            showDelay="500"
-            variant="outlined"
-            icon="pi pi-pencil"
-            (click)="isWorkingNameActive.set(true)"
-          />
-        } @else {
-          <p-button
-            pTooltip="Accept Node Name"
-            tooltipPosition="bottom"
-            positionTop="10"
-            showDelay="500"
-            variant="outlined"
-            icon="pi pi-check"
-            (click)="handleSave()"
-          />
-        }
-        <p-button
-          pTooltip="Duplicate {{ currentNode()?.name }}"
-          tooltipPosition="bottom"
-          positionTop="10"
-          showDelay="500"
-          variant="outlined"
-          icon="pi pi-copy"
-          (click)="handleDuplicateNode()"
+@if (workspace.view.currentNode(); as node) {
+  <section class="flex flex-col gap-4" aria-label="Node details">
+    @if (isWorkingNameActive()) {
+      <label class="flex flex-col gap-2"
+        >Node name
+        <input
+          suiInput
+          name="nodeName"
+          [ngModel]="workingName()"
+          (ngModelChange)="workingName.set($event)"
+          (keydown.enter)="handleSave()"
         />
-        <p-button
-          pTooltip="Delete {{ currentNode()?.name }}"
-          tooltipPosition="bottom"
-          positionTop="10"
-          showDelay="500"
-          variant="outlined"
-          icon="pi pi-trash"
-          severity="danger"
-          (click)="handleDeleteNode()"
-        />
-      </div>
-    </div>
-  </ng-template>
-  <div class="flex flex-row items-center gap-2">
-    <span class="text-md font-light select-none">Inherits from:</span>
-    @for (baseNode of [workspace.view.currentBaseNode()]; track baseNode?.id) {
-      <p-chip class="cursor-pointer px-4! py-1! text-xs select-none" (click)="handleOpenColorsDialog()">
-        <div class="flex flex-row items-center gap-2">
-          @let nodeId = baseNode?.id ?? '';
-          @let hexColor = this.workspace.store.currentNodeColors()[nodeId];
-          <i class="pi pi-circle-fill" style="font-size: 7pt" [ngStyle]="{ color: hexColor }"></i>
-          {{ baseNode?.name }}
-        </div>
-      </p-chip>
+      </label>
+      <button suiButton (click)="handleSave()">Save name</button>
+    } @else {
+      <h1 class="text-3xl">{{ node.name }}</h1>
     }
-  </div>
-</p-panel>
+    @if (workspace.view.editable()) {
+      <div class="flex flex-wrap gap-2">
+        <button suiButton variant="outlined" size="sm" (click)="isWorkingNameActive.set(true)">Rename</button>
+        <button suiButton variant="outlined" size="sm" (click)="handleDuplicateNode()">Duplicate</button>
+        <button suiButton variant="outlined" size="sm" severity="error" (click)="handleDeleteNode()">Remove</button>
+      </div>
+    }
+    <div class="flex flex-wrap items-center gap-2">
+      @for (base of workspace.view.currentNodeChain(); track base.node.id) {
+        <sui-chip>Inherits {{ base.node.name }}</sui-chip>
+      }
+    </div>
+  </section>
+}

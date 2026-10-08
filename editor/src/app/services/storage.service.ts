@@ -1,275 +1,204 @@
-import { computed, effect, Injectable, Signal, signal, WritableSignal } from '@angular/core';
-import { Manifest } from '../models/Manifest';
-import { ModelRecord } from '../models/ModelRecord';
+import { computed, effect, Injectable, type Signal, signal, type WritableSignal } from '@angular/core';
+import { type Model } from '@ramen-suite/core/model';
+import { RamenModel, RAMEN_MODEL } from '@ramen-suite/core/ramen';
+import ShortUniqueId from 'short-unique-id';
+import { type Manifest } from '../models/Manifest';
+import { type ModelRecord } from '../models/ModelRecord';
 import { database } from '../app.database';
 import { environment } from '../../environments/environment';
-import ShortUniqueId from 'short-unique-id';
-import { GModel, Id, Import } from '@ramen-suite/core/gcore';
 
-export type CreateManifest = Pick<
-  Manifest,
-  'name' | 'description' | 'metamodelName' | 'metamodelId' | 'metamodelVersion'
->;
+export type CreateManifest = Pick<Manifest, 'name' | 'description' | 'metamodelName' | 'metamodelId' | 'metamodelVersion'>;
 export type UpdateManifest = Pick<Manifest, 'name' | 'description'>;
-
-export type CreateRecordInput = Pick<ModelRecord, 'projectId' | 'gmodel' | 'name'>;
 export type UpdateRecordInput = Partial<Pick<ModelRecord, 'gmodel' | 'name' | 'view'>>;
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable({ providedIn: 'root' })
 export class StorageService {
   public readonly manifests: WritableSignal<Manifest[]> = signal([]);
   public readonly records: WritableSignal<ModelRecord[]> = signal([]);
-
   public readonly selectedProjectId: WritableSignal<string | null> = signal(null);
+  public readonly loadedProjectId: WritableSignal<string | null> = signal(null);
   public readonly selectedManifest: WritableSignal<Manifest | null> = signal(null);
+  public readonly error: WritableSignal<string | null> = signal(null);
+  public readonly recordsBySlot: Signal<ReadonlyMap<number, ModelRecord>> = computed(
+    (): ReadonlyMap<number, ModelRecord> =>
+      new Map(this.records().map((record: ModelRecord): [number, ModelRecord] => [record.slot, record])),
+  );
+  public readonly modelsById: Signal<ReadonlyMap<string, Model>> = computed(
+    (): ReadonlyMap<string, Model> =>
+      new Map(this.records().map((record: ModelRecord): [string, Model] => [record.gmodel.id, record.gmodel])),
+  );
 
-  public readonly recordsBySlot: Signal<Map<number, ModelRecord>> = computed((): Map<number, ModelRecord> => {
-    const map: Map<number, ModelRecord> = new Map<number, ModelRecord>();
-    for (const record of this.records()) map.set(record.slot, record);
-    return map;
-  });
-
-  public readonly modelsById: Signal<ReadonlyMap<Id, GModel>> = computed((): ReadonlyMap<Id, GModel> => {
-    const map: Map<Id, GModel> = new Map<Id, GModel>();
-    for (const record of this.records()) map.set(record.gmodel.id, record.gmodel);
-    return map;
-  });
-
-  constructor() {
+  public constructor() {
     effect((): void => {
-      const pid: string | null = this.selectedProjectId();
-
-      if (!pid) {
-        this.selectedManifest.set(null);
-        this.records.set([]);
-        return;
-      }
-
-      void this.initProject(pid);
+      const projectId: string | null = this.selectedProjectId();
+      this.loadedProjectId.set(null);
+      this.records.set([]);
+      this.selectedManifest.set(null);
+      if (projectId) void this.initProject(projectId).catch((error: unknown): void => this.reportError(error));
     });
   }
 
-  public async isProjectExisting(projectId: string): Promise<boolean> {
-    return !!(await database.manifests.get(projectId));
+  public reportError(error: unknown): void {
+    this.error.set(error instanceof Error ? error.message : 'The operation could not be completed.');
   }
 
-  public selectProject(projectId: string | null): void {
-    this.selectedProjectId.set(projectId);
+  public async isProjectExisting(id: string): Promise<boolean> {
+    return (await database.manifests.get(id)) !== undefined;
+  }
+
+  public selectProject(id: string | null): void {
+    this.selectedProjectId.set(id);
   }
 
   public async refreshManifests(): Promise<void> {
-    const list: Manifest[] = await database.manifests.orderBy('updatedAt').reverse().toArray();
-    this.manifests.set(list);
+    this.manifests.set(await database.manifests.orderBy('updatedAt').reverse().toArray());
   }
 
-  public async createProject(input: CreateManifest, metamodel: GModel, example?: GModel): Promise<Manifest> {
-    const timestamp: string = new Date().toISOString();
+  public async createProject(input: CreateManifest, _metamodel: Model, example?: Model): Promise<Manifest> {
     const projectId: string = new ShortUniqueId({ length: 18 }).randomUUID();
-
-    const manifestVersion: string = environment.manifestVersion;
-    const appVersion: string = environment.appVersion;
-
+    const timestamp: string = new Date().toISOString();
     const manifest: Manifest = {
-      projectId,
       ...input,
-      manifestVersion,
-      appVersion,
+      projectId,
       createdAt: timestamp,
       updatedAt: timestamp,
+      manifestVersion: environment.manifestVersion,
+      appVersion: environment.appVersion,
     };
+    const draft: RamenModel = example ? RamenModel.load(example, [RAMEN_MODEL]) : RamenModel.create(input.name);
+    const records: ModelRecord[] = draft
+      .getModels()
+      .map((model: Model, slot: number): ModelRecord => this.createRecord(projectId, model, slot));
 
     await database.transaction('rw', database.manifests, database.models, async (): Promise<void> => {
       await database.manifests.add(manifest);
-      await this.createRecord({ projectId, name: metamodel.name, gmodel: metamodel });
-      if (example) await this.createRecord({ projectId, name: example.name, gmodel: example });
+      await database.models.bulkAdd(records);
     });
-
     await this.refreshManifests();
     return manifest;
   }
 
-  public async updateProject(projectId: string, patch: UpdateManifest): Promise<void> {
-    const updatedAt: string = new Date().toISOString();
-    await database.manifests.update(projectId, { ...patch, updatedAt });
+  public async initProject(id: string): Promise<void> {
+    const [manifest, records]: [Manifest | undefined, ModelRecord[]] = await Promise.all([
+      database.manifests.get(id),
+      database.models.where('projectId').equals(id).toArray(),
+    ]);
+    if (this.selectedProjectId() !== id) return;
+    if (!manifest) throw new Error('Project not found.');
 
-    if (this.selectedProjectId() === projectId) {
-      await this.initProject(projectId);
-    }
-
-    await this.refreshManifests();
+    this.selectedManifest.set(manifest);
+    this.records.set(records.sort((left: ModelRecord, right: ModelRecord): number => left.slot - right.slot));
+    this.loadedProjectId.set(id);
   }
 
-  public async duplicateProject(projectId: string): Promise<void> {
-    const sourceManifest: Manifest | undefined = await database.manifests.get(projectId);
-    if (!sourceManifest) throw new Error(`Project not found: ${projectId}`);
+  public async updateProject(id: string, patch: UpdateManifest): Promise<void> {
+    await database.manifests.update(id, { ...patch, updatedAt: new Date().toISOString() });
+    await this.refreshManifests();
+    if (id === this.selectedProjectId()) this.selectedManifest.set((await database.manifests.get(id)) ?? null);
+  }
 
-    const sourceRecords: ModelRecord[] = await database.models.where('projectId').equals(projectId).toArray();
-
+  public async duplicateProject(id: string): Promise<void> {
+    const source: Manifest | undefined = await database.manifests.get(id);
+    if (!source) throw new Error('Project not found.');
+    const projectId: string = new ShortUniqueId({ length: 18 }).randomUUID();
     const timestamp: string = new Date().toISOString();
-    const newProjectId: string = new ShortUniqueId({ length: 18 }).randomUUID();
-
-    const manifest: Manifest = {
-      ...sourceManifest,
-      name: `${sourceManifest.name} (copy)`,
-      projectId: newProjectId,
-      createdAt: timestamp,
-      updatedAt: timestamp,
-    };
-
-    const clonedRecords: ModelRecord[] = sourceRecords.map(
-      (existingModel: ModelRecord): ModelRecord => ({
-        ...existingModel,
+    const records: ModelRecord[] = await database.models.where('projectId').equals(id).toArray();
+    const copies: ModelRecord[] = records.map(
+      (record: ModelRecord): ModelRecord => ({
+        ...structuredClone(record),
+        projectId,
         modelId: new ShortUniqueId({ length: 18 }).randomUUID(),
-        projectId: newProjectId,
         revision: 1,
         createdAt: timestamp,
         updatedAt: timestamp,
       }),
     );
 
-    await database.transaction('rw', database.manifests, database.models, async () => {
-      await database.manifests.add(manifest);
-      await database.models.bulkAdd(clonedRecords);
+    await database.transaction('rw', database.manifests, database.models, async (): Promise<void> => {
+      await database.manifests.add({
+        ...source,
+        projectId,
+        name: `${source.name} (copy)`,
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      });
+      await database.models.bulkAdd(copies);
     });
-
     await this.refreshManifests();
   }
 
-  public async removeProject(projectId: string): Promise<void> {
-    await database.transaction('rw', database.manifests, database.models, async () => {
+  public async removeProject(id: string): Promise<void> {
+    await database.transaction('rw', database.manifests, database.models, async (): Promise<void> => {
+      await database.models.where('projectId').equals(id).delete();
+      await database.manifests.delete(id);
+    });
+    if (this.selectedProjectId() === id) this.selectProject(null);
+    await this.refreshManifests();
+  }
+
+  public async updateRecord(id: string, patch: UpdateRecordInput): Promise<void> {
+    const record: ModelRecord | undefined = await database.models.get(id);
+    if (!record) throw new Error('Model record not found.');
+    const updated: ModelRecord = {
+      ...record,
+      ...patch,
+      updatedAt: new Date().toISOString(),
+      revision: record.revision + (patch.gmodel ? 1 : 0),
+    };
+    await database.models.put(updated);
+    if (this.selectedProjectId() === record.projectId)
+      this.records.update((records: ModelRecord[]): ModelRecord[] =>
+        records.map((item: ModelRecord): ModelRecord => (item.modelId === id ? updated : item)),
+      );
+  }
+
+  public async saveModels(projectId: string, models: readonly Model[]): Promise<void> {
+    const previous: ModelRecord[] = await database.models.where('projectId').equals(projectId).toArray();
+    const byId: Map<string, ModelRecord> = new Map(
+      previous.map((record: ModelRecord): [string, ModelRecord] => [record.gmodel.id, record]),
+    );
+    const records: ModelRecord[] = models.map((model: Model, slot: number): ModelRecord => {
+      const old: ModelRecord | undefined = byId.get(model.id);
+      return old
+        ? { ...old, slot, gmodel: model, name: model.name, revision: old.revision + 1, updatedAt: new Date().toISOString() }
+        : this.createRecord(projectId, model, slot);
+    });
+
+    await database.transaction('rw', database.manifests, database.models, async (): Promise<void> => {
       await database.models.where('projectId').equals(projectId).delete();
-      await database.manifests.delete(projectId);
+      await database.models.bulkPut(records);
+      await database.manifests.update(projectId, { updatedAt: new Date().toISOString() });
     });
-
+    if (projectId === this.selectedProjectId()) this.records.set(records);
     await this.refreshManifests();
   }
 
-  public async initProject(projectId: string): Promise<void> {
-    const [manifest, records]: [Manifest | undefined, ModelRecord[]] = await Promise.all([
-      database.manifests.get(projectId),
-      database.models.where('projectId').equals(projectId).toArray(),
-    ]);
-
-    this.selectedManifest.set(manifest ?? null);
-    records.sort((a: ModelRecord, b: ModelRecord): number => a.slot - b.slot);
-    this.records.set(records);
+  public async importRecord(input: unknown): Promise<string> {
+    const draft: RamenModel = RamenModel.import(input);
+    const model: Model = draft.getModel();
+    const inputManifest: CreateManifest = {
+      name: model.name,
+      description: '',
+      metamodelName: RAMEN_MODEL.name,
+      metamodelId: RAMEN_MODEL.id,
+      metamodelVersion: RAMEN_MODEL.version,
+    };
+    const manifest: Manifest = await this.createProject(inputManifest, RAMEN_MODEL);
+    await this.saveModels(manifest.projectId, draft.getModels());
+    return manifest.projectId;
   }
 
-  public async createRecord(input: CreateRecordInput): Promise<void> {
+  private createRecord(projectId: string, model: Model, slot: number): ModelRecord {
     const timestamp: string = new Date().toISOString();
-    const modelId: string = new ShortUniqueId({ length: 18 }).randomUUID();
-    const slot: number = (await this.getLastSlot(input.projectId)) + 1;
-    const revision: number = 1;
-
-    const record: ModelRecord = {
-      modelId,
+    return {
+      projectId,
+      modelId: new ShortUniqueId({ length: 18 }).randomUUID(),
+      name: model.name,
+      gmodel: model,
       slot,
-      ...input,
-      revision,
+      revision: 1,
       createdAt: timestamp,
       updatedAt: timestamp,
     };
-
-    await database.transaction('rw', database.manifests, database.models, async () => {
-      await database.models.add(record);
-      await database.manifests.update(input.projectId, { updatedAt: timestamp });
-    });
-
-    if (this.selectedProjectId() === input.projectId) {
-      await this.initProject(input.projectId);
-    }
-
-    await this.refreshManifests();
-  }
-
-  public async importRecord(gmodel: GModel): Promise<void> {
-    const projectId: string | null = this.selectedProjectId();
-    if (!projectId) throw new Error('No active project.');
-
-    const lastSlot: number = await this.getLastSlot(projectId);
-    const lastRecord: ModelRecord | undefined = await this.getRecordBySlot(projectId, lastSlot);
-
-    if (!lastRecord) throw new Error(`Last record not found for slot ${lastSlot}.`);
-    if (gmodel.imports.length === 0) throw new Error('Import failed: GModel has no imports.');
-
-    const lastModelId: string = lastRecord.gmodel.id;
-    const matchingImports: Import[] = gmodel.imports.filter((i: Import): boolean => i.modelId === lastModelId);
-
-    if (matchingImports.length !== 1) {
-      const importIds: string = gmodel.imports.map((i: Import): string => i.modelId).join(', ');
-      throw new Error(
-        `Import mismatch: expected exactly 1 import referencing last slot modelId=${lastModelId}, ` +
-          `but found ${matchingImports.length}. imports=[${importIds}]`,
-      );
-    }
-
-    await this.createRecord({ projectId, name: gmodel.name, gmodel });
-  }
-
-  public async updateRecord(modelId: string, patch: UpdateRecordInput): Promise<void> {
-    const existing: ModelRecord | undefined = await database.models.get(modelId);
-    if (!existing) throw new Error(`Model not found: ${modelId}`);
-
-    const updatedAt: string = new Date().toISOString();
-    const updated: ModelRecord = {
-      ...existing,
-      ...patch,
-      updatedAt,
-      revision: existing.revision + 1,
-    };
-
-    await database.transaction('rw', database.manifests, database.models, async () => {
-      await database.models.put(updated);
-      await database.manifests.update(existing.projectId, { updatedAt });
-    });
-
-    if (this.selectedProjectId() === existing.projectId) {
-      await this.initProject(existing.projectId);
-    }
-
-    await this.refreshManifests();
-  }
-
-  public async removeSlot(projectId: string, slot: number): Promise<void> {
-    const record: ModelRecord | undefined = await this.getRecordBySlot(projectId, slot);
-    if (!record) return;
-
-    const isAllowed: boolean = await this.canRemoveSlot(projectId, slot);
-    if (!isAllowed) throw new Error(`Cannot delete slot ${slot}: higher slots exist.`);
-    await this.removeRecord(record.modelId);
-  }
-
-  private async removeRecord(modelId: string): Promise<void> {
-    const existing: ModelRecord | undefined = await database.models.get(modelId);
-    if (!existing) return;
-
-    const updatedAt: string = new Date().toISOString();
-    await database.transaction('rw', database.manifests, database.models, async () => {
-      await database.models.delete(modelId);
-      await database.manifests.update(existing.projectId, { updatedAt });
-    });
-
-    if (this.selectedProjectId() === existing.projectId) {
-      await this.initProject(existing.projectId);
-    }
-
-    await this.refreshManifests();
-  }
-
-  public async getLastSlot(projectId: string): Promise<number> {
-    const records: ModelRecord[] = await database.models.where('projectId').equals(projectId).sortBy('slot');
-    return records[records.length - 1]?.slot ?? -1;
-  }
-
-  private async canRemoveSlot(projectId: string, slot: number): Promise<boolean> {
-    const records: ModelRecord[] = await database.models.where('projectId').equals(projectId).toArray();
-    const maxSlot: number = records.reduce((max: number, m: ModelRecord): number => Math.max(max, m.slot), -1);
-    return maxSlot <= slot;
-  }
-
-  private async getRecordBySlot(projectId: string, slot: number): Promise<ModelRecord | undefined> {
-    return database.models.where('[projectId+slot]').equals([projectId, slot]).first();
   }
 }

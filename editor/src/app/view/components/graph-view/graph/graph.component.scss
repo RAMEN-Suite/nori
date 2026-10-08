@@ -1,80 +1,34 @@
-:host {
-  --g-node-stroke: var(--p-primary-color);
-  --g-node-stroke-width: 1.25;
-  --g-node-default-fill: var(--p-primary-color);
-
-  --g-label-fill: var(--p-primary-color);
-
-  --g-link-stroke: var(--p-primary-color);
-  --g-link-width: 2;
-  --g-link-opacity: 0.35;
-
-  --g-link-hover-opacity: 0.9;
-  --g-link-dim-opacity: 0.05;
-
-  --g-node-dim-opacity: 0.25;
-  --g-node-hover-stroke-width: 2.25;
-
-  --g-node-selected-ring-color: var(--p-primary-color);
-  --g-node-selected-ring-size: 4px;
-
+app-graph {
   display: block;
-  width: 100%;
   height: 100%;
-}
+  min-height: 18rem;
 
-:host ::ng-deep line.link {
-  stroke: var(--g-link-stroke);
-  stroke-width: var(--g-link-width);
-  opacity: var(--g-link-opacity);
-  vector-effect: non-scaling-stroke;
-}
-
-:host ::ng-deep line.link.is-ghost {
-  stroke-dasharray: 6 4;
-}
-
-:host ::ng-deep g.node.is-ghost circle {
-  fill: transparent;
-  stroke: currentColor;
-  stroke-dasharray: 4 3;
-}
-
-:host ::ng-deep g.node circle {
-  cursor: pointer;
-  stroke: var(--g-node-stroke);
-  stroke-width: var(--g-node-stroke-width);
-  fill: var(--g-node-fill, var(--g-node-default-fill));
-}
-
-:host ::ng-deep g.node text {
-  fill: var(--g-label-fill);
-}
-
-:host ::ng-deep .is-dimmed {
-  opacity: var(--g-node-dim-opacity);
-}
-
-:host ::ng-deep line.link.is-dimmed {
-  opacity: var(--g-link-dim-opacity);
-}
-
-:host ::ng-deep line.link.is-highlighted {
-  opacity: var(--g-link-hover-opacity);
-}
-
-:host ::ng-deep g.node.is-highlighted circle {
-  stroke-width: var(--g-node-hover-stroke-width);
-}
-
-:host ::ng-deep g.node.is-selected circle {
-  stroke-width: calc(var(--g-node-selected-ring-size));
-  stroke: var(--g-node-selected-ring-color);
-}
-
-.host {
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  overflow: hidden;
+  .host {
+    height: 100%;
+  }
+  .node {
+    cursor: pointer;
+  }
+  .node circle {
+    fill: var(--color-base-200);
+    stroke: var(--color-base-content);
+    stroke-width: 1.5;
+  }
+  .node text {
+    fill: var(--color-base-content);
+  }
+  .node.is-selected circle {
+    stroke: var(--color-primary);
+    stroke-width: 4;
+  }
+  .link {
+    stroke: var(--color-base-content);
+    stroke-opacity: 0.65;
+  }
+  .is-dimmed {
+    opacity: 0.2;
+  }
+  .is-ghost {
+    opacity: 0.5;
+  }
 }

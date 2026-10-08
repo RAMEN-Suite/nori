@@ -1,11 +1,8 @@
-import { Component, inject } from '@angular/core';
-import { Menubar } from 'primeng/menubar';
-import { Divider } from 'primeng/divider';
-import { Button } from 'primeng/button';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
+import { Button } from '@sushi-kit/angular';
 import { APP_THEME, ApplicationState } from '../../../states/application.state';
 import { BreadcrumbsComponent } from '../breadcrumb/breadcrumbs.component';
 import { RouterLink } from '@angular/router';
-import { Tooltip } from 'primeng/tooltip';
 import { ModelRecord } from '../../../models/ModelRecord';
 import { Transformer } from '../../../core/helper/Transformer';
 import { WorkspaceService } from '../../../services/workspace/workspace.service';
@@ -13,8 +10,9 @@ import { ExportService } from '../../../services/export.service';
 import { StorageService } from '../../../services/storage.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-tool-bar',
-  imports: [Menubar, Divider, Button, BreadcrumbsComponent, RouterLink, Tooltip],
+  imports: [Button, BreadcrumbsComponent, RouterLink],
   templateUrl: './tool-bar.component.html',
   styleUrl: './tool-bar.component.scss',
 })
@@ -26,14 +24,18 @@ export class ToolBarComponent {
   protected readonly storage: StorageService = inject(StorageService);
   protected readonly export: ExportService = inject(ExportService);
 
-  protected handleExportModel(): void {
+  protected async handleExportModel(): Promise<void> {
     const currentSlot: number = this.workspace.store.currentSlot();
     const record: ModelRecord | undefined = this.storage.recordsBySlot().get(currentSlot);
     if (!record) return;
 
     const camelized: string = Transformer.toCamelName(record.gmodel.name);
-    const fileName: string = `${camelized}.gcore`;
-    void this.export.exportJSON(record.gmodel, { fileName });
+    const fileName: string = `${camelized}.json`;
+    try {
+      await this.export.exportJSON(this.workspace.store.getDraft().export(), { fileName });
+    } catch (error: unknown) {
+      this.storage.reportError(error);
+    }
   }
 
   protected handleToggleTheme(): void {

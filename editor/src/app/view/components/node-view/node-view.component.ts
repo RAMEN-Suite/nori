@@ -1,31 +1,19 @@
-import { Component, effect, inject, signal, WritableSignal } from '@angular/core';
+import { Component, inject, signal, WritableSignal, ChangeDetectionStrategy } from '@angular/core';
 import { WorkspaceService } from '../../../services/workspace/workspace.service';
 import { FormsModule } from '@angular/forms';
-import { Button } from 'primeng/button';
+import { Button, Tab, Tabs } from '@sushi-kit/angular';
 import { NodeBasicsComponent } from './node-basics/node-basics.component';
-import { Tab, TabList, TabPanel, TabPanels, Tabs } from 'primeng/tabs';
-import { ScrollPanel } from 'primeng/scrollpanel';
+
 import { NodeAttributesComponent } from './node-attributes/node-attributes.component';
 import { NodeRelationsComponent } from './node-relations/node-relations.component';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationService } from '../../../services/navigation.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-node-editor',
-  imports: [
-    FormsModule,
-    Button,
-    NodeBasicsComponent,
-    Tab,
-    TabList,
-    TabPanel,
-    TabPanels,
-    Tabs,
-    ScrollPanel,
-    NodeAttributesComponent,
-    NodeRelationsComponent,
-  ],
-  providers: [],
+  imports: [FormsModule, Button, NodeBasicsComponent, Tab, Tabs, NodeAttributesComponent, NodeRelationsComponent],
   templateUrl: './node-view.component.html',
   styleUrl: './node-view.component.scss',
 })
@@ -36,25 +24,23 @@ export class NodeViewComponent {
   protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
   protected readonly router: Router = inject(Router);
 
-  protected activeTab: WritableSignal<'attributes' | 'relations'> = signal('attributes');
+  protected readonly activeTab: WritableSignal<'attributes' | 'relations'> = signal('attributes');
 
-  constructor() {
-    this.activatedRoute.queryParamMap.subscribe((queryParams: ParamMap): void => {
+  public constructor() {
+    this.activatedRoute.queryParamMap.pipe(takeUntilDestroyed()).subscribe((queryParams: ParamMap): void => {
       const tab: string | null = queryParams.get('tab');
       this.activeTab.set(tab === 'relations' ? 'relations' : 'attributes');
-    });
-
-    effect(() => {
-      console.log(this.workspace.view.validation());
     });
   }
 
   protected handleCloseView(): void {
     const selectedSlot: number = this.workspace.store.currentSlot();
-    void this.navigation.navigateToSlot(this.activatedRoute, selectedSlot);
+    void this.navigation.navigateToSlot(selectedSlot);
   }
 
-  protected handleTab(tab: 'attributes' | 'relations'): void {
+  protected handleTab(tab: unknown): void {
+    if (tab !== 'attributes' && tab !== 'relations') return;
+
     void this.router.navigate([], {
       relativeTo: this.activatedRoute,
       queryParams: { tab },

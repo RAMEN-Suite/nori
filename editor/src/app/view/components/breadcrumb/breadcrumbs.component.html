@@ -1,49 +1,22 @@
-<div class="max-w-124 text-nowrap">
-  <p-breadcrumb [model]="breadcrumb()" styleClass="p-0!">
-    <ng-template #item let-item>
-      @if (!item.isLast) {
-        <p-chip
-          tabindex="0"
-          role="button"
-          [label]="item.label"
-          class="justify-center py-1! text-sm select-none"
-          [class.active]="workspace.store.currentSlot() === item.slot"
-          [class.cursor-pointer]="!item.isFirst && item.slot !== workspace.store.currentSlot()"
-          [disabled]="item.isFirst"
-          (keydown.enter)="handleChangeModelSlot(item.slot)"
-          (click)="handleChangeModelSlot(item.slot)"
-          (contextmenu)="handleContextMenu($event, item)"
-        />
-      } @else {
-        <p-chip
-          pTooltip="Create Model"
-          tooltipPosition="bottom"
-          positionTop="15"
-          tabindex="0"
-          role="button"
-          [icon]="item.icon"
-          class="min-h-7.5 cursor-pointer justify-center py-1! select-none"
-          (keydown.enter)="handleOpenCreateModel()"
-          (click)="handleOpenCreateModel()"
-        />
-      }
-    </ng-template>
-  </p-breadcrumb>
-
-  <p-context-menu #contextMenuRef [model]="contextMenu" appendTo="body">
-    <ng-template #item let-item>
-      <div
-        pRipple
-        class="flex cursor-pointer flex-row items-center justify-start gap-3 px-2 py-2 select-none"
-        [class.text-(--p-red-500)]="item.severity === 'error'"
-      >
-        <div class="flex flex-2 items-center justify-center">
-          <span [class]="item.icon"></span>
-        </div>
-        <div class="flex flex-10 items-center">
-          <span class="text-sm">{{ item.label }}</span>
-        </div>
-      </div>
-    </ng-template>
-  </p-context-menu>
-</div>
+<nav class="flex flex-wrap items-center gap-2" aria-label="Model levels">
+  @for (record of storage.records(); track record.modelId) {
+    <button
+      suiButton
+      [variant]="workspace.store.currentSlot() === record.slot ? 'outlined' : 'text'"
+      size="sm"
+      [attr.aria-current]="workspace.store.currentSlot() === record.slot ? 'page' : null"
+      (click)="handleSelect(record.slot)"
+    >
+      {{ record.name }}
+    </button>
+  }
+  @if (workspace.view.editable()) {
+    @if (workspace.store.currentModelRecord(); as record) {
+      <button suiButton variant="text" size="sm" (click)="handleEdit(record)">Edit level</button>
+      <button suiButton variant="text" size="sm" severity="error" [disabled]="!canRemove(record)" (click)="handleRemove(record)">
+        Remove level
+      </button>
+    }
+    <button suiButton variant="outlined" size="sm" (click)="handleCreate()">+ Level</button>
+  }
+</nav>

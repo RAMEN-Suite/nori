@@ -18,12 +18,12 @@ const defaultState: State = {
   providedIn: 'root',
 })
 export class ApplicationState {
-  private static readonly STORAGE_KEY: 'application' = 'application';
+  private static readonly STORAGE_KEY: string = 'application';
 
   private readonly storageService: LocalStorageService = inject(LocalStorageService);
   public readonly state: WritableSignal<State> = signal({ ...defaultState });
 
-  constructor() {
+  public constructor() {
     this.state.set(this.storageService.get(ApplicationState.STORAGE_KEY) ?? defaultState);
     effect((): void => this.storageService.set(ApplicationState.STORAGE_KEY, this.state()));
   }

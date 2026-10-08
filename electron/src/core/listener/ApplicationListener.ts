@@ -1,44 +1,39 @@
-import { Listener, ListenerFn } from '../EventInitializer';
+import { app, ipcMain, shell, type IpcMainEvent, type IpcMainInvokeEvent, type BrowserWindow } from 'electron';
+import { type Application } from '../Application';
 import { APPLICATION_IPC } from '../../static/IPC_EVENTS';
-import { app, BrowserWindow, IpcMainEvent, shell } from 'electron';
 
-export class ApplicationListener extends Listener {
-  protected listener: ListenerFn = {
-    [APPLICATION_IPC.APPLICATION_CLOSE]: {
-      type: 'on',
-      fn: this.handleCloseApplication,
-    },
-    [APPLICATION_IPC.APPLICATION_MINIMIZE]: {
-      type: 'on',
-      fn: this.handleMinimizeApplicationWindow,
-    },
-    [APPLICATION_IPC.APPLICATION_MAXIMIZE]: {
-      type: 'on',
-      fn: this.handleMaximizeApplicationWindow,
-    },
-    [APPLICATION_IPC.APPLICATION_OPEN_URL]: {
-      type: 'on',
-      fn: this.handleOpenExternalURL,
-    },
-  };
+/** Handles the four desktop actions exposed by the preload bridge. */
+export class ApplicationListener {
+  private readonly application: Application;
 
-  protected handleCloseApplication(): void {
-    app.quit();
+  public constructor(application: Application) {
+    this.application = application;
   }
 
-  protected handleMinimizeApplicationWindow(): void {
-    const window: BrowserWindow = this.application.getWindow();
-    if (window.isMinimized()) window.restore();
-    else window.minimize();
+  public listen(): void {
+    ipcMain.on(APPLICATION_IPC.APPLICATION_CLOSE, (event: IpcMainEvent): void => {
+      if (this.isEditor(event)) app.quit();
+    });
+    ipcMain.on(APPLICATION_IPC.APPLICATION_MINIMIZE, (event: IpcMainEvent): void => {
+      if (this.isEditor(event)) this.application.getWindow()?.minimize();
+    });
+    ipcMain.on(APPLICATION_IPC.APPLICATION_MAXIMIZE, (event: IpcMainEvent): void => {
+      const window: BrowserWindow | null = this.application.getWindow();
+      if (!window || !this.isEditor(event)) return;
+      if (window.isMaximized()) window.unmaximize();
+      else window.maximize();
+    });
+    ipcMain.handle(APPLICATION_IPC.APPLICATION_OPEN_URL, async (event: IpcMainInvokeEvent, url: unknown): Promise<void> => {
+      if (!this.isEditor(event)) throw new Error('Unknown desktop sender.');
+      if (typeof url !== 'string' || !URL.canParse(url)) throw new Error('Invalid external URL.');
+      const parsed: URL = new URL(url);
+      if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') throw new Error('Only web links can be opened.');
+      await shell.openExternal(parsed.href);
+    });
   }
 
-  protected handleMaximizeApplicationWindow(): void {
-    const window: BrowserWindow = this.application.getWindow();
-    if (window.isMaximized()) window.restore();
-    else window.maximize();
-  }
-
-  protected async handleOpenExternalURL(_: IpcMainEvent, url: string): Promise<void> {
-    await shell.openExternal(url);
+  private isEditor(event: IpcMainEvent | IpcMainInvokeEvent): boolean {
+    const window: BrowserWindow | null = this.application.getWindow();
+    return !!window && event.sender === window.webContents && event.senderFrame === window.webContents.mainFrame;
   }
 }

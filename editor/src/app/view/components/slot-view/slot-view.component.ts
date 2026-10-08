@@ -1,28 +1,29 @@
-import { Component, DestroyRef, inject } from '@angular/core';
+import { Component, DestroyRef, inject, ChangeDetectionStrategy } from '@angular/core';
 import { WorkspaceService } from '../../../services/workspace/workspace.service';
-import { Button } from 'primeng/button';
-import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { Button } from '@sushi-kit/angular';
+import { DialogService, DialogRef } from '../../../services/dialog.service';
 import { CreateModelDialog } from '../dialogs/create-model/create-model.dialog';
-import { SchemaValidator } from '@ramen-suite/core/gcore';
+import { NavigationService } from '../../../services/navigation.service';
 import { StorageService } from '../../../services/storage.service';
 import { ConfirmationDialog, ConfirmationOptions } from '../dialogs/confirmation/confirmation.dialog';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-slot-view',
   imports: [Button],
-  providers: [DialogService],
   templateUrl: './slot-view.component.html',
   styleUrl: './slot-view.component.scss',
 })
 export class SlotViewComponent {
+  private readonly navigation: NavigationService = inject(NavigationService);
   protected readonly storage: StorageService = inject(StorageService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
 
   protected readonly destroyRef: DestroyRef = inject(DestroyRef);
   protected readonly dialogService: DialogService = inject(DialogService);
-  protected dialogRef: DynamicDialogRef | null = null;
+  protected dialogRef: DialogRef | null = null;
 
-  constructor() {
+  public constructor() {
     this.destroyRef.onDestroy((): void => {
       this.dialogRef?.close();
       this.dialogRef = null;
@@ -33,9 +34,6 @@ export class SlotViewComponent {
     this.dialogRef?.close();
     this.dialogRef = this.dialogService.open(CreateModelDialog, {
       header: 'Create Project Model',
-      closeOnEscape: true,
-      draggable: true,
-      closable: true,
     });
   }
 
@@ -47,8 +45,8 @@ export class SlotViewComponent {
     try {
       const text: string = await file.text();
       const contents: unknown = JSON.parse(text);
-      SchemaValidator.assertValid(contents);
-      await this.storage.importRecord(contents);
+      const projectId: string = await this.storage.importRecord(contents);
+      await this.navigation.navigateToProject(projectId);
     } catch (error: unknown) {
       console.error('Unable to import selected model:', error);
       this.openErrorDialog();
@@ -59,16 +57,12 @@ export class SlotViewComponent {
     const options: ConfirmationOptions = {
       title: 'Import has failed',
       message: `The selected model cannot be imported. <br /> Please check your selection and try again.`,
-      icon: 'pi-exclamation-circle',
+
       justify: 'justify-around',
       buttons: [[{ label: 'Close', variant: 'outlined', click: (): void => this.dialogRef?.close() }]],
     };
 
     this.dialogRef = this.dialogService.open(ConfirmationDialog, {
-      showHeader: false,
-      closeOnEscape: true,
-      dismissableMask: true,
-      closable: true,
       inputValues: { options },
     });
   }

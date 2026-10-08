@@ -18,9 +18,9 @@ export class ExportService {
       try {
         await this.exportWithFilePicker(contents, fileName);
         return;
-      } catch {
-        console.error('Could not export via FileSystem API.');
-        return;
+      } catch (error: unknown) {
+        if (error instanceof DOMException && error.name === 'AbortError') return;
+        throw error;
       }
     }
 

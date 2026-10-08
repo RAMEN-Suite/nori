@@ -1,7 +1,9 @@
 {
   "extends": "./angular-tsconfig.json",
   "compilerOptions": {
-    "types": ["node"]
+    "types": ["node"],
+    "module": "preserve",
+    "moduleResolution": "bundler"
   },
-  "include": ["forge.config.ts"]
+  "include": ["forge.config.ts", "tools/**/*.ts"]
 }

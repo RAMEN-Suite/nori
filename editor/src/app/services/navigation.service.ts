@@ -7,15 +7,15 @@ export class NavigationService {
   private readonly router: Router = inject(Router);
 
   public async navigateToProject(projectId: string): Promise<void> {
-    await this.navigateTo(['/ws', projectId]);
+    await this.navigateTo(['/ws', projectId, '1']);
   }
 
-  public async navigateToSlot(route: ActivatedRoute, slot: number): Promise<void> {
-    await this.navigateToNode(route, slot, null);
+  public async navigateToSlot(slot: number): Promise<void> {
+    await this.navigateToNode(slot, null);
   }
 
-  public async navigateToNode(route: ActivatedRoute, slot: number, nodeId: string | null): Promise<void> {
-    const projectId: string | null = this.getRouteParameter(route, PARAMETERS.PROJECT);
+  public async navigateToNode(slot: number, nodeId: string | null): Promise<void> {
+    const projectId: string | null = this.getRouteParameter(PARAMETERS.PROJECT);
     if (!projectId) return;
 
     const commands: string[] = ['/ws', projectId, String(slot)];
@@ -27,20 +27,20 @@ export class NavigationService {
 
   private async navigateTo(route: string[], extras?: NavigationExtras): Promise<void> {
     const currentUrl: string = this.router.url;
-    const urlTree: UrlTree = this.router.createUrlTree(route);
+    const urlTree: UrlTree = this.router.createUrlTree(route, extras);
     const targetUrl: string = this.router.serializeUrl(urlTree);
 
     if (currentUrl === targetUrl) return;
     await this.router.navigate(route, extras);
   }
 
-  private getRouteParameter(activatedRoute: ActivatedRoute, parameterName: string): string | null {
-    let currentRoute: ActivatedRoute | null = activatedRoute;
+  private getRouteParameter(parameterName: string): string | null {
+    let currentRoute: ActivatedRoute | null = this.router.routerState.root;
 
     while (currentRoute) {
       const value: string | null = currentRoute.snapshot.paramMap.get(parameterName);
       if (value !== null) return value;
-      currentRoute = currentRoute.parent;
+      currentRoute = currentRoute.firstChild;
     }
 
     return null;

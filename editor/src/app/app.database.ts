@@ -6,7 +6,7 @@ export class AppDatabase extends Dexie {
   public readonly manifests!: Table<Manifest, string>;
   public readonly models!: Table<ModelRecord, string>;
 
-  constructor() {
+  public constructor() {
     super('nori');
     this.version(1).stores({
       manifests: 'projectId, updatedAt, metamodelId',
@@ -15,4 +15,4 @@ export class AppDatabase extends Dexie {
   }
 }
 
-export const database = new AppDatabase();
+export const database: AppDatabase = new AppDatabase();

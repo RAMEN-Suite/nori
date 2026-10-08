@@ -1,37 +1,12 @@
-@let nodeColors = workspace.store.currentNodeColors;
-
-<p-scroll-panel class="h-95 min-w-90 py-2" (keydown.enter)="handleSaveChanges()">
-  <div class="flex flex-col gap-3 px-5">
-    @for (option of nodeColorOptions(); track option.id) {
-      <div class="flex flex-row gap-4">
-        <div class="flex items-center">
-          <div class="flex flex-col gap-2">
-            <p-color-picker
-              format="hex"
-              [ngModel]="nodeColors()[option.id]"
-              (ngModelChange)="handleColorChange(option.id, $event)"
-              defaultColor="#000"
-              class="rounded border border-(--p-inputtext-border-color)"
-              appendTo="body"
-            />
-          </div>
-        </div>
-        <p-ifta-label class="flex basis-full">
-          <input
-            pInputText
-            [id]="option.id"
-            [ngModel]="nodeColors()[option.id]"
-            (ngModelChange)="handleColorChange(option.id, $event)"
-            fluid
-          />
-          <label [for]="option.id">{{ option.name }}</label>
-        </p-ifta-label>
-      </div>
-    }
-  </div>
-</p-scroll-panel>
-
-<div class="mt-2 flex flex-row justify-center gap-3">
-  <p-button label="Generate Colors" outlined (click)="handleGenerateColors()" />
-  <p-button label="Save Selection" outlined (click)="handleSaveChanges()" />
+<div class="flex max-h-96 min-w-80 flex-col gap-4 overflow-auto">
+  @for (option of nodeColorOptions(); track option.id) {
+    <label class="flex items-center justify-between gap-4" [for]="option.id"
+      >{{ option.name }}
+      <sui-color-picker [id]="option.id" [value]="colours()[option.id] ?? '#64748b'" (valueChange)="handleColorChange(option.id, $event)" />
+    </label>
+  }
+  <footer class="flex justify-end gap-3">
+    <button suiButton variant="outlined" (click)="handleGenerateColors()">Generate colours</button>
+    <button suiButton (click)="handleSaveChanges()">Save colours</button>
+  </footer>
 </div>

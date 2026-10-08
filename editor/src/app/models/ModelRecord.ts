@@ -1,4 +1,4 @@
-import { GModel } from '@ramen-suite/core/gcore';
+import { Model } from '@ramen-suite/core/model';
 
 export type NodeColors = Record<string, string>;
 
@@ -12,7 +12,7 @@ export interface ModelRecord {
 
   name: string;
   slot: number;
-  gmodel: GModel;
+  gmodel: Model;
 
   view?: ViewSettings;
 

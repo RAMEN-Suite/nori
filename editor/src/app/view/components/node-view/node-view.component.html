@@ -1,53 +1,20 @@
-<div class="grid h-full grid-rows-[1fr_auto] bg-(--p-menubar-background)/40">
-  <p-scroll-panel class="min-h-full" animate.enter="node-view-entrance">
-    <ng-template #content>
-      <div class="flex flex-col gap-5 px-5 py-4">
-        <app-node-basics />
-
-        <p-tabs [value]="activeTab()" class="border border-(--p-panel-border-color)">
-          <p-tablist>
-            <p-tab value="attributes" class="flex flex-6 justify-center" (click)="handleTab('attributes')">
-              <div class="flex flex-row items-center gap-3">
-                <i class="pi pi-sliders-h text-xs!"></i>
-                <span class="font-light">Attributes</span>
-              </div>
-            </p-tab>
-            <p-tab value="relations" class="flex flex-6 justify-center" (click)="handleTab('relations')">
-              <div class="flex flex-row items-center gap-3">
-                <i class="pi pi-share-alt text-xs!"></i>
-                <span class="font-light">Relationships</span>
-              </div>
-            </p-tab>
-          </p-tablist>
-          <p-tabpanels>
-            <p-tabpanel value="attributes">
-              <app-node-attributes />
-            </p-tabpanel>
-            <p-tabpanel value="relations">
-              <app-node-relations />
-            </p-tabpanel>
-          </p-tabpanels>
-        </p-tabs>
-      </div>
-    </ng-template>
-  </p-scroll-panel>
-
-  <div
-    class="flex min-h-15 w-full flex-row items-center justify-between gap-5 border-t border-(--p-menubar-border-color) bg-(--p-menubar-background) px-5"
-    animate.enter="controls-entrance"
-    animate.leave="controls-leave"
-  >
-    <div class="flex flex-row gap-5">
-      <p-button label="Close View" size="small" variant="outlined" (click)="handleCloseView()"></p-button>
-    </div>
-
-    <div class="flex flex-row gap-5">
-      @if (!workspace.view.validation().hasErrors) {
-        <p-button label="no validation issues" size="small" outlined styleClass="px-10!" />
-      } @else {
-        @let amount = workspace.view.validation().diagnostics.length;
-        <p-button [label]="amount + ' validation issues'" size="small" outlined severity="danger" styleClass="px-10!" />
+<section class="bg-base-100 flex h-full flex-col gap-5 overflow-auto p-5" aria-label="Node editor">
+  <app-node-basics />
+  <sui-tabs [value]="activeTab()" (valueChange)="handleTab($event)">
+    <ng-template suiTab value="attributes" label="Properties"><app-node-attributes /></ng-template>
+    <ng-template suiTab value="relations" label="Relationships"><app-node-relations /></ng-template>
+  </sui-tabs>
+  <footer class="mt-auto flex flex-wrap items-center justify-between gap-3">
+    <button suiButton variant="outlined" (click)="handleCloseView()">Close view</button>
+    @if (workspace.view.validation(); as validation) {
+      <span>{{ validation.valid ? 'Model is valid' : validation.diagnostics.length + ' validation findings' }}</span>
+      @if (!validation.valid) {
+        <ul class="w-full text-sm" aria-label="Validation findings">
+          @for (diagnostic of validation.diagnostics; track $index) {
+            <li>{{ diagnostic.message }}</li>
+          }
+        </ul>
       }
-    </div>
-  </div>
-</div>
+    }
+  </footer>
+</section>

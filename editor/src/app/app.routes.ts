@@ -7,7 +7,7 @@ import { hasWorkspace } from './guards/workspace.guard';
 import { NodeViewComponent } from './view/components/node-view/node-view.component';
 import { SlotViewComponent } from './view/components/slot-view/slot-view.component';
 
-export const PARAMETERS = {
+export const PARAMETERS: Readonly<{ PROJECT: string; SLOT: string; NODE: string }> = {
   PROJECT: 'projectId',
   SLOT: 'slotId',
   NODE: 'nodeId',

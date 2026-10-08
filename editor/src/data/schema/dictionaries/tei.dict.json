@@ -37,9 +37,7 @@
       "id": "placeName",
       "name": "placeName",
       "superTypes": [],
-      "attributes": [
-        { "name": "ref", "typeId": "string", "bounds": { "lowerBound": 1, "upperBound": 1 } }
-      ]
+      "attributes": [{ "name": "ref", "typeId": "string", "bounds": { "lowerBound": 1, "upperBound": 1 } }]
     }
   ],
 

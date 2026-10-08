@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "tailwindcss-primeui";
-@import "primeicons/primeicons.css";
+@import "@sushi-kit/angular/styles.css";
 
-@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant dark (&:where([data-theme="sushi-dark"], [data-theme="sushi-dark"] *));

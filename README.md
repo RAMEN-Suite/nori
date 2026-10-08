@@ -1,7 +1,7 @@
-# NORI – A Model Layering Tool
+# Nori – A Model Layering Tool
 
 
-NORI is a tool for **multi-level modelling of objects across heterogeneous domains**, developed for use in domains such as the **Digital Humanities**.
+Nori is a tool for **multi-level modelling of objects across heterogeneous domains**, developed for use in domains such as the **Digital Humanities**.
 
 It can be used both as:
 
@@ -14,11 +14,12 @@ It can be used both as:
 
 ### Requirements
 
-- Node.js (LTS recommended)
-- npm
-- Das Geschwister-Repository `../ramen-core` mit gebautem Paket `@ramen-suite/core`.
+- Node.js 26.3 or later within version 26 (`.nvmrc`)
+- npm 11.16 or later within version 11
+- The sibling repository `../ramen-core` with a built `@ramen-suite/core` package.
 
-Zuerst im Geschwisterordner `ramen-core` die Abhängigkeiten installieren und `npm run build` ausführen. Danach hier die Abhängigkeiten installieren:
+Install dependencies and run `npm run build` in `../ramen-core` first. Then install Nori dependencies:
+
 ```
 npm install
 ```
@@ -55,25 +56,45 @@ npm run start:editor
 ## Building
 
 Build the Angular editor:
+
 ```
 npm run build:editor
 ```
+
 Build the Electron process:
+
 ```
 npm run build:electron
 ```
+
 ---
+
+## Checks
+
+```sh
+npm run lint
+npm run typecheck
+npm run format
+npm run build:editor
+npm run build:electron
+```
+
+The editor build also checks Angular templates. Automated scenario tests will follow the migration.
 
 ## Packaging
 
 Package the application:
+
 ```
 npm run package
 ```
+
 Create distributable installers:
+
 ```
 npm run make
 ```
+
 Both commands automatically build the Angular editor and Electron process before packaging.
 
 ---

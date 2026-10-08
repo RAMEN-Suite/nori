@@ -1,4 +1,4 @@
-import { Component, effect, inject, OnInit } from '@angular/core';
+import { Component, effect, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { WindowState } from '../../../states/window.state';
 import { ToolBarComponent } from '../../components/tool-bar/tool-bar.component';
 import { StorageService } from '../../../services/storage.service';
@@ -6,11 +6,13 @@ import { Manifest } from '../../../models/Manifest';
 import { SideMenuComponent } from '../../components/side-menu/side-menu.component';
 import { GraphMenuComponent } from '../../components/graph-view/graph-menu/graph-menu.component';
 import { ActivatedRoute, NavigationEnd, ParamMap, Router, RouterOutlet } from '@angular/router';
-import { filter, Subscription } from 'rxjs';
+import { filter } from 'rxjs';
 import { WorkspaceService } from '../../../services/workspace/workspace.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PARAMETERS } from '../../../app.routes';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-workspace',
   imports: [ToolBarComponent, SideMenuComponent, GraphMenuComponent, RouterOutlet],
   templateUrl: './workspace.screen.html',
@@ -24,20 +26,23 @@ export class WorkspaceScreen implements OnInit {
 
   protected readonly router: Router = inject(Router);
   protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
-  protected readonly activatedRouteSubscription$: Subscription | undefined;
 
-  constructor() {
-    this.activatedRouteSubscription$ = this.router.events
-      .pipe(filter((event: unknown): event is NavigationEnd => event instanceof NavigationEnd))
+  public constructor() {
+    this.router.events
+      .pipe(
+        filter((event: unknown): event is NavigationEnd => event instanceof NavigationEnd),
+        takeUntilDestroyed(),
+      )
       .subscribe(this.registerRouteSubscription.bind(this));
 
     effect((): void => {
       const manifest: Manifest | null = this.storage.selectedManifest();
-      this.windowState.setTitle(manifest?.name ?? '', 'pi pi-pen-to-square');
+      this.windowState.setTitle(manifest?.name ?? '');
     });
   }
 
   public ngOnInit(): void {
+    this.registerRouteSubscription();
     void this.storage.refreshManifests();
   }
 
@@ -46,11 +51,11 @@ export class WorkspaceScreen implements OnInit {
     if (projectId) this.storage.selectProject(projectId);
 
     let route: ActivatedRoute | null = this.activatedRoute;
-    while (route?.firstChild) route = route.firstChild;
+    while (route.firstChild) route = route.firstChild;
 
-    const paramMap: ParamMap = route?.snapshot.paramMap;
-    const slot: string | null = paramMap?.get(PARAMETERS.SLOT);
-    const nodeId: string | null = paramMap?.get(PARAMETERS.NODE);
+    const paramMap: ParamMap = route.snapshot.paramMap;
+    const slot: string | null = paramMap.get(PARAMETERS.SLOT);
+    const nodeId: string | null = paramMap.get(PARAMETERS.NODE);
 
     this.workspace.store.setCurrentSlot(slot ? Number(slot) : null);
     this.workspace.store.setCurrentNodeId(nodeId ?? null);

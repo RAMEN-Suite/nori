@@ -1,4 +1,4 @@
-import { GraphData, GraphLink, GraphNode } from '../../../../core/utils/GModelGraph';
+import { GraphData, GraphLink, GraphNode } from '../../../../core/utils/ModelGraph';
 import { D3ZoomEvent, DragBehavior, Selection, ZoomBehavior } from 'd3';
 
 export type GraphPadding = Readonly<{ top: number; right: number; bottom: number; left: number }>;
