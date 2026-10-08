@@ -1,6 +1,6 @@
 import { computed, effect, inject, Injectable, Signal, signal, untracked, WritableSignal } from '@angular/core';
-import { type Model, type Id } from '@ramen-suite/core/model';
-import { RamenModel, RamenModelFormat } from '@ramen-suite/core/ramen';
+import { Modeller, type Model, type Id } from '@ramen-suite/core/model';
+import { RamenModel, RamenModelFormat, type RamenFile } from '@ramen-suite/core/ramen';
 import { StorageService } from '../storage.service';
 import { type ModelRecord, type NodeColors } from '../../models/ModelRecord';
 
@@ -33,30 +33,7 @@ export class WorkspaceStore {
     effect((): void => {
       const projectId: string | null = this.storage.loadedProjectId();
       const records: ModelRecord[] = untracked((): ModelRecord[] => this.storage.records());
-      const current: ModelRecord | undefined = [...records]
-        .reverse()
-        .find((record: ModelRecord): boolean => RamenModelFormat.isDocument(record.gmodel));
-      this.levels.clear();
-      this.referenceModels = records
-        .filter((record: ModelRecord): boolean => !RamenModelFormat.isDocument(record.gmodel))
-        .map((record: ModelRecord): Model => record.gmodel);
-      const workspace: RamenModel | null =
-        projectId && current
-          ? RamenModel.load(
-              current.gmodel,
-              records
-                .filter((record: ModelRecord): boolean => record.gmodel.id !== current.gmodel.id)
-                .map((record: ModelRecord): Model => record.gmodel),
-            )
-          : null;
-      this.workspace.set(workspace);
-      if (workspace) {
-        for (const record of records) {
-          if (RamenModelFormat.isDocument(record.gmodel))
-            this.levels.set(record.gmodel.id, workspace.openLevel(record.gmodel.id));
-        }
-      }
-      this.notifyChange();
+      this.restoreWorkspace(projectId ? records.map((record: ModelRecord): Model => record.gmodel) : []);
     });
     effect((): void => this.currentNodeColors.set(this.currentModelRecord()?.view?.nodeColors ?? {}));
   }
@@ -74,6 +51,20 @@ export class WorkspaceStore {
     return workspace;
   }
 
+  /** Exports every project level and rejects an exchange that would omit a branch. */
+  public exportModel(): RamenFile {
+    const workspace: RamenModel = this.getWorkspace();
+    const level: RamenModel | undefined = [...this.levels.values()].at(-1);
+    if (!level) throw new Error('No editable model is available for export.');
+
+    const file: RamenFile = workspace.openLevel(level.getModel().id).export();
+    const exportedIds: ReadonlySet<string> = new Set(file.models.map((model): string => model.id));
+    if (this.getModels().some((model: Model): boolean => !exportedIds.has(model.id))) {
+      throw new Error('RAMEN Core cannot export all branches in one file yet. No partial model was exported.');
+    }
+    return file;
+  }
+
   public getModels(): readonly Model[] {
     return [
       ...this.referenceModels.map((model: Model): Model => structuredClone(model)),
@@ -83,17 +74,32 @@ export class WorkspaceStore {
 
   public addLevel(level: RamenModel): void {
     this.levels.set(level.getModel().id, level);
+    if (!this.workspace()) this.workspace.set(level);
   }
 
   public removeLevels(ids: readonly string[]): void {
     for (const id of ids) this.levels.delete(id);
+    this.restoreWorkspace(this.getModels());
   }
 
-  public getParentLevel(id: string): RamenModel {
+  public getCreationParent(): RamenModel | null {
+    return RamenModelFormat.isDocument(this.currentModel()) ? this.getDraft() : this.workspace();
+  }
+
+  public getParentLevel(id: string): RamenModel | Modeller {
     const model: Model | undefined = this.levels.get(id)?.getModel();
-    const parent: RamenModel | undefined = this.levels.get(model?.imports[0]?.modelId ?? '');
-    if (!parent) throw new Error('The initial project level is retained. Remove the project to delete it.');
-    return parent;
+    if (!model) throw new Error('The selected editable model no longer exists.');
+
+    const parentId: string | undefined = model.imports[0]?.modelId;
+    const parent: RamenModel | undefined = this.levels.get(parentId ?? '');
+    if (parent) return parent;
+
+    const reference: Model | undefined = this.referenceModels.find((item: Model): boolean => item.id === parentId);
+    if (!reference) throw new Error('The parent model could not be found.');
+    return Modeller.load(
+      reference,
+      this.getModels().filter((item: Model): boolean => item.id !== reference.id),
+    );
   }
 
   public notifyChange(): void {
@@ -114,5 +120,25 @@ export class WorkspaceStore {
 
   public updateCurrentNodeColors(nodeId: Id, colour: string): void {
     this.currentNodeColors.update((colours: NodeColors): NodeColors => ({ ...colours, [nodeId]: colour }));
+  }
+
+  private restoreWorkspace(models: readonly Model[]): void {
+    this.levels.clear();
+    this.referenceModels = models.filter((model: Model): boolean => !RamenModelFormat.isDocument(model));
+    const current: Model | undefined = [...models].reverse().find(RamenModelFormat.isDocument);
+    const workspace: RamenModel | null = current
+      ? RamenModel.load(
+          current,
+          models.filter((model: Model): boolean => model.id !== current.id),
+        )
+      : null;
+    this.workspace.set(workspace);
+
+    if (workspace) {
+      for (const model of models) {
+        if (RamenModelFormat.isDocument(model)) this.levels.set(model.id, workspace.openLevel(model.id));
+      }
+    }
+    this.notifyChange();
   }
 }

@@ -3,7 +3,7 @@ import { type Model } from '@ramen-suite/core/model';
 import { RamenModel, RAMEN_MODEL } from '@ramen-suite/core/ramen';
 import ShortUniqueId from 'short-unique-id';
 import { type Manifest } from '../models/Manifest';
-import { type ModelRecord } from '../models/ModelRecord';
+import { type ModelRecord, type ViewSettings } from '../models/ModelRecord';
 import { database } from '../app.database';
 import { environment } from '../../environments/environment';
 
@@ -150,6 +150,19 @@ export class StorageService {
       this.records.update((records: ModelRecord[]): ModelRecord[] =>
         records.map((item: ModelRecord): ModelRecord => (item.modelId === id ? updated : item)),
       );
+  }
+
+  public async updateView(id: string, patch: Partial<ViewSettings>): Promise<void> {
+    const view: ViewSettings = await database.transaction('rw', database.models, async (): Promise<ViewSettings> => {
+      const record: ModelRecord | undefined = await database.models.get(id);
+      if (!record) throw new Error('Model record not found.');
+      const updated: ViewSettings = { nodeColors: {}, ...record.view, ...patch };
+      await database.models.update(id, { view: updated });
+      return updated;
+    });
+    this.records.update((records: ModelRecord[]): ModelRecord[] =>
+      records.map((record: ModelRecord): ModelRecord => (record.modelId === id ? { ...record, view } : record)),
+    );
   }
 
   public async saveModels(projectId: string, models: readonly Model[]): Promise<void> {

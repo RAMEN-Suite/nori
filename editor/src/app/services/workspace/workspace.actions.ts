@@ -18,10 +18,10 @@ import {
   type RelationRemovalPreview,
   type ModelRemovalPreview,
 } from '@ramen-suite/core/model';
-import { type RamenModel } from '@ramen-suite/core/ramen';
+import { RamenModel } from '@ramen-suite/core/ramen';
 import { StorageService } from '../storage.service';
 import { WorkspaceStore } from './workspace.store';
-import { type ModelRecord, type ViewSettings } from '../../models/ModelRecord';
+import { type ModelRecord, type GraphView, type ViewSettings } from '../../models/ModelRecord';
 
 export type CreateSlotInput = Required<Pick<ModelInput, 'name' | 'uri' | 'version'>>;
 export type UpdateSlotInput = CreateSlotInput;
@@ -117,7 +117,8 @@ export class WorkspaceActions {
   }
 
   public async createSlot(input: CreateSlotInput): Promise<number> {
-    const next: RamenModel = this.store.getDraft().createNextLevel(input);
+    const parent: RamenModel | null = this.store.getCreationParent();
+    const next: RamenModel = parent ? parent.createNextLevel(input) : RamenModel.create(input);
     this.store.addLevel(next);
     await this.saveCurrentModel();
     return this.storage.records().find((record: ModelRecord): boolean => record.gmodel.id === next.getModel().id)?.slot ?? 1;
@@ -149,8 +150,28 @@ export class WorkspaceActions {
   public async updateNodeColors(): Promise<void> {
     const record: ModelRecord | null = this.store.currentModelRecord();
     if (!record) return;
-    const view: ViewSettings = { nodeColors: this.store.currentNodeColors() };
-    await this.storage.updateRecord(record.modelId, { view });
+    await this.saveView(record.modelId, { nodeColors: this.store.currentNodeColors() });
+  }
+
+  public async updateGraphView(recordId: string, graph: GraphView): Promise<void> {
+    await this.saveView(recordId, { graph });
+  }
+
+  private async saveView(recordId: string, patch: Partial<ViewSettings>): Promise<void> {
+    const record: ModelRecord | undefined = this.storage
+      .records()
+      .find((item: ModelRecord): boolean => item.modelId === recordId);
+    if (!record) return;
+
+    const save: Promise<void> = this.pendingSave.then(async (): Promise<void> => {
+      // A queued graph update can outlive its level or the open project.
+      const exists: boolean = this.storage
+        .records()
+        .some((item: ModelRecord): boolean => item.modelId === recordId && item.projectId === record.projectId);
+      if (exists) await this.storage.updateView(recordId, patch);
+    });
+    this.pendingSave = save.catch((): void => undefined);
+    await save;
   }
 
   public async saveCurrentModel(): Promise<void> {

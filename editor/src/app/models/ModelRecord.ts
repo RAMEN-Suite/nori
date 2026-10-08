@@ -2,7 +2,13 @@ import { Model } from '@ramen-suite/core/model';
 
 export type NodeColors = Record<string, string>;
 
+export interface GraphView {
+  positions: Record<string, { x: number; y: number }>;
+  viewport: { x: number; y: number; scale: number };
+}
+
 export interface ViewSettings {
+  graph?: GraphView;
   nodeColors: NodeColors;
 }
 
