@@ -6,8 +6,4 @@
 
 <app-dialog-host />
 
-@if (storage.error(); as error) {
-  <div role="alert" class="bg-error text-error-content fixed bottom-4 left-4 z-50 max-w-lg rounded p-4">
-    {{ error }} <button type="button" (click)="storage.error.set(null)">Dismiss</button>
-  </div>
-}
+<sui-toast horizontal="center" vertical="bottom" [maxVisible]="3" [ariaLabel]="'common.notifications' | transloco" />

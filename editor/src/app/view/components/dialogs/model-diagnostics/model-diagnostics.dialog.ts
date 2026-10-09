@@ -1,0 +1,16 @@
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { TranslocoDirective } from '@jsverse/transloco';
+import { Button, List, ListItemTemplate, Message } from '@sushi-kit/angular';
+import { DialogService } from '../../../../services/dialog.service';
+import { WorkspaceService } from '../../../../services/workspace/workspace.service';
+
+@Component({
+  selector: 'app-model-diagnostics',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [TranslocoDirective, Button, List, ListItemTemplate, Message],
+  templateUrl: './model-diagnostics.dialog.html',
+})
+export class ModelDiagnosticsDialog {
+  protected readonly workspace: WorkspaceService = inject(WorkspaceService);
+  protected readonly dialogs: DialogService = inject(DialogService);
+}

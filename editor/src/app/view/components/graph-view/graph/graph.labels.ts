@@ -37,7 +37,7 @@ export function positionLinkLabels(root: RootSelection, paths: LinkSelection, no
   root.selectAll<SVGTextElement, ResolvedLink>('text.link-label').each(function (this: SVGTextElement, link: ResolvedLink): void {
     const path: SVGPathElement | undefined = byId.get(link.id);
     if (!path) return;
-    const self: boolean = link.source === link.target;
+    const self: boolean = link.source === link.target && !link.loopSide;
     const size: DOMRect = this.getBBox();
     const candidates: Point[] = captionCandidates(path, link);
     const point: Point =

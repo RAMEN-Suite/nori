@@ -1,30 +1,24 @@
-import { LucidePencil, LucideTrash, LucideCopy, LucideGitBranch, LucideChevronRight } from '@lucide/angular';
-import { Node, UpdateNodeInput, type NodeSuggestion } from '@ramen-suite/core/model';
 import {
+  ChangeDetectionStrategy,
   Component,
-  DestroyRef,
+  computed,
   effect,
   inject,
   signal,
-  WritableSignal,
-  ChangeDetectionStrategy,
-  computed,
   type Signal,
+  type WritableSignal,
 } from '@angular/core';
-import { Button, Input, Tooltip } from '@sushi-kit/angular';
-
-import { TranslocoDirective } from '@jsverse/transloco';
-import { CreateNodeDialog } from '../../dialogs/create-node/create-node.dialog';
 import { FormsModule } from '@angular/forms';
-import { StorageService } from '../../../../services/storage.service';
-import { WorkspaceService } from '../../../../services/workspace/workspace.service';
-
-import { DialogService, DialogRef } from '../../../../services/dialog.service';
-import { NodeColorsDialog } from '../../dialogs/node-colors/node-colors.dialog';
-import { NavigationService } from '../../../../services/navigation.service';
-import { NodeEditingService } from '../../../../services/workspace/node-editing.service';
-
+import { TranslocoDirective } from '@jsverse/transloco';
+import { LucideChevronRight, LucideCopy, LucideGitBranch, LucidePencil, LucideTrash } from '@lucide/angular';
+import { type Node, type NodeSuggestion, type UpdateNodeInput } from '@ramen-suite/core/model';
+import { Button, Input, Tooltip } from '@sushi-kit/angular';
 import { Transformer } from '../../../../core/helper/Transformer';
+import { type ModelRecord } from '../../../../models/ModelRecord';
+import { NavigationService } from '../../../../services/navigation.service';
+import { StorageService } from '../../../../services/storage.service';
+import { NodeEditingService } from '../../../../services/workspace/node-editing.service';
+import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -48,11 +42,6 @@ export class NodeBasicsComponent {
   protected readonly storage: StorageService = inject(StorageService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   protected readonly navigation: NavigationService = inject(NavigationService);
-
-  protected readonly destroyRef: DestroyRef = inject(DestroyRef);
-  protected readonly dialogService: DialogService = inject(DialogService);
-  protected dialogRef: DialogRef | null = null;
-
   private readonly nodeEditing: NodeEditingService = inject(NodeEditingService);
 
   protected readonly workingName: WritableSignal<string | null> = signal(null);
@@ -64,37 +53,30 @@ export class NodeBasicsComponent {
       .nodeSuggestions()
       .find(
         (suggestion: NodeSuggestion): boolean =>
-          suggestion.nodeId === node?.id && suggestion.modelId === this.workspace.store.currentModel()?.id,
+          suggestion.nodeId === node?.id && suggestion.modelId === this.workspace.view.nodeOwner()?.gmodel.id,
       );
   });
-
-  protected handleRefine(): void {
-    const suggestion: NodeSuggestion | undefined = this.refinement();
-    if (!suggestion) return;
-
-    this.dialogService.open(CreateNodeDialog, {
-      headerKey: 'editor.refineNode',
-      inputValues: { baseNodeId: suggestion.ref },
-    });
-  }
 
   public constructor() {
     effect((): void => {
       const currentName: string | undefined = this.workspace.view.currentNode()?.name;
       this.workingName.set(currentName ?? null);
     });
-
-    this.destroyRef.onDestroy((): void => {
-      this.dialogRef?.close();
-      this.dialogRef = null;
-    });
   }
 
-  public handleOpenColorsDialog(): void {
-    this.dialogRef?.close();
-    this.dialogRef = this.dialogService.open(NodeColorsDialog, {
-      header: 'Configure Node Colors',
-    });
+  protected handleOpenOrigin(): void {
+    const owner: ModelRecord | null = this.workspace.view.nodeOwner();
+    const node: Node | null = this.workspace.view.currentNode();
+    if (!owner || !node) return;
+
+    void this.navigation.navigateToNode(owner.slot, node.id).catch((error: unknown): void => this.storage.reportError(error));
+  }
+
+  protected handleRefine(): void {
+    const suggestion: NodeSuggestion | undefined = this.refinement();
+    if (!suggestion) return;
+
+    void this.nodeEditing.refine(suggestion.ref);
   }
 
   protected async handleDuplicateNode(): Promise<void> {
@@ -103,7 +85,7 @@ export class NodeBasicsComponent {
     await this.nodeEditing.duplicate(selectedId);
   }
 
-  protected handleDeleteNode(): void {
+  protected handleRemoveNode(): void {
     const selectedId: string | null = this.workspace.store.currentNodeId();
     if (selectedId) this.nodeEditing.confirmRemoval(selectedId);
   }
@@ -111,7 +93,7 @@ export class NodeBasicsComponent {
   protected async handleSave(): Promise<void> {
     const selectedId: string | null = this.workspace.store.currentNodeId();
     const workingName: string | null = this.workingName();
-    if (!selectedId || !workingName) return;
+    if (!selectedId || !workingName || !this.workspace.view.nodeEditable()) return;
 
     const transformedName: string = Transformer.toPascalName(workingName);
     const patch: UpdateNodeInput = { name: transformedName };

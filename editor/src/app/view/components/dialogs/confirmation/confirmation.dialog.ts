@@ -5,17 +5,14 @@ import { DialogService } from '../../../../services/dialog.service';
 export interface ConfirmationOptions {
   title: string;
   message: string;
-  plainText?: boolean;
-  justify?: 'justify-center' | 'justify-between' | 'justify-around';
+  details?: readonly string[];
   buttons: ConfirmationButton[][];
 }
 
 export interface ConfirmationButton {
   label: string;
   severity?: ButtonSeverity;
-  styleClass?: string;
   variant?: 'outlined' | 'text';
-  size?: 'sm' | 'lg';
   click?: () => void | Promise<void>;
 }
 
@@ -28,16 +25,17 @@ export interface ConfirmationButton {
 })
 export class ConfirmationDialog {
   protected readonly dialogs: DialogService = inject(DialogService);
-  public readonly options: InputSignal<ConfirmationOptions | undefined> = input();
+  public readonly options: InputSignal<ConfirmationOptions> = input.required();
 
   protected async handleAction(button: ConfirmationButton): Promise<void> {
-    if (!button.click) {
+    const action: ConfirmationButton['click'] = button.click;
+    if (!action) {
       this.dialogs.close();
       return;
     }
 
     await this.dialogs.run(async (): Promise<void> => {
-      await button.click?.();
+      await action();
     });
   }
 }

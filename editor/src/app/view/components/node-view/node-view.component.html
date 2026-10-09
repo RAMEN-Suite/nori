@@ -7,16 +7,9 @@
   <footer class="mt-auto flex flex-wrap items-center justify-between gap-3">
     <button suiButton severity="neutral" variant="text" size="sm" (click)="handleCloseView()">{{ t('editor.closeView') }}</button>
     @if (workspace.view.validation(); as validation) {
-      <span class="text-base-content/60 text-xs">{{
+      <span class="text-xs" [class.text-error]="!validation.valid" [class.text-base-content/60]="validation.valid">{{
         validation.valid ? t('editor.valid') : t('editor.findings', { count: validation.diagnostics.length })
       }}</span>
-      @if (!validation.valid) {
-        <ul class="w-full text-sm" aria-label="Validation findings">
-          @for (diagnostic of validation.diagnostics; track $index) {
-            <li>{{ diagnostic.message }}</li>
-          }
-        </ul>
-      }
     }
   </footer>
 </section>

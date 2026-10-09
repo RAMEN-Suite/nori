@@ -5,7 +5,7 @@
         <p class="text-base-content/50 mb-1 text-xs font-medium tracking-wider uppercase">{{ t('editor.nodeDefinition') }}</p>
         <h1 class="text-2xl font-semibold break-words">{{ node.name }}</h1>
       </div>
-      @if (workspace.view.editable()) {
+      @if (workspace.view.nodeEditable()) {
         <div class="flex shrink-0 gap-0.5">
           <button
             suiButton
@@ -39,18 +39,19 @@
             shape="square"
             [attr.aria-label]="t('editor.removeNode')"
             [suiTooltip]="t('editor.removeNode')"
-            (click)="handleDeleteNode()"
+            (click)="handleRemoveNode()"
           >
             <svg lucideTrash class="size-4" aria-hidden="true"></svg>
           </button>
         </div>
       }
     </div>
-    @if (isWorkingNameActive()) {
+    @if (isWorkingNameActive() && workspace.view.nodeEditable()) {
       <label class="flex flex-col gap-2 text-sm"
         >{{ t('editor.nodeName')
         }}<input
           suiInput
+          fluid
           name="nodeName"
           [ngModel]="workingName()"
           (ngModelChange)="workingName.set($event)"
@@ -63,7 +64,12 @@
         <button suiButton size="sm" (click)="handleSave()">{{ t('editor.saveName') }}</button>
       </div>
     }
-    @if (workspace.view.resolveNodeBase(node); as base) {
+    @if (!workspace.view.nodeEditable() && workspace.view.editable()) {
+      <button suiButton severity="neutral" variant="soft" size="sm" (click)="handleOpenOrigin()">
+        {{ t('editor.openOrigin', { name: workspace.view.nodeOwner()?.gmodel.name }) }}
+      </button>
+    }
+    @if (workspace.view.resolveNodeBase(node, workspace.view.nodeOwner()?.gmodel.id); as base) {
       <div class="flex items-start gap-2 text-sm">
         <svg lucideGitBranch class="text-base-content/50 mt-0.5 size-4 shrink-0" aria-hidden="true"></svg>
         <div>
@@ -81,7 +87,7 @@
         <span class="text-base-content font-medium">{{ node.name }}</span>
       </p>
     } @else {
-      <p class="text-base-content/55 text-sm">{{ t('editor.baseIn', { name: workspace.store.currentModel()?.name }) }}</p>
+      <p class="text-base-content/55 text-sm">{{ t('editor.baseIn', { name: workspace.view.nodeOwner()?.gmodel.name }) }}</p>
     }
     @if (workspace.view.editable() && refinement()) {
       <button suiButton severity="neutral" variant="outlined" size="sm" class="w-full" (click)="handleRefine()">

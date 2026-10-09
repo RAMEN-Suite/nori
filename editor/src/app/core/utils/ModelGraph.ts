@@ -24,7 +24,7 @@ export interface GraphData {
 
 /** Projects local nodes and referenced imported nodes for display. Core owns their semantics. */
 export class ModelGraph {
-  public build(model: Model | null, models: readonly Model[] = []): GraphData {
+  public build(model: Model | null, models: readonly Model[] = [], visibleNodeRefs: readonly string[] = []): GraphData {
     if (!model) return { nodes: [], links: [] };
 
     const nodes: Map<string, GraphNode> = new Map();
@@ -32,15 +32,15 @@ export class ModelGraph {
     for (const item of model.classifiers) {
       if (item.kind === 'Node') nodes.set(item.id, this.projectNode(item, item.id, model.id, definitions));
     }
+    const references: Set<string> = new Set(visibleNodeRefs);
     for (const relation of model.relations) {
-      for (const ref of [relation.from.nodeId, relation.to.nodeId]) {
-        if (nodes.has(ref) || !ModelRef.isQualified(ref)) continue;
-        const { modelId, refId } = ModelRef.splitQualified(ref);
-        const node: Node | undefined = definitions
-          .get(modelId)
-          ?.classifiers.find((item): item is Node => item.kind === 'Node' && item.id === refId);
-        if (node) nodes.set(ref, this.projectNode(node, ref, modelId, definitions));
-      }
+      references.add(relation.from.nodeId);
+      references.add(relation.to.nodeId);
+    }
+    for (const ref of references) {
+      if (nodes.has(ref)) continue;
+      const node: GraphNode | null = this.projectReference(ref, model.id, definitions);
+      if (node) nodes.set(ref, node);
     }
 
     const links: GraphLink[] = model.relations.map(
@@ -53,6 +53,17 @@ export class ModelGraph {
       }),
     );
     return { nodes: [...nodes.values()], links };
+  }
+
+  private projectReference(ref: string, currentModelId: string, models: ReadonlyMap<string, Model>): GraphNode | null {
+    if (!ModelRef.isQualified(ref)) return null;
+    const { modelId, refId } = ModelRef.splitQualified(ref);
+    if (modelId === currentModelId) return null;
+
+    const node: Node | undefined = models
+      .get(modelId)
+      ?.classifiers.find((item): item is Node => item.kind === 'Node' && item.id === refId);
+    return node ? this.projectNode(node, ref, modelId, models) : null;
   }
 
   private projectNode(node: Node, id: string, ownerId: string, models: ReadonlyMap<string, Model>): GraphNode {
@@ -72,4 +83,31 @@ export class ModelGraph {
       modelName: models.get(ownerId)?.name ?? '',
     };
   }
+}
+
+/** Keeps graph rendering stable when unrelated model properties change. */
+export function areGraphsEqual(previous: GraphData, current: GraphData): boolean {
+  return (
+    previous.nodes.length === current.nodes.length &&
+    previous.links.length === current.links.length &&
+    previous.nodes.every((node: GraphNode, index: number): boolean => sameNode(node, current.nodes[index])) &&
+    previous.links.every((link: GraphLink, index: number): boolean => sameLink(link, current.links[index]))
+  );
+}
+
+function sameNode(left: GraphNode, right: GraphNode | undefined): boolean {
+  return (
+    !!right &&
+    left.id === right.id &&
+    left.label === right.label &&
+    left.superType === right.superType &&
+    left.baseName === right.baseName &&
+    left.modelName === right.modelName
+  );
+}
+
+function sameLink(left: GraphLink, right: GraphLink | undefined): boolean {
+  return (
+    !!right && left.id === right.id && left.label === right.label && left.source === right.source && left.target === right.target
+  );
 }

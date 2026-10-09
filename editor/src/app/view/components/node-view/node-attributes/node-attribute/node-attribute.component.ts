@@ -1,13 +1,14 @@
-import { LucidePencil, LucideTrash, LucideArrowUpRight } from '@lucide/angular';
-import { Component, DestroyRef, inject, input, InputSignal, model, ModelSignal, ChangeDetectionStrategy } from '@angular/core';
-import { Button, Tooltip, Badge } from '@sushi-kit/angular';
-
-import { Bounds, Attribute } from '@ramen-suite/core/model';
-import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, input, type InputSignal } from '@angular/core';
+import { TranslocoService } from '@jsverse/transloco';
+import { LucideArrowUpRight, LucidePencil, LucideTrash } from '@lucide/angular';
+import { type Attribute, type Bounds } from '@ramen-suite/core/model';
+import { Badge, Button, Tooltip } from '@sushi-kit/angular';
+import { type DialogRef, DialogService } from '../../../../../services/dialog.service';
 import { NavigationService } from '../../../../../services/navigation.service';
-import { DialogService, DialogRef } from '../../../../../services/dialog.service';
+import { StorageService } from '../../../../../services/storage.service';
+import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
+import { ConfirmationDialog, type ConfirmationOptions } from '../../../dialogs/confirmation/confirmation.dialog';
 import { CreateAttributeDialog } from '../../../dialogs/create-attribute/create-attribute.dialog';
-import { ConfirmationButton, ConfirmationDialog, ConfirmationOptions } from '../../../dialogs/confirmation/confirmation.dialog';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -17,18 +18,17 @@ import { ConfirmationButton, ConfirmationDialog, ConfirmationOptions } from '../
   styleUrl: './node-attribute.component.scss',
 })
 export class NodeAttributeComponent {
+  private readonly storage: StorageService = inject(StorageService);
+  private readonly translations: TranslocoService = inject(TranslocoService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   protected readonly navigation: NavigationService = inject(NavigationService);
-
   protected readonly destroyRef: DestroyRef = inject(DestroyRef);
   protected readonly dialogService: DialogService = inject(DialogService);
   protected dialogRef: DialogRef | null = null;
 
   public readonly nodeId: InputSignal<string | undefined> = input();
-  public readonly modelId: InputSignal<string | undefined> = input();
   public readonly modelSlot: InputSignal<number> = input(0);
-
-  public readonly attribute: ModelSignal<Attribute | undefined> = model();
+  public readonly attribute: InputSignal<Attribute | undefined> = input();
 
   public constructor() {
     this.destroyRef.onDestroy((): void => {
@@ -54,41 +54,34 @@ export class NodeAttributeComponent {
     });
   }
 
-  protected handleDeleteAttribute(): void {
+  protected handleRemoveAttribute(): void {
+    if (!this.workspace.view.nodeEditable()) return;
     const currentAttribute: Attribute | undefined = this.attribute();
     if (!currentAttribute) return;
 
     const currentNodeId: string | null = this.workspace.store.currentNodeId();
     if (!currentNodeId) return;
 
-    const acceptButton: ConfirmationButton = {
-      label: 'Yes, I want delete it',
-      size: 'sm',
-      severity: 'error',
-      variant: 'outlined',
-      click: async (): Promise<void> => {
-        await this.workspace.actions.removeAttribute(currentNodeId, currentAttribute.id);
-      },
-    };
-    const cancelButton: ConfirmationButton = {
-      label: `Cancel`,
-      size: 'sm',
-      variant: 'outlined',
-      click: (): void => this.dialogRef?.close(),
-    };
-
+    const modelId: string | undefined = this.workspace.store.currentModel()?.id;
     const options: ConfirmationOptions = {
-      title: 'Deleting Attribute',
-      message: `Do you really want to delete <span class="font-bold font-stretch-semi-expanded">${currentAttribute.name}</span>? <br />
-      Once deleted, it is gone forever.`,
-
-      justify: 'justify-around',
-      buttons: [[cancelButton], [acceptButton]],
+      title: this.translations.translate('editor.removePropertyTitle'),
+      message: this.translations.translate('editor.confirmRemoveProperty', { name: currentAttribute.name }),
+      buttons: [
+        [
+          { label: this.translations.translate('common.cancel'), severity: 'neutral' },
+          {
+            label: this.translations.translate('editor.removeProperty'),
+            severity: 'error',
+            click: async (): Promise<void> => {
+              if (this.workspace.store.currentModel()?.id !== modelId)
+                throw new Error(this.translations.translate('editor.modelChanged'));
+              await this.workspace.actions.removeAttribute(currentNodeId, currentAttribute.id);
+            },
+          },
+        ],
+      ],
     };
-
-    this.dialogRef = this.dialogService.open(ConfirmationDialog, {
-      inputValues: { options },
-    });
+    this.dialogRef = this.dialogService.open(ConfirmationDialog, { header: options.title, inputValues: { options } });
   }
 
   protected handleOpenQualifiedReference(): void {
@@ -96,6 +89,6 @@ export class NodeAttributeComponent {
     const nodeId: string | undefined = this.nodeId();
     if (!nodeId) return;
 
-    void this.navigation.navigateToNode(slot, nodeId);
+    void this.navigation.navigateToNode(slot, nodeId).catch((error: unknown): void => this.storage.reportError(error));
   }
 }

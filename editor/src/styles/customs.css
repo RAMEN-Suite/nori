@@ -9,6 +9,8 @@ body {
   color: var(--color-base-content);
 }
 :root {
+  --nori-graph-dimmed-opacity: 0.25;
+  --nori-action-icon-opacity: 0.55;
   --nori-focus: color-mix(in oklab, var(--color-primary) 70%, transparent);
   --nori-border: var(--sui-color-border);
   --nori-scrollbar-thumb: color-mix(in oklab, var(--color-base-content) 28%, transparent);
@@ -147,7 +149,12 @@ html:active-view-transition-type(open-workspace)::view-transition-old(project-li
   }
 }
 
-/* Sushi 0.1.2 has no public token for the Accordion panel's bottom padding. */
+/* Sushi 0.1.2 has no public tokens for Accordion header density or panel bottom padding. */
+app-side-menu .node-catalogue .node-group .node-accordion .sui-accordion__trigger {
+  min-height: 2.125rem;
+  padding-bottom: 0.25rem;
+}
+
 app-side-menu .node-accordion .sui-accordion__panel {
   padding-bottom: 0;
 }
@@ -167,4 +174,12 @@ app-side-menu .node-accordion .sui-accordion__panel {
 .editor-panel-scroll::-webkit-scrollbar-thumb {
   background: var(--nori-scrollbar-thumb);
   border-radius: var(--nori-radius-input);
+}
+
+.nori-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
 }

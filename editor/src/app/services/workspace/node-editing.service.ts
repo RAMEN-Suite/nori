@@ -1,11 +1,11 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal, type WritableSignal } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { type Node, type NodeRemovalPreview } from '@ramen-suite/core/model';
-import { WorkspaceService } from './workspace.service';
-import { StorageService } from '../storage.service';
-import { NavigationService } from '../navigation.service';
-import { DialogService } from '../dialog.service';
 import { ConfirmationDialog, type ConfirmationOptions } from '../../view/components/dialogs/confirmation/confirmation.dialog';
+import { DialogService } from '../dialog.service';
+import { NavigationService } from '../navigation.service';
+import { StorageService } from '../storage.service';
+import { WorkspaceService } from './workspace.service';
 
 /** Shared node commands for the catalogue and inspector. */
 @Injectable({ providedIn: 'root' })
@@ -15,6 +15,31 @@ export class NodeEditingService {
   private readonly navigation: NavigationService = inject(NavigationService);
   private readonly dialogs: DialogService = inject(DialogService);
   private readonly translations: TranslocoService = inject(TranslocoService);
+
+  public readonly creating: WritableSignal<boolean> = signal(false);
+  public readonly createdRefinement: WritableSignal<{ modelId: string; baseNodeId: string; node: Node } | null> = signal(null);
+
+  public async refine(baseNodeId: string): Promise<void> {
+    if (this.creating() || !this.workspace.view.editable()) return;
+    const base: Node | undefined = this.workspace.store.getDraft().getNode(baseNodeId);
+    const modelId: string | undefined = this.workspace.store.currentModel()?.id;
+    if (!base || !modelId) return;
+
+    const name: string = this.workspace.actions.getAvailableNodeName(base.name);
+
+    this.creating.set(true);
+    const slot: number = this.workspace.store.currentSlot();
+    try {
+      const node: Node = await this.workspace.actions.createNode({ name, baseNodeId });
+      if (this.workspace.store.currentModel()?.id !== modelId) return;
+      await this.navigation.navigateToNode(slot, node.id);
+      this.createdRefinement.set({ modelId, baseNodeId, node });
+    } catch (error: unknown) {
+      this.storage.reportError(error);
+    } finally {
+      this.creating.set(false);
+    }
+  }
 
   public async duplicate(nodeId: string): Promise<void> {
     if (!this.workspace.view.editable() || !this.workspace.view.currentNodesById().has(nodeId)) return;
@@ -35,13 +60,12 @@ export class NodeEditingService {
       const preview: NodeRemovalPreview = this.workspace.actions.previewNodeRemoval(nodeId);
       const modelId: string | undefined = this.workspace.store.currentModel()?.id;
       const options: ConfirmationOptions = {
-        title: this.translations.translate('editor.removeNode'),
-        plainText: true,
-        message: this.translations.translate('editor.confirmRemoveNode', {
-          name: node.name,
-          nodes: preview.nodes.length,
-          relations: preview.relations.length,
-        }),
+        title: this.translations.translate('editor.removeNodeTitle'),
+        message: this.translations.translate('editor.confirmRemoveNode', { name: node.name }),
+        details: [
+          this.translations.translate('editor.affectedNodes', { count: preview.nodes.length }),
+          this.translations.translate('editor.affectedRelations', { count: preview.relations.length }),
+        ],
         buttons: [
           [{ label: this.translations.translate('common.cancel'), severity: 'neutral' }],
           [
@@ -53,7 +77,7 @@ export class NodeEditingService {
           ],
         ],
       };
-      this.dialogs.open(ConfirmationDialog, { inputValues: { options } });
+      this.dialogs.open(ConfirmationDialog, { header: options.title, inputValues: { options } });
     } catch (error: unknown) {
       this.storage.reportError(error);
     }

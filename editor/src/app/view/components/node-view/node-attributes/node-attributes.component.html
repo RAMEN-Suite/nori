@@ -7,9 +7,8 @@
           <app-node-attribute
             class="block py-3"
             [attribute]="attribute"
-            [modelSlot]="workspace.store.currentSlot()"
-            [modelId]="workspace.store.currentModel()?.id"
-            [nodeId]="workspace.store.currentNodeId() ?? undefined"
+            [modelSlot]="workspace.view.nodeOwner()?.slot ?? 0"
+            [nodeId]="workspace.view.currentNode()?.id"
           />
         }
       </div>
@@ -25,19 +24,13 @@
         </div>
         <div class="divide-base-300 divide-y">
           @for (item of attributes; track item.attribute.id) {
-            <app-node-attribute
-              class="block py-3"
-              [attribute]="item.attribute"
-              [modelId]="item.modelId"
-              [modelSlot]="item.slot"
-              [nodeId]="item.nodeId"
-            />
+            <app-node-attribute class="block py-3" [attribute]="item.attribute" [modelSlot]="item.slot" [nodeId]="item.nodeId" />
           }
         </div>
       </sui-card>
     }
   }
-  @if (workspace.view.editable()) {
+  @if (workspace.view.nodeEditable()) {
     <button suiButton severity="neutral" size="sm" variant="outlined" class="w-full" (click)="handleOpenCreateAttribute()">
       <svg lucidePlus class="size-4" aria-hidden="true"></svg>{{ t('editor.addProperty') }}
     </button>

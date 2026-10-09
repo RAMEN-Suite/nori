@@ -1,19 +1,19 @@
 import { computed, inject, Injectable, type Signal } from '@angular/core';
 import {
   ModelRef,
+  type Attribute,
+  type DataTypeSuggestion,
   type Model,
   type Node,
-  type Relation,
-  type Attribute,
   type NodeSuggestion,
-  type RelationSuggestion,
-  type DataTypeSuggestion,
   type ProjectValidationResult,
+  type Relation,
+  type RelationSuggestion,
 } from '@ramen-suite/core/model';
 import { RamenModelFormat, type RamenModel } from '@ramen-suite/core/ramen';
-import { WorkspaceStore } from './workspace.store';
-import { StorageService } from '../storage.service';
 import { type ModelRecord } from '../../models/ModelRecord';
+import { StorageService } from '../storage.service';
+import { WorkspaceStore } from './workspace.store';
 
 export interface InheritedAttribute {
   readonly modelId: string;
@@ -40,8 +40,18 @@ export class WorkspaceView {
   });
   public readonly currentNode: Signal<Node | null> = computed((): Node | null => {
     const id: string | null = this.store.currentNodeId();
-    return this.currentNodes().find((node: Node): boolean => node.id === id) ?? null;
+    if (!id) return null;
+    return this.editable() ? (this.store.getDraft().getNode(id) ?? null) : (this.currentNodesById().get(id) ?? null);
   });
+  public readonly nodeOwner: Signal<ModelRecord | null> = computed((): ModelRecord | null => {
+    const id: string | null = this.store.currentNodeId();
+    const modelId: string | undefined =
+      id && ModelRef.isQualified(id) ? ModelRef.splitQualified(id).modelId : this.store.currentModel()?.id;
+    return this.storage.records().find((record: ModelRecord): boolean => record.gmodel.id === modelId) ?? null;
+  });
+  public readonly nodeEditable: Signal<boolean> = computed(
+    (): boolean => this.editable() && this.nodeOwner()?.gmodel.id === this.store.currentModel()?.id,
+  );
   public readonly currentNodes: Signal<readonly Node[]> = computed(
     (): readonly Node[] => this.store.currentModel()?.classifiers.filter((item): item is Node => item.kind === 'Node') ?? [],
   );
@@ -87,7 +97,7 @@ export class WorkspaceView {
     if (!node || !this.validation()?.valid) return [];
     return this.store
       .getDraft()
-      .getNodeLineage(node)
+      .getNodeLineage(this.store.currentNodeId() ?? node.id)
       .flatMap((item): NodeLevel[] => {
         const definition: Node | undefined = this.store.getDraft().getNode(item);
         return definition && definition.id !== node.id ? [{ modelId: item.modelId, node: definition }] : [];
@@ -100,22 +110,37 @@ export class WorkspaceView {
     (): Node | null => this.currentNodeChain().at(-1)?.node ?? null,
   );
 
-  public resolveNodeBase(node: Node): NodeLevel | null {
+  public resolveNodeBase(node: Node, ownerId: string | undefined = this.store.currentModel()?.id): NodeLevel | null {
     const reference: string | undefined = node.superTypes[0];
-    const current: Model | null = this.store.currentModel();
-    if (!reference || !current || !this.editable()) return null;
+    if (!reference || !ownerId || !this.editable()) return null;
 
-    const ref: string = ModelRef.isQualified(reference) ? reference : ModelRef.qualify(current.id, reference);
+    const ref: string = ModelRef.isQualified(reference) ? reference : ModelRef.qualify(ownerId, reference);
     const base: Node | undefined = this.store.getDraft().getNode(ref);
     return base ? { modelId: ModelRef.splitQualified(ref).modelId, node: base } : null;
+  }
+
+  /** Offer the most specific member of each relation family, keeping independent alternatives. */
+  public resolveRelationChoices(from: string, to: string): readonly RelationSuggestion[] {
+    const draft: RamenModel = this.store.getDraft();
+    const choices: readonly RelationSuggestion[] = draft.suggestRelations(from, to);
+    const validation: ProjectValidationResult = draft.validate();
+    if (!validation.valid) return choices;
+
+    const ancestors: Set<string> = new Set();
+    for (const choice of choices) {
+      for (const ancestor of validation.graph.getRelationAncestors(choice.modelId, choice.relationId)) {
+        ancestors.add(ModelRef.qualify(ancestor.modelId, ancestor.element.id));
+      }
+    }
+    return choices.filter((choice: RelationSuggestion): boolean => !ancestors.has(choice.ref));
   }
 
   public resolveAllowedRelations(target: string, direction: 'IN' | 'OUT'): readonly RelationSuggestion[] {
     const node: Node | null = this.currentNode();
     if (!node || !this.validation()?.valid) return [];
     return direction === 'OUT'
-      ? this.store.getDraft().suggestRelations(node, target)
-      : this.store.getDraft().suggestRelations(target, node);
+      ? this.resolveRelationChoices(this.store.currentNodeId() ?? node.id, target)
+      : this.resolveRelationChoices(target, this.store.currentNodeId() ?? node.id);
   }
 
   public resolveReachableNodes(direction: 'IN' | 'OUT'): readonly Node[] {
@@ -133,15 +158,11 @@ export class WorkspaceView {
     );
   }
 
-  public resolveTypeLabel(typeId: string, _modelId: string): string {
+  public resolveTypeLabel(typeId: string): string {
     const type: DataTypeSuggestion | undefined = this.dataTypeSuggestions().find(
       (item: DataTypeSuggestion): boolean => item.ref === typeId || item.dataTypeId === typeId,
     );
     return type?.name ?? typeId;
-  }
-
-  public resolveBaseRelationName(relation: Relation): string {
-    return relation.name;
   }
 
   private nodeRelations(end: 'from' | 'to'): readonly Relation[] {
@@ -149,15 +170,15 @@ export class WorkspaceView {
     const node: Node | null = this.currentNode();
     if (!model || !node) return [];
     return this.currentRelations().filter((relation: Relation): boolean =>
-      ModelRef.matches(relation[end].nodeId, model.id, node.id),
+      ModelRef.matches(relation[end].nodeId, model.id, this.store.currentNodeId() ?? node.id),
     );
   }
 
   private collectInheritedAttributes(): ReadonlyMap<string, readonly InheritedAttribute[]> {
     const groups: Map<string, InheritedAttribute[]> = new Map();
-    const node: Node | null = this.currentNode();
-    if (!node || !this.validation()?.valid) return groups;
-    for (const info of this.store.getDraft().getAttributes(node)) {
+    const reference: string | null = this.store.currentNodeId();
+    if (!reference || !this.validation()?.valid) return groups;
+    for (const info of this.store.getDraft().getAttributes(reference)) {
       if (!info.inherited) continue;
       const owner: Node | undefined = this.store.getDraft().getNode(info.declaredBy);
       const attribute: Attribute | undefined = owner?.attributes.find((item: Attribute): boolean => item.id === info.attributeId);

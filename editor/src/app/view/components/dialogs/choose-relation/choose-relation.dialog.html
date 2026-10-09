@@ -1,0 +1,31 @@
+<div *transloco="let t" class="flex min-w-0 flex-col gap-4">
+  <div class="flex items-center gap-3 text-sm font-medium">
+    <span class="min-w-0 truncate">{{ fromName() }}</span>
+    <svg lucideArrowRight class="text-base-content/45 size-4 shrink-0" aria-hidden="true"></svg>
+    <span class="min-w-0 truncate">{{ toName() }}</span>
+  </div>
+  <p class="text-base-content/65 text-sm leading-relaxed">{{ t('editor.chooseRelationHint') }}</p>
+  <sui-list [items]="choices()" [dividers]="false" [rowHover]="false">
+    <ng-template suiListItem let-choice>
+      <button
+        suiButton
+        severity="neutral"
+        variant="outlined"
+        class="h-auto w-full justify-start gap-3 rounded-(--nori-radius-input) border-(--nori-border) px-4 py-3 text-left"
+        [disabled]="dialogs.pending()"
+        (click)="handleChoose(choice.ref)"
+      >
+        <svg lucideLink2 class="text-base-content/50 size-4 shrink-0" aria-hidden="true"></svg>
+        <span class="flex min-w-0 flex-col gap-1">
+          <span class="break-words">{{ choice.name }}</span>
+          <span class="text-base-content/55 text-xs font-normal">{{ storage.modelsById().get(choice.modelId)?.name }}</span>
+        </span>
+      </button>
+    </ng-template>
+  </sui-list>
+  <footer class="nori-dialog-actions">
+    <button suiButton severity="neutral" variant="text" [disabled]="dialogs.pending()" (click)="dialogs.close()">
+      {{ t('common.cancel') }}
+    </button>
+  </footer>
+</div>

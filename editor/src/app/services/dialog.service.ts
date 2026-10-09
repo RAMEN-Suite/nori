@@ -44,13 +44,13 @@ export class DialogService {
     if (!this.pending()) this.current.set(null);
   }
 
-  public async run(action: () => Promise<void>): Promise<void> {
+  public async run(action: () => Promise<void>, options: { closeOnSuccess?: boolean } = {}): Promise<void> {
     if (this.pending()) return;
     this.pending.set(true);
     this.error.set(null);
     try {
       await action();
-      this.current.set(null);
+      if (options.closeOnSuccess !== false) this.current.set(null);
     } catch (error: unknown) {
       this.error.set(error instanceof Error ? error.message : 'The operation could not be completed.');
     } finally {

@@ -43,8 +43,7 @@ function curveCrossesNode(link: ResolvedLink, control: Point, node: PositionedNo
 export function getLinkPath(link: ResolvedLink, nodes: readonly PositionedNode[] = []): string {
   const source: PositionedNode = link.source;
   if (source === link.target) {
-    const reach: number = 64 + (link.loopIndex ?? 0) * 28;
-    return `M ${source.x + 80},${source.y - 16} C ${source.x + 80 + reach * 2},${source.y - 16 - reach} ${source.x + 80 + reach * 2},${source.y + 16 + reach} ${source.x + 85},${source.y + 16}`;
+    return getLoopPath(link);
   }
   const control: Point = curveControl(link, nodes);
   const start: Point = nodeBoundary(source, control);
@@ -54,7 +53,7 @@ export function getLinkPath(link: ResolvedLink, nodes: readonly PositionedNode[]
 
 export function getLinkLabelPosition(link: ResolvedLink): Point {
   if (link.source === link.target) {
-    return { x: link.source.x + 184 + (link.loopIndex ?? 0) * 42, y: link.source.y + (link.loopIndex ?? 0) * 24 };
+    return loopPoint(link, 184 + (link.loopIndex ?? 0) * 42, (link.loopIndex ?? 0) * 24);
   }
   const control: Point = curveControl(link);
   const start: Point = nodeBoundary(link.source, control);
@@ -67,4 +66,23 @@ export function getLinkLabelPosition(link: ResolvedLink): Point {
     x: (start.x + 2 * control.x + end.x) / 4 - (dy / length) * offset,
     y: (start.y + 2 * control.y + end.y) / 4 + (dx / length) * offset - 8,
   };
+}
+
+/** Rotate reference-model loops towards the outside of the diamond. */
+function loopPoint(link: ResolvedLink, x: number, y: number): Point {
+  const angle: number = { right: 0, bottom: Math.PI / 2, left: Math.PI, top: -Math.PI / 2 }[link.loopSide ?? 'right'];
+  const radial: number = link.loopSide === 'top' || link.loopSide === 'bottom' ? x - 48 : x;
+  return {
+    x: link.source.x + radial * Math.cos(angle) - y * Math.sin(angle),
+    y: link.source.y + radial * Math.sin(angle) + y * Math.cos(angle),
+  };
+}
+
+function getLoopPath(link: ResolvedLink): string {
+  const reach: number = 64 + (link.loopIndex ?? 0) * 28;
+  const start: Point = loopPoint(link, 80, -16);
+  const first: Point = loopPoint(link, 80 + reach * 2, -16 - reach);
+  const second: Point = loopPoint(link, 80 + reach * 2, 16 + reach);
+  const end: Point = loopPoint(link, 85, 16);
+  return `M ${start.x},${start.y} C ${first.x},${first.y} ${second.x},${second.y} ${end.x},${end.y}`;
 }

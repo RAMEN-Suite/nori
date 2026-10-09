@@ -1,27 +1,49 @@
-import { VersionFooterComponent } from './view/components/version-footer/version-footer.component';
-import { Component, DOCUMENT, effect, inject, ChangeDetectionStrategy } from '@angular/core';
-import { DialogHostComponent } from './view/components/dialogs/host/dialog-host.component';
-import { TitleBarComponent } from './view/components/window/title-bar/title-bar.component';
+import { ChangeDetectionStrategy, Component, DOCUMENT, effect, inject, untracked } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
+import { Toast, ToastService } from '@sushi-kit/angular';
 import { StorageService } from './services/storage.service';
 import { ApplicationState } from './states/application.state';
+import { DialogHostComponent } from './view/components/dialogs/host/dialog-host.component';
+import { VersionFooterComponent } from './view/components/version-footer/version-footer.component';
+import { TitleBarComponent } from './view/components/window/title-bar/title-bar.component';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-root',
-  imports: [DialogHostComponent, TitleBarComponent, RouterOutlet, VersionFooterComponent],
+  imports: [DialogHostComponent, TitleBarComponent, RouterOutlet, VersionFooterComponent, Toast, TranslocoPipe],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })
 export class App {
-  protected readonly storage: StorageService = inject(StorageService);
+  private readonly storage: StorageService = inject(StorageService);
+  private readonly toasts: ToastService = inject(ToastService);
+  private readonly translations: TranslocoService = inject(TranslocoService);
   private readonly editorState: ApplicationState = inject(ApplicationState);
   private readonly document: Document = inject(DOCUMENT);
+
+  private errorToastId: string | null = null;
   protected readonly isElectronRuntime: boolean = !!window.electron;
 
   public constructor() {
     const titleBarHeight: string = this.isElectronRuntime ? '36px' : '0px';
     this.document.documentElement.style.setProperty('--title-bar-height', titleBarHeight);
+
+    effect((): void => {
+      const error: string | null = this.storage.error();
+      if (!error) return;
+      untracked((): void => {
+        if (this.errorToastId) this.toasts.dismiss(this.errorToastId);
+        this.errorToastId = this.toasts.show({
+          title: this.translations.translate('common.actionFailed'),
+          message: error,
+          severity: 'error',
+          variant: 'soft',
+          duration: 10000,
+        });
+        this.storage.error.set(null);
+      });
+    });
 
     effect((): void => {
       const html: HTMLElement = this.document.documentElement;

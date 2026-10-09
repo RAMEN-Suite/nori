@@ -1,12 +1,29 @@
-<div *transloco="let t" class="flex max-h-96 min-w-80 flex-col gap-4 overflow-auto">
-  @for (option of nodeColorOptions(); track option.id) {
-    <label class="flex items-center justify-between gap-4" [for]="option.id"
-      >{{ option.name }}
-      <sui-color-picker [id]="option.id" [value]="colours()[option.id] ?? '#64748b'" (valueChange)="handleColorChange(option.id, $event)" />
-    </label>
-  }
-  <footer class="flex justify-end gap-3">
-    <button suiButton variant="outlined" (click)="handleGenerateColors()">{{ t('editor.generateColours') }}</button>
-    <button suiButton (click)="handleSaveChanges()">{{ t('editor.saveColours') }}</button>
-  </footer>
+<div *transloco="let t" class="flex min-w-0 flex-col gap-4">
+  <p class="text-base-content/65 text-sm leading-relaxed">{{ t('editor.coloursHint') }}</p>
+  <div class="colour-list max-h-80 overflow-y-auto p-2">
+    <sui-list size="xs" [items]="nodes()" [dividers]="false" [rowHover]="false">
+      <ng-template suiListItem let-option>
+        <div class="colour-row col-span-full flex items-center justify-between gap-4 rounded-(--nori-radius-input) px-3 py-2">
+          <label class="min-w-0 truncate font-medium" [for]="'node-colour-' + option.id">{{ option.name }}</label>
+          <sui-color-picker
+            class="w-44 shrink-0"
+            [id]="'node-colour-' + option.id"
+            [ariaLabel]="option.name"
+            [value]="colours()[option.id] ?? '#789cc2'"
+            (valueChange)="handleColourChange(option.id, $event)"
+          />
+        </div>
+      </ng-template>
+    </sui-list>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <button suiButton severity="neutral" variant="soft" size="sm" [disabled]="dialogs.pending()" (click)="handleGenerateColours()">
+      <svg lucideShuffle class="size-4" aria-hidden="true"></svg>
+      {{ t('editor.generateColours') }}
+    </button>
+    <button suiButton severity="neutral" variant="text" size="sm" [disabled]="dialogs.pending()" (click)="handleResetColours()">
+      <svg lucideRotateCcw class="size-4" aria-hidden="true"></svg>
+      {{ t('editor.resetColours') }}
+    </button>
+  </div>
 </div>

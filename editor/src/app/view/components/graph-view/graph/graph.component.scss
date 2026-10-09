@@ -12,7 +12,7 @@ app-graph {
   .node-content {
     animation: graph-node-arrive 500ms var(--graph-arrival-delay, 180ms) var(--nori-editor-ease) backwards;
   }
-  .node rect {
+  .node-body {
     fill: var(--color-base-100);
     stroke: var(--g-node-fill, var(--color-base-300));
     stroke-width: 1.5;
@@ -27,18 +27,64 @@ app-graph {
     font-weight: 400;
     opacity: 0.6;
   }
-  .node:focus-visible {
-    outline: none;
-  }
-  .node:focus-visible rect,
-  .node.is-selected rect {
-    stroke: var(--color-primary);
-    stroke-width: 2;
+  .node-body:focus,
+  .node.is-selected .node-body {
+    outline: 2.5px solid var(--g-node-fill, var(--color-base-300));
+    outline-offset: 5px;
   }
   .link {
     stroke: var(--color-base-content);
     stroke-opacity: 0.3;
     animation: graph-edge-arrive 420ms var(--graph-arrival-delay, 220ms) var(--nori-editor-ease) backwards;
+  }
+  .link-hit {
+    stroke: transparent;
+    stroke-width: 16;
+    pointer-events: none;
+  }
+  .is-disconnecting .link-hit {
+    pointer-events: stroke;
+    cursor: crosshair;
+  }
+  .is-disconnecting .link:hover,
+  .link-hit:focus-visible {
+    stroke: var(--color-error);
+    stroke-opacity: 0.7;
+    outline: none;
+  }
+  .is-connecting .node {
+    cursor: crosshair;
+  }
+  .connection-preview {
+    fill: none;
+    stroke: var(--connection-color);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    pointer-events: none;
+  }
+  .connection-preview circle {
+    fill: var(--connection-color);
+    stroke: var(--color-base-100);
+    stroke-width: 2;
+  }
+  .graph-tool-hint {
+    position: absolute;
+    bottom: 3rem;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: min(24rem, 80vw);
+    border: 1px solid var(--nori-border);
+    border-radius: var(--nori-radius-input);
+    padding: 0.5rem 0.75rem;
+    background: var(--color-base-100);
+    font-size: 0.875rem;
+    white-space: pre-line;
+    text-align: center;
+    overflow-wrap: anywhere;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    animation: graph-hint-unfold 550ms var(--nori-editor-ease) backwards;
   }
   .link-label {
     animation: graph-label-arrive 280ms var(--graph-arrival-delay, 380ms) ease-out backwards;
@@ -53,7 +99,7 @@ app-graph {
     pointer-events: none;
   }
   .is-dimmed {
-    opacity: 0.55;
+    opacity: var(--nori-graph-dimmed-opacity);
   }
 }
 
@@ -85,6 +131,20 @@ app-graph {
     opacity: 0;
   }
   to {
+    opacity: 1;
+  }
+}
+
+@keyframes graph-hint-unfold {
+  from {
+    clip-path: inset(0 49% round var(--nori-radius-input));
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  to {
+    clip-path: inset(0 0 round var(--nori-radius-input));
     opacity: 1;
   }
 }

@@ -1,8 +1,9 @@
-import { computed, effect, inject, Injectable, Signal, signal, untracked, WritableSignal } from '@angular/core';
-import { Modeller, type Model, type Id } from '@ramen-suite/core/model';
+import { computed, effect, inject, Injectable, signal, untracked, type Signal, type WritableSignal } from '@angular/core';
+import { Modeller, type Id, type Model } from '@ramen-suite/core/model';
 import { RamenModel, RamenModelFormat, type RamenFile } from '@ramen-suite/core/ramen';
-import { StorageService } from '../storage.service';
+import { getDefaultNodeColours } from '../../core/utils/NodeColours';
 import { type ModelRecord, type NodeColors } from '../../models/ModelRecord';
+import { StorageService } from '../storage.service';
 
 @Injectable({ providedIn: 'root' })
 export class WorkspaceStore {
@@ -35,7 +36,13 @@ export class WorkspaceStore {
       const records: ModelRecord[] = untracked((): ModelRecord[] => this.storage.records());
       this.restoreWorkspace(projectId ? records.map((record: ModelRecord): Model => record.gmodel) : []);
     });
-    effect((): void => this.currentNodeColors.set(this.currentModelRecord()?.view?.nodeColors ?? {}));
+    effect((): void => {
+      this.currentModel();
+      this.currentNodeColors.set({
+        ...getDefaultNodeColours(this.getModels()),
+        ...this.currentModelRecord()?.view?.nodeColors,
+      });
+    });
   }
 
   public getDraft(): RamenModel {

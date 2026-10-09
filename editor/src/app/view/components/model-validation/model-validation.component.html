@@ -1,0 +1,16 @@
+<button
+  *transloco="let t"
+  suiButton
+  [severity]="findings().length ? (hasErrors() ? 'error' : 'warning') : 'neutral'"
+  [variant]="findings().length ? 'soft' : 'text'"
+  size="sm"
+  shape="circle"
+  aria-keyshortcuts="V"
+  [attr.aria-label]="t('editor.validationTitle')"
+  [suiTooltip]="t('editor.validationTitle') + ' (V)'"
+  placement="bottom"
+  [showDelay]="400"
+  (click)="handleShowDetails()"
+>
+  <svg lucideShieldCheck class="size-4" aria-hidden="true"></svg>
+</button>

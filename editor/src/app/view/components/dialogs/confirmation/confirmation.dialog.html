@@ -1,20 +1,21 @@
-<section class="flex max-w-lg flex-col gap-5">
-  @if (options()?.title) {
-    <h2 class="text-xl font-semibold">{{ options()?.title }}</h2>
+<section class="flex min-w-0 flex-col gap-5">
+  <p class="text-base-content/75 text-sm leading-relaxed break-words">{{ options().message }}</p>
+  @if (options().details?.length) {
+    <ul class="text-base-content/65 list-disc space-y-1 pl-5 text-sm">
+      @for (detail of options().details; track $index) {
+        <li>{{ detail }}</li>
+      }
+    </ul>
   }
-  @if (options()?.plainText) {
-    <p class="break-words">{{ options()?.message }}</p>
-  } @else {
-    <p [innerHTML]="options()?.message"></p>
-  }
-  <footer class="flex justify-end gap-3">
-    @for (group of options()?.buttons; track $index) {
+  <footer class="nori-dialog-actions">
+    @for (group of options().buttons; track $index) {
       @for (button of group; track button.label) {
         <button
           suiButton
-          [severity]="button.severity ?? 'primary'"
-          [variant]="button.variant ?? 'outlined'"
+          [severity]="button.severity ?? 'neutral'"
+          [variant]="button.variant ?? (button.severity === 'error' ? null : 'text')"
           [disabled]="dialogs.pending()"
+          [loading]="dialogs.pending() && button.severity === 'error'"
           (click)="handleAction(button)"
         >
           {{ button.label }}

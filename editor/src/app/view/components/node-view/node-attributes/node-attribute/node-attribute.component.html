@@ -11,7 +11,7 @@
         }
       </div>
       <p class="text-base-content/55 mt-1 text-xs break-words">
-        {{ formatAttributeType(property.bounds, workspace.view.resolveTypeLabel(property.typeId, modelId() ?? '')) }}
+        {{ formatAttributeType(property.bounds, workspace.view.resolveTypeLabel(property.typeId)) }}
       </p>
       @if (property.bounds.upperBound !== 1 && property.isOrdered) {
         <p class="text-base-content/55 text-xs">Ordered values</p>
@@ -42,7 +42,7 @@
           shape="square"
           [attr.aria-label]="'Remove ' + property.name"
           suiTooltip="Remove property"
-          (click)="handleDeleteAttribute()"
+          (click)="handleRemoveAttribute()"
         >
           <svg lucideTrash class="size-4" aria-hidden="true"></svg>
         </button>

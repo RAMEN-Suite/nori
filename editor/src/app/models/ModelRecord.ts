@@ -1,4 +1,4 @@
-import { Model } from '@ramen-suite/core/model';
+import { type Model } from '@ramen-suite/core/model';
 
 export type NodeColors = Record<string, string>;
 
@@ -9,6 +9,7 @@ export interface GraphView {
 
 export interface ViewSettings {
   graph?: GraphView;
+  visibleNodeRefs?: string[];
   nodeColors: NodeColors;
 }
 

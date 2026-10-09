@@ -1,25 +1,27 @@
-<div class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+<div *transloco="let t" class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
   <div class="flex min-w-0 flex-wrap items-center gap-2 text-sm">
     @if (!isOutgoing()) {
       <span>{{ resolveNode(relation()?.from?.nodeId ?? '') }}</span>
-      <span aria-hidden="true">→</span>
+      <svg lucideArrowRight class="size-3.5 shrink-0" aria-hidden="true"></svg>
     }
-    <span class="font-medium">{{ resolveRelationName(relation()) }}</span>
+    <span class="font-medium">{{ relation()?.name ?? '' }}</span>
     @if (isOutgoing()) {
-      <span aria-hidden="true">→</span>
+      <svg lucideArrowRight class="size-3.5 shrink-0" aria-hidden="true"></svg>
       <span>{{ resolveNode(relation()?.to?.nodeId ?? '') }}</span>
     }
   </div>
   @if (workspace.view.editable()) {
     <button
       suiButton
-      severity="neutral"
+      severity="error"
       size="sm"
       variant="text"
       shape="square"
-      aria-label="Remove relationship"
-      suiTooltip="Remove relationship"
-      (click)="handleDeleteRelation()"
+      [attr.aria-label]="t('editor.removeNamedConnection', { name: relation()?.name })"
+      [suiTooltip]="t('editor.removeConnection')"
+      placement="bottom"
+      [showDelay]="400"
+      (click)="handleRemoveRelation()"
     >
       <svg lucideTrash class="size-4" aria-hidden="true"></svg>
     </button>

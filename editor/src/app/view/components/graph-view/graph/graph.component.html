@@ -1,1 +1,10 @@
 <div #host class="host"></div>
+@if (graphTools.tool() !== 'select') {
+  <p *transloco="let t" class="graph-tool-hint" role="status" data-nori-motion>
+    @if (graphTools.tool() === 'connect' && graphTools.source(); as source) {
+      <span>{{ t('editor.connectionSourceHint', { name: workspace.store.getDraft().getNode(source)?.name }) }}</span>
+    } @else {
+      <span>{{ t(graphTools.tool() === 'connect' ? 'editor.connectHint' : 'editor.disconnectHint') }}</span>
+    }
+  </p>
+}

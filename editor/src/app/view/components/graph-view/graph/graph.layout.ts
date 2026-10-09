@@ -1,6 +1,7 @@
-import * as d3 from 'd3';
-import { GraphData, GraphLink, GraphNode } from '../../../../core/utils/ModelGraph';
-import {
+import { RAMEN_ELEMENT } from '@ramen-suite/core/ramen';
+import type { GraphData, GraphLink, GraphNode } from '../../../../core/utils/ModelGraph';
+import type { GraphView } from '../../../../models/ModelRecord';
+import type {
   GraphInputModel,
   GraphLayoutSettings,
   GraphPadding,
@@ -9,16 +10,6 @@ import {
   ResolvedLink,
   ViewportSize,
 } from './graph.types';
-
-type Hierarchy = Readonly<{ id: string; node?: PositionedNode; children?: Hierarchy[] }>;
-interface Bounds {
-  minX: number;
-  maxX: number;
-  minY: number;
-  maxY: number;
-  width: number;
-  height: number;
-}
 
 type VisibilityResult = Readonly<{ nodes: PositionedNode[]; links: ResolvedLink[] }>;
 
@@ -38,9 +29,38 @@ export function buildRenderModel(input: GraphInputModel): RenderModel {
   }
 
   const visible: VisibilityResult = applyVisibility(baseNodes, baseLinks, input.settings);
-  applyLayout(visible.nodes, visible.links, input.viewport, input.settings);
+  if (placeRamenNodes(visible.nodes)) orientRamenLoops(visible.links);
+  else placeNodes(visible.nodes, [], input.viewport, input.settings.padding);
 
   return { nodes: visible.nodes, links: visible.links, nodesById };
+}
+
+/** The reference model starts in the same arrangement; saved positions still take precedence. */
+function placeRamenNodes(nodes: readonly PositionedNode[]): boolean {
+  const positions: Readonly<Record<string, Point>> = {
+    [RAMEN_ELEMENT.COLLECTION]: { x: 0, y: -260 },
+    [RAMEN_ELEMENT.ENTITY]: { x: 0, y: 260 },
+    [RAMEN_ELEMENT.CONTENT]: { x: -380, y: 0 },
+    [RAMEN_ELEMENT.ANNOTATION]: { x: 0, y: 0 },
+  };
+  if (nodes.length !== 4 || nodes.some((node: PositionedNode): boolean => !positions[node.id])) return false;
+  for (const node of nodes) {
+    const position: Point | undefined = positions[node.id];
+    if (position) setNodePosition(node, position.x, position.y);
+  }
+  return true;
+}
+
+function orientRamenLoops(links: readonly ResolvedLink[]): void {
+  const sides: Readonly<Record<string, ResolvedLink['loopSide']>> = {
+    [RAMEN_ELEMENT.COLLECTION]: 'top',
+    [RAMEN_ELEMENT.CONTENT]: 'left',
+    [RAMEN_ELEMENT.ANNOTATION]: 'right',
+    [RAMEN_ELEMENT.ENTITY]: 'bottom',
+  };
+  for (const link of links) {
+    if (link.source === link.target) link.loopSide = sides[link.source.id];
+  }
 }
 
 function assignLinkLanes(links: ResolvedLink[]): void {
@@ -67,12 +87,10 @@ export function getViewportSize(hostElement: HTMLDivElement): ViewportSize {
 export function setNodePosition(node: PositionedNode, x: number, y: number): void {
   node.x = x;
   node.y = y;
-  node.baseX = x;
-  node.baseY = y;
 }
 
 function createNodes(data: GraphData): PositionedNode[] {
-  return data.nodes.map((node: GraphNode): PositionedNode => ({ ...node, x: 0, y: 0, baseX: 0, baseY: 0 }));
+  return data.nodes.map((node: GraphNode): PositionedNode => ({ ...node, x: 0, y: 0 }));
 }
 
 function createLinks(data: GraphData, nodesById: Map<string, PositionedNode>): ResolvedLink[] {
@@ -90,199 +108,93 @@ function createLinks(data: GraphData, nodesById: Map<string, PositionedNode>): R
 function applyVisibility(nodes: PositionedNode[], links: ResolvedLink[], settings: GraphLayoutSettings): VisibilityResult {
   if (!settings.areIsolatedNodesHidden) return { nodes, links };
 
-  const degrees: Map<string, number> = computeDegrees(nodes, links);
-  const visibleNodes: PositionedNode[] = nodes.filter((node: PositionedNode): boolean => (degrees.get(node.id) ?? 0) > 0);
-
-  const visibleNodeIds: Set<string> = new Set<string>(visibleNodes.map((node: PositionedNode): string => node.id));
-  const visibleLinks: ResolvedLink[] = links.filter((link: ResolvedLink): boolean => {
-    const nodeHasSource: boolean = visibleNodeIds.has(link.source.id);
-    const nodeHasTarget: boolean = visibleNodeIds.has(link.target.id);
-    return nodeHasSource && nodeHasTarget;
-  });
-
-  return { nodes: visibleNodes, links: visibleLinks };
+  const connected: Set<string> = new Set(links.flatMap((link: ResolvedLink): string[] => [link.source.id, link.target.id]));
+  return { nodes: nodes.filter((node: PositionedNode): boolean => connected.has(node.id)), links };
 }
 
-function applyLayout(
-  nodes: PositionedNode[],
-  links: ResolvedLink[],
-  viewport: ViewportSize,
-  settings: GraphLayoutSettings,
-): void {
-  const degrees: Map<string, number> = computeDegrees(nodes, links);
-  const connectedNodes: PositionedNode[] = [];
-  const isolatedNodes: PositionedNode[] = [];
+type PlacementBounds = Readonly<{ left: number; right: number; top: number; bottom: number }>;
+type Point = Readonly<{ x: number; y: number }>;
 
+/** Returns whether the view needs fitting because its free area was full. */
+export function placeNodes(
+  nodes: readonly PositionedNode[],
+  retained: readonly PositionedNode[],
+  viewport: ViewportSize,
+  padding: GraphPadding,
+  transform: Readonly<{ x: number; y: number; k: number }> = { x: 0, y: 0, k: 1 },
+): boolean {
+  const horizontal: GraphPadding = viewport.width > 720 ? padding : { ...padding, left: 24, right: 24 };
+  const bounds: PlacementBounds = {
+    left: (horizontal.left - transform.x) / transform.k + 80,
+    right: (viewport.width - horizontal.right - transform.x) / transform.k - 80,
+    top: (padding.top - transform.y) / transform.k + 32,
+    bottom: (viewport.height - padding.bottom - transform.y) / transform.k - 32,
+  };
+  const occupied: PositionedNode[] = [...retained];
+  let needsFit: boolean = false;
   for (const node of nodes) {
-    const degree: number = degrees.get(node.id) ?? 0;
-    if (degree > 0) connectedNodes.push(node);
-    else isolatedNodes.push(node);
+    const position: Point = findFreePosition(occupied, bounds);
+    needsFit ||= position.x < bounds.left || position.x > bounds.right || position.y < bounds.top || position.y > bounds.bottom;
+    setNodePosition(node, position.x, position.y);
+    occupied.push(node);
   }
-
-  const isolatedArea: { reservedHeight: number } = computeIsolatedArea(isolatedNodes.length, viewport, settings);
-
-  applyConnectedLayout(connectedNodes, links, viewport, settings, isolatedArea);
-  if (settings.areIsolatedNodesHidden) return;
-  applyIsolatedLayout(isolatedNodes, viewport, settings, isolatedArea);
+  return needsFit;
 }
 
-function computeIsolatedArea(amount: number, viewport: ViewportSize, settings: GraphLayoutSettings): { reservedHeight: number } {
-  if (amount === 0 || settings.areIsolatedNodesHidden) return { reservedHeight: 0 };
-
-  const columns: number = Math.max(1, settings.isolatedColumns);
-  const rowCount: number = Math.ceil(amount / columns);
-
-  const reservedHeight: number = rowCount * settings.isolatedRowGap + settings.isolatedAreaGap;
-  return { reservedHeight: Math.min(reservedHeight, Math.max(0, viewport.height * 0.5)) };
+function findFreePosition(occupied: readonly PositionedNode[], bounds: PlacementBounds): Point {
+  const centre: Point = { x: (bounds.left + bounds.right) / 2, y: (bounds.top + bounds.bottom) / 2 };
+  for (let attempt: number = 0; attempt < 100; attempt++) {
+    const spread: number = attempt < 60 ? 0.65 : 1;
+    const x: number = centre.x + (Math.random() - 0.5) * Math.max(0, bounds.right - bounds.left) * spread;
+    const y: number = centre.y + (Math.random() - 0.5) * Math.max(0, bounds.bottom - bounds.top) * spread;
+    if (!occupied.some((node: PositionedNode): boolean => overlaps(node, x, y))) return { x, y };
+  }
+  for (let y: number = bounds.top; y <= bounds.bottom; y += 104) {
+    for (let x: number = bounds.left; x <= bounds.right; x += 192) {
+      if (!occupied.some((node: PositionedNode): boolean => overlaps(node, x, y))) return { x, y };
+    }
+  }
+  return findSpaceAroundCentre(occupied, centre);
 }
 
-function applyConnectedLayout(
-  nodes: PositionedNode[],
-  links: ResolvedLink[],
+/** Expand around the cluster only when no visible position is free; the caller then fits the view. */
+function findSpaceAroundCentre(occupied: readonly PositionedNode[], centre: Point): Point {
+  for (let ring: number = 1; ; ring++) {
+    for (let step: number = -ring; step <= ring; step++) {
+      for (const side of [-1, 1]) {
+        const candidates: Point[] = [
+          { x: centre.x + step * 192, y: centre.y + side * ring * 104 },
+          { x: centre.x + side * ring * 192, y: centre.y + step * 104 },
+        ];
+        const free: Point | undefined = candidates.find(
+          (point: Point): boolean => !occupied.some((node: PositionedNode): boolean => overlaps(node, point.x, point.y)),
+        );
+        if (free) return free;
+      }
+    }
+  }
+}
+
+function overlaps(node: PositionedNode, x: number, y: number): boolean {
+  return Math.abs(node.x - x) < 192 && Math.abs(node.y - y) < 104;
+}
+
+/** Fits graph bounds into the canvas area left free by the editor panels. */
+export function getFitViewport(
   viewport: ViewportSize,
-  settings: GraphLayoutSettings,
-  isolatedArea: { reservedHeight: number },
-): void {
-  if (nodes.length === 0) return;
+  padding: GraphPadding,
+  bounds: Pick<DOMRect, 'x' | 'y' | 'width' | 'height'>,
+): GraphView['viewport'] | null {
+  if (bounds.width <= 0 || bounds.height <= 0) return null;
 
-  const hierarchyRoot: d3.HierarchyNode<Hierarchy> = buildHierarchy(nodes, links);
+  const horizontal: GraphPadding = viewport.width > 720 ? padding : { ...padding, left: 24, right: 24 };
+  const width: number = Math.max(1, viewport.width - horizontal.left - horizontal.right);
+  const height: number = Math.max(1, viewport.height - padding.top - padding.bottom);
+  const scale: number = Math.max(0.2, Math.min(1, width / bounds.width, height / bounds.height));
 
-  const padding: Readonly<GraphPadding> = settings.padding;
-  const innerWidth: number = Math.max(1, viewport.width - padding.left - padding.right);
-  const innerHeightTotal: number = Math.max(1, viewport.height - padding.top - padding.bottom);
-
-  const layout: d3.TreeLayout<Hierarchy> = d3.tree<Hierarchy>();
-  layout.nodeSize([settings.nodeSeparation, settings.layerGap]);
-
-  const positionedRoot: d3.HierarchyPointNode<Hierarchy> = layout(hierarchyRoot);
-  const descendants: d3.HierarchyPointNode<Hierarchy>[] = positionedRoot.descendants();
-
-  const realNodes: d3.HierarchyPointNode<Hierarchy>[] = descendants.filter((item: d3.HierarchyPointNode<Hierarchy>): boolean =>
-    Boolean(item.data.node),
-  );
-  if (realNodes.length === 0) return;
-
-  const bounds: Bounds = computeBounds(realNodes);
-
-  const startY: number = padding.top + innerHeightTotal - isolatedArea.reservedHeight + settings.isolatedAreaGap;
-  const connectedBottomLimitY: number = startY - settings.isolatedAreaGap;
-
-  const offsetX: number = padding.left + (innerWidth - bounds.width) / 2 - bounds.minX;
-  const offsetY: number = connectedBottomLimitY - bounds.maxY;
-
-  for (const hierarchyNode of realNodes) {
-    const dataNode: PositionedNode | undefined = hierarchyNode.data.node;
-    if (!dataNode) continue;
-    setNodePosition(dataNode, hierarchyNode.x + offsetX, hierarchyNode.y + offsetY);
-  }
-}
-
-function applyIsolatedLayout(
-  nodes: PositionedNode[],
-  viewport: ViewportSize,
-  settings: GraphLayoutSettings,
-  isolatedArea: { reservedHeight: number },
-): void {
-  if (nodes.length === 0) return;
-
-  const padding: Readonly<GraphPadding> = settings.padding;
-  const innerWidth: number = Math.max(1, viewport.width - padding.left - padding.right);
-  const innerHeight: number = Math.max(1, viewport.height - padding.top - padding.bottom);
-
-  const columns: number = Math.max(1, settings.isolatedColumns);
-  const usedColumns: number = Math.min(columns, nodes.length);
-
-  const gridWidth: number = (usedColumns - 1) * settings.isolatedColumnGap;
-  const startX: number = padding.left + (innerWidth - gridWidth) / 2;
-
-  const startY: number = padding.top + innerHeight - isolatedArea.reservedHeight + settings.isolatedAreaGap;
-  const sortedNodes: PositionedNode[] = [...nodes].sort((a: PositionedNode, b: PositionedNode): number => {
-    return a.label.localeCompare(b.label);
-  });
-
-  sortedNodes.forEach((node: PositionedNode, index: number): void => {
-    const columnIndex: number = index % columns;
-    const rowIndex: number = Math.floor(index / columns);
-
-    const xPosition: number = startX + columnIndex * settings.isolatedColumnGap;
-    const yPosition: number = startY + rowIndex * settings.isolatedRowGap;
-
-    setNodePosition(node, xPosition, yPosition);
-  });
-}
-
-function computeDegrees(nodes: PositionedNode[], links: ResolvedLink[]): Map<string, number> {
-  const degreesByNodeId: Map<string, number> = new Map<string, number>(
-    nodes.map((node: PositionedNode): [string, number] => [node.id, 0]),
-  );
-
-  for (const link of links) {
-    degreesByNodeId.set(link.source.id, (degreesByNodeId.get(link.source.id) ?? 0) + 1);
-    degreesByNodeId.set(link.target.id, (degreesByNodeId.get(link.target.id) ?? 0) + 1);
-  }
-
-  return degreesByNodeId;
-}
-
-function buildHierarchy(nodes: PositionedNode[], links: ResolvedLink[]): d3.HierarchyNode<Hierarchy> {
-  const nodesById: Map<string, PositionedNode> = new Map(
-    nodes.map((node: PositionedNode): [string, PositionedNode] => [node.id, node]),
-  );
-  const children: Map<string, string[]> = new Map(nodes.map((node: PositionedNode): [string, string[]] => [node.id, []]));
-  const targets: Set<string> = new Set();
-
-  for (const link of links) {
-    if (link.source === link.target) continue;
-    children.get(link.source.id)?.push(link.target.id);
-    targets.add(link.target.id);
-  }
-
-  const roots: PositionedNode[] = nodes.filter((node: PositionedNode): boolean => !targets.has(node.id));
-  const visited: Set<string> = new Set();
-  const forest: Hierarchy[] = [];
-  // Roots first; remaining nodes also cover disconnected cycles.
-  for (const node of [...roots, ...nodes]) {
-    const tree: Hierarchy | null = buildSubtree(node.id, nodesById, children, visited);
-    if (tree) forest.push(tree);
-  }
-
-  return d3.hierarchy<Hierarchy>(
-    { id: '__virtual_root__', children: forest },
-    (item: Hierarchy): Hierarchy[] | undefined => item.children,
-  );
-}
-
-function buildSubtree(
-  id: string,
-  nodes: ReadonlyMap<string, PositionedNode>,
-  children: ReadonlyMap<string, readonly string[]>,
-  visited: Set<string>,
-): Hierarchy | null {
-  const node: PositionedNode | undefined = nodes.get(id);
-  if (!node || visited.has(id)) return null;
-  visited.add(id);
-
-  const branches: Hierarchy[] = [];
-  for (const child of children.get(id) ?? []) {
-    const branch: Hierarchy | null = buildSubtree(child, nodes, children, visited);
-    if (branch) branches.push(branch);
-  }
-
-  return { id, node, children: branches.length ? branches : undefined };
-}
-
-function computeBounds(nodes: d3.HierarchyPointNode<Hierarchy>[]): Bounds {
-  let minX: number = Number.POSITIVE_INFINITY;
-  let maxX: number = Number.NEGATIVE_INFINITY;
-  let minY: number = Number.POSITIVE_INFINITY;
-  let maxY: number = Number.NEGATIVE_INFINITY;
-
-  for (const node of nodes) {
-    minX = Math.min(minX, node.x);
-    maxX = Math.max(maxX, node.x);
-    minY = Math.min(minY, node.y);
-    maxY = Math.max(maxY, node.y);
-  }
-
-  return { minX, maxX, minY, maxY, width: Math.max(1, maxX - minX), height: Math.max(1, maxY - minY) };
+  return {
+    x: horizontal.left + (width - bounds.width * scale) / 2 - bounds.x * scale,
+    y: padding.top + (height - bounds.height * scale) / 2 - bounds.y * scale,
+    scale,
+  };
 }

@@ -13,8 +13,8 @@
     ><svg lucideArrowLeft class="size-5" aria-hidden="true"></svg
   ></a>
   <sui-card class="editor-tools" data-nori-motion size="xs" variant="border">
-    <div class="editor-tools-content flex items-center gap-1 px-2" data-nori-motion>
-      <span class="max-w-24 truncate px-2 text-sm font-medium sm:max-w-48">{{ storage.selectedManifest()?.name }}</span>
+    <div class="editor-tools-content flex items-center gap-1 px-3" data-nori-motion>
+      <span class="max-w-24 truncate px-2 text-sm font-medium select-none sm:max-w-48">{{ storage.selectedManifest()?.name }}</span>
       <div
         suiDivider
         orientation="vertical"
@@ -53,6 +53,47 @@
         (click)="toggleLevels.emit()"
       >
         <svg lucideLayers class="size-4" aria-hidden="true"></svg>
+      </button>
+      <div
+        suiDivider
+        orientation="vertical"
+        class="mx-1 my-0"
+        style="height: 1.5rem; align-self: center; --sui-divider-margin: 0"
+        aria-hidden="true"
+      ></div>
+      <button
+        suiButton
+        severity="neutral"
+        [variant]="graphTools.tool() === 'connect' ? 'soft' : 'text'"
+        size="sm"
+        shape="circle"
+        aria-keyshortcuts="L"
+        [attr.aria-pressed]="graphTools.tool() === 'connect'"
+        [attr.aria-label]="t('editor.drawConnection')"
+        [suiTooltip]="t('editor.drawConnection') + ' (L)'"
+        placement="bottom"
+        [showDelay]="400"
+        [disabled]="!workspace.view.editable() || graphTools.pending()"
+        (click)="graphTools.toggle('connect')"
+      >
+        <svg lucideLink2 class="size-4" aria-hidden="true"></svg>
+      </button>
+      <button
+        suiButton
+        severity="neutral"
+        [variant]="graphTools.tool() === 'disconnect' ? 'soft' : 'text'"
+        size="sm"
+        shape="circle"
+        aria-keyshortcuts="D"
+        [attr.aria-pressed]="graphTools.tool() === 'disconnect'"
+        [attr.aria-label]="t('editor.removeConnection')"
+        [suiTooltip]="t('editor.removeConnection') + ' (D)'"
+        placement="bottom"
+        [showDelay]="400"
+        [disabled]="!workspace.view.editable() || graphTools.pending()"
+        (click)="graphTools.toggle('disconnect')"
+      >
+        <svg lucideUnlink class="size-4" aria-hidden="true"></svg>
       </button>
       <div
         suiDivider
@@ -113,6 +154,23 @@
         style="height: 1.5rem; align-self: center; --sui-divider-margin: 0"
         aria-hidden="true"
       ></div>
+      <button
+        suiButton
+        severity="neutral"
+        variant="text"
+        size="sm"
+        shape="circle"
+        aria-keyshortcuts="P"
+        [attr.aria-label]="t('editor.editProject')"
+        [suiTooltip]="t('editor.editProject') + ' (P)'"
+        placement="bottom"
+        [showDelay]="400"
+        [disabled]="!storage.selectedManifest()"
+        (click)="handleEditProject()"
+      >
+        <svg lucidePencil class="size-4" aria-hidden="true"></svg>
+      </button>
+      <app-model-validation />
       <button
         suiButton
         severity="neutral"
