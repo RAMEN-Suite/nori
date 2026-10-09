@@ -1,19 +1,19 @@
+import { DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   computed,
   DestroyRef,
   inject,
-  OnInit,
   input,
   output,
   signal,
   type InputSignal,
+  type OnInit,
   type OutputEmitterRef,
   type Signal,
   type WritableSignal,
 } from '@angular/core';
-import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { LucideCopy, LucideFolderOpen, LucideSearch, LucideTrash } from '@lucide/angular';
@@ -60,7 +60,6 @@ export class ProjectOpenComponent implements OnInit {
   public readonly busyChange: OutputEmitterRef<boolean> = output<boolean>();
 
   private dialogRef: DialogRef | null = null;
-
   protected readonly query: WritableSignal<string> = signal('');
   protected readonly loading: WritableSignal<boolean> = signal(true);
   protected readonly busy: WritableSignal<boolean> = signal(false);
@@ -95,12 +94,11 @@ export class ProjectOpenComponent implements OnInit {
     if (this.busy() || this.disabled()) return;
 
     const options: ConfirmationOptions = {
-      title: '',
+      title: this.translations.translate('open.removeTitle'),
       message: this.translations.translate('open.removeMessage', { name: project.name }),
-      plainText: true,
       buttons: [
         [
-          { label: this.translations.translate('open.cancel'), severity: 'neutral', click: (): void => this.dialogRef?.close() },
+          { label: this.translations.translate('open.cancel'), severity: 'neutral' },
           {
             label: this.translations.translate('open.remove'),
             severity: 'error',

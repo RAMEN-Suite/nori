@@ -9,21 +9,22 @@ import {
   type Signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { TranslocoDirective } from '@jsverse/transloco';
+import { type Attribute, type AttributeInput, DataTypes, type DataTypeSuggestion } from '@ramen-suite/core/model';
 import { Button, Checkbox, Input, Select, type SelectOption } from '@sushi-kit/angular';
-import { type Attribute, type AttributeInput, type DataTypeSuggestion, DataTypes } from '@ramen-suite/core/model';
-import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { DialogService } from '../../../../services/dialog.service';
+import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 
 @Component({
   selector: 'app-create-attribute',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, Button, Checkbox, Input, Select],
+  imports: [TranslocoDirective, FormsModule, Button, Checkbox, Input, Select],
   templateUrl: './create-attribute.dialog.html',
   styleUrl: './create-attribute.dialog.scss',
 })
 export class CreateAttributeDialog {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
-  protected readonly dialogRef: DialogService = inject(DialogService);
+  protected readonly dialogs: DialogService = inject(DialogService);
   public readonly currentAttribute: InputSignal<Attribute | undefined> = input();
 
   protected name: string = '';
@@ -76,7 +77,7 @@ export class CreateAttributeDialog {
       constraints: existing?.constraints,
     };
 
-    await this.dialogRef.run(async (): Promise<void> => {
+    await this.dialogs.run(async (): Promise<void> => {
       if (existing)
         await this.workspace.actions.updateAttribute(nodeId, existing.id, { ...input, constraints: existing.constraints });
       else await this.workspace.actions.createAttribute(nodeId, input);

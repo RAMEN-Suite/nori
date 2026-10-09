@@ -1,27 +1,25 @@
 import {
+  ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   inject,
   model,
-  ModelSignal,
+  type ModelSignal,
   signal,
-  WritableSignal,
-  ChangeDetectionStrategy,
-  computed,
+  type WritableSignal,
   type Signal,
 } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { RAMEN_MODEL } from '@ramen-suite/core/ramen';
-import { Input, Button, Fieldset, FieldsetLegend, Message } from '@sushi-kit/angular';
-
-import { WorkspaceService } from '../../../../services/workspace/workspace.service';
-
-import { FormsModule } from '@angular/forms';
+import { Button, Fieldset, FieldsetLegend, Input, Message } from '@sushi-kit/angular';
+import { type ModelRecord } from '../../../../models/ModelRecord';
 import { DialogService } from '../../../../services/dialog.service';
-import { CreateSlotInput } from '../../../../services/workspace/workspace.actions';
 import { NavigationService } from '../../../../services/navigation.service';
-import { ModelRecord } from '../../../../models/ModelRecord';
 import { StorageService } from '../../../../services/storage.service';
+import { type CreateSlotInput } from '../../../../services/workspace/workspace.actions';
+import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -31,15 +29,14 @@ import { StorageService } from '../../../../services/storage.service';
   styleUrl: './create-model.dialog.scss',
 })
 export class CreateModelDialog {
-  protected readonly workspace: WorkspaceService = inject(WorkspaceService);
-  protected readonly storage: StorageService = inject(StorageService);
-  protected readonly dialogRef: DialogService = inject(DialogService);
-
-  protected readonly navigation: NavigationService = inject(NavigationService);
-
-  protected isSubmitted: boolean = false;
+  private readonly workspace: WorkspaceService = inject(WorkspaceService);
+  private readonly storage: StorageService = inject(StorageService);
+  protected readonly dialogs: DialogService = inject(DialogService);
+  private readonly navigation: NavigationService = inject(NavigationService);
 
   public readonly currentSlot: ModelSignal<number | undefined> = model();
+
+  protected isSubmitted: boolean = false;
   protected readonly draftModel: WritableSignal<CreateSlotInput> = signal({
     name: '',
     version: '1.0.0',
@@ -86,28 +83,28 @@ export class CreateModelDialog {
     return this.isModelNameValid() && this.isVersionValid() && this.isUriValid();
   }
 
-  public handleCloseModal(): void {
-    this.dialogRef.close();
+  protected handleCloseModal(): void {
+    this.dialogs.close();
   }
 
-  public async handleCreateModel(): Promise<void> {
+  protected async handleCreateModel(): Promise<void> {
     this.isSubmitted = true;
     if (!this.isFormValid()) return;
 
-    await this.dialogRef.run(async (): Promise<void> => {
+    await this.dialogs.run(async (): Promise<void> => {
       const createdSlot: number = await this.workspace.actions.createSlot(this.draftModel());
       await this.navigation.navigateToSlot(createdSlot);
     });
   }
 
-  public async handleUpdateModel(): Promise<void> {
+  protected async handleUpdateModel(): Promise<void> {
     this.isSubmitted = true;
     if (!this.isFormValid()) return;
 
     const currentSlot: number | undefined = this.currentSlot();
     if (!currentSlot) return;
 
-    await this.dialogRef.run(async (): Promise<void> => {
+    await this.dialogs.run(async (): Promise<void> => {
       await this.workspace.actions.updateSlot(currentSlot, this.draftModel());
     });
   }

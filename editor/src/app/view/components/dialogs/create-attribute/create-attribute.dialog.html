@@ -1,7 +1,7 @@
-<form class="flex min-w-80 flex-col gap-5" (ngSubmit)="handleSave()">
+<form *transloco="let t" class="flex min-w-80 flex-col gap-5" (ngSubmit)="handleSave()">
   <label class="flex flex-col gap-2"
     >Property name
-    <input suiInput name="name" [(ngModel)]="name" required />
+    <input suiInput fluid name="name" [(ngModel)]="name" required />
   </label>
   <div class="flex flex-col gap-2">
     <span>Data type </span
@@ -10,11 +10,11 @@
   <div class="grid grid-cols-2 gap-4">
     <label class="flex flex-col gap-2"
       >Minimum count
-      <input suiInput type="number" name="minimum" min="0" [(ngModel)]="lowerBound" required />
+      <input suiInput fluid type="number" name="minimum" min="0" [(ngModel)]="lowerBound" required />
     </label>
     <label class="flex flex-col gap-2"
       >Maximum count (−1: unlimited)
-      <input suiInput type="number" name="maximum" min="-1" [(ngModel)]="upperBound" required />
+      <input suiInput fluid type="number" name="maximum" min="-1" [(ngModel)]="upperBound" required />
     </label>
   </div>
   <div class="grid grid-cols-2 gap-3">
@@ -23,8 +23,12 @@
     <label><input suiCheckbox type="checkbox" name="unique" [(ngModel)]="isUnique" /> Unique list values</label>
     <label><input suiCheckbox type="checkbox" name="ordered" [(ngModel)]="isOrdered" /> Ordered list</label>
   </div>
-  <footer class="flex justify-end gap-3">
-    <button suiButton type="button" variant="outlined" (click)="dialogRef.close()" [disabled]="dialogRef.pending()">Cancel</button>
-    <button suiButton type="submit" [disabled]="!name.trim() || !typeId || dialogRef.pending()">Save property</button>
+  <footer class="nori-dialog-actions">
+    <button suiButton type="button" severity="neutral" variant="text" (click)="dialogs.close()" [disabled]="dialogs.pending()">
+      {{ t('common.cancel') }}
+    </button>
+    <button suiButton type="submit" [loading]="dialogs.pending()" [disabled]="!name.trim() || !typeId || dialogs.pending()">
+      {{ t('common.save') }}
+    </button>
   </footer>
 </form>

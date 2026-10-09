@@ -1,4 +1,4 @@
-<div class="flex min-w-80 flex-col gap-5">
+<div *transloco="let t" class="flex min-w-80 flex-col gap-5">
   <button suiButton variant="outlined" (click)="handleDirection()">
     {{ direction() === 'OUT' ? 'Outgoing relationship' : 'Incoming relationship' }}
   </button>
@@ -18,8 +18,12 @@
   @if (!targets().length) {
     <p>No permitted connections in this direction.</p>
   }
-  <footer class="flex justify-end gap-3">
-    <button suiButton variant="outlined" (click)="dialogRef.close()" [disabled]="dialogRef.pending()">Cancel</button>
-    <button suiButton (click)="handleSave()" [disabled]="!relation() || dialogRef.pending()">Add relationship</button>
+  <footer class="nori-dialog-actions">
+    <button suiButton severity="neutral" variant="text" (click)="dialogs.close()" [disabled]="dialogs.pending()">
+      {{ t('common.cancel') }}
+    </button>
+    <button suiButton (click)="handleSave()" [loading]="dialogs.pending()" [disabled]="!relation() || dialogs.pending()">
+      {{ t('editor.addRelationship') }}
+    </button>
   </footer>
 </div>

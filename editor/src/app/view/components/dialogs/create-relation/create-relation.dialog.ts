@@ -1,24 +1,27 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, type Signal, type WritableSignal } from '@angular/core';
+import { TranslocoDirective } from '@jsverse/transloco';
+import { ModelRef, type Node, type RelationInput, type RelationSuggestion } from '@ramen-suite/core/model';
 import { Button, Select, type SelectOption } from '@sushi-kit/angular';
-import { ModelRef, type Node, type RelationSuggestion, type RelationInput } from '@ramen-suite/core/model';
-import { WorkspaceService } from '../../../../services/workspace/workspace.service';
-import { StorageService } from '../../../../services/storage.service';
 import { DialogService } from '../../../../services/dialog.service';
+import { StorageService } from '../../../../services/storage.service';
+import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 
 @Component({
   selector: 'app-create-relation',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Button, Select],
+  imports: [TranslocoDirective, Button, Select],
   templateUrl: './create-relation.dialog.html',
   styleUrl: './create-relation.dialog.scss',
 })
 export class CreateRelationDialog {
   private readonly storage: StorageService = inject(StorageService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
-  protected readonly dialogRef: DialogService = inject(DialogService);
+  protected readonly dialogs: DialogService = inject(DialogService);
+
   protected readonly direction: WritableSignal<'IN' | 'OUT'> = signal('OUT');
   protected readonly target: WritableSignal<string | null> = signal(null);
   protected readonly relation: WritableSignal<string | null> = signal(null);
+
   protected readonly targets: Signal<readonly SelectOption[]> = computed((): readonly SelectOption[] =>
     this.workspace.view.resolveReachableNodes(this.direction()).map((node: Node): SelectOption => {
       const ownerId: string | undefined = ModelRef.isQualified(node.id) ? ModelRef.splitQualified(node.id).modelId : undefined;
@@ -47,7 +50,8 @@ export class CreateRelationDialog {
 
   protected handleTarget(value: unknown): void {
     this.target.set(typeof value === 'string' ? value : null);
-    this.relation.set(this.relations().length === 1 ? (this.relations()[0]?.ref ?? null) : null);
+    const relations: readonly RelationSuggestion[] = this.relations();
+    this.relation.set(relations.length === 1 ? (relations[0]?.ref ?? null) : null);
   }
 
   protected handleRelation(value: unknown): void {
@@ -66,7 +70,7 @@ export class CreateRelationDialog {
       from: { nodeId: outgoing ? current : target },
       to: { nodeId: outgoing ? target : current },
     };
-    await this.dialogRef.run(async (): Promise<void> => {
+    await this.dialogs.run(async (): Promise<void> => {
       await this.workspace.actions.createRelation(input);
     });
   }

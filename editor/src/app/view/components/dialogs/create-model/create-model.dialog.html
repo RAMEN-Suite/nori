@@ -16,6 +16,7 @@
             maxlength="70"
             autocomplete="off"
             suiInput
+            fluid
             required
           />
           <label for="name">Model Name</label>
@@ -43,6 +44,7 @@
             autocomplete="off"
             name="version"
             suiInput
+            fluid
             required
           />
           <label for="version">Model Version</label>
@@ -66,6 +68,7 @@
             autocomplete="off"
             name="uri"
             suiInput
+            fluid
             required
           />
           <label for="uri">Model URI</label>
@@ -78,15 +81,18 @@
     </div>
   </fieldset>
 
-  <div class="mt-4 flex flex-row justify-between gap-2">
-    <div class="flex gap-2">
-      <button suiButton variant="outlined" (click)="handleCloseModal()">Cancel</button>
-    </div>
-
+  <footer class="nori-dialog-actions">
+    <button suiButton severity="neutral" variant="text" [disabled]="dialogs.pending()" (click)="handleCloseModal()">
+      {{ t('common.cancel') }}
+    </button>
     @if (currentSlot() === undefined) {
-      <button suiButton variant="outlined" (click)="handleCreateModel()" [disabled]="!isFormValid()">Create Project Model</button>
+      <button suiButton [loading]="dialogs.pending()" [disabled]="!isFormValid() || dialogs.pending()" (click)="handleCreateModel()">
+        {{ t('editor.createLevel') }}
+      </button>
     } @else {
-      <button suiButton variant="outlined" (click)="handleUpdateModel()" [disabled]="!isFormValid()">Update Project Model</button>
+      <button suiButton [loading]="dialogs.pending()" [disabled]="!isFormValid() || dialogs.pending()" (click)="handleUpdateModel()">
+        {{ t('common.save') }}
+      </button>
     }
-  </div>
+  </footer>
 </div>
