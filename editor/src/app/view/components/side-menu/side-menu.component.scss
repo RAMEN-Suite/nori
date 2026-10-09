@@ -6,6 +6,9 @@
 .node-group {
   position: relative;
 }
+.node-group + .node-group {
+  margin-top: 0.5rem;
+}
 .node-accordion {
   position: relative;
   z-index: 0;
@@ -13,24 +16,24 @@
   --sui-accordion-border-color: transparent;
   --sui-accordion-content-color: inherit;
 }
-.node-group-add {
+.node-group-add,
+.node-group-show {
   position: absolute;
   z-index: 2;
   top: 0.5rem;
   right: 0.875rem;
 }
+.node-group-show {
+  right: 2.5rem;
+}
 .readonly-node {
   --editor-list-action-space: 0.75rem;
 }
-.node-name-editor {
-  display: flex;
-  align-items: center;
-  height: 2.5rem;
-  padding: 0 4.5rem 0 0.75rem;
 
-  input {
-    width: 100%;
-    min-width: 0;
-    max-height: 2rem;
-  }
+.editor-list-actions svg {
+  opacity: var(--nori-action-icon-opacity);
+  transition: opacity 160ms ease;
+}
+.editor-list-actions button:is(:hover, :focus-visible) svg {
+  opacity: 1;
 }

@@ -1,6 +1,12 @@
 <main *transloco="let t" class="workspace-shell" [class.inspector-open]="inspectorOpen()" [class.levels-open]="levelsOpen()">
   <section class="workspace-canvas" data-nori-motion [attr.aria-label]="t('editor.graph')">
-    <app-visualizer #graph [canvasPadding]="graphPadding()" (nodeSelected)="inspectorOpen.set(true)" class="block h-full" />
+    <app-visualizer
+      #graph
+      [canvasPadding]="graphPadding()"
+      [inspectorOpen]="inspectorOpen()"
+      (nodeSelected)="inspectorOpen.set(true)"
+      class="block h-full"
+    />
   </section>
   <app-tool-bar
     class="workspace-toolbar"

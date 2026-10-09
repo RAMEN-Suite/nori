@@ -1,33 +1,116 @@
-import { LucidePencil, LucideTrash, LucidePlus, LucideX } from '@lucide/angular';
-import { ChangeDetectionStrategy, Component, inject, output, type OutputEmitterRef } from '@angular/core';
+import {
+  afterNextRender,
+  ChangeDetectionStrategy,
+  Component,
+  effect,
+  ElementRef,
+  inject,
+  Injector,
+  output,
+  signal,
+  type OutputEmitterRef,
+  type WritableSignal,
+} from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
-import { Button, List, ListItemTemplate, Tooltip, type ListTrackBy } from '@sushi-kit/angular';
+import { LucidePencil, LucidePlus, LucideTrash, LucideX } from '@lucide/angular';
+import { type ModelRemovalPreview } from '@ramen-suite/core/model';
+import { Button, Input, List, ListItemTemplate, Tooltip, type ListTrackBy } from '@sushi-kit/angular';
+import { AutoselectDirective } from '../../../directives/autoselect.directive';
+import { type ModelRecord } from '../../../models/ModelRecord';
+import { DialogService } from '../../../services/dialog.service';
+import { NavigationService } from '../../../services/navigation.service';
 import { StorageService } from '../../../services/storage.service';
 import { WorkspaceService } from '../../../services/workspace/workspace.service';
-import { NavigationService } from '../../../services/navigation.service';
-import { DialogService } from '../../../services/dialog.service';
-import { CreateModelDialog } from '../dialogs/create-model/create-model.dialog';
 import { ConfirmationDialog, type ConfirmationOptions } from '../dialogs/confirmation/confirmation.dialog';
-import { type ModelRecord } from '../../../models/ModelRecord';
-import { type ModelRemovalPreview } from '@ramen-suite/core/model';
+import { CreateModelDialog } from '../dialogs/create-model/create-model.dialog';
 
 @Component({
   selector: 'app-model-levels',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslocoDirective, Button, List, ListItemTemplate, Tooltip, LucidePencil, LucideTrash, LucidePlus, LucideX],
+  imports: [
+    FormsModule,
+    AutoselectDirective,
+    Input,
+    TranslocoDirective,
+    Button,
+    List,
+    ListItemTemplate,
+    Tooltip,
+    LucidePencil,
+    LucideTrash,
+    LucidePlus,
+    LucideX,
+  ],
   templateUrl: './model-levels.component.html',
   styleUrl: './model-levels.component.scss',
 })
 export class ModelLevelsComponent {
   protected readonly storage: StorageService = inject(StorageService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
+  private readonly element: ElementRef<HTMLElement> = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly injector: Injector = inject(Injector);
   private readonly navigation: NavigationService = inject(NavigationService);
   private readonly dialogs: DialogService = inject(DialogService);
-
   private readonly translations: TranslocoService = inject(TranslocoService);
 
   public readonly closePanel: OutputEmitterRef<void> = output();
+
   protected readonly trackLevel: ListTrackBy<ModelRecord> = (_index: number, record: ModelRecord): string => record.modelId;
+  protected readonly editingId: WritableSignal<string | null> = signal(null);
+  protected readonly draftName: WritableSignal<string> = signal('');
+  protected readonly savingName: WritableSignal<boolean> = signal(false);
+
+  public constructor() {
+    effect((): void => {
+      if (!this.storage.records().some((record: ModelRecord): boolean => record.modelId === this.editingId())) {
+        this.editingId.set(null);
+      }
+    });
+  }
+
+  protected handleRename(record: ModelRecord): void {
+    if (record.slot === 0 || this.savingName()) return;
+
+    this.draftName.set(record.name);
+    this.editingId.set(record.modelId);
+  }
+
+  protected async handleSaveName(restoreFocus: boolean = false): Promise<void> {
+    const id: string | null = this.editingId();
+    if (!id || this.savingName()) return;
+
+    const record: ModelRecord | undefined = this.storage.records().find((item: ModelRecord): boolean => item.modelId === id);
+    const name: string = this.draftName().trim();
+    if (!record || !name) {
+      this.handleCancelRename(restoreFocus);
+      return;
+    }
+
+    this.savingName.set(true);
+    try {
+      await this.workspace.actions.updateSlot(record.slot, { name, uri: record.gmodel.$id, version: record.gmodel.version });
+      this.handleCancelRename(restoreFocus);
+    } catch (error: unknown) {
+      this.storage.reportError(error);
+    } finally {
+      this.savingName.set(false);
+    }
+  }
+
+  protected handleCancelRename(restoreFocus: boolean = false): void {
+    const id: string | null = this.editingId();
+    this.editingId.set(null);
+    if (!restoreFocus) return;
+
+    afterNextRender(
+      (): void => {
+        const buttons: NodeListOf<HTMLButtonElement> = this.element.nativeElement.querySelectorAll('button[data-level-id]');
+        [...buttons].find((button: HTMLButtonElement): boolean => button.dataset['levelId'] === id)?.focus();
+      },
+      { injector: this.injector },
+    );
+  }
 
   protected levelSource(record: ModelRecord): string {
     const names: string[] = record.gmodel.imports.map(
@@ -39,7 +122,11 @@ export class ModelLevelsComponent {
   }
 
   protected async handleSelect(slot: number): Promise<void> {
-    await this.navigation.navigateToSlot(slot);
+    try {
+      await this.navigation.navigateToSlot(slot);
+    } catch (error: unknown) {
+      this.storage.reportError(error);
+    }
   }
 
   protected handleCreate(): void {
@@ -51,20 +138,31 @@ export class ModelLevelsComponent {
   }
 
   protected handleRemove(record: ModelRecord): void {
+    try {
+      this.confirmRemoval(record);
+    } catch (error: unknown) {
+      this.storage.reportError(error);
+    }
+  }
+
+  private confirmRemoval(record: ModelRecord): void {
     const preview: ModelRemovalPreview = this.workspace.actions.previewSlotRemoval(record.slot);
     const options: ConfirmationOptions = {
-      title: this.translations.translate('editor.removeLevel'),
-      plainText: true,
+      title: this.translations.translate('editor.removeLevelTitle'),
       message: this.translations.translate('editor.confirmRemoveLevels', {
-        names: preview.models.map((model): string => model.name).join(', '),
+        name: record.name,
       }),
+      details: preview.models.map((model): string => model.name),
       buttons: [
-        [{ label: this.translations.translate('common.cancel') }],
+        [{ label: this.translations.translate('common.cancel'), severity: 'neutral' }],
         [
           {
             label: this.translations.translate('editor.removeLevel'),
             severity: 'error',
             click: async (): Promise<void> => {
+              if (this.storage.recordsBySlot().get(record.slot)?.modelId !== record.modelId) {
+                throw new Error(this.translations.translate('editor.modelChanged'));
+              }
               await this.workspace.actions.removeSlot(record.slot, true);
               const next: ModelRecord | undefined = this.storage.records().find((item: ModelRecord): boolean => item.slot !== 0);
               await this.navigation.navigateToSlot(next?.slot ?? 0);
@@ -73,6 +171,6 @@ export class ModelLevelsComponent {
         ],
       ],
     };
-    this.dialogs.open(ConfirmationDialog, { inputValues: { options } });
+    this.dialogs.open(ConfirmationDialog, { header: options.title, inputValues: { options } });
   }
 }

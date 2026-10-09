@@ -1,51 +1,57 @@
 import {
+  afterEveryRender,
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
   effect,
   ElementRef,
-  Injector,
-  afterNextRender,
-  afterEveryRender,
   inject,
+  Injector,
+  output,
+  type OutputEmitterRef,
   signal,
   type Signal,
   type WritableSignal,
-  output,
-  type OutputEmitterRef,
 } from '@angular/core';
-import { TranslocoDirective } from '@jsverse/transloco';
 import { FormsModule } from '@angular/forms';
+import { TranslocoDirective } from '@jsverse/transloco';
+import { LucideChevronRight, LucideCopy, LucideEye, LucideEyeOff, LucidePlus, LucideTrash, LucideX } from '@lucide/angular';
+import { ModelRef, type Node } from '@ramen-suite/core/model';
 import {
+  Accordion,
+  AccordionHeaderTemplate,
+  AccordionIndicatorTemplate,
+  AccordionItem,
   Button,
   Input,
   List,
   ListItemTemplate,
-  Tooltip,
-  Accordion,
-  AccordionItem,
-  AccordionHeaderTemplate,
-  AccordionIndicatorTemplate,
   type ListTrackBy,
-  type NavbarItem,
+  Tooltip,
 } from '@sushi-kit/angular';
-import { LucidePlus, LucideX, LucideCopy, LucideTrash, LucideBox, LucideChevronRight } from '@lucide/angular';
-import { NodeEditingService } from '../../../services/workspace/node-editing.service';
-import { ModelRef, type Node } from '@ramen-suite/core/model';
-import { type NodeLevel } from '../../../services/workspace/workspace.view';
-import { StorageService } from '../../../services/storage.service';
-import { WorkspaceService } from '../../../services/workspace/workspace.service';
-import { NavigationService } from '../../../services/navigation.service';
-import { AutoselectDirective } from '../../../directives/autoselect.directive';
 import { Transformer } from '../../../core/helper/Transformer';
+import { AutoselectDirective } from '../../../directives/autoselect.directive';
+import { NavigationService } from '../../../services/navigation.service';
+import { StorageService } from '../../../services/storage.service';
+import { NodeEditingService } from '../../../services/workspace/node-editing.service';
+import { WorkspaceService } from '../../../services/workspace/workspace.service';
+import { type NodeLevel } from '../../../services/workspace/workspace.view';
 import { ApplicationState } from '../../../states/application.state';
 
-type NodeItem = NavbarItem<string>;
+interface NodeItem {
+  readonly value: string;
+  readonly label: string;
+}
 
 interface NodeGroup {
   readonly label: string;
   readonly items: readonly NodeItem[];
   readonly baseNodeRef: string | null;
+}
+
+interface MutableNodeGroup extends Omit<NodeGroup, 'items'> {
+  readonly items: NodeItem[];
 }
 
 @Component({
@@ -63,7 +69,8 @@ interface NodeGroup {
     AccordionItem,
     AccordionHeaderTemplate,
     AccordionIndicatorTemplate,
-    LucideBox,
+    LucideEye,
+    LucideEyeOff,
     LucideChevronRight,
     LucideCopy,
     LucideTrash,
@@ -77,7 +84,6 @@ interface NodeGroup {
 export class SideMenuComponent {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   protected readonly nodeEditing: NodeEditingService = inject(NodeEditingService);
-  protected readonly trackNode: ListTrackBy<NodeItem> = (_index: number, item: NodeItem): string => item.value;
   private readonly appearance: ApplicationState = inject(ApplicationState);
   private readonly element: ElementRef<HTMLElement> = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector: Injector = inject(Injector);
@@ -87,38 +93,58 @@ export class SideMenuComponent {
   public readonly closePanel: OutputEmitterRef<void> = output();
   public readonly nodeSelected: OutputEmitterRef<void> = output();
 
+  protected readonly trackNode: ListTrackBy<NodeItem> = (_index: number, item: NodeItem): string => item.value;
   protected readonly collapsedGroups: WritableSignal<ReadonlySet<string>> = signal(new Set<string>());
   protected readonly editingId: WritableSignal<string | null> = signal(null);
   protected readonly draftName: WritableSignal<string> = signal('');
   protected readonly savingName: WritableSignal<boolean> = signal(false);
   private editingModelId: string | undefined;
   private pendingRevealId: string | null = null;
-
   protected readonly search: WritableSignal<string> = signal('');
-  protected readonly creating: WritableSignal<boolean> = signal(false);
+
   protected readonly isRefinementLevel: Signal<boolean> = computed((): boolean => this.workspace.store.currentSlot() > 0);
   protected readonly groups: Signal<readonly NodeGroup[]> = computed((): readonly NodeGroup[] =>
     this.groupLocalNodes(this.search().trim().toLowerCase()),
   );
 
+  public constructor() {
+    afterEveryRender((): void => this.revealPendingNode());
+    effect((): void => {
+      const created: { modelId: string; baseNodeId: string; node: Node } | null = this.nodeEditing.createdRefinement();
+      if (!created || created.modelId !== this.workspace.store.currentModel()?.id) return;
+
+      this.search.set('');
+      this.handleGroupExpansion(created.baseNodeId, [created.baseNodeId]);
+      this.handleRename({ value: created.node.id, label: created.node.name });
+      this.pendingRevealId = created.node.id;
+      this.nodeEditing.createdRefinement.set(null);
+    });
+    effect((): void => {
+      const modelId: string | undefined = this.workspace.store.currentModel()?.id;
+      if (modelId !== this.editingModelId) this.editingId.set(null);
+    });
+  }
+
   protected handleListKey(event: KeyboardEvent): void {
-    if (event.key !== 'Tab') event.stopPropagation();
+    const undo: boolean = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z';
+    if (event.key !== 'Tab' && event.key !== 'Escape' && !undo) event.stopPropagation();
   }
 
   protected handleGroupTab(event: Event): void {
     if (!(event instanceof KeyboardEvent) || !(event.currentTarget instanceof HTMLElement)) return;
 
     const group: HTMLElement = event.currentTarget;
-    const add: HTMLButtonElement | null = group.querySelector('.node-group-add:not(:disabled)');
     const header: HTMLButtonElement | null = group.querySelector('button[aria-expanded]');
-    const first: HTMLButtonElement | null = group.querySelector('.editor-list-entry');
-    if (!header) return;
-
-    const expanded: boolean = header.getAttribute('aria-expanded') === 'true';
-    let next: HTMLButtonElement | null = null;
-    if (event.target === header && !event.shiftKey) next = add;
-    else if (event.target === add) next = event.shiftKey ? header : expanded ? first : null;
-    else if (event.target === first && event.shiftKey) next = add;
+    const show: HTMLButtonElement | null = group.querySelector('.node-group-show:not(:disabled)');
+    const add: HTMLButtonElement | null = group.querySelector('.node-group-add:not(:disabled)');
+    const first: HTMLElement | null =
+      header?.getAttribute('aria-expanded') === 'true'
+        ? group.querySelector('.editor-list-entry, .editor-name-editor input')
+        : null;
+    const order: HTMLElement[] = [header, show, add, first].filter((entry): entry is HTMLElement => !!entry);
+    const index: number = order.findIndex((button: HTMLElement): boolean => button === event.target);
+    if (index < 0 || (event.target === first && !event.shiftKey)) return;
+    const next: HTMLElement | undefined = order[index + (event.shiftKey ? -1 : 1)];
     if (!next) return;
 
     event.preventDefault();
@@ -134,39 +160,28 @@ export class SideMenuComponent {
     });
   }
 
-  protected async handleRefine(baseNodeId: string): Promise<void> {
-    if (this.creating() || !this.workspace.view.editable()) return;
-    const base: Node | undefined = this.workspace.store.getDraft().getNode(baseNodeId);
-    if (!base) return;
-
-    const names: Set<string> = new Set(this.workspace.view.currentNodes().map((node: Node): string => node.name));
-    let name: string = base.name;
-    let suffix: number = 2;
-    while (names.has(name)) name = `${base.name}${suffix++}`;
-
-    this.creating.set(true);
-    const slot: number = this.workspace.store.currentSlot();
-    const modelId: string | undefined = this.workspace.store.currentModel()?.id;
-    try {
-      const node: Node = await this.workspace.actions.createNode({ name, baseNodeId });
-      if (this.workspace.store.currentModel()?.id !== modelId) return;
-      this.search.set('');
-      this.handleGroupExpansion(baseNodeId, [baseNodeId]);
-      await this.navigation.navigateToNode(slot, node.id);
-      this.pendingRevealId = node.id;
-    } catch (error: unknown) {
-      this.storage.reportError(error);
-    } finally {
-      this.creating.set(false);
-    }
+  protected isImportedNode(reference: string): boolean {
+    return (
+      ModelRef.isQualified(reference) && ModelRef.splitQualified(reference).modelId !== this.workspace.store.currentModel()?.id
+    );
   }
 
-  public constructor() {
-    afterEveryRender((): void => this.revealPendingNode());
-    effect((): void => {
-      const modelId: string | undefined = this.workspace.store.currentModel()?.id;
-      if (modelId !== this.editingModelId) this.editingId.set(null);
-    });
+  protected isNodeShown(reference: string): boolean {
+    return this.workspace.store.currentModelRecord()?.view?.visibleNodeRefs?.includes(reference) ?? false;
+  }
+
+  protected isNodeConnected(reference: string): boolean {
+    return this.workspace.view
+      .currentRelations()
+      .some((relation): boolean => relation.from.nodeId === reference || relation.to.nodeId === reference);
+  }
+
+  protected async handleToggleNode(reference: string): Promise<void> {
+    try {
+      await this.workspace.actions.toggleVisibleNode(reference);
+    } catch (error: unknown) {
+      this.storage.reportError(error);
+    }
   }
 
   protected handleRename(item: NodeItem): void {
@@ -179,6 +194,7 @@ export class SideMenuComponent {
   protected async handleSaveName(restoreFocus: boolean = false): Promise<void> {
     const id: string | null = this.editingId();
     if (!id || this.savingName()) return;
+
     const name: string = this.draftName().trim();
     if (!name) {
       this.handleCancelRename(restoreFocus);
@@ -211,11 +227,13 @@ export class SideMenuComponent {
     );
   }
 
-  protected async handleSelect(id: string | number | null): Promise<void> {
-    if (typeof id !== 'string') return;
-
-    this.nodeSelected.emit();
-    await this.navigation.navigateToNode(this.workspace.store.currentSlot(), id);
+  protected async handleSelect(id: string): Promise<void> {
+    try {
+      await this.navigation.navigateToNode(this.workspace.store.currentSlot(), id);
+      this.nodeSelected.emit();
+    } catch (error: unknown) {
+      this.storage.reportError(error);
+    }
   }
 
   protected revealPendingNode(): void {
@@ -226,10 +244,8 @@ export class SideMenuComponent {
       return;
     }
 
-    const buttons: NodeListOf<HTMLButtonElement> = this.element.nativeElement.querySelectorAll('button[data-node-id]');
-    const button: HTMLButtonElement | undefined = [...buttons].find(
-      (item: HTMLButtonElement): boolean => item.dataset['nodeId'] === id,
-    );
+    const entries: NodeListOf<HTMLElement> = this.element.nativeElement.querySelectorAll('[data-node-id]');
+    const button: HTMLElement | undefined = [...entries].find((item: HTMLElement): boolean => item.dataset['nodeId'] === id);
     if (!button) return; // Sushi instantiates collapsed content after its next render.
     const catalogue: HTMLElement | null = this.element.nativeElement.querySelector('.node-catalogue');
     const bounds: DOMRect | undefined = catalogue?.getBoundingClientRect();
@@ -245,23 +261,37 @@ export class SideMenuComponent {
     });
   }
 
-  private groupLocalNodes(query: string): NodeGroup[] {
-    const grouped: Map<string, { label: string; items: NodeItem[]; baseNodeRef: string | null }> = new Map();
+  private createNodeGroups(): Map<string, MutableNodeGroup> {
+    const grouped: Map<string, MutableNodeGroup> = new Map();
     const baseModelId: string | undefined = this.workspace.view.baseModel()?.id;
     for (const node of this.workspace.view.baseNodes()) {
       if (!baseModelId) continue;
       const reference: string = ModelRef.qualify(baseModelId, node.id);
       grouped.set(reference, { label: node.name, items: [], baseNodeRef: reference });
     }
+    for (const suggestion of this.workspace.view.nodeSuggestions()) {
+      if (suggestion.modelId === this.workspace.store.currentModel()?.id || grouped.has(suggestion.ref)) continue;
+      const owner: string = this.storage.modelsById().get(suggestion.modelId)?.name ?? '';
+      grouped.set(suggestion.ref, {
+        label: `${suggestion.name} · ${owner}`,
+        items: [],
+        baseNodeRef: suggestion.ref,
+      });
+    }
+    return grouped;
+  }
+
+  private groupLocalNodes(query: string): NodeGroup[] {
+    const grouped: Map<string, MutableNodeGroup> = this.createNodeGroups();
     for (const node of this.workspace.view.currentNodes()) {
       const base: NodeLevel | null = this.workspace.view.resolveNodeBase(node);
       const label: string = base?.node.name ?? this.workspace.store.currentModel()?.name ?? '';
 
       const key: string = base ? ModelRef.qualify(base.modelId, base.node.id) : '';
-      const group: { label: string; items: NodeItem[]; baseNodeRef: string | null } = grouped.get(key) ?? {
+      const group: MutableNodeGroup = grouped.get(key) ?? {
         label,
         items: [],
-        baseNodeRef: base ? ModelRef.qualify(base.modelId, base.node.id) : null,
+        baseNodeRef: key || null,
       };
       group.items.push({ value: node.id, label: node.name });
       grouped.set(key, group);

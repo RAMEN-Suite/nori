@@ -35,7 +35,7 @@
           (valueChange)="handleGroupExpansion(key, $event)"
         >
           <ng-template suiAccordionHeader let-item let-expanded="expanded">
-            <span class="flex items-center gap-2 pr-7 text-xs font-semibold opacity-60">
+            <span class="flex items-center gap-2 pr-14 text-xs font-semibold opacity-60">
               <span class="shrink-0 transition-transform" [class.rotate-90]="expanded" aria-hidden="true">
                 <svg lucideChevronRight class="size-3.5"></svg>
               </span>
@@ -62,11 +62,13 @@
                     [class.readonly-node]="!workspace.view.editable()"
                   >
                     @if (editingId() === item.value) {
-                      <div class="node-name-editor">
+                      <div class="editor-name-editor">
                         <input
                           suiInput
+                          fluid
                           appAutoselect
                           [focusOnCreate]="true"
+                          [attr.data-node-id]="item.value"
                           size="sm"
                           [attr.aria-label]="t('editor.nodeName')"
                           [ngModel]="draftName()"
@@ -88,7 +90,7 @@
                         (dblclick)="handleRename(item)"
                         [attr.data-node-id]="item.value"
                       >
-                        <svg lucideBox class="editor-list-icon" aria-hidden="true"></svg>
+                        <svg lucideChevronRight class="size-3 shrink-0 opacity-45" aria-hidden="true"></svg>
                         <span class="truncate text-xs font-medium">{{ item.label }}</span>
                       </button>
                     }
@@ -131,6 +133,37 @@
           </ng-template>
         </sui-accordion>
         @if (workspace.view.editable() && group.baseNodeRef) {
+          @if (isImportedNode(group.baseNodeRef)) {
+            <button
+              suiButton
+              severity="neutral"
+              variant="text"
+              size="xs"
+              shape="circle"
+              class="node-group-show"
+              [tabIndex]="-1"
+              [disabled]="isNodeConnected(group.baseNodeRef)"
+              [attr.aria-label]="t(isNodeShown(group.baseNodeRef) ? 'editor.hideNamedNode' : 'editor.showNamedNode', { name: group.label })"
+              [suiTooltip]="
+                t(
+                  isNodeConnected(group.baseNodeRef)
+                    ? 'editor.shownByRelation'
+                    : isNodeShown(group.baseNodeRef)
+                      ? 'editor.hideFromCanvas'
+                      : 'editor.showOnCanvas'
+                )
+              "
+              placement="bottom"
+              [showDelay]="400"
+              (click)="handleToggleNode(group.baseNodeRef)"
+            >
+              @if (isNodeShown(group.baseNodeRef) || isNodeConnected(group.baseNodeRef)) {
+                <svg lucideEyeOff class="size-3.5" aria-hidden="true"></svg>
+              } @else {
+                <svg lucideEye class="size-3.5" aria-hidden="true"></svg>
+              }
+            </button>
+          }
           <button
             suiButton
             severity="neutral"
@@ -140,8 +173,8 @@
             class="node-group-add"
             [tabIndex]="-1"
             [attr.aria-label]="t('editor.refineNamedNode', { name: group.label })"
-            [disabled]="creating()"
-            (click)="handleRefine(group.baseNodeRef)"
+            [disabled]="nodeEditing.creating()"
+            (click)="nodeEditing.refine(group.baseNodeRef)"
           >
             <svg lucidePlus class="size-3.5" aria-hidden="true"></svg>
           </button>
@@ -152,6 +185,7 @@
   <div class="flex flex-col gap-3 p-3">
     <input
       suiInput
+      fluid
       name="search"
       [attr.aria-label]="t(isRefinementLevel() ? 'editor.findRefinement' : 'editor.findNode')"
       [placeholder]="t(isRefinementLevel() ? 'editor.findRefinement' : 'editor.findNode')"

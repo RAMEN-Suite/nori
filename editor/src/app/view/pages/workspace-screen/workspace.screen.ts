@@ -1,31 +1,32 @@
 import {
+  ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   inject,
-  OnInit,
-  ChangeDetectionStrategy,
+  type OnInit,
   signal,
-  type WritableSignal,
-  computed,
   type Signal,
+  type WritableSignal,
 } from '@angular/core';
-import { WindowState } from '../../../states/window.state';
-import { ToolBarComponent } from '../../components/tool-bar/tool-bar.component';
-import { StorageService } from '../../../services/storage.service';
-import { Manifest } from '../../../models/Manifest';
-import { SideMenuComponent } from '../../components/side-menu/side-menu.component';
-import { GraphMenuComponent } from '../../components/graph-view/graph-menu/graph-menu.component';
-import { ActivatedRoute, NavigationEnd, ParamMap, Router, RouterOutlet } from '@angular/router';
-import { filter } from 'rxjs';
-import { WorkspaceService } from '../../../services/workspace/workspace.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { Card, Button } from '@sushi-kit/angular';
+import { ActivatedRoute, NavigationEnd, type ParamMap, Router, RouterOutlet } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { LucideX } from '@lucide/angular';
-import { ModelLevelsComponent } from '../../components/model-levels/model-levels.component';
-import { type GraphPadding } from '../../components/graph-view/graph/graph.types';
-import { type ModelRecord } from '../../../models/ModelRecord';
+import { Button, Card } from '@sushi-kit/angular';
+import { filter } from 'rxjs';
 import { PARAMETERS } from '../../../app.routes';
+import { type Manifest } from '../../../models/Manifest';
+import { type ModelRecord } from '../../../models/ModelRecord';
+import { StorageService } from '../../../services/storage.service';
+import { NodeEditingService } from '../../../services/workspace/node-editing.service';
+import { WorkspaceService } from '../../../services/workspace/workspace.service';
+import { WindowState } from '../../../states/window.state';
+import { GraphMenuComponent } from '../../components/graph-view/graph-menu/graph-menu.component';
+import { type GraphPadding } from '../../components/graph-view/graph/graph.types';
+import { ModelLevelsComponent } from '../../components/model-levels/model-levels.component';
+import { SideMenuComponent } from '../../components/side-menu/side-menu.component';
+import { ToolBarComponent } from '../../components/tool-bar/tool-bar.component';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -46,10 +47,8 @@ import { PARAMETERS } from '../../../app.routes';
 })
 export class WorkspaceScreen implements OnInit {
   protected readonly windowState: WindowState = inject(WindowState);
-
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   protected readonly storage: StorageService = inject(StorageService);
-
   protected readonly router: Router = inject(Router);
   protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
 
@@ -58,20 +57,24 @@ export class WorkspaceScreen implements OnInit {
   protected readonly inspectorOpen: WritableSignal<boolean> = signal(false);
 
   protected readonly levelsHeight: Signal<string> = computed(
-    (): string => `${136 + Math.min(5, Math.max(2, this.storage.records().length)) * 44}px`,
+    (): string => `${136 + Math.min(5, Math.max(2, this.storage.records().length)) * 36}px`,
   );
 
-  // Fit and Reset use the free canvas area; toggling panels preserves the saved viewport.
+  // Fit uses the canvas area left free by the open editor panels.
   protected readonly graphPadding: Signal<GraphPadding> = computed(
     (): GraphPadding => ({
       top: 100,
       bottom: 64,
-      left: this.catalogueOpen() || this.levelsOpen() ? 296 : 32,
-      right: this.inspectorOpen() ? 392 : 32,
+      left: this.catalogueOpen() || this.levelsOpen() ? 304 : 32,
+      right: this.inspectorOpen() ? 400 : 32,
     }),
   );
 
   public constructor() {
+    const nodeEditing: NodeEditingService = inject(NodeEditingService);
+    effect((): void => {
+      if (nodeEditing.creating()) this.catalogueOpen.set(true);
+    });
     this.router.events
       .pipe(
         filter((event: unknown): event is NavigationEnd => event instanceof NavigationEnd),
@@ -93,7 +96,7 @@ export class WorkspaceScreen implements OnInit {
 
   public ngOnInit(): void {
     this.registerRouteSubscription();
-    void this.storage.refreshManifests();
+    void this.storage.refreshManifests().catch((error: unknown): void => this.storage.reportError(error));
   }
 
   protected handleToggleCatalogue(): void {
