@@ -207,6 +207,15 @@
     "addBaseNode": "Add {{name}} to canvas",
     "removeBaseNode": "Remove {{name}} from canvas",
     "baseNodeConnected": "This base node is used by relationships. Remove the relationships first to remove it from the canvas.",
-    "nodeUnavailable": "This node is no longer available."
+    "nodeUnavailable": "This node is no longer available.",
+    "baseNodes": "Base Nodes",
+    "closeBaseNodes": "Close base nodes",
+    "noBaseNodes": "No available base nodes found.",
+    "showBaseNode": "Show {{name}} on canvas",
+    "hideBaseNode": "Remove {{name}} from canvas",
+    "removeBaseNodeTitle": "Remove base node from canvas?",
+    "confirmRemoveBaseNode": "“{{name}}” will be removed from this canvas, along with its relationships on this level and their refinements. The original node definition will remain available.",
+    "removeBaseNodeWithRelations": "Remove with relationships",
+    "removeFromCanvas": "Remove from canvas"
   }
 }

@@ -207,6 +207,15 @@
     "addBaseNode": "{{name}} auf die Zeichenfläche übernehmen",
     "removeBaseNode": "{{name}} von der Zeichenfläche entfernen",
     "baseNodeConnected": "Dieser Basisknoten wird von Beziehungen verwendet. Entferne zuerst die Beziehungen, um ihn von der Zeichenfläche zu entfernen.",
-    "nodeUnavailable": "Dieser Knoten ist nicht mehr verfügbar."
+    "nodeUnavailable": "Dieser Knoten ist nicht mehr verfügbar.",
+    "baseNodes": "Basisknoten",
+    "closeBaseNodes": "Basisknoten schließen",
+    "noBaseNodes": "Keine verfügbaren Basisknoten gefunden.",
+    "showBaseNode": "{{name}} auf Zeichenfläche anzeigen",
+    "hideBaseNode": "{{name}} von Zeichenfläche entfernen",
+    "removeBaseNodeTitle": "Basisknoten von der Zeichenfläche entfernen?",
+    "confirmRemoveBaseNode": "„{{name}}“ wird aus dieser Zeichenfläche entfernt. Seine Beziehungen auf dieser Ebene und deren Verfeinerungen werden ebenfalls entfernt. Die ursprüngliche Knotendefinition bleibt erhalten.",
+    "removeBaseNodeWithRelations": "Mit Beziehungen entfernen",
+    "removeFromCanvas": "Von Zeichenfläche entfernen"
   }
 }

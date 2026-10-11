@@ -160,13 +160,13 @@ html:active-view-transition-type(open-workspace)::view-transition-old(project-li
 }
 
 /* Sushi 0.1.2 has no public tokens for Accordion header density or panel bottom padding. */
-app-side-menu .node-catalogue .node-group .node-accordion .sui-accordion__trigger {
+:is(app-side-menu, app-base-nodes) .node-accordion .sui-accordion__group--sm .sui-accordion__item .sui-accordion__trigger {
   min-height: 2.125rem;
-  padding-bottom: 0.25rem;
+  padding-bottom: 0;
 }
 
-app-side-menu .node-accordion .sui-accordion__panel {
-  padding-bottom: 0;
+:is(app-side-menu, app-base-nodes) .node-accordion .sui-accordion__group--sm .sui-accordion__item .sui-accordion__panel {
+  padding-block: 0;
 }
 
 .editor-panel-scroll {

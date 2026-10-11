@@ -12,6 +12,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, type ParamMap, Router, RouterOutlet } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
+import { LucideBoxes, LucideGitBranch, LucideLayers } from '@lucide/angular';
 import { filter } from 'rxjs';
 import { PARAMETERS } from '../../../app.routes';
 import { type Manifest } from '../../../models/Manifest';
@@ -22,6 +23,7 @@ import { WorkspaceService } from '../../../services/workspace/workspace.service'
 import { WindowState } from '../../../states/window.state';
 import { GraphMenuComponent } from '../../components/graph-view/graph-menu/graph-menu.component';
 import { type GraphPadding } from '../../components/graph-view/graph/graph.types';
+import { BaseNodesComponent } from '../../components/base-nodes/base-nodes.component';
 import { EditorPanelComponent } from '../../components/editor-panel/editor-panel.component';
 import { ModelLevelsComponent } from '../../components/model-levels/model-levels.component';
 import { SideMenuComponent } from '../../components/side-menu/side-menu.component';
@@ -37,7 +39,11 @@ import { ToolBarComponent } from '../../components/tool-bar/tool-bar.component';
     RouterOutlet,
     ModelLevelsComponent,
     EditorPanelComponent,
+    BaseNodesComponent,
     TranslocoDirective,
+    LucideBoxes,
+    LucideGitBranch,
+    LucideLayers,
   ],
   templateUrl: './workspace.screen.html',
   styleUrl: './workspace.screen.scss',
@@ -51,19 +57,19 @@ export class WorkspaceScreen implements OnInit {
 
   protected readonly levelsOpen: WritableSignal<boolean> = signal(true);
   protected readonly catalogueOpen: WritableSignal<boolean> = signal(true);
+  protected readonly baseNodesOpen: WritableSignal<boolean> = signal(true);
   protected readonly inspectorOpen: WritableSignal<boolean> = signal(false);
 
   protected readonly levelsHeight: Signal<string> = computed(
-    (): string => `${136 + Math.min(5, Math.max(2, this.storage.records().length)) * 36}px`,
+    (): string => `${128 + Math.min(5, Math.max(2, this.storage.records().length)) * 36}px`,
   );
 
-  // Fit uses the canvas area left free by the open editor panels.
   protected readonly graphPadding: Signal<GraphPadding> = computed(
     (): GraphPadding => ({
       top: 100,
       bottom: 64,
-      left: this.catalogueOpen() || this.levelsOpen() ? 304 : 32,
-      right: this.inspectorOpen() ? 400 : 32,
+      left: this.catalogueOpen() || (this.baseNodesOpen() && this.workspace.view.editable()) ? 304 : 32,
+      right: this.inspectorOpen() || this.levelsOpen() ? 304 : 32,
     }),
   );
 

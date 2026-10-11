@@ -26,14 +26,18 @@
   right: var(--nori-workspace-inset);
   z-index: 3;
 }
-.workspace-left {
-  --levels-height: min(var(--nori-levels-height), 55%);
+.workspace-column {
   position: absolute;
-  left: var(--nori-workspace-inset);
   top: 6rem;
   bottom: var(--nori-workspace-bottom);
-  width: 16.5rem;
+  width: min(16.5rem, calc(100% - 2 * var(--nori-workspace-inset)));
   pointer-events: none;
+}
+.workspace-left {
+  left: var(--nori-workspace-inset);
+}
+.workspace-right {
+  right: var(--nori-workspace-inset);
 }
 .panel-slot {
   position: absolute;
@@ -42,29 +46,39 @@
   min-height: 0;
   overflow: visible;
 }
-.catalogue-slot {
+.top-slot {
   top: 0;
   bottom: 0;
   transition: bottom 480ms 180ms var(--nori-editor-ease);
 }
-.workspace-left.levels-open .catalogue-slot {
-  bottom: calc(var(--levels-height) + 1rem);
-}
-.levels-slot {
+.bottom-slot {
   bottom: 0;
+  height: 100%;
+  transition: height 480ms 180ms var(--nori-editor-ease);
+}
+.workspace-left.both-open .top-slot {
+  bottom: calc(50% + 0.5rem);
+  transition-duration: 80ms;
+  transition-delay: 0s;
+}
+.workspace-left.both-open .bottom-slot {
+  height: calc(50% - 0.5rem);
+  transition-duration: 80ms;
+  transition-delay: 0s;
+}
+.workspace-right {
+  --levels-height: min(var(--nori-levels-height), 100%);
+}
+.workspace-right.levels-open .top-slot {
+  bottom: calc(var(--levels-height) + 1rem);
+  transition-duration: 80ms;
+  transition-delay: 0s;
+}
+.workspace-right .bottom-slot {
   height: var(--levels-height);
-  transition: height 480ms var(--nori-editor-ease);
 }
 .workspace-catalogue {
   --nori-panel-arrival-delay: 280ms;
-}
-.workspace-right {
-  position: absolute;
-  right: var(--nori-workspace-inset);
-  top: 6rem;
-  bottom: var(--nori-workspace-bottom);
-  width: 22.5rem;
-  pointer-events: none;
 }
 @media (min-width: 640px) {
   .workspace-shell {
@@ -76,15 +90,8 @@
   .workspace-shell {
     --nori-workspace-bottom: 0.5rem;
   }
-  .workspace-left {
+  .workspace-column {
     top: 5rem;
-    bottom: var(--nori-workspace-bottom);
-    width: min(16.5rem, calc(100% - 2 * var(--nori-workspace-inset)));
-  }
-  .workspace-right {
-    top: 5rem;
-    bottom: var(--nori-workspace-bottom);
-    width: min(22.5rem, calc(100% - 2 * var(--nori-workspace-inset)));
   }
 }
 

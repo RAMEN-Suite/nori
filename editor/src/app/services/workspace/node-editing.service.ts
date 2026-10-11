@@ -1,6 +1,6 @@
 import { inject, Injectable, signal, type WritableSignal } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
-import { type Node, type NodeRemovalPreview } from '@ramen-suite/core/model';
+import { type Node, type NodeRemovalPreview, type RelationRemovalPreview } from '@ramen-suite/core/model';
 import { ConfirmationDialog, type ConfirmationOptions } from '../../view/components/dialogs/confirmation/confirmation.dialog';
 import { DialogService } from '../dialog.service';
 import { NavigationService } from '../navigation.service';
@@ -80,6 +80,46 @@ export class NodeEditingService {
       this.dialogs.open(ConfirmationDialog, { header: options.title, inputValues: { options } });
     } catch (error: unknown) {
       this.storage.reportError(error);
+    }
+  }
+
+  public confirmCanvasRemoval(reference: string): void {
+    try {
+      const node: Node | undefined = this.workspace.store.getDraft().getNode(reference);
+      if (!node || !this.workspace.view.editable()) return;
+      const preview: RelationRemovalPreview = this.workspace.actions.previewVisibleNodeRemoval(reference);
+      const modelId: string | undefined = this.workspace.store.currentModel()?.id;
+      const options: ConfirmationOptions = {
+        title: this.translations.translate('editor.removeBaseNodeTitle'),
+        message: this.translations.translate('editor.confirmRemoveBaseNode', { name: node.name }),
+        details: preview.relations.length
+          ? [this.translations.translate('editor.affectedRelations', { count: preview.relations.length })]
+          : [],
+        buttons: [
+          [{ label: this.translations.translate('common.cancel'), severity: 'neutral' }],
+          [
+            {
+              label: this.translations.translate(
+                preview.relations.length ? 'editor.removeBaseNodeWithRelations' : 'editor.removeFromCanvas',
+              ),
+              severity: 'error',
+              click: (): Promise<void> => this.removeFromCanvas(reference, modelId),
+            },
+          ],
+        ],
+      };
+      this.dialogs.open(ConfirmationDialog, { header: options.title, inputValues: { options } });
+    } catch (error: unknown) {
+      this.storage.reportError(error);
+    }
+  }
+
+  private async removeFromCanvas(reference: string, modelId: string | undefined): Promise<void> {
+    if (this.workspace.store.currentModel()?.id !== modelId) throw new Error(this.translations.translate('editor.modelChanged'));
+    const slot: number = this.workspace.store.currentSlot();
+    await this.workspace.actions.removeVisibleNode(reference, true);
+    if (this.workspace.store.currentModel()?.id === modelId && this.workspace.store.currentNodeId() === reference) {
+      await this.navigation.navigateToSlot(slot);
     }
   }
 

@@ -12,6 +12,8 @@
     class="workspace-toolbar"
     [catalogueOpen]="catalogueOpen()"
     [levelsOpen]="levelsOpen()"
+    [baseNodesOpen]="baseNodesOpen()"
+    (toggleBaseNodes)="baseNodesOpen.set(!baseNodesOpen())"
     (toggleCatalogue)="handleToggleCatalogue()"
     (toggleLevels)="handleToggleLevels()"
     (resetGraph)="graph.handleLayoutReset()"
@@ -19,40 +21,71 @@
     (configureColours)="graph.handleOpenColorsDialog()"
   />
 
-  <div data-nori-motion class="workspace-left" [style.--nori-levels-height]="levelsHeight()" [class.levels-open]="levelsOpen()">
-    <div class="panel-slot catalogue-slot" data-nori-motion>
+  <div
+    data-nori-motion
+    class="workspace-column workspace-left"
+    [class.both-open]="catalogueOpen() && baseNodesOpen() && workspace.view.editable()"
+  >
+    <div class="panel-slot top-slot" data-nori-motion>
       <app-editor-panel
         class="workspace-catalogue"
         [open]="catalogueOpen()"
-        [title]="t(workspace.store.currentSlot() > 0 ? 'editor.refinements' : 'editor.nodes')"
+        [title]="t(workspace.store.currentSlot() > 0 ? 'editor.refinements' : 'editor.baseNodes')"
         [closeLabel]="t('editor.closeNodes')"
         (closePanel)="catalogueOpen.set(false)"
       >
+        <span panel-icon class="contents">
+          @if (workspace.view.editable()) {
+            <svg lucideGitBranch class="size-4 shrink-0" aria-hidden="true"></svg>
+          } @else {
+            <svg lucideBoxes class="size-4 shrink-0" aria-hidden="true"></svg>
+          }
+        </span>
         <app-side-menu (nodeSelected)="inspectorOpen.set(true)" class="block h-full min-h-0" />
       </app-editor-panel>
     </div>
-    <div class="panel-slot levels-slot" data-nori-motion>
+    <div class="panel-slot bottom-slot" data-nori-motion>
       <app-editor-panel
+        [open]="baseNodesOpen() && workspace.view.editable()"
+        [title]="t('editor.baseNodes')"
+        [closeLabel]="t('editor.closeBaseNodes')"
+        (closePanel)="baseNodesOpen.set(false)"
+      >
+        <svg panel-icon lucideBoxes class="size-4 shrink-0" aria-hidden="true"></svg>
+        <app-base-nodes (nodeSelected)="inspectorOpen.set(true)" class="block h-full min-h-0" />
+      </app-editor-panel>
+    </div>
+  </div>
+
+  <div
+    class="workspace-column workspace-right"
+    data-nori-motion
+    [style.--nori-levels-height]="levelsHeight()"
+    [class.levels-open]="levelsOpen()"
+  >
+    <div class="panel-slot top-slot" data-nori-motion>
+      <app-editor-panel
+        [open]="inspectorOpen()"
+        side="right"
+        heading="subtle"
+        [title]="t('editor.inspector')"
+        [closeLabel]="t('editor.closeInspector')"
+        (closePanel)="inspectorOpen.set(false)"
+      >
+        <div class="editor-panel-scroll h-full min-h-0 overflow-auto"><router-outlet /></div>
+      </app-editor-panel>
+    </div>
+    <div class="panel-slot bottom-slot" data-nori-motion>
+      <app-editor-panel
+        side="right"
         [open]="levelsOpen()"
         [title]="t('editor.levels')"
         [closeLabel]="t('editor.closeLevels')"
         (closePanel)="levelsOpen.set(false)"
       >
+        <svg panel-icon lucideLayers class="size-4 shrink-0" aria-hidden="true"></svg>
         <app-model-levels class="block h-full min-h-0" />
       </app-editor-panel>
     </div>
-  </div>
-
-  <div class="workspace-right">
-    <app-editor-panel
-      [open]="inspectorOpen()"
-      side="right"
-      heading="subtle"
-      [title]="t('editor.inspector')"
-      [closeLabel]="t('editor.closeInspector')"
-      (closePanel)="inspectorOpen.set(false)"
-    >
-      <div class="editor-panel-scroll h-full min-h-0 overflow-auto"><router-outlet /></div>
-    </app-editor-panel>
   </div>
 </main>

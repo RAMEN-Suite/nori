@@ -15,10 +15,11 @@ import {
   LucideArrowLeft,
   LucideDownload,
   LucideLayers,
+  LucideBoxes,
   LucideLink2,
   LucideMaximize,
   LucidePalette,
-  LucidePanelLeft,
+  LucideGitBranch,
   LucidePencil,
   LucideRotateCcw,
   LucideUnlink,
@@ -52,8 +53,9 @@ import { SettingsButtonComponent } from '../settings-button/settings-button.comp
     RouterLink,
     LucideDownload,
     LucidePencil,
-    LucidePanelLeft,
+    LucideGitBranch,
     LucideLayers,
+    LucideBoxes,
     LucideArrowLeft,
     LucideRotateCcw,
     LucideMaximize,
@@ -74,6 +76,8 @@ export class ToolBarComponent {
 
   public readonly catalogueOpen: InputSignal<boolean> = input(true);
   public readonly levelsOpen: InputSignal<boolean> = input(false);
+  public readonly baseNodesOpen: InputSignal<boolean> = input(true);
+  public readonly toggleBaseNodes: OutputEmitterRef<void> = output();
   public readonly toggleCatalogue: OutputEmitterRef<void> = output();
   public readonly toggleLevels: OutputEmitterRef<void> = output();
   public readonly resetGraph: OutputEmitterRef<void> = output();
@@ -85,6 +89,9 @@ export class ToolBarComponent {
     d: (): void => this.graphTools.toggle('disconnect'),
     escape: (): void => this.graphTools.cancel(),
     k: (): void => this.toggleCatalogue.emit(),
+    b: (): void => {
+      if (this.workspace.view.editable()) this.toggleBaseNodes.emit();
+    },
     m: (): void => this.toggleLevels.emit(),
     r: (): void => this.resetGraph.emit(),
     f: (): void => this.fitGraph.emit(),

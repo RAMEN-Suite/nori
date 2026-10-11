@@ -18,6 +18,7 @@ import {
   type UpdateDataTypeInput,
   type UpdateNodeInput,
   type UpdateRelationInput,
+  type WorkspaceElement,
 } from '@ramen-suite/core/model';
 import { RamenModel } from '@ramen-suite/core/ramen';
 import { type GraphView, type ModelRecord, type NodeColors, type ViewSettings } from '../../models/ModelRecord';
@@ -235,15 +236,33 @@ export class WorkspaceActions {
     await this.saveView(record.modelId, { visibleNodeRefs: [...(record.view?.visibleNodeRefs ?? []), reference] });
   }
 
-  public async removeVisibleNode(reference: string): Promise<void> {
+  public previewVisibleNodeRemoval(reference: string): RelationRemovalPreview {
+    const draft: RamenModel = this.store.getDraft();
+    const affected: Map<string, WorkspaceElement> = new Map();
+    for (const relation of draft.getModel().relations) {
+      if (relation.from.nodeId !== reference && relation.to.nodeId !== reference) continue;
+      for (const item of draft.previewRelationRemoval(relation.id).relations) {
+        affected.set(`${item.modelId}:${item.elementId}`, item);
+      }
+    }
+    return { relations: [...affected.values()] };
+  }
+
+  public async removeVisibleNode(reference: string, cascade: boolean = false): Promise<void> {
     const record: ModelRecord | null = this.store.currentModelRecord();
     if (!record) return;
-    const connected: boolean = this.store
-      .getDraft()
+    const draft: RamenModel = this.store.getDraft();
+    const connected: Relation[] = draft
       .getModel()
-      .relations.some((relation: Relation): boolean => relation.from.nodeId === reference || relation.to.nodeId === reference);
-    if (connected) throw new Error(this.translations.translate('editor.baseNodeConnected'));
+      .relations.filter((relation: Relation): boolean => relation.from.nodeId === reference || relation.to.nodeId === reference);
+    if (connected.length && !cascade) throw new Error(this.translations.translate('editor.baseNodeConnected'));
 
+    for (const relation of connected) {
+      if (draft.getModel().relations.some((item: Relation): boolean => item.id === relation.id)) {
+        draft.removeRelation(relation.id, { cascade: true });
+      }
+    }
+    if (connected.length) await this.saveCurrentModel();
     await this.saveView(record.modelId, {
       visibleNodeRefs: (record.view?.visibleNodeRefs ?? []).filter((ref: string): boolean => ref !== reference),
     });

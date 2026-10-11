@@ -1,4 +1,5 @@
 <nav *transloco="let t" class="editor-chrome" [attr.aria-label]="t('editor.toolbar')">
+  @let catalogueLabel = t(workspace.view.editable() ? 'editor.refinements' : 'editor.baseNodes');
   <a
     suiButton
     class="editor-back"
@@ -25,23 +26,45 @@
       <button
         suiButton
         severity="neutral"
-        variant="text"
+        [variant]="catalogueOpen() ? 'soft' : 'text'"
         size="sm"
         shape="circle"
         aria-keyshortcuts="K"
-        [attr.aria-label]="t('editor.catalogue')"
+        [attr.aria-label]="catalogueLabel"
         [attr.aria-pressed]="catalogueOpen()"
-        [suiTooltip]="t('editor.catalogue') + ' (K)'"
+        [suiTooltip]="catalogueLabel + ' (K)'"
         placement="bottom"
         [showDelay]="400"
         (click)="toggleCatalogue.emit()"
       >
-        <svg lucidePanelLeft class="size-4" aria-hidden="true"></svg>
+        @if (workspace.view.editable()) {
+          <svg lucideGitBranch class="size-4" aria-hidden="true"></svg>
+        } @else {
+          <svg lucideBoxes class="size-4" aria-hidden="true"></svg>
+        }
       </button>
+      @if (workspace.view.editable()) {
+        <button
+          suiButton
+          severity="neutral"
+          [variant]="baseNodesOpen() ? 'soft' : 'text'"
+          size="sm"
+          shape="circle"
+          aria-keyshortcuts="B"
+          [attr.aria-label]="t('editor.baseNodes')"
+          [attr.aria-pressed]="baseNodesOpen()"
+          [suiTooltip]="t('editor.baseNodes') + ' (B)'"
+          placement="bottom"
+          [showDelay]="400"
+          (click)="toggleBaseNodes.emit()"
+        >
+          <svg lucideBoxes class="size-4" aria-hidden="true"></svg>
+        </button>
+      }
       <button
         suiButton
         severity="neutral"
-        variant="text"
+        [variant]="levelsOpen() ? 'soft' : 'text'"
         size="sm"
         shape="circle"
         aria-keyshortcuts="M"

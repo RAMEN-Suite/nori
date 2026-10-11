@@ -1,0 +1,11 @@
+@use "../../../../styles/editor-list";
+
+.node-accordion {
+  --sui-accordion-background: transparent;
+  --sui-accordion-border-color: transparent;
+  --sui-accordion-content-color: inherit;
+}
+
+.editor-list-actions svg {
+  opacity: var(--nori-action-icon-opacity);
+}
