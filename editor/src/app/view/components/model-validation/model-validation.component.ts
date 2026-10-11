@@ -53,7 +53,6 @@ export class ModelValidationComponent {
       message: this.translations.translate('editor.validationSummary', { count: findings.length, message: findings[0]?.message }),
       severity: findings.some((finding: Diagnostic): boolean => finding.severity === 'error') ? 'error' : 'warning',
       variant: 'soft',
-      duration: 10000,
       action: { label: this.translations.translate('editor.showFindings'), run: (): void => this.handleShowDetails() },
     });
   }

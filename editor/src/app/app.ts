@@ -40,7 +40,6 @@ export class App {
           message: error,
           severity: 'error',
           variant: 'soft',
-          duration: 10000,
         });
         this.storage.error.set(null);
       });

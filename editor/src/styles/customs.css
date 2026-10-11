@@ -28,6 +28,8 @@ body {
   --nori-selection-color: var(--color-primary);
   --nori-project-card-height: 38rem;
   --nori-dialog-width: 48rem;
+  --nori-notification-width: 42rem;
+  --nori-notification-top: calc(var(--title-bar-height) + 4.5rem);
   --nori-radius-preview: 0.5rem;
   --nori-preview-border: color-mix(in oklab, var(--color-base-content) 18%, transparent);
   --nori-preview-opacity: 0.8;
@@ -167,6 +169,13 @@ html:active-view-transition-type(open-workspace)::view-transition-old(project-li
 
 :is(app-side-menu, app-base-nodes) .node-accordion .sui-accordion__group--sm .sui-accordion__item .sui-accordion__panel {
   padding-block: 0;
+}
+
+sui-toast.nori-notifications {
+  --sui-toast-width: var(--nori-notification-width);
+}
+.nori-notifications .sui-toast {
+  top: var(--nori-notification-top);
 }
 
 .editor-panel-scroll {
