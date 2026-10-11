@@ -12,8 +12,6 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, type ParamMap, Router, RouterOutlet } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { LucideX } from '@lucide/angular';
-import { Button, Card } from '@sushi-kit/angular';
 import { filter } from 'rxjs';
 import { PARAMETERS } from '../../../app.routes';
 import { type Manifest } from '../../../models/Manifest';
@@ -24,6 +22,7 @@ import { WorkspaceService } from '../../../services/workspace/workspace.service'
 import { WindowState } from '../../../states/window.state';
 import { GraphMenuComponent } from '../../components/graph-view/graph-menu/graph-menu.component';
 import { type GraphPadding } from '../../components/graph-view/graph/graph.types';
+import { EditorPanelComponent } from '../../components/editor-panel/editor-panel.component';
 import { ModelLevelsComponent } from '../../components/model-levels/model-levels.component';
 import { SideMenuComponent } from '../../components/side-menu/side-menu.component';
 import { ToolBarComponent } from '../../components/tool-bar/tool-bar.component';
@@ -37,10 +36,8 @@ import { ToolBarComponent } from '../../components/tool-bar/tool-bar.component';
     GraphMenuComponent,
     RouterOutlet,
     ModelLevelsComponent,
-    Card,
-    Button,
+    EditorPanelComponent,
     TranslocoDirective,
-    LucideX,
   ],
   templateUrl: './workspace.screen.html',
   styleUrl: './workspace.screen.scss',

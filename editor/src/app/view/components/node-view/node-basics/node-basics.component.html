@@ -1,7 +1,7 @@
 @if (workspace.view.currentNode(); as node) {
   <section *transloco="let t" class="flex flex-col gap-4" [attr.aria-label]="node.name">
     <div class="flex min-h-8 items-start gap-2">
-      @if (isWorkingNameActive() && workspace.view.nodeEditable()) {
+      @if (editingName() && workspace.view.nodeEditable()) {
         <input
           suiInput
           fluid
@@ -12,11 +12,11 @@
           maxlength="40"
           class="h-8 text-xl font-semibold"
           [attr.aria-label]="t('editor.nodeName')"
-          [ngModel]="workingName()"
-          (ngModelChange)="workingName.set($event)"
+          [ngModel]="draftName()"
+          (ngModelChange)="draftName.set($event)"
           [readOnly]="savingName()"
-          (keydown.enter)="handleSave(true)"
-          (blur)="handleSave()"
+          (keydown.enter)="handleSaveName(true)"
+          (blur)="handleSaveName()"
           (keydown.escape)="$event.stopPropagation(); handleCancelRename()"
         />
       } @else {

@@ -15,7 +15,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { LucideCopy, LucideGitBranch, LucidePencil, LucideTrash } from '@lucide/angular';
-import { ModelRef, type Node, type NodeSuggestion, type UpdateNodeInput } from '@ramen-suite/core/model';
+import { ModelRef, type Node, type NodeSuggestion } from '@ramen-suite/core/model';
 import { Button, Chip, Input, Tooltip } from '@sushi-kit/angular';
 import { Transformer } from '../../../../core/helper/Transformer';
 import { AutoselectDirective } from '../../../../directives/autoselect.directive';
@@ -54,9 +54,9 @@ export class NodeBasicsComponent {
 
   private readonly renameButton: Signal<ElementRef<HTMLButtonElement> | undefined> = viewChild('renameButton');
 
-  protected readonly workingName: WritableSignal<string | null> = signal(null);
+  protected readonly draftName: WritableSignal<string> = signal('');
   protected readonly savingName: WritableSignal<boolean> = signal(false);
-  protected readonly isWorkingNameActive: WritableSignal<boolean> = signal(false);
+  protected readonly editingName: WritableSignal<boolean> = signal(false);
 
   protected readonly base: Signal<NodeLevel | null> = computed((): NodeLevel | null => {
     const node: Node | null = this.workspace.view.currentNode();
@@ -82,15 +82,15 @@ export class NodeBasicsComponent {
   public constructor() {
     effect((): void => {
       const currentName: string | undefined = this.workspace.view.currentNode()?.name;
-      this.workingName.set(currentName ?? null);
-      this.isWorkingNameActive.set(false);
+      this.draftName.set(currentName ?? '');
+      this.editingName.set(false);
     });
   }
 
   protected handleStartRename(): void {
     if (!this.workspace.view.nodeEditable() || this.savingName()) return;
-    this.workingName.set(this.workspace.view.currentNode()?.name ?? null);
-    this.isWorkingNameActive.set(true);
+    this.draftName.set(this.workspace.view.currentNode()?.name ?? '');
+    this.editingName.set(true);
   }
 
   protected handleOpenNode(modelId: string, nodeId: string): void {
@@ -121,25 +121,24 @@ export class NodeBasicsComponent {
   }
 
   protected handleCancelRename(restoreFocus: boolean = true): void {
-    this.isWorkingNameActive.set(false);
+    this.editingName.set(false);
     if (restoreFocus) afterNextRender((): void => this.renameButton()?.nativeElement.focus(), { injector: this.injector });
   }
 
-  protected async handleSave(restoreFocus: boolean = false): Promise<void> {
+  protected async handleSaveName(restoreFocus: boolean = false): Promise<void> {
     const selectedId: string | null = this.workspace.store.currentNodeId();
-    const workingName: string | null = this.workingName();
-    if (!this.isWorkingNameActive() || !selectedId || this.savingName() || !this.workspace.view.nodeEditable()) return;
-    if (!workingName?.trim()) {
+    const draftName: string = this.draftName();
+    if (!this.editingName() || !selectedId || this.savingName() || !this.workspace.view.nodeEditable()) return;
+    if (!draftName.trim()) {
       this.handleCancelRename(restoreFocus);
       return;
     }
 
-    const transformedName: string = Transformer.toPascalName(workingName.trim());
-    const patch: UpdateNodeInput = { name: transformedName };
+    const transformedName: string = Transformer.toPascalName(draftName.trim());
 
     this.savingName.set(true);
     try {
-      await this.workspace.actions.updateNode(selectedId, patch);
+      await this.workspace.actions.updateNode(selectedId, { name: transformedName });
       if (this.workspace.store.currentNodeId() === selectedId) this.handleCancelRename(restoreFocus);
     } catch (error: unknown) {
       this.storage.reportError(error);

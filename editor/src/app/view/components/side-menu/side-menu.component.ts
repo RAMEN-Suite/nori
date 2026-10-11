@@ -14,10 +14,9 @@ import {
   type Signal,
   type WritableSignal,
 } from '@angular/core';
-import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { LucideChevronRight, LucideCopy, LucidePlus, LucideTrash, LucideX } from '@lucide/angular';
+import { LucideChevronRight, LucideCopy, LucidePlus, LucideTrash } from '@lucide/angular';
 import { ModelRef, type Node } from '@ramen-suite/core/model';
 import {
   Accordion,
@@ -60,7 +59,6 @@ interface MutableNodeGroup extends Omit<NodeGroup, 'items'> {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     TranslocoDirective,
-    NgTemplateOutlet,
     FormsModule,
     Button,
     Input,
@@ -76,7 +74,6 @@ interface MutableNodeGroup extends Omit<NodeGroup, 'items'> {
     LucideTrash,
     LucidePlus,
     AutoselectDirective,
-    LucideX,
   ],
   templateUrl: './side-menu.component.html',
   styleUrl: './side-menu.component.scss',
@@ -90,7 +87,6 @@ export class SideMenuComponent {
   private readonly storage: StorageService = inject(StorageService);
   private readonly navigation: NavigationService = inject(NavigationService);
 
-  public readonly closePanel: OutputEmitterRef<void> = output();
   public readonly nodeSelected: OutputEmitterRef<void> = output();
 
   protected readonly trackNode: ListTrackBy<NodeItem> = (_index: number, item: NodeItem): string => item.value;

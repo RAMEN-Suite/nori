@@ -1,4 +1,4 @@
-<main *transloco="let t" class="workspace-shell" [class.inspector-open]="inspectorOpen()" [class.levels-open]="levelsOpen()">
+<main *transloco="let t" class="workspace-shell">
   <section class="workspace-canvas" data-nori-motion [attr.aria-label]="t('editor.graph')">
     <app-visualizer
       #graph
@@ -19,72 +19,40 @@
     (configureColours)="graph.handleOpenColorsDialog()"
   />
 
-  <div
-    data-nori-motion
-    class="workspace-left"
-    [style.--nori-levels-height]="levelsHeight()"
-    [class.catalogue-open]="catalogueOpen()"
-    [class.levels-open]="levelsOpen()"
-  >
+  <div data-nori-motion class="workspace-left" [style.--nori-levels-height]="levelsHeight()" [class.levels-open]="levelsOpen()">
     <div class="panel-slot catalogue-slot" data-nori-motion>
-      <sui-card
-        class="workspace-panel workspace-catalogue"
-        [class.is-closed]="!catalogueOpen()"
-        [attr.inert]="catalogueOpen() ? null : ''"
-        [attr.aria-hidden]="!catalogueOpen()"
-        variant="border"
-        size="xs"
-        data-nori-motion
+      <app-editor-panel
+        class="workspace-catalogue"
+        [open]="catalogueOpen()"
+        [title]="t(workspace.store.currentSlot() > 0 ? 'editor.refinements' : 'editor.nodes')"
+        [closeLabel]="t('editor.closeNodes')"
+        (closePanel)="catalogueOpen.set(false)"
       >
-        <div class="catalogue-content">
-          <app-side-menu (nodeSelected)="inspectorOpen.set(true)" (closePanel)="catalogueOpen.set(false)" class="block h-full min-h-0" />
-        </div>
-      </sui-card>
+        <app-side-menu (nodeSelected)="inspectorOpen.set(true)" class="block h-full min-h-0" />
+      </app-editor-panel>
     </div>
     <div class="panel-slot levels-slot" data-nori-motion>
-      <sui-card
-        class="workspace-panel workspace-levels"
-        [class.is-closed]="!levelsOpen()"
-        [attr.inert]="levelsOpen() ? null : ''"
-        [attr.aria-hidden]="!levelsOpen()"
-        variant="border"
-        size="xs"
-        data-nori-motion
+      <app-editor-panel
+        [open]="levelsOpen()"
+        [title]="t('editor.levels')"
+        [closeLabel]="t('editor.closeLevels')"
+        (closePanel)="levelsOpen.set(false)"
       >
-        <div class="levels-content">
-          <app-model-levels (closePanel)="levelsOpen.set(false)" class="block h-full min-h-0" />
-        </div>
-      </sui-card>
+        <app-model-levels class="block h-full min-h-0" />
+      </app-editor-panel>
     </div>
   </div>
 
   <div class="workspace-right">
-    <sui-card
-      class="workspace-panel workspace-inspector"
-      [class.is-closed]="!inspectorOpen()"
-      [attr.inert]="inspectorOpen() ? null : ''"
-      [attr.aria-hidden]="!inspectorOpen()"
-      variant="border"
-      size="xs"
-      data-nori-motion
+    <app-editor-panel
+      [open]="inspectorOpen()"
+      side="right"
+      heading="subtle"
+      [title]="t('editor.inspector')"
+      [closeLabel]="t('editor.closeInspector')"
+      (closePanel)="inspectorOpen.set(false)"
     >
-      <div class="inspector-content">
-        <header class="flex items-center justify-between gap-3 px-5 pt-3 pb-2">
-          <span class="text-base-content/55 text-xs font-medium tracking-wider uppercase">{{ t('editor.inspector') }}</span>
-          <button
-            suiButton
-            severity="neutral"
-            variant="text"
-            size="xs"
-            shape="circle"
-            [attr.aria-label]="t('editor.closeInspector')"
-            (click)="inspectorOpen.set(false)"
-          >
-            <svg lucideX class="size-4" aria-hidden="true"></svg>
-          </button>
-        </header>
-        <div class="editor-panel-scroll min-h-0 flex-1 overflow-auto"><router-outlet /></div>
-      </div>
-    </sui-card>
+      <div class="editor-panel-scroll h-full min-h-0 overflow-auto"><router-outlet /></div>
+    </app-editor-panel>
   </div>
 </main>

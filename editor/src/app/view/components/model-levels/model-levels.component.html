@@ -1,20 +1,4 @@
-<section *transloco="let t" class="flex h-full min-h-0 flex-col" aria-labelledby="levels-title">
-  <header class="editor-panel-heading">
-    <h2 id="levels-title" class="text-base font-semibold">
-      {{ t('editor.levels') }}
-    </h2>
-    <button
-      suiButton
-      severity="neutral"
-      variant="text"
-      size="xs"
-      shape="circle"
-      [attr.aria-label]="t('editor.closeLevels')"
-      (click)="closePanel.emit()"
-    >
-      <svg lucideX class="size-4" aria-hidden="true"></svg>
-    </button>
-  </header>
+<section *transloco="let t" class="flex h-full min-h-0 flex-col">
   <div class="editor-list-content editor-panel-scroll min-h-0 flex-1 overflow-y-auto">
     <sui-list
       class="editor-list"

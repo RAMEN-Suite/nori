@@ -1,48 +1,12 @@
 <aside *transloco="let t" class="flex h-full min-h-0 flex-col">
-  <header class="editor-panel-heading">
-    <h2 class="text-base font-semibold">{{ t(isRefinementLevel() ? 'editor.refinements' : 'editor.nodes') }}</h2>
-    <button
-      suiButton
-      severity="neutral"
-      variant="text"
-      size="xs"
-      shape="circle"
-      [attr.aria-label]="t('editor.closeNodes')"
-      (click)="closePanel.emit()"
-    >
-      <svg lucideX class="size-4" aria-hidden="true"></svg>
-    </button>
-  </header>
   <div
     class="node-catalogue editor-panel-scroll min-h-0 flex-1 overflow-auto"
     (transitionend)="revealPendingNode()"
     (scrollend)="revealPendingNode()"
     [attr.aria-label]="t(isRefinementLevel() ? 'editor.refinements' : 'editor.nodes')"
   >
-    <ng-container [ngTemplateOutlet]="localNodes" />
-  </div>
-  <div class="flex flex-col gap-3 p-3">
-    <input
-      suiInput
-      fluid
-      name="search"
-      [attr.aria-label]="t('editor.findNode')"
-      [placeholder]="t('editor.findNode')"
-      [ngModel]="search()"
-      (ngModelChange)="search.set($event)"
-      type="search"
-      size="sm"
-    />
-  </div>
-  <ng-template #localNodes>
     @for (group of groups(); track group.baseNodeRef ?? group.label) {
-      <section
-        tabindex="-1"
-        (keydown.tab)="handleGroupTab($event)"
-        (keydown.shift.tab)="handleGroupTab($event)"
-        class="node-group"
-        [attr.aria-label]="group.label"
-      >
+      <section tabindex="-1" (keydown.tab)="handleGroupTab($event)" class="node-group" [attr.aria-label]="group.label">
         @let key = group.baseNodeRef ?? group.label;
         <sui-accordion
           class="node-accordion"
@@ -86,6 +50,7 @@
                           [focusOnCreate]="true"
                           [attr.data-node-id]="item.value"
                           size="sm"
+                          maxlength="40"
                           [attr.aria-label]="t('editor.nodeName')"
                           [ngModel]="draftName()"
                           (ngModelChange)="draftName.set($event)"
@@ -156,7 +121,7 @@
             size="xs"
             shape="circle"
             class="node-group-add"
-            [tabIndex]="-1"
+            [tabIndex]="group.items.length ? -1 : 0"
             [attr.aria-label]="t('editor.refineNamedNode', { name: group.label })"
             [disabled]="nodeEditing.creating()"
             (click)="nodeEditing.refine(group.baseNodeRef)"
@@ -169,5 +134,18 @@
     @if (!groups().length) {
       <p class="text-base-content/60 px-3 py-2 text-sm">{{ t(isRefinementLevel() ? 'editor.noRefinements' : 'editor.noNodes') }}</p>
     }
-  </ng-template>
+  </div>
+  <div class="flex flex-col gap-3 p-3">
+    <input
+      suiInput
+      fluid
+      name="search"
+      [attr.aria-label]="t('editor.findNode')"
+      [placeholder]="t('editor.findNode')"
+      [ngModel]="search()"
+      (ngModelChange)="search.set($event)"
+      type="search"
+      size="sm"
+    />
+  </div>
 </aside>

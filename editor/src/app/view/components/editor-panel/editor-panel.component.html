@@ -1,0 +1,28 @@
+<sui-card
+  class="editor-panel"
+  [class.is-closed]="!open()"
+  [class.from-left]="side() === 'left'"
+  [attr.inert]="open() ? null : ''"
+  [attr.aria-hidden]="!open()"
+  variant="border"
+  size="xs"
+  data-nori-motion
+>
+  <section class="panel-content" [attr.aria-label]="title()">
+    <header class="editor-panel-heading" [class.subtle-heading]="heading() === 'subtle'">
+      <h2>{{ title() }}</h2>
+      <button
+        suiButton
+        severity="neutral"
+        variant="text"
+        size="xs"
+        shape="circle"
+        [attr.aria-label]="closeLabel()"
+        (click)="closePanel.emit()"
+      >
+        <svg lucideX class="size-4" aria-hidden="true"></svg>
+      </button>
+    </header>
+    <div class="panel-body"><ng-content /></div>
+  </section>
+</sui-card>

@@ -7,15 +7,13 @@ import {
   ElementRef,
   inject,
   Injector,
-  output,
   signal,
-  type OutputEmitterRef,
   type WritableSignal,
   type Signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
-import { LucidePencil, LucidePlus, LucideTrash, LucideX } from '@lucide/angular';
+import { LucidePencil, LucidePlus, LucideTrash } from '@lucide/angular';
 import { type ModelRemovalPreview } from '@ramen-suite/core/model';
 import { Button, Input, List, ListItemTemplate, Tooltip, type ListTrackBy } from '@sushi-kit/angular';
 import { AutoselectDirective } from '../../../directives/autoselect.directive';
@@ -42,7 +40,6 @@ import { CreateModelDialog } from '../dialogs/create-model/create-model.dialog';
     LucidePencil,
     LucideTrash,
     LucidePlus,
-    LucideX,
   ],
   templateUrl: './model-levels.component.html',
   styleUrl: './model-levels.component.scss',
@@ -55,8 +52,6 @@ export class ModelLevelsComponent {
   private readonly navigation: NavigationService = inject(NavigationService);
   private readonly dialogs: DialogService = inject(DialogService);
   private readonly translations: TranslocoService = inject(TranslocoService);
-
-  public readonly closePanel: OutputEmitterRef<void> = output();
 
   protected readonly trackLevel: ListTrackBy<ModelRecord> = (_index: number, record: ModelRecord): string => record.modelId;
   protected readonly editingId: WritableSignal<string | null> = signal(null);
@@ -165,18 +160,21 @@ export class ModelLevelsComponent {
           {
             label: this.translations.translate('editor.removeLevel'),
             severity: 'error',
-            click: async (): Promise<void> => {
-              if (this.storage.recordsBySlot().get(record.slot)?.modelId !== record.modelId) {
-                throw new Error(this.translations.translate('editor.modelChanged'));
-              }
-              await this.workspace.actions.removeSlot(record.slot, true);
-              const next: ModelRecord | undefined = this.storage.records().find((item: ModelRecord): boolean => item.slot !== 0);
-              await this.navigation.navigateToSlot(next?.slot ?? 0);
-            },
+            click: (): Promise<void> => this.removeLevel(record),
           },
         ],
       ],
     };
     this.dialogs.open(ConfirmationDialog, { header: options.title, inputValues: { options } });
+  }
+
+  private async removeLevel(record: ModelRecord): Promise<void> {
+    if (this.storage.recordsBySlot().get(record.slot)?.modelId !== record.modelId) {
+      throw new Error(this.translations.translate('editor.modelChanged'));
+    }
+
+    await this.workspace.actions.removeSlot(record.slot, true);
+    const next: ModelRecord | undefined = this.storage.records().find((item: ModelRecord): boolean => item.slot !== 0);
+    await this.navigation.navigateToSlot(next?.slot ?? 0);
   }
 }

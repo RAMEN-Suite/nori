@@ -26,19 +26,6 @@
   right: var(--nori-workspace-inset);
   z-index: 3;
 }
-.workspace-panel {
-  --sui-card-border-color: var(--nori-border);
-  background: var(--color-base-100);
-  min-height: 0;
-  overflow: hidden;
-  pointer-events: auto;
-  --panel-x: calc(100% + 2rem);
-  transition:
-    transform 300ms cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 220ms ease-in-out,
-    visibility 0s;
-  animation: panel-arrive 760ms 340ms var(--nori-editor-ease) backwards;
-}
 .workspace-left {
   --levels-height: min(var(--nori-levels-height), 55%);
   position: absolute;
@@ -68,15 +55,8 @@
   height: var(--levels-height);
   transition: height 480ms var(--nori-editor-ease);
 }
-.panel-slot > .workspace-panel {
-  position: relative;
-  height: 100%;
-}
 .workspace-catalogue {
-  position: relative;
-  flex: 1;
-  --panel-x: calc(-100% - 2rem);
-  animation-delay: 280ms;
+  --nori-panel-arrival-delay: 280ms;
 }
 .workspace-right {
   position: absolute;
@@ -84,32 +64,7 @@
   top: 6rem;
   bottom: var(--nori-workspace-bottom);
   width: 22.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
   pointer-events: none;
-}
-.workspace-inspector {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-}
-.workspace-levels {
-  flex: none;
-  --panel-x: calc(-100% - 2rem);
-  animation: panel-arrive 760ms 340ms var(--nori-editor-ease) backwards;
-}
-@keyframes panel-arrive {
-  from {
-    opacity: 0;
-    transform: translateX(var(--panel-x));
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
 }
 @media (min-width: 640px) {
   .workspace-shell {
@@ -133,18 +88,6 @@
   }
 }
 
-.catalogue-content,
-.levels-content,
-.inspector-content {
-  position: absolute;
-  inset: 0.5rem;
-  min-height: 0;
-}
-.inspector-content {
-  display: flex;
-  flex-direction: column;
-}
-
 @keyframes canvas-arrive {
   from {
     opacity: 0;
@@ -152,16 +95,4 @@
   to {
     opacity: 1;
   }
-}
-
-.workspace-panel.is-closed {
-  transform: translateX(var(--panel-x));
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition-delay: 0s, 0s, 300ms;
-}
-
-.workspace-left .workspace-panel:not(.is-closed) {
-  transition-delay: 180ms, 180ms, 0s;
 }
