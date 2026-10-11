@@ -6,6 +6,7 @@ import { type Manifest } from '../models/Manifest';
 import { type ModelRecord, type ViewSettings } from '../models/ModelRecord';
 import { database } from '../app.database';
 import { environment } from '../../environments/environment';
+import { orderModelsByImports } from '../core/utils/ModelOrder';
 
 export type CreateManifest = Pick<Manifest, 'name' | 'description' | 'metamodelName' | 'metamodelId' | 'metamodelVersion'>;
 export type UpdateManifest = Pick<Manifest, 'name' | 'description'>;
@@ -54,40 +55,21 @@ export class StorageService {
     this.manifests.set(await database.manifests.orderBy('updatedAt').reverse().toArray());
   }
 
-  public async createProject(input: CreateManifest, _metamodel: Model, example?: Model): Promise<Manifest> {
-    const projectId: string = new ShortUniqueId({ length: 18 }).randomUUID();
-    const timestamp: string = new Date().toISOString();
-    const manifest: Manifest = {
-      ...input,
-      projectId,
-      createdAt: timestamp,
-      updatedAt: timestamp,
-      manifestVersion: environment.manifestVersion,
-      appVersion: environment.appVersion,
-    };
+  public async createProject(input: CreateManifest, example?: Model): Promise<Manifest> {
     const draft: RamenModel = example ? RamenModel.load(example, [RAMEN_MODEL]) : RamenModel.create(input.name);
-    const records: ModelRecord[] = draft
-      .getModels()
-      .map((model: Model, slot: number): ModelRecord => this.createRecord(projectId, model, slot));
-
-    await database.transaction('rw', database.manifests, database.models, async (): Promise<void> => {
-      await database.manifests.add(manifest);
-      await database.models.bulkAdd(records);
-    });
-    await this.refreshManifests();
-    return manifest;
+    return this.persistProject(input, draft.getModels());
   }
 
   public async initProject(id: string): Promise<void> {
     const [manifest, records]: [Manifest | undefined, ModelRecord[]] = await Promise.all([
       database.manifests.get(id),
-      database.models.where('projectId').equals(id).toArray(),
+      this.loadProjectRecords(id),
     ]);
     if (this.selectedProjectId() !== id) return;
     if (!manifest) throw new Error('Project not found.');
 
     this.selectedManifest.set(manifest);
-    this.records.set(records.sort((left: ModelRecord, right: ModelRecord): number => left.slot - right.slot));
+    this.records.set(records);
     this.loadedProjectId.set(id);
   }
 
@@ -170,7 +152,7 @@ export class StorageService {
     const byId: Map<string, ModelRecord> = new Map(
       previous.map((record: ModelRecord): [string, ModelRecord] => [record.gmodel.id, record]),
     );
-    const records: ModelRecord[] = models.map((model: Model, slot: number): ModelRecord => {
+    const records: ModelRecord[] = orderModelsByImports(models).map((model: Model, slot: number): ModelRecord => {
       const old: ModelRecord | undefined = byId.get(model.id);
       return old
         ? { ...old, slot, gmodel: model, name: model.name, revision: old.revision + 1, updatedAt: new Date().toISOString() }
@@ -196,9 +178,52 @@ export class StorageService {
       metamodelId: RAMEN_MODEL.id,
       metamodelVersion: RAMEN_MODEL.version,
     };
-    const manifest: Manifest = await this.createProject(inputManifest, RAMEN_MODEL);
-    await this.saveModels(manifest.projectId, draft.getModels());
+    const manifest: Manifest = await this.persistProject(inputManifest, draft.getModels());
     return manifest.projectId;
+  }
+
+  /** Repairs old slot ordering without overwriting model content or view preferences. */
+  private async loadProjectRecords(projectId: string): Promise<ModelRecord[]> {
+    return database.transaction('rw', database.models, async (): Promise<ModelRecord[]> => {
+      const records: ModelRecord[] = await database.models.where('projectId').equals(projectId).sortBy('slot');
+      const byId: ReadonlyMap<string, ModelRecord> = new Map(
+        records.map((record: ModelRecord): [string, ModelRecord] => [record.gmodel.id, record]),
+      );
+      const ordered: ModelRecord[] = [];
+
+      for (const model of orderModelsByImports(records.map((record: ModelRecord): Model => record.gmodel))) {
+        const record: ModelRecord | undefined = byId.get(model.id);
+        if (!record) throw new Error('Model record not found.');
+
+        const slot: number = ordered.length;
+        if (record.slot !== slot) await database.models.update(record.modelId, { slot });
+        ordered.push(record.slot === slot ? record : { ...record, slot });
+      }
+      return ordered;
+    });
+  }
+
+  private async persistProject(input: CreateManifest, models: readonly Model[]): Promise<Manifest> {
+    const projectId: string = new ShortUniqueId({ length: 18 }).randomUUID();
+    const timestamp: string = new Date().toISOString();
+    const manifest: Manifest = {
+      ...input,
+      projectId,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+      manifestVersion: environment.manifestVersion,
+      appVersion: environment.appVersion,
+    };
+    const records: ModelRecord[] = orderModelsByImports(models).map(
+      (model: Model, slot: number): ModelRecord => this.createRecord(projectId, model, slot),
+    );
+
+    await database.transaction('rw', database.manifests, database.models, async (): Promise<void> => {
+      await database.manifests.add(manifest);
+      await database.models.bulkAdd(records);
+    });
+    await this.refreshManifests();
+    return manifest;
   }
 
   private createRecord(projectId: string, model: Model, slot: number): ModelRecord {

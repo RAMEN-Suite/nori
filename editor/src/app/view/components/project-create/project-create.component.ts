@@ -75,7 +75,7 @@ export class ProjectCreateComponent {
     this.error.set(null);
 
     try {
-      const manifest: Manifest = await this.storage.createProject(input, RAMEN_MODEL, example);
+      const manifest: Manifest = await this.storage.createProject(input, example);
       await this.navigation.navigateToProject(manifest.projectId);
     } catch {
       this.error.set(this.translations.translate('create.error'));
