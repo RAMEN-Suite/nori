@@ -12,7 +12,6 @@ svg {
   position: absolute;
   width: clamp(15rem, 36vw, 32rem);
   height: auto;
-  // Only the viewport clips the graph, so edges can continue beyond each corner SVG.
   overflow: visible;
   stroke: var(--nori-border);
   stroke-width: 1;
@@ -49,13 +48,16 @@ circle {
   transform: scale(-1);
 }
 
-/* Keep the Home illustration's own graph visually separate from the edge pattern. */
-:host(.home-backdrop) {
-  mask-image: radial-gradient(ellipse 38% 50% at 30% 50%, transparent 65%, black 100%);
+.top-left,
+.bottom-left {
+  animation: backdrop-arrive 1s 120ms ease-out backwards;
 }
 
-@media (max-width: 767px) {
-  :host(.home-backdrop) {
-    mask-image: radial-gradient(ellipse 70% 40% at 50% 30%, transparent 60%, black 100%);
+@keyframes backdrop-arrive {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }

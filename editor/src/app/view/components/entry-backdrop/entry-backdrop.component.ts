@@ -6,7 +6,6 @@ interface BackdropNode {
   readonly radius: number;
 }
 
-/** Static edge decoration, independent of the page's content and project state. */
 @Component({
   selector: 'app-entry-backdrop',
   changeDetection: ChangeDetectionStrategy.OnPush,
