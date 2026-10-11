@@ -1,60 +1,42 @@
-import { TranslocoDirective } from '@jsverse/transloco';
-import { Component, inject, signal, WritableSignal, ChangeDetectionStrategy } from '@angular/core';
-import { WorkspaceService } from '../../../services/workspace/workspace.service';
-import { FormsModule } from '@angular/forms';
-import { Button, Tab, Tabs } from '@sushi-kit/angular';
-import { NodeBasicsComponent } from './node-basics/node-basics.component';
-
-import { NodeAttributesComponent } from './node-attributes/node-attributes.component';
-import { NodeRelationsComponent } from './node-relations/node-relations.component';
-import { ActivatedRoute, ParamMap, Router } from '@angular/router';
+import { ChangeDetectionStrategy, Component, inject, signal, type WritableSignal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NavigationService } from '../../../services/navigation.service';
+import { ActivatedRoute, Router, type ParamMap } from '@angular/router';
+import { TranslocoDirective } from '@jsverse/transloco';
+import { Divider, Tab, Tabs } from '@sushi-kit/angular';
+import { StorageService } from '../../../services/storage.service';
+import { NodeAttributesComponent } from './node-attributes/node-attributes.component';
+import { NodeBasicsComponent } from './node-basics/node-basics.component';
+import { NodeRelationsComponent } from './node-relations/node-relations.component';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-node-editor',
-  imports: [
-    TranslocoDirective,
-    FormsModule,
-    Button,
-    NodeBasicsComponent,
-    Tab,
-    Tabs,
-    NodeAttributesComponent,
-    NodeRelationsComponent,
-  ],
+  imports: [TranslocoDirective, NodeBasicsComponent, Divider, Tab, Tabs, NodeAttributesComponent, NodeRelationsComponent],
   templateUrl: './node-view.component.html',
   styleUrl: './node-view.component.scss',
 })
 export class NodeViewComponent {
-  protected readonly workspace: WorkspaceService = inject(WorkspaceService);
-
-  protected readonly navigation: NavigationService = inject(NavigationService);
-  protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
-  protected readonly router: Router = inject(Router);
+  private readonly route: ActivatedRoute = inject(ActivatedRoute);
+  private readonly router: Router = inject(Router);
+  private readonly storage: StorageService = inject(StorageService);
 
   protected readonly activeTab: WritableSignal<'attributes' | 'relations'> = signal('attributes');
 
   public constructor() {
-    this.activatedRoute.queryParamMap.pipe(takeUntilDestroyed()).subscribe((queryParams: ParamMap): void => {
-      const tab: string | null = queryParams.get('tab');
-      this.activeTab.set(tab === 'relations' ? 'relations' : 'attributes');
+    this.route.queryParamMap.pipe(takeUntilDestroyed()).subscribe((params: ParamMap): void => {
+      this.activeTab.set(params.get('tab') === 'relations' ? 'relations' : 'attributes');
     });
-  }
-
-  protected handleCloseView(): void {
-    const selectedSlot: number = this.workspace.store.currentSlot();
-    void this.navigation.navigateToSlot(selectedSlot);
   }
 
   protected handleTab(tab: unknown): void {
     if (tab !== 'attributes' && tab !== 'relations') return;
 
-    void this.router.navigate([], {
-      relativeTo: this.activatedRoute,
-      queryParams: { tab },
-      queryParamsHandling: 'merge',
-    });
+    void this.router
+      .navigate([], {
+        relativeTo: this.route,
+        queryParams: { tab },
+        queryParamsHandling: 'merge',
+      })
+      .catch((error: unknown): void => this.storage.reportError(error));
   }
 }

@@ -1,14 +1,15 @@
 import { RAMEN_ELEMENT } from '@ramen-suite/core/ramen';
 import type { GraphData, GraphLink, GraphNode } from '../../../../core/utils/ModelGraph';
 import type { GraphView } from '../../../../models/ModelRecord';
-import type {
-  GraphInputModel,
-  GraphLayoutSettings,
-  GraphPadding,
-  PositionedNode,
-  RenderModel,
-  ResolvedLink,
-  ViewportSize,
+import {
+  GRAPH_NODE_WIDTH,
+  type GraphInputModel,
+  type GraphLayoutSettings,
+  type GraphPadding,
+  type PositionedNode,
+  type RenderModel,
+  type ResolvedLink,
+  type ViewportSize,
 } from './graph.types';
 
 type VisibilityResult = Readonly<{ nodes: PositionedNode[]; links: ResolvedLink[] }>;
@@ -125,8 +126,8 @@ export function placeNodes(
 ): boolean {
   const horizontal: GraphPadding = viewport.width > 720 ? padding : { ...padding, left: 24, right: 24 };
   const bounds: PlacementBounds = {
-    left: (horizontal.left - transform.x) / transform.k + 80,
-    right: (viewport.width - horizontal.right - transform.x) / transform.k - 80,
+    left: (horizontal.left - transform.x) / transform.k + GRAPH_NODE_WIDTH / 2,
+    right: (viewport.width - horizontal.right - transform.x) / transform.k - GRAPH_NODE_WIDTH / 2,
     top: (padding.top - transform.y) / transform.k + 32,
     bottom: (viewport.height - padding.bottom - transform.y) / transform.k - 32,
   };

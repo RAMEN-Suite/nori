@@ -1,50 +1,40 @@
-@let hasRelationsOut = workspace.view.currentNodeRelationsOut().length > 0;
-@let hasRelationsIn = workspace.view.currentNodeRelationsIn().length > 0;
-
-<div *transloco="let t" class="flex flex-col gap-3">
-  @if (hasRelationsOut) {
-    <fieldset suiFieldset>
-      <legend suiFieldsetLegend>
-        <div class="flex flex-row items-center gap-3">
-          <div class="flex flex-row">
-            <svg lucideArrowRight class="size-4" aria-hidden="true"></svg>
-          </div>
-          <span class="">{{ t('editor.outgoing') }}</span>
-        </div>
-      </legend>
-      <div class="my-2 flex flex-col items-center">
-        <div class="flex w-full flex-col gap-2">
-          @for (relation of workspace.view.currentNodeRelationsOut(); track relation.id) {
-            <app-node-relation [relation]="relation" [isOutgoing]="true" />
-          }
-        </div>
-      </div>
-    </fieldset>
+<div *transloco="let t" class="flex flex-col gap-4">
+  @if (workspace.view.currentNodeRelationsOut().length) {
+    <section class="flex flex-col gap-1" [attr.aria-label]="t('editor.outgoing')">
+      <h3 class="text-base-content/60 text-xs font-medium">{{ t('editor.outgoing') }}</h3>
+      <sui-list
+        size="xs"
+        [items]="workspace.view.currentNodeRelationsOut()"
+        [dividers]="false"
+        [rowHover]="false"
+        [ariaLabel]="t('editor.outgoing')"
+      >
+        <ng-template suiListItem let-relation
+          ><app-node-relation class="block w-full py-1" [relation]="relation" [isOutgoing]="true"
+        /></ng-template>
+      </sui-list>
+    </section>
   }
-
-  @if (hasRelationsIn) {
-    <fieldset suiFieldset>
-      <legend suiFieldsetLegend>
-        <div class="flex flex-row items-center gap-3">
-          <div class="flex flex-row">
-            <svg lucideArrowLeft class="size-4" aria-hidden="true"></svg>
-          </div>
-          <span class="">{{ t('editor.incoming') }}</span>
-        </div>
-      </legend>
-      <div class="my-2 flex flex-col items-center">
-        <div class="flex w-full flex-col gap-2">
-          @for (relation of workspace.view.currentNodeRelationsIn(); track relation.id) {
-            <app-node-relation [relation]="relation" />
-          }
-        </div>
-      </div>
-    </fieldset>
+  @if (workspace.view.currentNodeRelationsIn().length) {
+    <section class="flex flex-col gap-1" [attr.aria-label]="t('editor.incoming')">
+      <h3 class="text-base-content/60 text-xs font-medium">{{ t('editor.incoming') }}</h3>
+      <sui-list
+        size="xs"
+        [items]="workspace.view.currentNodeRelationsIn()"
+        [dividers]="false"
+        [rowHover]="false"
+        [ariaLabel]="t('editor.incoming')"
+      >
+        <ng-template suiListItem let-relation><app-node-relation class="block w-full py-1" [relation]="relation" /></ng-template>
+      </sui-list>
+    </section>
   }
-
+  @if (!workspace.view.currentNodeRelationsOut().length && !workspace.view.currentNodeRelationsIn().length) {
+    <p class="text-base-content/60 py-2 text-sm">{{ t('editor.noRelationships') }}</p>
+  }
   @if (workspace.view.editable()) {
-    <div class="mt-3 flex flex-col items-center justify-center gap-3">
-      <button suiButton class="w-full" variant="outlined" (click)="handleOpenCreateRelation()">{{ t('editor.addRelationship') }}</button>
-    </div>
+    <button suiButton severity="neutral" size="sm" variant="outlined" class="w-full" (click)="handleOpenCreateRelation()">
+      <svg lucidePlus class="size-3.5" aria-hidden="true"></svg>{{ t('editor.addRelationship') }}
+    </button>
   }
 </div>

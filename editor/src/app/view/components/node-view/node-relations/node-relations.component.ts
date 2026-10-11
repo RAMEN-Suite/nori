@@ -1,26 +1,25 @@
-import { LucideArrowRight, LucideArrowLeft } from '@lucide/angular';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { Component, DestroyRef, inject, ChangeDetectionStrategy } from '@angular/core';
+import { LucidePlus } from '@lucide/angular';
+import { Button, List, ListItemTemplate } from '@sushi-kit/angular';
+import { DialogService, type DialogRef } from '../../../../services/dialog.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
-import { Button, Fieldset, FieldsetLegend } from '@sushi-kit/angular';
-
-import { NodeRelationComponent } from './node-relation/node-relation.component';
-import { DialogService, DialogRef } from '../../../../services/dialog.service';
 import { CreateRelationDialog } from '../../dialogs/create-relation/create-relation.dialog';
+import { NodeRelationComponent } from './node-relation/node-relation.component';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-node-relations',
-  imports: [TranslocoDirective, LucideArrowRight, LucideArrowLeft, Button, Fieldset, FieldsetLegend, NodeRelationComponent],
+  imports: [TranslocoDirective, LucidePlus, Button, List, ListItemTemplate, NodeRelationComponent],
   templateUrl: './node-relations.component.html',
   styleUrl: './node-relations.component.scss',
 })
 export class NodeRelationsComponent {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
+  private readonly dialogs: DialogService = inject(DialogService);
 
-  protected readonly destroyRef: DestroyRef = inject(DestroyRef);
-  protected readonly dialogService: DialogService = inject(DialogService);
-  protected dialogRef: DialogRef | null = null;
+  private dialogRef: DialogRef | null = null;
 
   public constructor() {
     this.destroyRef.onDestroy((): void => {
@@ -31,8 +30,8 @@ export class NodeRelationsComponent {
 
   protected handleOpenCreateRelation(): void {
     this.dialogRef?.close();
-    this.dialogRef = this.dialogService.open(CreateRelationDialog, {
-      header: 'Add Relationship',
+    this.dialogRef = this.dialogs.open(CreateRelationDialog, {
+      headerKey: 'editor.addRelationship',
     });
   }
 }

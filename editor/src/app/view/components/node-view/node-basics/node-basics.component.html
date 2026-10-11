@@ -1,32 +1,107 @@
 @if (workspace.view.currentNode(); as node) {
-  <section *transloco="let t" class="flex flex-col gap-4" aria-label="Node details">
-    <div class="flex items-start justify-between gap-3">
-      <div class="min-w-0">
-        <p class="text-base-content/50 mb-1 text-xs font-medium tracking-wider uppercase">{{ t('editor.nodeDefinition') }}</p>
-        <h1 class="text-2xl font-semibold break-words">{{ node.name }}</h1>
-      </div>
-      @if (workspace.view.nodeEditable()) {
-        <div class="flex shrink-0 gap-0.5">
+  <section *transloco="let t" class="flex flex-col gap-4" [attr.aria-label]="node.name">
+    <div class="flex min-h-8 items-start gap-2">
+      @if (isWorkingNameActive() && workspace.view.nodeEditable()) {
+        <input
+          suiInput
+          fluid
+          appAutoselect
+          [focusOnCreate]="true"
+          name="nodeName"
+          size="sm"
+          maxlength="40"
+          class="h-8 text-xl font-semibold"
+          [attr.aria-label]="t('editor.nodeName')"
+          [ngModel]="workingName()"
+          (ngModelChange)="workingName.set($event)"
+          [readOnly]="savingName()"
+          (keydown.enter)="handleSave(true)"
+          (blur)="handleSave()"
+          (keydown.escape)="$event.stopPropagation(); handleCancelRename()"
+        />
+      } @else {
+        <h1 class="min-w-0 text-xl leading-8 font-semibold break-words" (dblclick)="handleStartRename()">{{ node.name }}</h1>
+        @if (workspace.view.nodeEditable()) {
           <button
             suiButton
             severity="neutral"
             variant="text"
-            size="sm"
-            shape="square"
+            size="xs"
+            shape="circle"
+            #renameButton
+            class="mt-0.5 shrink-0"
             [attr.aria-label]="t('editor.renameNode')"
             [suiTooltip]="t('editor.renameNode')"
-            (click)="isWorkingNameActive.set(true)"
+            placement="bottom"
+            [showDelay]="400"
+            (click)="handleStartRename()"
           >
-            <svg lucidePencil class="size-4" aria-hidden="true"></svg>
+            <svg lucidePencil class="size-3.5" aria-hidden="true"></svg>
           </button>
+        }
+      }
+    </div>
+    @if (base(); as parent) {
+      <div class="flex min-w-0 items-center gap-2">
+        <button
+          suiButton
+          severity="neutral"
+          variant="text"
+          class="h-auto min-w-0 p-0"
+          [attr.aria-label]="t('editor.openNodeSource', { name: parent.node.name, model: storage.modelsById().get(parent.modelId)?.name })"
+          [suiTooltip]="t('editor.refines', { name: parent.node.name })"
+          placement="bottom"
+          [showDelay]="400"
+          (click)="handleOpenNode(parent.modelId, parent.node.id)"
+        >
+          <sui-chip size="sm" severity="neutral" variant="soft" class="max-w-full">
+            <span class="size-2 shrink-0 rounded-full" [style.background-color]="baseColour()" aria-hidden="true"></span>
+            <span class="truncate">{{ parent.node.name }}</span>
+          </sui-chip>
+        </button>
+      </div>
+    } @else if (workspace.view.nodeOwner(); as owner) {
+      <button
+        suiButton
+        severity="neutral"
+        variant="text"
+        class="h-auto self-start p-0"
+        [attr.aria-label]="t('editor.openNodeSource', { name: node.name, model: owner.name })"
+        (click)="handleOpenNode(owner.gmodel.id, node.id)"
+      >
+        <sui-chip size="sm" severity="neutral" variant="soft" [label]="owner.name" />
+      </button>
+    }
+    @if (workspace.view.editable()) {
+      <div class="flex items-center gap-2 pt-1">
+        @if (refinement()) {
           <button
             suiButton
             severity="neutral"
             variant="text"
             size="sm"
-            shape="square"
+            shape="circle"
+            [disabled]="nodeEditing.creating()"
+            [attr.aria-label]="t('editor.refineNode')"
+            [suiTooltip]="t('editor.refineNode')"
+            placement="bottom"
+            [showDelay]="400"
+            (click)="handleRefine()"
+          >
+            <svg lucideGitBranch class="size-4" aria-hidden="true"></svg>
+          </button>
+        }
+        @if (workspace.view.nodeEditable()) {
+          <button
+            suiButton
+            severity="neutral"
+            variant="text"
+            size="sm"
+            shape="circle"
             [attr.aria-label]="t('editor.duplicateNode')"
             [suiTooltip]="t('editor.duplicateNode')"
+            placement="bottom"
+            [showDelay]="400"
             (click)="handleDuplicateNode()"
           >
             <svg lucideCopy class="size-4" aria-hidden="true"></svg>
@@ -36,63 +111,17 @@
             severity="error"
             variant="text"
             size="sm"
-            shape="square"
+            shape="circle"
             [attr.aria-label]="t('editor.removeNode')"
             [suiTooltip]="t('editor.removeNode')"
+            placement="bottom"
+            [showDelay]="400"
             (click)="handleRemoveNode()"
           >
             <svg lucideTrash class="size-4" aria-hidden="true"></svg>
           </button>
-        </div>
-      }
-    </div>
-    @if (isWorkingNameActive() && workspace.view.nodeEditable()) {
-      <label class="flex flex-col gap-2 text-sm"
-        >{{ t('editor.nodeName')
-        }}<input
-          suiInput
-          fluid
-          name="nodeName"
-          [ngModel]="workingName()"
-          (ngModelChange)="workingName.set($event)"
-          (keydown.enter)="handleSave()"
-      /></label>
-      <div class="flex justify-end gap-2">
-        <button suiButton severity="neutral" variant="text" size="sm" (click)="isWorkingNameActive.set(false)">
-          {{ t('common.cancel') }}
-        </button>
-        <button suiButton size="sm" (click)="handleSave()">{{ t('editor.saveName') }}</button>
-      </div>
-    }
-    @if (!workspace.view.nodeEditable() && workspace.view.editable()) {
-      <button suiButton severity="neutral" variant="soft" size="sm" (click)="handleOpenOrigin()">
-        {{ t('editor.openOrigin', { name: workspace.view.nodeOwner()?.gmodel.name }) }}
-      </button>
-    }
-    @if (workspace.view.resolveNodeBase(node, workspace.view.nodeOwner()?.gmodel.id); as base) {
-      <div class="flex items-start gap-2 text-sm">
-        <svg lucideGitBranch class="text-base-content/50 mt-0.5 size-4 shrink-0" aria-hidden="true"></svg>
-        <div>
-          <p>
-            {{ t('editor.refinesLabel') }} <strong class="font-medium">{{ base.node.name }}</strong>
-          </p>
-          <p class="text-base-content/55 text-xs">{{ storage.modelsById().get(base.modelId)?.name }}</p>
-        </div>
-      </div>
-      <p class="text-base-content/55 flex flex-wrap items-center gap-1 text-xs leading-relaxed" aria-label="Inheritance path">
-        @for (ancestor of workspace.view.currentNodeChain(); track ancestor.node.id) {
-          <span>{{ ancestor.node.name }}</span
-          ><svg lucideChevronRight class="size-3" aria-hidden="true"></svg>
         }
-        <span class="text-base-content font-medium">{{ node.name }}</span>
-      </p>
-    } @else {
-      <p class="text-base-content/55 text-sm">{{ t('editor.baseIn', { name: workspace.view.nodeOwner()?.gmodel.name }) }}</p>
-    }
-    @if (workspace.view.editable() && refinement()) {
-      <button suiButton severity="neutral" variant="outlined" size="sm" class="w-full" (click)="handleRefine()">
-        <svg lucideGitBranch class="size-4" aria-hidden="true"></svg>{{ t('editor.refineNode') }}
-      </button>
+      </div>
     }
   </section>
 }

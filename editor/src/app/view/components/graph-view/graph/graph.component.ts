@@ -32,6 +32,7 @@ import { positionLinkLabels } from './graph.labels';
 import { buildRenderModel, getFitViewport, getViewportSize, placeNodes, setNodePosition } from './graph.layout';
 import {
   DEFAULT_GRAPH_LAYOUT_SETTINGS,
+  GRAPH_NODE_WIDTH,
   type GraphLayoutSettings,
   type LinkSelection,
   type NodeDrag,
@@ -241,7 +242,8 @@ export class GraphComponent implements AfterViewInit {
       const collides: boolean =
         !!position &&
         retained.some(
-          (other: PositionedNode): boolean => Math.abs(other.x - position.x) < 176 && Math.abs(other.y - position.y) < 80,
+          (other: PositionedNode): boolean =>
+            Math.abs(other.x - position.x) < GRAPH_NODE_WIDTH + 16 && Math.abs(other.y - position.y) < 80,
         );
       if (position && !collides) {
         setNodePosition(node, position.x, position.y);
@@ -356,9 +358,9 @@ export class GraphComponent implements AfterViewInit {
     content
       .append('rect')
       .attr('class', 'node-body')
-      .attr('x', -80)
+      .attr('x', -GRAPH_NODE_WIDTH / 2)
       .attr('y', -32)
-      .attr('width', 160)
+      .attr('width', GRAPH_NODE_WIDTH)
       .attr('height', 64)
       .style('rx', 'var(--nori-radius-input)');
     g.append('title');
@@ -398,7 +400,7 @@ export class GraphComponent implements AfterViewInit {
   private updateNodeLabels(merged: NodeSelection): void {
     merged
       .select('text:not(.node-base)')
-      .text((node: PositionedNode): string => (node.label.length > 20 ? `${node.label.slice(0, 19)}…` : node.label));
+      .text((node: PositionedNode): string => (node.label.length > 16 ? `${node.label.slice(0, 15)}…` : node.label));
     merged
       .select('text.node-base')
       .text((node: PositionedNode): string =>
@@ -572,7 +574,7 @@ export class GraphComponent implements AfterViewInit {
     if (!root) return;
     const [x, y]: [number, number] = d3.pointer(event.sourceEvent, root);
     const target: PositionedNode | undefined = this.renderModel?.nodes.find(
-      (node: PositionedNode): boolean => Math.abs(node.x - x) <= 80 && Math.abs(node.y - y) <= 32,
+      (node: PositionedNode): boolean => Math.abs(node.x - x) <= GRAPH_NODE_WIDTH / 2 && Math.abs(node.y - y) <= 32,
     );
     this.graphTools.cancel();
     if (target) void this.graphTools.connect(source.id, target.id);

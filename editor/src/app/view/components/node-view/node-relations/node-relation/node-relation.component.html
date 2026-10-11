@@ -1,29 +1,31 @@
-<div *transloco="let t" class="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-  <div class="flex min-w-0 flex-wrap items-center gap-2 text-sm">
-    @if (!isOutgoing()) {
-      <span>{{ resolveNode(relation()?.from?.nodeId ?? '') }}</span>
-      <svg lucideArrowRight class="size-3.5 shrink-0" aria-hidden="true"></svg>
-    }
-    <span class="font-medium">{{ relation()?.name ?? '' }}</span>
-    @if (isOutgoing()) {
-      <svg lucideArrowRight class="size-3.5 shrink-0" aria-hidden="true"></svg>
-      <span>{{ resolveNode(relation()?.to?.nodeId ?? '') }}</span>
+@if (relation(); as connection) {
+  <div *transloco="let t" class="flex items-start justify-between gap-2">
+    <div class="min-w-0">
+      <p class="text-sm font-medium break-words">{{ connection.name }}</p>
+      <p class="text-base-content/60 mt-1 flex items-start gap-1.5 text-xs leading-relaxed">
+        @if (isOutgoing()) {
+          <svg lucideArrowRight class="mt-0.5 size-3 shrink-0" aria-hidden="true"></svg>
+        } @else {
+          <svg lucideArrowLeft class="mt-0.5 size-3 shrink-0" aria-hidden="true"></svg>
+        }
+        <span class="min-w-0 break-words">{{ resolveNode(isOutgoing() ? connection.to.nodeId : connection.from.nodeId) }}</span>
+      </p>
+    </div>
+    @if (workspace.view.editable()) {
+      <button
+        suiButton
+        severity="error"
+        size="xs"
+        variant="text"
+        shape="circle"
+        [attr.aria-label]="t('editor.removeNamedConnection', { name: connection.name })"
+        [suiTooltip]="t('editor.removeConnection')"
+        placement="bottom"
+        [showDelay]="400"
+        (click)="handleRemoveRelation()"
+      >
+        <svg lucideTrash class="size-3.5" aria-hidden="true"></svg>
+      </button>
     }
   </div>
-  @if (workspace.view.editable()) {
-    <button
-      suiButton
-      severity="error"
-      size="sm"
-      variant="text"
-      shape="square"
-      [attr.aria-label]="t('editor.removeNamedConnection', { name: relation()?.name })"
-      [suiTooltip]="t('editor.removeConnection')"
-      placement="bottom"
-      [showDelay]="400"
-      (click)="handleRemoveRelation()"
-    >
-      <svg lucideTrash class="size-4" aria-hidden="true"></svg>
-    </button>
-  }
-</div>
+}

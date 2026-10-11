@@ -1,28 +1,25 @@
-import { LucidePlus } from '@lucide/angular';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { Component, DestroyRef, inject, ChangeDetectionStrategy } from '@angular/core';
+import { LucidePlus } from '@lucide/angular';
+import { Button, List, ListItemTemplate } from '@sushi-kit/angular';
+import { DialogService, type DialogRef } from '../../../../services/dialog.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
-import { Card, Button } from '@sushi-kit/angular';
-import { NodeAttributeComponent } from './node-attribute/node-attribute.component';
-
 import { CreateAttributeDialog } from '../../dialogs/create-attribute/create-attribute.dialog';
-import { DialogService, DialogRef } from '../../../../services/dialog.service';
-import { StorageService } from '../../../../services/storage.service';
+import { NodeAttributeComponent } from './node-attribute/node-attribute.component';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-node-attributes',
-  imports: [TranslocoDirective, Card, NodeAttributeComponent, Button, LucidePlus],
+  imports: [TranslocoDirective, List, ListItemTemplate, NodeAttributeComponent, Button, LucidePlus],
   templateUrl: './node-attributes.component.html',
   styleUrl: './node-attributes.component.scss',
 })
 export class NodeAttributesComponent {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
-  protected readonly storage: StorageService = inject(StorageService);
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
+  private readonly dialogs: DialogService = inject(DialogService);
 
-  protected readonly destroyRef: DestroyRef = inject(DestroyRef);
-  protected readonly dialogService: DialogService = inject(DialogService);
-  protected dialogRef: DialogRef | null = null;
+  private dialogRef: DialogRef | null = null;
 
   public constructor() {
     this.destroyRef.onDestroy((): void => {
@@ -33,8 +30,8 @@ export class NodeAttributesComponent {
 
   protected handleOpenCreateAttribute(): void {
     this.dialogRef?.close();
-    this.dialogRef = this.dialogService.open(CreateAttributeDialog, {
-      header: 'Add Attribute',
+    this.dialogRef = this.dialogs.open(CreateAttributeDialog, {
+      headerKey: 'editor.addProperty',
     });
   }
 }

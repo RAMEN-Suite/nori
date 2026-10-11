@@ -7,7 +7,7 @@
       variant="text"
       size="xs"
       shape="circle"
-      [attr.aria-label]="t(isRefinementLevel() ? 'editor.closeRefinements' : 'editor.closeNodes')"
+      [attr.aria-label]="t('editor.closeNodes')"
       (click)="closePanel.emit()"
     >
       <svg lucideX class="size-4" aria-hidden="true"></svg>
@@ -19,6 +19,22 @@
     (scrollend)="revealPendingNode()"
     [attr.aria-label]="t(isRefinementLevel() ? 'editor.refinements' : 'editor.nodes')"
   >
+    <ng-container [ngTemplateOutlet]="localNodes" />
+  </div>
+  <div class="flex flex-col gap-3 p-3">
+    <input
+      suiInput
+      fluid
+      name="search"
+      [attr.aria-label]="t('editor.findNode')"
+      [placeholder]="t('editor.findNode')"
+      [ngModel]="search()"
+      (ngModelChange)="search.set($event)"
+      type="search"
+      size="sm"
+    />
+  </div>
+  <ng-template #localNodes>
     @for (group of groups(); track group.baseNodeRef ?? group.label) {
       <section
         tabindex="-1"
@@ -35,7 +51,7 @@
           (valueChange)="handleGroupExpansion(key, $event)"
         >
           <ng-template suiAccordionHeader let-item let-expanded="expanded">
-            <span class="flex items-center gap-2 pr-14 text-xs font-semibold opacity-60">
+            <span class="flex items-center gap-2 pr-7 text-xs font-semibold opacity-60">
               <span class="shrink-0 transition-transform" [class.rotate-90]="expanded" aria-hidden="true">
                 <svg lucideChevronRight class="size-3.5"></svg>
               </span>
@@ -133,37 +149,6 @@
           </ng-template>
         </sui-accordion>
         @if (workspace.view.editable() && group.baseNodeRef) {
-          @if (isImportedNode(group.baseNodeRef)) {
-            <button
-              suiButton
-              severity="neutral"
-              variant="text"
-              size="xs"
-              shape="circle"
-              class="node-group-show"
-              [tabIndex]="-1"
-              [disabled]="isNodeConnected(group.baseNodeRef)"
-              [attr.aria-label]="t(isNodeShown(group.baseNodeRef) ? 'editor.hideNamedNode' : 'editor.showNamedNode', { name: group.label })"
-              [suiTooltip]="
-                t(
-                  isNodeConnected(group.baseNodeRef)
-                    ? 'editor.shownByRelation'
-                    : isNodeShown(group.baseNodeRef)
-                      ? 'editor.hideFromCanvas'
-                      : 'editor.showOnCanvas'
-                )
-              "
-              placement="bottom"
-              [showDelay]="400"
-              (click)="handleToggleNode(group.baseNodeRef)"
-            >
-              @if (isNodeShown(group.baseNodeRef) || isNodeConnected(group.baseNodeRef)) {
-                <svg lucideEyeOff class="size-3.5" aria-hidden="true"></svg>
-              } @else {
-                <svg lucideEye class="size-3.5" aria-hidden="true"></svg>
-              }
-            </button>
-          }
           <button
             suiButton
             severity="neutral"
@@ -181,21 +166,8 @@
         }
       </section>
     }
-  </div>
-  <div class="flex flex-col gap-3 p-3">
-    <input
-      suiInput
-      fluid
-      name="search"
-      [attr.aria-label]="t(isRefinementLevel() ? 'editor.findRefinement' : 'editor.findNode')"
-      [placeholder]="t(isRefinementLevel() ? 'editor.findRefinement' : 'editor.findNode')"
-      [ngModel]="search()"
-      (ngModelChange)="search.set($event)"
-      type="search"
-      size="sm"
-    />
     @if (!groups().length) {
-      <p class="text-base-content/60 text-sm">{{ t(isRefinementLevel() ? 'editor.noRefinements' : 'editor.noNodes') }}</p>
+      <p class="text-base-content/60 px-3 py-2 text-sm">{{ t(isRefinementLevel() ? 'editor.noRefinements' : 'editor.noNodes') }}</p>
     }
-  </div>
+  </ng-template>
 </aside>

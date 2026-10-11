@@ -2,6 +2,7 @@ import {
   afterNextRender,
   ChangeDetectionStrategy,
   Component,
+  computed,
   effect,
   ElementRef,
   inject,
@@ -10,6 +11,7 @@ import {
   signal,
   type OutputEmitterRef,
   type WritableSignal,
+  type Signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
@@ -60,6 +62,10 @@ export class ModelLevelsComponent {
   protected readonly editingId: WritableSignal<string | null> = signal(null);
   protected readonly draftName: WritableSignal<string> = signal('');
   protected readonly savingName: WritableSignal<boolean> = signal(false);
+
+  protected readonly levels: Signal<readonly ModelRecord[]> = computed((): readonly ModelRecord[] =>
+    [...this.storage.records()].sort((left: ModelRecord, right: ModelRecord): number => right.slot - left.slot),
+  );
 
   public constructor() {
     effect((): void => {

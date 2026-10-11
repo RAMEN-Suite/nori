@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, input, type InputSignal } from '@angular/core';
-import { TranslocoService } from '@jsverse/transloco';
+import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { LucideArrowUpRight, LucidePencil, LucideTrash } from '@lucide/angular';
 import { type Attribute, type Bounds } from '@ramen-suite/core/model';
 import { Badge, Button, Tooltip } from '@sushi-kit/angular';
@@ -13,7 +13,7 @@ import { CreateAttributeDialog } from '../../../dialogs/create-attribute/create-
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-node-attribute',
-  imports: [Button, Tooltip, Badge, LucidePencil, LucideTrash, LucideArrowUpRight],
+  imports: [TranslocoDirective, Button, Tooltip, Badge, LucidePencil, LucideTrash, LucideArrowUpRight],
   templateUrl: './node-attribute.component.html',
   styleUrl: './node-attribute.component.scss',
 })
@@ -21,10 +21,11 @@ export class NodeAttributeComponent {
   private readonly storage: StorageService = inject(StorageService);
   private readonly translations: TranslocoService = inject(TranslocoService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
-  protected readonly navigation: NavigationService = inject(NavigationService);
-  protected readonly destroyRef: DestroyRef = inject(DestroyRef);
-  protected readonly dialogService: DialogService = inject(DialogService);
-  protected dialogRef: DialogRef | null = null;
+  private readonly navigation: NavigationService = inject(NavigationService);
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
+  private readonly dialogs: DialogService = inject(DialogService);
+
+  private dialogRef: DialogRef | null = null;
 
   public readonly nodeId: InputSignal<string | undefined> = input();
   public readonly modelSlot: InputSignal<number> = input(0);
@@ -47,8 +48,8 @@ export class NodeAttributeComponent {
     if (!currentAttribute) return;
 
     this.dialogRef?.close();
-    this.dialogRef = this.dialogService.open(CreateAttributeDialog, {
-      header: 'Edit Attribute',
+    this.dialogRef = this.dialogs.open(CreateAttributeDialog, {
+      headerKey: 'editor.editProperty',
 
       inputValues: { currentAttribute },
     });
@@ -81,7 +82,7 @@ export class NodeAttributeComponent {
         ],
       ],
     };
-    this.dialogRef = this.dialogService.open(ConfirmationDialog, { header: options.title, inputValues: { options } });
+    this.dialogRef = this.dialogs.open(ConfirmationDialog, { header: options.title, inputValues: { options } });
   }
 
   protected handleOpenQualifiedReference(): void {

@@ -1,63 +1,76 @@
 @if (attribute(); as property) {
-  <div class="flex items-start justify-between gap-3">
+  <div *transloco="let t" class="flex items-start justify-between gap-2">
     <div class="min-w-0">
-      <div class="flex flex-wrap items-center gap-2">
+      <div class="flex flex-wrap items-center gap-1.5">
         <span class="text-sm font-medium break-words">{{ property.name }}</span>
         @if (property.isKey) {
-          <span suiBadge size="xs" severity="neutral" variant="soft">Key</span>
+          <span suiBadge size="xs" severity="neutral" variant="soft">{{ t('editor.keyProperty') }}</span>
         }
         @if (property.isReadOnly) {
-          <span suiBadge size="xs" severity="neutral" variant="soft">Read-only</span>
+          <span suiBadge size="xs" severity="neutral" variant="soft">{{ t('editor.readOnlyProperty') }}</span>
         }
       </div>
-      <p class="text-base-content/55 mt-1 text-xs break-words">
+      <p class="text-base-content/60 mt-1 text-xs leading-relaxed break-words">
         {{ formatAttributeType(property.bounds, workspace.view.resolveTypeLabel(property.typeId)) }}
       </p>
-      @if (property.bounds.upperBound !== 1 && property.isOrdered) {
-        <p class="text-base-content/55 text-xs">Ordered values</p>
-      }
-      @if (property.bounds.upperBound !== 1 && property.isUnique) {
-        <p class="text-base-content/55 text-xs">Unique values</p>
+      @if (property.bounds.upperBound !== 1 && (property.isOrdered || property.isUnique)) {
+        <p class="text-base-content/60 text-xs leading-relaxed">
+          @if (property.isOrdered) {
+            {{ t('editor.orderedValues') }}
+          }
+          @if (property.isOrdered && property.isUnique) {
+            <span aria-hidden="true"> · </span>
+          }
+          @if (property.isUnique) {
+            {{ t('editor.uniqueValues') }}
+          }
+        </p>
       }
     </div>
     <div class="flex shrink-0 gap-0.5">
-      @if (workspace.view.editable() && workspace.store.currentSlot() === modelSlot()) {
+      @if (workspace.view.nodeEditable() && workspace.store.currentSlot() === modelSlot()) {
         <button
           suiButton
           severity="neutral"
-          size="sm"
+          size="xs"
           variant="text"
-          shape="square"
-          [attr.aria-label]="'Edit ' + property.name"
-          suiTooltip="Edit property"
+          shape="circle"
+          [attr.aria-label]="t('editor.editNamedProperty', { name: property.name })"
+          [suiTooltip]="t('editor.editProperty')"
+          placement="bottom"
+          [showDelay]="400"
           (click)="handleOpenUpdateAttribute()"
         >
-          <svg lucidePencil class="size-4" aria-hidden="true"></svg>
+          <svg lucidePencil class="size-3.5" aria-hidden="true"></svg>
         </button>
         <button
           suiButton
-          severity="neutral"
-          size="sm"
+          severity="error"
+          size="xs"
           variant="text"
-          shape="square"
-          [attr.aria-label]="'Remove ' + property.name"
-          suiTooltip="Remove property"
+          shape="circle"
+          [attr.aria-label]="t('editor.removeNamedProperty', { name: property.name })"
+          [suiTooltip]="t('editor.removeProperty')"
+          placement="bottom"
+          [showDelay]="400"
           (click)="handleRemoveAttribute()"
         >
-          <svg lucideTrash class="size-4" aria-hidden="true"></svg>
+          <svg lucideTrash class="size-3.5" aria-hidden="true"></svg>
         </button>
       } @else {
         <button
           suiButton
           severity="neutral"
-          size="sm"
+          size="xs"
           variant="text"
-          shape="square"
-          [attr.aria-label]="'Go to source of ' + property.name"
-          suiTooltip="Go to source"
+          shape="circle"
+          [attr.aria-label]="t('editor.openNamedPropertySource', { name: property.name })"
+          [suiTooltip]="t('editor.openPropertySource')"
+          placement="bottom"
+          [showDelay]="400"
           (click)="handleOpenQualifiedReference()"
         >
-          <svg lucideArrowUpRight class="size-4" aria-hidden="true"></svg>
+          <svg lucideArrowUpRight class="size-3.5" aria-hidden="true"></svg>
         </button>
       }
     </div>

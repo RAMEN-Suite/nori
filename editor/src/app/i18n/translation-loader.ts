@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { type Translation, type TranslocoLoader } from '@jsverse/transloco';
-import { of, type Observable } from 'rxjs';
+import { type Observable, of } from 'rxjs';
 import english from './en.json';
 import german from './de.json';
 

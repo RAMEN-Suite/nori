@@ -32,6 +32,7 @@ export class App {
     effect((): void => {
       const error: string | null = this.storage.error();
       if (!error) return;
+
       untracked((): void => {
         if (this.errorToastId) this.toasts.dismiss(this.errorToastId);
         this.errorToastId = this.toasts.show({

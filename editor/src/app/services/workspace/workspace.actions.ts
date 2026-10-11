@@ -69,7 +69,7 @@ export class WorkspaceActions {
     await this.saveCurrentModel();
   }
 
-  /** Finds a name not occupied by a local node or a node used through relations or annotations. */
+  /** Finds a name not occupied by a local node, a visible base node or a node used through relations or annotations. */
   public getAvailableNodeName(preferred: string): string {
     const names: ReadonlySet<string> = this.usedNodeNames();
     let name: string = preferred.slice(0, 40);
@@ -225,14 +225,28 @@ export class WorkspaceActions {
     await this.saveView(recordId, { nodeColors: colours });
   }
 
-  public async toggleVisibleNode(reference: string): Promise<void> {
+  public async addVisibleNode(reference: string): Promise<void> {
+    const record: ModelRecord | null = this.store.currentModelRecord();
+    if (!record || record.view?.visibleNodeRefs?.includes(reference)) return;
+
+    const node: Node | undefined = this.store.getDraft().getNode(reference);
+    if (!node) throw new Error(this.translations.translate('editor.nodeUnavailable'));
+    this.requireAvailableNodeName(node.name);
+    await this.saveView(record.modelId, { visibleNodeRefs: [...(record.view?.visibleNodeRefs ?? []), reference] });
+  }
+
+  public async removeVisibleNode(reference: string): Promise<void> {
     const record: ModelRecord | null = this.store.currentModelRecord();
     if (!record) return;
+    const connected: boolean = this.store
+      .getDraft()
+      .getModel()
+      .relations.some((relation: Relation): boolean => relation.from.nodeId === reference || relation.to.nodeId === reference);
+    if (connected) throw new Error(this.translations.translate('editor.baseNodeConnected'));
 
-    const visible: Set<string> = new Set(record.view?.visibleNodeRefs ?? []);
-    if (visible.has(reference)) visible.delete(reference);
-    else visible.add(reference);
-    await this.saveView(record.modelId, { visibleNodeRefs: [...visible] });
+    await this.saveView(record.modelId, {
+      visibleNodeRefs: (record.view?.visibleNodeRefs ?? []).filter((ref: string): boolean => ref !== reference),
+    });
   }
 
   public async updateGraphView(recordId: string, graph: GraphView): Promise<void> {
@@ -285,6 +299,7 @@ export class WorkspaceActions {
     );
 
     const references: readonly string[] = [
+      ...(this.store.currentModelRecord()?.view?.visibleNodeRefs ?? []),
       ...model.relations.flatMap((relation: Relation): string[] => [relation.from.nodeId, relation.to.nodeId]),
       ...draft.getAnnotations().map((annotation): string => annotation.annotationId),
     ];

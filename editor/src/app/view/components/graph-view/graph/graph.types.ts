@@ -8,6 +8,8 @@ export type GraphLayoutSettings = Readonly<{
   areIsolatedNodesHidden: boolean;
 }>;
 
+export const GRAPH_NODE_WIDTH: number = 176;
+
 export const DEFAULT_GRAPH_PADDING: GraphPadding = { top: 20, right: 40, bottom: 20, left: 40 };
 export const DEFAULT_GRAPH_LAYOUT_SETTINGS: GraphLayoutSettings = {
   padding: DEFAULT_GRAPH_PADDING,

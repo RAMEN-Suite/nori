@@ -26,7 +26,7 @@
     [class.catalogue-open]="catalogueOpen()"
     [class.levels-open]="levelsOpen()"
   >
-    <div class="panel-slot">
+    <div class="panel-slot catalogue-slot" data-nori-motion>
       <sui-card
         class="workspace-panel workspace-catalogue"
         [class.is-closed]="!catalogueOpen()"
@@ -41,7 +41,7 @@
         </div>
       </sui-card>
     </div>
-    <div class="panel-slot">
+    <div class="panel-slot levels-slot" data-nori-motion>
       <sui-card
         class="workspace-panel workspace-levels"
         [class.is-closed]="!levelsOpen()"
@@ -51,7 +51,9 @@
         size="xs"
         data-nori-motion
       >
-        <div class="levels-content"><app-model-levels (closePanel)="levelsOpen.set(false)" class="block h-full min-h-0" /></div>
+        <div class="levels-content">
+          <app-model-levels (closePanel)="levelsOpen.set(false)" class="block h-full min-h-0" />
+        </div>
       </sui-card>
     </div>
   </div>

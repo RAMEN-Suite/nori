@@ -14,9 +14,10 @@ import {
   type Signal,
   type WritableSignal,
 } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { LucideChevronRight, LucideCopy, LucideEye, LucideEyeOff, LucidePlus, LucideTrash, LucideX } from '@lucide/angular';
+import { LucideChevronRight, LucideCopy, LucidePlus, LucideTrash, LucideX } from '@lucide/angular';
 import { ModelRef, type Node } from '@ramen-suite/core/model';
 import {
   Accordion,
@@ -59,6 +60,7 @@ interface MutableNodeGroup extends Omit<NodeGroup, 'items'> {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     TranslocoDirective,
+    NgTemplateOutlet,
     FormsModule,
     Button,
     Input,
@@ -69,8 +71,6 @@ interface MutableNodeGroup extends Omit<NodeGroup, 'items'> {
     AccordionItem,
     AccordionHeaderTemplate,
     AccordionIndicatorTemplate,
-    LucideEye,
-    LucideEyeOff,
     LucideChevronRight,
     LucideCopy,
     LucideTrash,
@@ -135,13 +135,12 @@ export class SideMenuComponent {
 
     const group: HTMLElement = event.currentTarget;
     const header: HTMLButtonElement | null = group.querySelector('button[aria-expanded]');
-    const show: HTMLButtonElement | null = group.querySelector('.node-group-show:not(:disabled)');
     const add: HTMLButtonElement | null = group.querySelector('.node-group-add:not(:disabled)');
     const first: HTMLElement | null =
       header?.getAttribute('aria-expanded') === 'true'
         ? group.querySelector('.editor-list-entry, .editor-name-editor input')
         : null;
-    const order: HTMLElement[] = [header, show, add, first].filter((entry): entry is HTMLElement => !!entry);
+    const order: HTMLElement[] = [header, add, first].filter((entry): entry is HTMLElement => !!entry);
     const index: number = order.findIndex((button: HTMLElement): boolean => button === event.target);
     if (index < 0 || (event.target === first && !event.shiftKey)) return;
     const next: HTMLElement | undefined = order[index + (event.shiftKey ? -1 : 1)];
@@ -158,30 +157,6 @@ export class SideMenuComponent {
       else next.add(key);
       return next;
     });
-  }
-
-  protected isImportedNode(reference: string): boolean {
-    return (
-      ModelRef.isQualified(reference) && ModelRef.splitQualified(reference).modelId !== this.workspace.store.currentModel()?.id
-    );
-  }
-
-  protected isNodeShown(reference: string): boolean {
-    return this.workspace.store.currentModelRecord()?.view?.visibleNodeRefs?.includes(reference) ?? false;
-  }
-
-  protected isNodeConnected(reference: string): boolean {
-    return this.workspace.view
-      .currentRelations()
-      .some((relation): boolean => relation.from.nodeId === reference || relation.to.nodeId === reference);
-  }
-
-  protected async handleToggleNode(reference: string): Promise<void> {
-    try {
-      await this.workspace.actions.toggleVisibleNode(reference);
-    } catch (error: unknown) {
-      this.storage.reportError(error);
-    }
   }
 
   protected handleRename(item: NodeItem): void {
@@ -261,28 +236,16 @@ export class SideMenuComponent {
     });
   }
 
-  private createNodeGroups(): Map<string, MutableNodeGroup> {
+  private groupLocalNodes(query: string): NodeGroup[] {
     const grouped: Map<string, MutableNodeGroup> = new Map();
     const baseModelId: string | undefined = this.workspace.view.baseModel()?.id;
-    for (const node of this.workspace.view.baseNodes()) {
-      if (!baseModelId) continue;
-      const reference: string = ModelRef.qualify(baseModelId, node.id);
-      grouped.set(reference, { label: node.name, items: [], baseNodeRef: reference });
+    if (baseModelId) {
+      for (const node of this.workspace.view.baseNodes()) {
+        const ref: string = ModelRef.qualify(baseModelId, node.id);
+        grouped.set(ref, { label: node.name, items: [], baseNodeRef: ref });
+      }
     }
-    for (const suggestion of this.workspace.view.nodeSuggestions()) {
-      if (suggestion.modelId === this.workspace.store.currentModel()?.id || grouped.has(suggestion.ref)) continue;
-      const owner: string = this.storage.modelsById().get(suggestion.modelId)?.name ?? '';
-      grouped.set(suggestion.ref, {
-        label: `${suggestion.name} · ${owner}`,
-        items: [],
-        baseNodeRef: suggestion.ref,
-      });
-    }
-    return grouped;
-  }
 
-  private groupLocalNodes(query: string): NodeGroup[] {
-    const grouped: Map<string, MutableNodeGroup> = this.createNodeGroups();
     for (const node of this.workspace.view.currentNodes()) {
       const base: NodeLevel | null = this.workspace.view.resolveNodeBase(node);
       const label: string = base?.node.name ?? this.workspace.store.currentModel()?.name ?? '';

@@ -6,9 +6,6 @@
   --nori-workspace-inset: 1.25rem;
   --nori-workspace-bottom: 1rem;
   --nori-editor-ease: cubic-bezier(0.22, 1, 0.36, 1);
-  --radius-box: var(--nori-radius);
-  --radius-field: var(--nori-radius);
-  --radius-selector: var(--nori-radius);
   position: relative;
   isolation: isolate;
   height: 100%;
@@ -43,29 +40,33 @@
   animation: panel-arrive 760ms 340ms var(--nori-editor-ease) backwards;
 }
 .workspace-left {
+  --levels-height: min(var(--nori-levels-height), 55%);
   position: absolute;
   left: var(--nori-workspace-inset);
   top: 6rem;
   bottom: var(--nori-workspace-bottom);
   width: 16.5rem;
-  display: grid;
-  grid-template-rows: minmax(0, 1fr) minmax(0, 0px);
-  align-content: start;
-  gap: 0;
   pointer-events: none;
-  transition:
-    grid-template-rows 480ms 180ms var(--nori-editor-ease),
-    gap 480ms 180ms var(--nori-editor-ease);
-}
-.workspace-left.levels-open {
-  grid-template-rows: minmax(0, 1fr) minmax(0, min(var(--nori-levels-height), 75%));
-}
-.workspace-left.catalogue-open.levels-open {
-  gap: 1rem;
 }
 .panel-slot {
+  position: absolute;
+  left: 0;
+  right: 0;
   min-height: 0;
   overflow: visible;
+}
+.catalogue-slot {
+  top: 0;
+  bottom: 0;
+  transition: bottom 480ms 180ms var(--nori-editor-ease);
+}
+.workspace-left.levels-open .catalogue-slot {
+  bottom: calc(var(--levels-height) + 1rem);
+}
+.levels-slot {
+  bottom: 0;
+  height: var(--levels-height);
+  transition: height 480ms var(--nori-editor-ease);
 }
 .panel-slot > .workspace-panel {
   position: relative;
@@ -96,7 +97,6 @@
   min-height: 0;
 }
 .workspace-levels {
-  margin-top: auto;
   flex: none;
   --panel-x: calc(-100% - 2rem);
   animation: panel-arrive 760ms 340ms var(--nori-editor-ease) backwards;

@@ -1,4 +1,6 @@
-import { type PositionedNode, type ResolvedLink } from './graph.types';
+import { GRAPH_NODE_WIDTH, type PositionedNode, type ResolvedLink } from './graph.types';
+
+const HALF_NODE_WIDTH: number = GRAPH_NODE_WIDTH / 2;
 
 type Point = Readonly<{ x: number; y: number }>;
 
@@ -7,10 +9,10 @@ function nodeBoundary(node: PositionedNode, towards: Point, padding: number = 0)
   const dx: number = towards.x - node.x;
   const dy: number = towards.y - node.y;
   const length: number = Math.hypot(dx, dy);
-  if (length < 0.001) return { x: node.x + 80 + padding, y: node.y };
+  if (length < 0.001) return { x: node.x + HALF_NODE_WIDTH + padding, y: node.y };
   const ux: number = dx / length;
   const uy: number = dy / length;
-  const distance: number = Math.min(80 / Math.abs(ux), 32 / Math.abs(uy)) + padding;
+  const distance: number = Math.min(HALF_NODE_WIDTH / Math.abs(ux), 32 / Math.abs(uy)) + padding;
   return { x: node.x + ux * distance, y: node.y + uy * distance };
 }
 
@@ -35,7 +37,7 @@ function curveCrossesNode(link: ResolvedLink, control: Point, node: PositionedNo
     const t: number = step / 10;
     const x: number = (1 - t) ** 2 * link.source.x + 2 * (1 - t) * t * control.x + t * t * link.target.x;
     const y: number = (1 - t) ** 2 * link.source.y + 2 * (1 - t) * t * control.y + t * t * link.target.y;
-    if (Math.abs(x - node.x) < 108 && Math.abs(y - node.y) < 56) return true;
+    if (Math.abs(x - node.x) < HALF_NODE_WIDTH + 28 && Math.abs(y - node.y) < 56) return true;
   }
   return false;
 }
@@ -71,7 +73,7 @@ export function getLinkLabelPosition(link: ResolvedLink): Point {
 /** Rotate reference-model loops towards the outside of the diamond. */
 function loopPoint(link: ResolvedLink, x: number, y: number): Point {
   const angle: number = { right: 0, bottom: Math.PI / 2, left: Math.PI, top: -Math.PI / 2 }[link.loopSide ?? 'right'];
-  const radial: number = link.loopSide === 'top' || link.loopSide === 'bottom' ? x - 48 : x;
+  const radial: number = link.loopSide === 'top' || link.loopSide === 'bottom' ? x - (HALF_NODE_WIDTH - 32) : x;
   return {
     x: link.source.x + radial * Math.cos(angle) - y * Math.sin(angle),
     y: link.source.y + radial * Math.sin(angle) + y * Math.cos(angle),
@@ -80,9 +82,9 @@ function loopPoint(link: ResolvedLink, x: number, y: number): Point {
 
 function getLoopPath(link: ResolvedLink): string {
   const reach: number = 64 + (link.loopIndex ?? 0) * 28;
-  const start: Point = loopPoint(link, 80, -16);
-  const first: Point = loopPoint(link, 80 + reach * 2, -16 - reach);
-  const second: Point = loopPoint(link, 80 + reach * 2, 16 + reach);
-  const end: Point = loopPoint(link, 85, 16);
+  const start: Point = loopPoint(link, HALF_NODE_WIDTH, -16);
+  const first: Point = loopPoint(link, HALF_NODE_WIDTH + reach * 2, -16 - reach);
+  const second: Point = loopPoint(link, HALF_NODE_WIDTH + reach * 2, 16 + reach);
+  const end: Point = loopPoint(link, HALF_NODE_WIDTH + 5, 16);
   return `M ${start.x},${start.y} C ${first.x},${first.y} ${second.x},${second.y} ${end.x},${end.y}`;
 }

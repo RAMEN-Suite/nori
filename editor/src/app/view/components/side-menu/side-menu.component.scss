@@ -16,15 +16,11 @@
   --sui-accordion-border-color: transparent;
   --sui-accordion-content-color: inherit;
 }
-.node-group-add,
-.node-group-show {
+.node-group-add {
   position: absolute;
   z-index: 2;
   top: 0.5rem;
   right: 0.875rem;
-}
-.node-group-show {
-  right: 2.5rem;
 }
 .readonly-node {
   --editor-list-action-space: 0.75rem;
