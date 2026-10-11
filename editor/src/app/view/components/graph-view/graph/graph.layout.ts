@@ -3,6 +3,7 @@ import type { GraphData, GraphLink, GraphNode } from '../../../../core/utils/Mod
 import type { GraphView } from '../../../../models/ModelRecord';
 import {
   GRAPH_NODE_WIDTH,
+  GRAPH_NODE_HEIGHT,
   type GraphInputModel,
   type GraphLayoutSettings,
   type GraphPadding,
@@ -128,8 +129,8 @@ export function placeNodes(
   const bounds: PlacementBounds = {
     left: (horizontal.left - transform.x) / transform.k + GRAPH_NODE_WIDTH / 2,
     right: (viewport.width - horizontal.right - transform.x) / transform.k - GRAPH_NODE_WIDTH / 2,
-    top: (padding.top - transform.y) / transform.k + 32,
-    bottom: (viewport.height - padding.bottom - transform.y) / transform.k - 32,
+    top: (padding.top - transform.y) / transform.k + GRAPH_NODE_HEIGHT / 2,
+    bottom: (viewport.height - padding.bottom - transform.y) / transform.k - GRAPH_NODE_HEIGHT / 2,
   };
   const occupied: PositionedNode[] = [...retained];
   let needsFit: boolean = false;

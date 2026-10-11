@@ -83,13 +83,14 @@
                           variant="text"
                           size="xs"
                           shape="circle"
-                          [attr.aria-label]="t('editor.duplicateNamedNode', { name: item.label })"
-                          [suiTooltip]="t('editor.duplicateNode')"
+                          [attr.aria-label]="t('editor.refineNamedNode', { name: item.label })"
+                          [suiTooltip]="t('editor.refineNode')"
                           placement="bottom"
-                          [showDelay]="400"
-                          (click)="nodeEditing.duplicate(item.value)"
+                          [showDelay]="600"
+                          [disabled]="nodeEditing.creating()"
+                          (click)="nodeEditing.refine(item.value)"
                         >
-                          <svg lucideCopy class="size-3.5" aria-hidden="true"></svg>
+                          <svg lucideGitBranch class="size-3.5" aria-hidden="true"></svg>
                         </button>
                         <button
                           suiButton
@@ -100,7 +101,7 @@
                           [attr.aria-label]="t('editor.removeNamedNode', { name: item.label })"
                           [suiTooltip]="t('editor.removeNode')"
                           placement="bottom"
-                          [showDelay]="400"
+                          [showDelay]="600"
                           (click)="nodeEditing.confirmRemoval(item.value)"
                         >
                           <svg lucideTrash class="size-3.5" aria-hidden="true"></svg>
@@ -123,6 +124,9 @@
             class="node-group-add"
             [tabIndex]="group.items.length ? -1 : 0"
             [attr.aria-label]="t('editor.refineNamedNode', { name: group.label })"
+            [suiTooltip]="t('editor.refineNode')"
+            placement="bottom"
+            [showDelay]="600"
             [disabled]="nodeEditing.creating()"
             (click)="nodeEditing.refine(group.baseNodeRef)"
           >

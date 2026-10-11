@@ -8,3 +8,8 @@
     }
   </p>
 }
+@if (nodeActionsPosition(); as position) {
+  @if (workspace.store.currentNodeId(); as nodeId) {
+    <app-node-actions class="graph-node-actions" [nodeId]="nodeId" [style.left.px]="position.x" [style.top.px]="position.y" />
+  }
+}

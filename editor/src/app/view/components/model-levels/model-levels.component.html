@@ -39,7 +39,7 @@
               (dblclick)="handleRename(record)"
               [attr.data-level-id]="record.modelId"
             >
-              <span class="level-number" [suiTooltip]="levelSource(record)" placement="bottom" [showDelay]="400" aria-hidden="true">{{
+              <span class="level-number" [suiTooltip]="levelSource(record)" placement="bottom" [showDelay]="600" aria-hidden="true">{{
                 record.slot
               }}</span>
               <span class="truncate text-xs font-medium">{{ record.name }}</span>
@@ -56,7 +56,7 @@
                 [attr.aria-label]="t('editor.editNamedLevel', { name: record.name })"
                 [suiTooltip]="t('editor.editLevel')"
                 placement="bottom"
-                [showDelay]="400"
+                [showDelay]="600"
                 (click)="handleEdit(record)"
               >
                 <svg lucidePencil class="size-3.5" aria-hidden="true"></svg>
@@ -70,7 +70,7 @@
                 [attr.aria-label]="t('editor.removeNamedLevel', { name: record.name })"
                 [suiTooltip]="t('editor.removeLevel')"
                 placement="bottom"
-                [showDelay]="400"
+                [showDelay]="600"
                 (click)="handleRemove(record)"
               >
                 <svg lucideTrash class="size-3.5" aria-hidden="true"></svg>

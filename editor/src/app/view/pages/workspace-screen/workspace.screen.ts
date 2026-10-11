@@ -12,7 +12,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, type ParamMap, Router, RouterOutlet } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { LucideBoxes, LucideGitBranch, LucideLayers } from '@lucide/angular';
+import { LucideBoxes, LucideGitBranch, LucideLayers, LucideScanEye } from '@lucide/angular';
 import { filter } from 'rxjs';
 import { PARAMETERS } from '../../../app.routes';
 import { type Manifest } from '../../../models/Manifest';
@@ -44,16 +44,19 @@ import { ToolBarComponent } from '../../components/tool-bar/tool-bar.component';
     LucideBoxes,
     LucideGitBranch,
     LucideLayers,
+    LucideScanEye,
   ],
   templateUrl: './workspace.screen.html',
   styleUrl: './workspace.screen.scss',
 })
 export class WorkspaceScreen implements OnInit {
-  protected readonly windowState: WindowState = inject(WindowState);
+  private readonly windowState: WindowState = inject(WindowState);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
-  protected readonly storage: StorageService = inject(StorageService);
-  protected readonly router: Router = inject(Router);
-  protected readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
+  private readonly storage: StorageService = inject(StorageService);
+  private readonly router: Router = inject(Router);
+  private readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
+
+  private readonly nodeEditing: NodeEditingService = inject(NodeEditingService);
 
   protected readonly levelsOpen: WritableSignal<boolean> = signal(true);
   protected readonly catalogueOpen: WritableSignal<boolean> = signal(true);
@@ -74,16 +77,15 @@ export class WorkspaceScreen implements OnInit {
   );
 
   public constructor() {
-    const nodeEditing: NodeEditingService = inject(NodeEditingService);
     effect((): void => {
-      if (nodeEditing.creating()) this.catalogueOpen.set(true);
+      if (this.nodeEditing.creating()) this.catalogueOpen.set(true);
     });
     this.router.events
       .pipe(
         filter((event: unknown): event is NavigationEnd => event instanceof NavigationEnd),
         takeUntilDestroyed(),
       )
-      .subscribe(this.registerRouteSubscription.bind(this));
+      .subscribe(this.syncRouteSelection.bind(this));
 
     effect((): void => this.ensureSelectedLevel());
 
@@ -98,7 +100,7 @@ export class WorkspaceScreen implements OnInit {
   }
 
   public ngOnInit(): void {
-    this.registerRouteSubscription();
+    this.syncRouteSelection();
     void this.storage.refreshManifests().catch((error: unknown): void => this.storage.reportError(error));
   }
 
@@ -121,7 +123,7 @@ export class WorkspaceScreen implements OnInit {
       .catch((error: unknown): void => this.storage.reportError(error));
   }
 
-  private registerRouteSubscription(): void {
+  private syncRouteSelection(): void {
     const projectId: string | null = this.activatedRoute.snapshot.paramMap.get(PARAMETERS.PROJECT);
     if (projectId) this.storage.selectProject(projectId);
 
@@ -133,6 +135,6 @@ export class WorkspaceScreen implements OnInit {
     const nodeId: string | null = paramMap.get(PARAMETERS.NODE);
 
     this.workspace.store.setCurrentSlot(slot ? Number(slot) : null);
-    this.workspace.store.setCurrentNodeId(nodeId ?? null);
+    this.workspace.store.setCurrentNodeId(nodeId);
   }
 }

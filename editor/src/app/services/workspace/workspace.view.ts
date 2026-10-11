@@ -61,12 +61,6 @@ export class WorkspaceView {
   public readonly currentRelations: Signal<readonly Relation[]> = computed(
     (): readonly Relation[] => this.store.currentModel()?.relations ?? [],
   );
-  public readonly currentNodeRelationsOut: Signal<readonly Relation[]> = computed((): readonly Relation[] =>
-    this.nodeRelations('from'),
-  );
-  public readonly currentNodeRelationsIn: Signal<readonly Relation[]> = computed((): readonly Relation[] =>
-    this.nodeRelations('to'),
-  );
   public readonly nodeSuggestions: Signal<readonly NodeSuggestion[]> = computed((): readonly NodeSuggestion[] =>
     this.validation()?.valid ? this.store.getDraft().suggestNodes() : [],
   );
@@ -135,43 +129,11 @@ export class WorkspaceView {
     return choices.filter((choice: RelationSuggestion): boolean => !ancestors.has(choice.ref));
   }
 
-  public resolveAllowedRelations(target: string, direction: 'IN' | 'OUT'): readonly RelationSuggestion[] {
-    const node: Node | null = this.currentNode();
-    if (!node || !this.validation()?.valid) return [];
-    return direction === 'OUT'
-      ? this.resolveRelationChoices(this.store.currentNodeId() ?? node.id, target)
-      : this.resolveRelationChoices(target, this.store.currentNodeId() ?? node.id);
-  }
-
-  public resolveReachableNodes(direction: 'IN' | 'OUT'): readonly Node[] {
-    const node: Node | null = this.currentNode();
-    if (!node || !this.validation()?.valid) return [];
-    const candidates: Map<string, Node> = new Map(this.currentNodes().map((item: Node): [string, Node] => [item.id, item]));
-    const draft: RamenModel = this.store.getDraft();
-    for (const suggestion of this.nodeSuggestions()) {
-      const target: Node | undefined = draft.getNode(suggestion.ref);
-      if (target) candidates.set(suggestion.ref, { ...target, id: suggestion.ref });
-    }
-
-    return [...candidates.values()].filter(
-      (target: Node): boolean => this.resolveAllowedRelations(target.id, direction).length > 0,
-    );
-  }
-
   public resolveTypeLabel(typeId: string): string {
     const type: DataTypeSuggestion | undefined = this.dataTypeSuggestions().find(
       (item: DataTypeSuggestion): boolean => item.ref === typeId || item.dataTypeId === typeId,
     );
     return type?.name ?? typeId;
-  }
-
-  private nodeRelations(end: 'from' | 'to'): readonly Relation[] {
-    const model: Model | null = this.store.currentModel();
-    const node: Node | null = this.currentNode();
-    if (!model || !node) return [];
-    return this.currentRelations().filter((relation: Relation): boolean =>
-      ModelRef.matches(relation[end].nodeId, model.id, this.store.currentNodeId() ?? node.id),
-    );
   }
 
   private collectInheritedAttributes(): ReadonlyMap<string, readonly InheritedAttribute[]> {

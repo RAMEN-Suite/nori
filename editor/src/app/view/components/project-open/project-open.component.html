@@ -77,7 +77,7 @@
                 [attr.aria-label]="t('open.duplicateProject', { name: project.name })"
                 [suiTooltip]="t('open.duplicate')"
                 placement="bottom"
-                [showDelay]="400"
+                [showDelay]="600"
                 [disabled]="busy() || disabled()"
                 (click)="handleDuplicateProject(project.projectId)"
               >
@@ -92,7 +92,7 @@
                 [attr.aria-label]="t('open.removeProject', { name: project.name })"
                 [suiTooltip]="t('open.remove')"
                 placement="bottom"
-                [showDelay]="400"
+                [showDelay]="600"
                 [disabled]="busy() || disabled()"
                 (click)="handleRemoveProject(project)"
               >

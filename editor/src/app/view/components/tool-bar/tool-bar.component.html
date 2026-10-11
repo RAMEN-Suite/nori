@@ -34,7 +34,7 @@
         [attr.aria-pressed]="catalogueOpen()"
         [suiTooltip]="catalogueLabel + ' (K)'"
         placement="bottom"
-        [showDelay]="400"
+        [showDelay]="600"
         (click)="toggleCatalogue.emit()"
       >
         @if (workspace.view.editable()) {
@@ -55,7 +55,7 @@
           [attr.aria-pressed]="baseNodesOpen()"
           [suiTooltip]="t('editor.baseNodes') + ' (B)'"
           placement="bottom"
-          [showDelay]="400"
+          [showDelay]="600"
           (click)="toggleBaseNodes.emit()"
         >
           <svg lucideBoxes class="size-4" aria-hidden="true"></svg>
@@ -70,9 +70,9 @@
         aria-keyshortcuts="M"
         [attr.aria-label]="t('editor.levels')"
         [attr.aria-pressed]="levelsOpen()"
-        [suiTooltip]="t('editor.levelsShortcut')"
+        [suiTooltip]="t('editor.levels') + ' (M)'"
         placement="bottom"
-        [showDelay]="400"
+        [showDelay]="600"
         (click)="toggleLevels.emit()"
       >
         <svg lucideLayers class="size-4" aria-hidden="true"></svg>
@@ -95,7 +95,7 @@
         [attr.aria-label]="t('editor.drawConnection')"
         [suiTooltip]="t('editor.drawConnection') + ' (L)'"
         placement="bottom"
-        [showDelay]="400"
+        [showDelay]="600"
         [disabled]="!workspace.view.editable() || graphTools.pending()"
         (click)="graphTools.toggle('connect')"
       >
@@ -112,7 +112,7 @@
         [attr.aria-label]="t('editor.removeConnection')"
         [suiTooltip]="t('editor.removeConnection') + ' (D)'"
         placement="bottom"
-        [showDelay]="400"
+        [showDelay]="600"
         [disabled]="!workspace.view.editable() || graphTools.pending()"
         (click)="graphTools.toggle('disconnect')"
       >
@@ -135,7 +135,7 @@
         [attr.aria-label]="t('editor.reset')"
         [suiTooltip]="t('editor.reset') + ' (R)'"
         placement="bottom"
-        [showDelay]="400"
+        [showDelay]="600"
         (click)="resetGraph.emit()"
       >
         <svg lucideRotateCcw class="size-4" aria-hidden="true"></svg>
@@ -150,7 +150,7 @@
         [attr.aria-label]="t('editor.fit')"
         [suiTooltip]="t('editor.fit') + ' (F)'"
         placement="bottom"
-        [showDelay]="400"
+        [showDelay]="600"
         (click)="fitGraph.emit()"
       >
         <svg lucideMaximize class="size-4" aria-hidden="true"></svg>
@@ -165,7 +165,7 @@
         [attr.aria-label]="t('editor.colours')"
         [suiTooltip]="t('editor.colours') + ' (C)'"
         placement="bottom"
-        [showDelay]="400"
+        [showDelay]="600"
         (click)="configureColours.emit()"
       >
         <svg lucidePalette class="size-4" aria-hidden="true"></svg>
@@ -187,7 +187,7 @@
         [attr.aria-label]="t('editor.editProject')"
         [suiTooltip]="t('editor.editProject') + ' (P)'"
         placement="bottom"
-        [showDelay]="400"
+        [showDelay]="600"
         [disabled]="!storage.selectedManifest()"
         (click)="handleEditProject()"
       >
@@ -204,7 +204,7 @@
         [attr.aria-label]="t('editor.export')"
         [suiTooltip]="t('editor.export') + ' (E)'"
         placement="bottom"
-        [showDelay]="400"
+        [showDelay]="600"
         [disabled]="!canExport()"
         (click)="handleExportModel()"
       >

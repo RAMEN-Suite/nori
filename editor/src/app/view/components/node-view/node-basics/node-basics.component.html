@@ -33,7 +33,7 @@
             [attr.aria-label]="t('editor.renameNode')"
             [suiTooltip]="t('editor.renameNode')"
             placement="bottom"
-            [showDelay]="400"
+            [showDelay]="600"
             (click)="handleStartRename()"
           >
             <svg lucidePencil class="size-3.5" aria-hidden="true"></svg>
@@ -51,7 +51,7 @@
           [attr.aria-label]="t('editor.openNodeSource', { name: parent.node.name, model: storage.modelsById().get(parent.modelId)?.name })"
           [suiTooltip]="t('editor.refines', { name: parent.node.name })"
           placement="bottom"
-          [showDelay]="400"
+          [showDelay]="600"
           (click)="handleOpenNode(parent.modelId, parent.node.id)"
         >
           <sui-chip size="sm" severity="neutral" variant="soft" class="max-w-full">
@@ -71,57 +71,6 @@
       >
         <sui-chip size="sm" severity="neutral" variant="soft" [label]="owner.name" />
       </button>
-    }
-    @if (workspace.view.editable()) {
-      <div class="flex items-center gap-2 pt-1">
-        @if (refinement()) {
-          <button
-            suiButton
-            severity="neutral"
-            variant="text"
-            size="sm"
-            shape="circle"
-            [disabled]="nodeEditing.creating()"
-            [attr.aria-label]="t('editor.refineNode')"
-            [suiTooltip]="t('editor.refineNode')"
-            placement="bottom"
-            [showDelay]="400"
-            (click)="handleRefine()"
-          >
-            <svg lucideGitBranch class="size-4" aria-hidden="true"></svg>
-          </button>
-        }
-        @if (workspace.view.nodeEditable()) {
-          <button
-            suiButton
-            severity="neutral"
-            variant="text"
-            size="sm"
-            shape="circle"
-            [attr.aria-label]="t('editor.duplicateNode')"
-            [suiTooltip]="t('editor.duplicateNode')"
-            placement="bottom"
-            [showDelay]="400"
-            (click)="handleDuplicateNode()"
-          >
-            <svg lucideCopy class="size-4" aria-hidden="true"></svg>
-          </button>
-          <button
-            suiButton
-            severity="error"
-            variant="text"
-            size="sm"
-            shape="circle"
-            [attr.aria-label]="t('editor.removeNode')"
-            [suiTooltip]="t('editor.removeNode')"
-            placement="bottom"
-            [showDelay]="400"
-            (click)="handleRemoveNode()"
-          >
-            <svg lucideTrash class="size-4" aria-hidden="true"></svg>
-          </button>
-        }
-      </div>
     }
   </section>
 }

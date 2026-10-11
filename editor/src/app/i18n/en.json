@@ -129,16 +129,12 @@
     "refinesLabel": "Refines",
     "baseIn": "Base definition in {{name}}",
     "properties": "Properties",
-    "relationships": "Relationships",
     "closeView": "Clear selection",
     "valid": "Model is valid",
     "findings": "{{count}} validation findings",
     "definedHere": "Defined here",
     "inheritedFrom": "Inherited from {{name}}",
     "addProperty": "Add property",
-    "outgoing": "Outgoing",
-    "incoming": "Incoming",
-    "addRelationship": "Add relationship",
     "selectHint": "Select a node in the graph to edit its properties and relationships.",
     "loading": "Loading project…",
     "renameNode": "Rename node",
@@ -148,7 +144,6 @@
     "createLevel": "Create level",
     "closeLevels": "Close model levels",
     "closeNodes": "Close nodes",
-    "levelsShortcut": "Model levels (M)",
     "editNamedLevel": "Edit {{name}}",
     "removeNamedLevel": "Remove {{name}}",
     "importHint": "Open an exported model as a project.",
@@ -193,7 +188,6 @@
     "validationSummary": "{{count}} model findings. {{message}}",
     "showFindings": "View findings",
     "noProperties": "No properties yet.",
-    "noRelationships": "No relationships yet.",
     "keyProperty": "Key",
     "readOnlyProperty": "Read-only",
     "orderedValues": "Ordered",
@@ -216,6 +210,7 @@
     "removeBaseNodeTitle": "Remove base node from canvas?",
     "confirmRemoveBaseNode": "“{{name}}” will be removed from this canvas, along with its relationships on this level and their refinements. The original node definition will remain available.",
     "removeBaseNodeWithRelations": "Remove with relationships",
-    "removeFromCanvas": "Remove from canvas"
+    "removeFromCanvas": "Remove from canvas",
+    "showOnCanvas": "Show on canvas"
   }
 }

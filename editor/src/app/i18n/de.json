@@ -129,16 +129,12 @@
     "refinesLabel": "Verfeinert",
     "baseIn": "Grundtyp in {{name}}",
     "properties": "Eigenschaften",
-    "relationships": "Beziehungen",
     "closeView": "Auswahl aufheben",
     "valid": "Modell ist gültig",
     "findings": "{{count}} Validierungshinweise",
     "definedHere": "Hier definiert",
     "inheritedFrom": "Geerbt von {{name}}",
     "addProperty": "Eigenschaft hinzufügen",
-    "outgoing": "Ausgehend",
-    "incoming": "Eingehend",
-    "addRelationship": "Beziehung hinzufügen",
     "selectHint": "Wähle einen Knoten im Graphen, um seine Eigenschaften und Beziehungen zu bearbeiten.",
     "loading": "Projekt wird geladen…",
     "renameNode": "Knoten umbenennen",
@@ -148,7 +144,6 @@
     "createLevel": "Ebene erstellen",
     "closeLevels": "Modellebenen schließen",
     "closeNodes": "Knoten schließen",
-    "levelsShortcut": "Modellebenen (M)",
     "editNamedLevel": "{{name}} bearbeiten",
     "removeNamedLevel": "{{name}} entfernen",
     "importHint": "Ein exportiertes Modell als Projekt öffnen.",
@@ -193,7 +188,6 @@
     "validationSummary": "{{count}} Hinweise zum Modell. {{message}}",
     "showFindings": "Hinweise ansehen",
     "noProperties": "Noch keine Eigenschaften.",
-    "noRelationships": "Noch keine Beziehungen.",
     "keyProperty": "Schlüssel",
     "readOnlyProperty": "Schreibgeschützt",
     "orderedValues": "Geordnet",
@@ -216,6 +210,7 @@
     "removeBaseNodeTitle": "Basisknoten von der Zeichenfläche entfernen?",
     "confirmRemoveBaseNode": "„{{name}}“ wird aus dieser Zeichenfläche entfernt. Seine Beziehungen auf dieser Ebene und deren Verfeinerungen werden ebenfalls entfernt. Die ursprüngliche Knotendefinition bleibt erhalten.",
     "removeBaseNodeWithRelations": "Mit Beziehungen entfernen",
-    "removeFromCanvas": "Von Zeichenfläche entfernen"
+    "removeFromCanvas": "Von Zeichenfläche entfernen",
+    "showOnCanvas": "Auf Zeichenfläche anzeigen"
   }
 }

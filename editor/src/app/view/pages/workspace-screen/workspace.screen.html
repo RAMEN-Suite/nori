@@ -67,11 +67,11 @@
       <app-editor-panel
         [open]="inspectorOpen()"
         side="right"
-        heading="subtle"
         [title]="t('editor.inspector')"
         [closeLabel]="t('editor.closeInspector')"
         (closePanel)="inspectorOpen.set(false)"
       >
+        <svg panel-icon lucideScanEye class="size-4 shrink-0" aria-hidden="true"></svg>
         <div class="editor-panel-scroll h-full min-h-0 overflow-auto"><router-outlet /></div>
       </app-editor-panel>
     </div>

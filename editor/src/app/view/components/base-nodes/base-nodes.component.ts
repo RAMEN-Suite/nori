@@ -84,7 +84,7 @@ export class BaseNodesComponent {
     const query: string = this.search().trim().toLowerCase();
     const suggestions: readonly NodeSuggestion[] = this.workspace.view.nodeSuggestions();
     return [...this.storage.records()]
-      .reverse()
+      .sort((left: ModelRecord, right: ModelRecord): number => right.slot - left.slot)
       .filter((record: ModelRecord): boolean => record.gmodel.id !== this.workspace.store.currentModel()?.id)
       .map(
         (record: ModelRecord): BaseNodeGroup => ({
@@ -127,6 +127,7 @@ export class BaseNodesComponent {
       this.nodeEditing.confirmCanvasRemoval(reference);
       return;
     }
+
     const modelId: string | undefined = this.workspace.store.currentModel()?.id;
 
     this.pending.set(true);

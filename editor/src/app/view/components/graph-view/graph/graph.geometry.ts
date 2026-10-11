@@ -1,6 +1,7 @@
-import { GRAPH_NODE_WIDTH, type PositionedNode, type ResolvedLink } from './graph.types';
+import { GRAPH_NODE_WIDTH, GRAPH_NODE_HEIGHT, type PositionedNode, type ResolvedLink } from './graph.types';
 
 const HALF_NODE_WIDTH: number = GRAPH_NODE_WIDTH / 2;
+const HALF_NODE_HEIGHT: number = GRAPH_NODE_HEIGHT / 2;
 
 type Point = Readonly<{ x: number; y: number }>;
 
@@ -12,7 +13,7 @@ function nodeBoundary(node: PositionedNode, towards: Point, padding: number = 0)
   if (length < 0.001) return { x: node.x + HALF_NODE_WIDTH + padding, y: node.y };
   const ux: number = dx / length;
   const uy: number = dy / length;
-  const distance: number = Math.min(HALF_NODE_WIDTH / Math.abs(ux), 32 / Math.abs(uy)) + padding;
+  const distance: number = Math.min(HALF_NODE_WIDTH / Math.abs(ux), HALF_NODE_HEIGHT / Math.abs(uy)) + padding;
   return { x: node.x + ux * distance, y: node.y + uy * distance };
 }
 
@@ -73,7 +74,7 @@ export function getLinkLabelPosition(link: ResolvedLink): Point {
 /** Rotate reference-model loops towards the outside of the diamond. */
 function loopPoint(link: ResolvedLink, x: number, y: number): Point {
   const angle: number = { right: 0, bottom: Math.PI / 2, left: Math.PI, top: -Math.PI / 2 }[link.loopSide ?? 'right'];
-  const radial: number = link.loopSide === 'top' || link.loopSide === 'bottom' ? x - (HALF_NODE_WIDTH - 32) : x;
+  const radial: number = link.loopSide === 'top' || link.loopSide === 'bottom' ? x - (HALF_NODE_WIDTH - HALF_NODE_HEIGHT) : x;
   return {
     x: link.source.x + radial * Math.cos(angle) - y * Math.sin(angle),
     y: link.source.y + radial * Math.sin(angle) + y * Math.cos(angle),

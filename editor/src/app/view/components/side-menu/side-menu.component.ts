@@ -16,7 +16,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { LucideChevronRight, LucideCopy, LucidePlus, LucideTrash } from '@lucide/angular';
+import { LucideChevronRight, LucideGitBranch, LucidePlus, LucideTrash } from '@lucide/angular';
 import { ModelRef, type Node } from '@ramen-suite/core/model';
 import {
   Accordion,
@@ -70,7 +70,7 @@ interface MutableNodeGroup extends Omit<NodeGroup, 'items'> {
     AccordionHeaderTemplate,
     AccordionIndicatorTemplate,
     LucideChevronRight,
-    LucideCopy,
+    LucideGitBranch,
     LucideTrash,
     LucidePlus,
     AutoselectDirective,
@@ -157,6 +157,7 @@ export class SideMenuComponent {
 
   protected handleRename(item: NodeItem): void {
     if (!this.workspace.view.editable() || this.savingName()) return;
+
     this.editingModelId = this.workspace.store.currentModel()?.id;
     this.draftName.set(item.label);
     this.editingId.set(item.value);
@@ -176,7 +177,9 @@ export class SideMenuComponent {
     this.savingName.set(true);
     try {
       await this.workspace.actions.updateNode(id, { name: Transformer.toPascalName(name) });
-      this.handleCancelRename(restoreFocus);
+      if (this.editingId() === id && this.workspace.store.currentModel()?.id === this.editingModelId) {
+        this.handleCancelRename(restoreFocus);
+      }
     } catch (error: unknown) {
       this.storage.reportError(error);
     } finally {
@@ -207,7 +210,7 @@ export class SideMenuComponent {
     }
   }
 
-  protected revealPendingNode(): void {
+  private revealPendingNode(): void {
     const id: string | null = this.pendingRevealId;
     if (!id) return;
     if (this.workspace.store.currentNodeId() !== id) {
@@ -235,6 +238,7 @@ export class SideMenuComponent {
   private groupLocalNodes(query: string): NodeGroup[] {
     const grouped: Map<string, MutableNodeGroup> = new Map();
     const baseModelId: string | undefined = this.workspace.view.baseModel()?.id;
+
     if (baseModelId) {
       for (const node of this.workspace.view.baseNodes()) {
         const ref: string = ModelRef.qualify(baseModelId, node.id);

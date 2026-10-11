@@ -9,6 +9,7 @@ export type GraphLayoutSettings = Readonly<{
 }>;
 
 export const GRAPH_NODE_WIDTH: number = 176;
+export const GRAPH_NODE_HEIGHT: number = 64;
 
 export const DEFAULT_GRAPH_PADDING: GraphPadding = { top: 20, right: 40, bottom: 20, left: 40 };
 export const DEFAULT_GRAPH_LAYOUT_SETTINGS: GraphLayoutSettings = {

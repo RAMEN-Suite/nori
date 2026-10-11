@@ -8,7 +8,9 @@
   shape="circle"
   [attr.aria-label]="t('common.settings')"
   [attr.aria-keyshortcuts]="shortcut()"
-  [attr.title]="shortcut() ? t('common.settings') + ' (' + shortcut() + ')' : null"
+  [suiTooltip]="shortcut() ? t('common.settings') + ' (' + shortcut() + ')' : ''"
+  placement="bottom"
+  [showDelay]="600"
   (click)="handleOpen()"
 >
   <svg lucideSettings class="size-5" aria-hidden="true"></svg>

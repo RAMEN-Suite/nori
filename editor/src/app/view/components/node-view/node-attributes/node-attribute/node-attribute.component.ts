@@ -50,7 +50,6 @@ export class NodeAttributeComponent {
     this.dialogRef?.close();
     this.dialogRef = this.dialogs.open(CreateAttributeDialog, {
       headerKey: 'editor.editProperty',
-
       inputValues: { currentAttribute },
     });
   }
@@ -86,7 +85,7 @@ export class NodeAttributeComponent {
   }
 
   protected handleOpenQualifiedReference(): void {
-    const slot: number | undefined = this.modelSlot();
+    const slot: number = this.modelSlot();
     const nodeId: string | undefined = this.nodeId();
     if (!nodeId) return;
 

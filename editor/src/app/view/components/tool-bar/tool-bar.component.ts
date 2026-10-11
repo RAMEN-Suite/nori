@@ -72,7 +72,7 @@ export class ToolBarComponent {
   protected readonly storage: StorageService = inject(StorageService);
   private readonly dialogs: DialogService = inject(DialogService);
   private readonly router: Router = inject(Router);
-  protected readonly export: ExportService = inject(ExportService);
+  private readonly export: ExportService = inject(ExportService);
 
   public readonly catalogueOpen: InputSignal<boolean> = input(true);
   public readonly levelsOpen: InputSignal<boolean> = input(false);
@@ -108,10 +108,9 @@ export class ToolBarComponent {
     },
   };
 
-  protected readonly canExport: Signal<boolean> = computed((): boolean => {
-    this.workspace.store.currentModel();
-    return this.storage.records().some((record): boolean => record.slot !== 0);
-  });
+  protected readonly canExport: Signal<boolean> = computed((): boolean =>
+    this.storage.records().some((record): boolean => record.slot !== 0),
+  );
 
   protected handleShortcut(event: KeyboardEvent): void {
     if (event.defaultPrevented || event.repeat || event.isComposing || this.dialogs.current()) return;
@@ -119,8 +118,10 @@ export class ToolBarComponent {
 
     if (this.handleUndoShortcut(event) || this.handleBackShortcut(event)) return;
     if (event.ctrlKey || event.metaKey || event.altKey) return;
+
     const action: (() => void) | undefined = this.shortcuts[event.key.toLowerCase()];
     if (!action) return;
+
     event.preventDefault();
     action();
   }

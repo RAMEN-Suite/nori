@@ -7,7 +7,6 @@ import { NavigationService } from '../navigation.service';
 import { StorageService } from '../storage.service';
 import { WorkspaceService } from './workspace.service';
 
-/** Shared node commands for the catalogue and inspector. */
 @Injectable({ providedIn: 'root' })
 export class NodeEditingService {
   private readonly workspace: WorkspaceService = inject(WorkspaceService);

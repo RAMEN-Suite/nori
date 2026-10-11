@@ -1,6 +1,13 @@
 import * as d3 from 'd3';
 import { getLinkLabelPosition } from './graph.geometry';
-import { type LinkSelection, type PositionedNode, type ResolvedLink, type RootSelection } from './graph.types';
+import {
+  GRAPH_NODE_WIDTH,
+  GRAPH_NODE_HEIGHT,
+  type LinkSelection,
+  type PositionedNode,
+  type ResolvedLink,
+  type RootSelection,
+} from './graph.types';
 
 type Box = Readonly<{ x: number; y: number; width: number; height: number }>;
 type Point = Readonly<{ x: number; y: number }>;
@@ -29,7 +36,14 @@ function captionCandidates(path: SVGPathElement, link: ResolvedLink): Point[] {
 
 /** Keep each caption near its own edge and clear of nodes and earlier captions. */
 export function positionLinkLabels(root: RootSelection, paths: LinkSelection, nodes: readonly PositionedNode[]): void {
-  const occupied: Box[] = nodes.map((node: PositionedNode): Box => ({ x: node.x - 84, y: node.y - 36, width: 168, height: 72 }));
+  const occupied: Box[] = nodes.map(
+    (node: PositionedNode): Box => ({
+      x: node.x - GRAPH_NODE_WIDTH / 2 - 4,
+      y: node.y - GRAPH_NODE_HEIGHT / 2 - 4,
+      width: GRAPH_NODE_WIDTH + 8,
+      height: GRAPH_NODE_HEIGHT + 8,
+    }),
+  );
   const byId: Map<string, SVGPathElement> = new Map();
   paths.each(function (this: SVGPathElement, link: ResolvedLink): void {
     byId.set(link.id, this);

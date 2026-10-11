@@ -41,14 +41,29 @@
                 <div class="editor-list-actions flex gap-0.5">
                   <button
                     suiButton
+                    severity="neutral"
+                    variant="text"
+                    size="xs"
+                    shape="circle"
+                    [attr.aria-label]="t('editor.refineNamedNode', { name: node.name })"
+                    [suiTooltip]="t('editor.refineNode')"
+                    placement="bottom"
+                    [showDelay]="600"
+                    [disabled]="pending() || nodeEditing.creating()"
+                    (click)="nodeEditing.refine(node.ref)"
+                  >
+                    <svg lucideGitBranch class="size-3.5" aria-hidden="true"></svg>
+                  </button>
+                  <button
+                    suiButton
                     [severity]="visible().has(node.ref) ? 'error' : 'neutral'"
                     variant="text"
                     size="xs"
                     shape="circle"
                     [attr.aria-label]="t(visible().has(node.ref) ? 'editor.hideBaseNode' : 'editor.showBaseNode', { name: node.name })"
-                    [suiTooltip]="t(visible().has(node.ref) ? 'editor.hideBaseNode' : 'editor.showBaseNode', { name: node.name })"
+                    [suiTooltip]="t(visible().has(node.ref) ? 'editor.removeFromCanvas' : 'editor.showOnCanvas')"
                     placement="bottom"
-                    [showDelay]="400"
+                    [showDelay]="600"
                     [disabled]="pending()"
                     (click)="handleVisibility(node.ref)"
                   >
@@ -57,21 +72,6 @@
                     } @else {
                       <svg lucidePlus class="size-3.5" aria-hidden="true"></svg>
                     }
-                  </button>
-                  <button
-                    suiButton
-                    severity="neutral"
-                    variant="text"
-                    size="xs"
-                    shape="circle"
-                    [attr.aria-label]="t('editor.refineNamedNode', { name: node.name })"
-                    [suiTooltip]="t('editor.refineNamedNode', { name: node.name })"
-                    placement="bottom"
-                    [showDelay]="400"
-                    [disabled]="pending() || nodeEditing.creating()"
-                    (click)="nodeEditing.refine(node.ref)"
-                  >
-                    <svg lucideGitBranch class="size-3.5" aria-hidden="true"></svg>
                   </button>
                 </div>
               </div>

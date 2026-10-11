@@ -7,7 +7,6 @@ import { DialogService } from '../../../services/dialog.service';
 import { WorkspaceService } from '../../../services/workspace/workspace.service';
 import { ModelDiagnosticsDialog } from '../dialogs/model-diagnostics/model-diagnostics.dialog';
 
-/** Announces changed findings once and keeps their details available in the toolbar. */
 @Component({
   selector: 'app-model-validation',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -19,6 +18,8 @@ export class ModelValidationComponent {
   private readonly dialogs: DialogService = inject(DialogService);
   private readonly toasts: ToastService = inject(ToastService);
   private readonly translations: TranslocoService = inject(TranslocoService);
+
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
 
   private toastId: string | null = null;
   private previousFindings: string = '';
@@ -38,7 +39,7 @@ export class ModelValidationComponent {
       this.previousFindings = signature;
       untracked((): void => this.announce(findings));
     });
-    inject(DestroyRef).onDestroy((): void => this.dismissToast());
+    this.destroyRef.onDestroy((): void => this.dismissToast());
   }
 
   protected handleShowDetails(): void {
@@ -48,6 +49,7 @@ export class ModelValidationComponent {
   private announce(findings: readonly Diagnostic[]): void {
     this.dismissToast();
     if (!findings.length) return;
+
     this.toastId = this.toasts.show({
       title: this.translations.translate('editor.validationTitle'),
       message: this.translations.translate('editor.validationSummary', { count: findings.length, message: findings[0]?.message }),

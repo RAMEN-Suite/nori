@@ -1,0 +1,51 @@
+<sui-card *transloco="let t" size="xs" variant="border">
+  <div class="flex items-center gap-1">
+    @if (isLocal()) {
+      <button
+        suiButton
+        severity="neutral"
+        variant="text"
+        size="xs"
+        shape="circle"
+        [attr.aria-label]="t('editor.duplicateNode')"
+        [suiTooltip]="t('editor.duplicateNode')"
+        placement="bottom"
+        [showDelay]="600"
+        (click)="nodeEditing.duplicate(nodeId())"
+      >
+        <svg lucideCopy class="size-3.5" aria-hidden="true"></svg>
+      </button>
+    }
+    @if (refinement()) {
+      <button
+        suiButton
+        severity="neutral"
+        variant="text"
+        size="xs"
+        shape="circle"
+        [attr.aria-label]="t('editor.refineNode')"
+        [suiTooltip]="t('editor.refineNode')"
+        placement="bottom"
+        [showDelay]="600"
+        [disabled]="nodeEditing.creating()"
+        (click)="handleRefine()"
+      >
+        <svg lucideGitBranch class="size-3.5" aria-hidden="true"></svg>
+      </button>
+    }
+    <button
+      suiButton
+      severity="error"
+      variant="text"
+      size="xs"
+      shape="circle"
+      [attr.aria-label]="t(isLocal() ? 'editor.removeNode' : 'editor.removeFromCanvas')"
+      [suiTooltip]="t(isLocal() ? 'editor.removeNode' : 'editor.removeFromCanvas')"
+      placement="bottom"
+      [showDelay]="600"
+      (click)="handleRemove()"
+    >
+      <svg lucideTrash class="size-3.5" aria-hidden="true"></svg>
+    </button>
+  </div>
+</sui-card>
