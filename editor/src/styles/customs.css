@@ -31,6 +31,7 @@ body {
   --nori-radius-preview: 0.5rem;
   --nori-preview-border: color-mix(in oklab, var(--color-base-content) 18%, transparent);
   --nori-preview-opacity: 0.8;
+  --nori-entry-backdrop-opacity: 0.6;
   --nori-graph-fill: color-mix(in oklab, var(--color-base-content) 4%, var(--color-base-100));
   --nori-region-fill: color-mix(in oklab, var(--color-primary) 28%, transparent);
   --nori-grid: color-mix(in oklab, var(--color-base-content) 6%, transparent);

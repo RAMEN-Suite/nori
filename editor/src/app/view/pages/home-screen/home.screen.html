@@ -1,4 +1,5 @@
 <main *transloco="let t" class="entry-screen relative isolate flex min-h-full flex-col overflow-y-auto">
+  <app-entry-backdrop class="home-backdrop" />
   <header class="entry-chrome flex justify-end px-5 py-5 sm:px-6" data-nori-motion>
     <app-settings-button />
   </header>
@@ -9,9 +10,7 @@
   >
     <div class="home-brand flex flex-col items-center justify-center gap-5 text-center md:gap-3">
       <app-brand-illustration />
-      <div class="home-heading" data-nori-motion>
-        <h1 id="home-title" class="home-title">Nori</h1>
-      </div>
+      <h1 id="home-title" class="sr-only">Nori</h1>
     </div>
 
     <sui-card class="entry-card home-actions mx-auto block w-full max-w-md" data-nori-motion size="lg" variant="border">

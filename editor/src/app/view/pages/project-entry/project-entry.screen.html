@@ -1,4 +1,5 @@
 <main *transloco="let t" class="entry-screen relative isolate flex min-h-full flex-col overflow-y-auto">
+  <app-entry-backdrop />
   <header class="entry-chrome flex items-center justify-between px-5 py-5 sm:px-6">
     <button suiButton severity="neutral" variant="text" size="sm" routerLink="/" [disabled]="busy()">
       <svg lucideArrowLeft class="size-4" aria-hidden="true"></svg>{{ t('create.back') }}

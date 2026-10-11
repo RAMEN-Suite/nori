@@ -9,6 +9,7 @@ import { NavigationService } from '../../../services/navigation.service';
 import { StorageService } from '../../../services/storage.service';
 import { WindowState } from '../../../states/window.state';
 import { BrandIllustrationComponent } from '../../components/brand-illustration/brand-illustration.component';
+import { EntryBackdropComponent } from '../../components/entry-backdrop/entry-backdrop.component';
 import { SettingsButtonComponent } from '../../components/settings-button/settings-button.component';
 
 @Component({
@@ -25,6 +26,7 @@ import { SettingsButtonComponent } from '../../components/settings-button/settin
     LucidePlus,
     ExternalLinkDirective,
     BrandIllustrationComponent,
+    EntryBackdropComponent,
     SettingsButtonComponent,
   ],
   templateUrl: './home.screen.html',

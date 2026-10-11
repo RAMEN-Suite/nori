@@ -6,6 +6,7 @@ import { LucideArrowLeft } from '@lucide/angular';
 import { Button } from '@sushi-kit/angular';
 import { ApplicationState } from '../../../states/application.state';
 import { WindowState } from '../../../states/window.state';
+import { EntryBackdropComponent } from '../../components/entry-backdrop/entry-backdrop.component';
 import { SettingsButtonComponent } from '../../components/settings-button/settings-button.component';
 import { ProjectCreateComponent } from '../../components/project-create/project-create.component';
 import { ProjectOpenComponent } from '../../components/project-open/project-open.component';
@@ -21,6 +22,7 @@ import { ProjectOpenComponent } from '../../components/project-open/project-open
     Button,
     LucideArrowLeft,
     SettingsButtonComponent,
+    EntryBackdropComponent,
     ProjectCreateComponent,
     ProjectOpenComponent,
   ],

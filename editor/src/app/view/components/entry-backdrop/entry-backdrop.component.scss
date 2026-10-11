@@ -1,0 +1,61 @@
+:host {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  opacity: var(--nori-entry-backdrop-opacity);
+}
+
+svg {
+  position: absolute;
+  width: clamp(15rem, 36vw, 32rem);
+  height: auto;
+  // Only the viewport clips the graph, so edges can continue beyond each corner SVG.
+  overflow: visible;
+  stroke: var(--nori-border);
+  stroke-width: 1;
+}
+
+path {
+  opacity: 0.6;
+}
+
+circle {
+  fill: var(--color-base-100);
+}
+
+.top-left {
+  top: -1.5rem;
+  left: -1.5rem;
+}
+
+.top-right {
+  top: -1.5rem;
+  right: -1.5rem;
+  transform: scaleX(-1);
+}
+
+.bottom-left {
+  bottom: -1.5rem;
+  left: -1.5rem;
+  transform: scaleY(-1);
+}
+
+.bottom-right {
+  bottom: -1.5rem;
+  right: -1.5rem;
+  transform: scale(-1);
+}
+
+/* Keep the Home illustration's own graph visually separate from the edge pattern. */
+:host(.home-backdrop) {
+  mask-image: radial-gradient(ellipse 38% 50% at 30% 50%, transparent 65%, black 100%);
+}
+
+@media (max-width: 767px) {
+  :host(.home-backdrop) {
+    mask-image: radial-gradient(ellipse 70% 40% at 50% 30%, transparent 60%, black 100%);
+  }
+}
