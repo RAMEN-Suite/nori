@@ -40,7 +40,6 @@ export class GraphMenuComponent {
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
   private readonly dialogs: DialogService = inject(DialogService);
 
-  public readonly inspectorOpen: InputSignal<boolean> = input(false);
   public readonly canvasPadding: InputSignal<GraphPadding> = input<GraphPadding>(DEFAULT_GRAPH_PADDING);
   public readonly nodeSelected: OutputEmitterRef<void> = output();
 

@@ -135,7 +135,7 @@
     "definedHere": "Hier definiert",
     "inheritedFrom": "Geerbt von {{name}}",
     "addProperty": "Eigenschaft hinzufügen",
-    "selectHint": "Wähle einen Knoten im Graphen, um seine Eigenschaften und Beziehungen zu bearbeiten.",
+    "selectHint": "Wähle einen Knoten aus, um seine Eigenschaften anzusehen und zu bearbeiten.",
     "loading": "Projekt wird geladen…",
     "renameNode": "Knoten umbenennen",
     "duplicateNode": "Knoten duplizieren",

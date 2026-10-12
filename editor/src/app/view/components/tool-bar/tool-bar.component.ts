@@ -23,6 +23,7 @@ import {
   LucidePencil,
   LucideNetwork,
   LucideUnlink,
+  LucideScanEye,
 } from '@lucide/angular';
 import { Button, Card, Divider, Tooltip } from '@sushi-kit/angular';
 import { Transformer } from '../../../core/helper/Transformer';
@@ -62,6 +63,7 @@ import { SettingsButtonComponent } from '../settings-button/settings-button.comp
     LucidePalette,
     LucideLink2,
     LucideUnlink,
+    LucideScanEye,
   ],
   templateUrl: './tool-bar.component.html',
   styleUrl: './tool-bar.component.scss',
@@ -77,6 +79,8 @@ export class ToolBarComponent {
   public readonly catalogueOpen: InputSignal<boolean> = input(true);
   public readonly levelsOpen: InputSignal<boolean> = input(false);
   public readonly baseNodesOpen: InputSignal<boolean> = input(true);
+  public readonly inspectorOpen: InputSignal<boolean> = input(true);
+  public readonly toggleInspector: OutputEmitterRef<void> = output();
   public readonly toggleBaseNodes: OutputEmitterRef<void> = output();
   public readonly toggleCatalogue: OutputEmitterRef<void> = output();
   public readonly toggleLevels: OutputEmitterRef<void> = output();
@@ -96,7 +100,8 @@ export class ToolBarComponent {
       else this.toggleCatalogue.emit();
     },
     m: (): void => this.toggleLevels.emit(),
-    'shift+r': (): void => this.resetGraph.emit(),
+    i: (): void => this.toggleInspector.emit(),
+    'shift+r': (): void => this.handleResetLayout(),
     f: (): void => this.fitGraph.emit(),
     c: (): void => this.configureColours.emit(),
     p: (): void => this.handleEditProject(),
@@ -142,6 +147,10 @@ export class ToolBarComponent {
     } catch (error: unknown) {
       this.storage.reportError(error);
     }
+  }
+
+  protected handleResetLayout(): void {
+    if (this.workspace.view.editable()) this.resetGraph.emit();
   }
 
   protected handleUndo(): void {

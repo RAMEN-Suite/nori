@@ -69,7 +69,6 @@ export class GraphComponent implements AfterViewInit {
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
   private readonly navigation: NavigationService = inject(NavigationService);
 
-  public readonly inspectorOpen: InputSignal<boolean> = input(false);
   public readonly graphData: InputSignal<GraphData> = input<GraphData>({ nodes: [], links: [] });
   public readonly settings: InputSignal<GraphLayoutSettings> = input({
     ...DEFAULT_GRAPH_LAYOUT_SETTINGS,
@@ -101,9 +100,6 @@ export class GraphComponent implements AfterViewInit {
   private previousSettings?: GraphLayoutSettings;
   private recordId: string | null = null;
   private currentTransform: ZoomTransform = d3.zoomIdentity;
-  private inspectorRecordId: string | null = null;
-  private wasInspectorOpen: boolean = false;
-  private inspectorTransition: number = 0;
 
   public constructor() {
     this.translations.langChanges$.pipe(takeUntilDestroyed()).subscribe((): void => {
@@ -138,7 +134,6 @@ export class GraphComponent implements AfterViewInit {
   public ngAfterViewInit(): void {
     this.mountSvg();
     this.render(this.graphData());
-    this.syncInspectorViewport(this.inspectorOpen());
     this.destroyRef.onDestroy((): void => this.cleanup());
   }
 
@@ -200,22 +195,19 @@ export class GraphComponent implements AfterViewInit {
     effect((): void => {
       const data: GraphData = this.graphData();
       const settings: GraphLayoutSettings = this.settings();
-      const inspectorOpen: boolean = this.inspectorOpen();
       const recordId: string | null = this.workspace.store.currentModelRecord()?.modelId ?? null;
 
       if (!this.rootGroupSelection) return;
 
       const hasGraphChanged: boolean = this.previousGraphData !== data;
       const haveSettingsChanged: boolean = this.previousSettings !== settings;
-      if (!hasGraphChanged && !haveSettingsChanged && this.recordId === recordId && inspectorOpen === this.wasInspectorOpen)
-        return;
+      if (!hasGraphChanged && !haveSettingsChanged && this.recordId === recordId) return;
 
       this.previousGraphData = data;
       this.previousSettings = settings;
 
       untracked((): void => {
         this.render(data);
-        this.syncInspectorViewport(inspectorOpen);
       });
     });
   }
@@ -576,25 +568,6 @@ export class GraphComponent implements AfterViewInit {
     const target: SVGGElement | null | undefined =
       this.nodeSelection?.filter((node: PositionedNode): boolean => node.id === selectedId).node() ?? this.nodeSelection?.node();
     target?.querySelector<SVGRectElement>('rect.node-body')?.focus();
-  }
-
-  private syncInspectorViewport(open: boolean): void {
-    if (this.inspectorRecordId !== this.recordId) {
-      this.wasInspectorOpen = false;
-      this.inspectorRecordId = this.recordId;
-      this.inspectorTransition++;
-    }
-    if (open === this.wasInspectorOpen) return;
-    this.wasInspectorOpen = open;
-
-    const transition: number = ++this.inspectorTransition;
-    if (!open) return;
-    // Wait for panel padding to reach the graph before measuring its free area.
-    this.scheduleFrame((): void => {
-      if (transition !== this.inspectorTransition) return;
-      const duration: number = this.appearance.state().animations ? 450 : 0;
-      this.fitToLayoutAnimated(duration);
-    });
   }
 
   private updateViewBox(): void {

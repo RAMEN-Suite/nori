@@ -135,7 +135,7 @@
     "definedHere": "Defined here",
     "inheritedFrom": "Inherited from {{name}}",
     "addProperty": "Add property",
-    "selectHint": "Select a node in the graph to edit its properties and relationships.",
+    "selectHint": "Select a node to view and edit its properties.",
     "loading": "Loading project…",
     "renameNode": "Rename node",
     "duplicateNode": "Duplicate node",

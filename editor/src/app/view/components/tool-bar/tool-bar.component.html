@@ -78,6 +78,22 @@
       >
         <svg lucideLayers class="size-4" aria-hidden="true"></svg>
       </button>
+      <button
+        suiButton
+        severity="neutral"
+        [variant]="inspectorOpen() ? 'soft' : 'text'"
+        size="sm"
+        shape="circle"
+        aria-keyshortcuts="I"
+        [attr.aria-label]="t('editor.inspector')"
+        [attr.aria-pressed]="inspectorOpen()"
+        [suiTooltip]="t('editor.inspector') + ' (I)'"
+        placement="bottom"
+        [showDelay]="600"
+        (click)="toggleInspector.emit()"
+      >
+        <svg lucideScanEye class="size-4" aria-hidden="true"></svg>
+      </button>
       <div
         suiDivider
         orientation="vertical"
@@ -137,7 +153,8 @@
         [suiTooltip]="t('editor.reset') + ' (Shift+R)'"
         placement="bottom"
         [showDelay]="600"
-        (click)="resetGraph.emit()"
+        [disabled]="!workspace.view.editable()"
+        (click)="handleResetLayout()"
       >
         <svg lucideNetwork class="size-4" aria-hidden="true"></svg>
       </button>

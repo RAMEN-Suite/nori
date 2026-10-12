@@ -1,21 +1,17 @@
 <main *transloco="let t" class="workspace-shell">
   <section class="workspace-canvas" data-nori-motion [attr.aria-label]="t('editor.graph')">
-    <app-visualizer
-      #graph
-      [canvasPadding]="graphPadding()"
-      [inspectorOpen]="inspectorOpen()"
-      (nodeSelected)="inspectorOpen.set(true)"
-      class="block h-full"
-    />
+    <app-visualizer #graph [canvasPadding]="graphPadding()" (nodeSelected)="inspectorOpen.set(true)" class="block h-full" />
   </section>
   <app-tool-bar
     class="workspace-toolbar"
     [catalogueOpen]="catalogueOpen()"
     [levelsOpen]="levelsOpen()"
+    [inspectorOpen]="inspectorOpen()"
     [baseNodesOpen]="baseNodesOpen()"
     (toggleBaseNodes)="baseNodesOpen.set(!baseNodesOpen())"
     (toggleCatalogue)="handleToggleCatalogue()"
     (toggleLevels)="handleToggleLevels()"
+    (toggleInspector)="inspectorOpen.set(!inspectorOpen())"
     (resetGraph)="graph.handleLayoutReset()"
     (fitGraph)="graph.handleFitView()"
     (configureColours)="graph.handleOpenColorsDialog()"
@@ -72,7 +68,9 @@
         (closePanel)="inspectorOpen.set(false)"
       >
         <svg panel-icon lucideScanEye class="size-4 shrink-0" aria-hidden="true"></svg>
-        <div class="editor-panel-scroll h-full min-h-0 overflow-auto"><router-outlet /></div>
+        <div class="editor-panel-scroll absolute inset-0 overflow-auto">
+          <router-outlet class="hidden" />
+        </div>
       </app-editor-panel>
     </div>
     <div class="panel-slot bottom-slot" data-nori-motion>

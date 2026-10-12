@@ -61,7 +61,7 @@ export class WorkspaceScreen implements OnInit {
   protected readonly levelsOpen: WritableSignal<boolean> = signal(true);
   protected readonly catalogueOpen: WritableSignal<boolean> = signal(true);
   protected readonly baseNodesOpen: WritableSignal<boolean> = signal(true);
-  protected readonly inspectorOpen: WritableSignal<boolean> = signal(false);
+  protected readonly inspectorOpen: WritableSignal<boolean> = signal(true);
 
   protected readonly levelsHeight: Signal<string> = computed(
     (): string => `${128 + Math.min(5, Math.max(2, this.storage.records().length)) * 36}px`,
@@ -90,7 +90,7 @@ export class WorkspaceScreen implements OnInit {
     effect((): void => this.ensureSelectedLevel());
 
     effect((): void => {
-      this.inspectorOpen.set(!!this.workspace.store.currentNodeId());
+      if (this.workspace.store.currentNodeId()) this.inspectorOpen.set(true);
     });
 
     effect((): void => {
