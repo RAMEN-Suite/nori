@@ -5,6 +5,8 @@ import {
   effect,
   inject,
   input,
+  output,
+  type OutputEmitterRef,
   type InputSignal,
   type Signal,
 } from '@angular/core';
@@ -25,6 +27,8 @@ import { WorkspaceService } from '../../../../services/workspace/workspace.servi
 export class CreateAttributeDialog {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   protected readonly dialogs: DialogService = inject(DialogService);
+  public readonly embedded: InputSignal<boolean> = input(false);
+  public readonly completed: OutputEmitterRef<void> = output();
   public readonly currentAttribute: InputSignal<Attribute | undefined> = input();
 
   protected name: string = '';
@@ -77,10 +81,19 @@ export class CreateAttributeDialog {
       constraints: existing?.constraints,
     };
 
-    await this.dialogs.run(async (): Promise<void> => {
-      if (existing)
-        await this.workspace.actions.updateAttribute(nodeId, existing.id, { ...input, constraints: existing.constraints });
-      else await this.workspace.actions.createAttribute(nodeId, input);
-    });
+    await this.dialogs.run(
+      async (): Promise<void> => {
+        if (existing)
+          await this.workspace.actions.updateAttribute(nodeId, existing.id, { ...input, constraints: existing.constraints });
+        else await this.workspace.actions.createAttribute(nodeId, input);
+      },
+      { closeOnSuccess: !this.embedded() },
+    );
+    if (this.embedded() && !this.dialogs.error()) this.completed.emit();
+  }
+
+  protected handleCancel(): void {
+    if (this.embedded()) this.completed.emit();
+    else this.dialogs.close();
   }
 }

@@ -1,40 +1,59 @@
-<div *transloco="let t" class="flex flex-col gap-4">
-  @if (workspace.view.currentNode(); as node) {
-    @if (node.attributes.length) {
-      <section class="flex flex-col gap-1" [attr.aria-label]="t('editor.definedHere')">
-        <h3 class="text-base-content/60 text-xs font-medium">{{ t('editor.definedHere') }}</h3>
-        <sui-list size="xs" [items]="node.attributes" [dividers]="false" [rowHover]="false" [ariaLabel]="t('editor.properties')">
-          <ng-template suiListItem let-attribute>
-            <app-node-attribute
-              class="block w-full py-1"
-              [attribute]="attribute"
-              [modelSlot]="workspace.view.nodeOwner()?.slot ?? 0"
-              [nodeId]="node.id"
-            />
-          </ng-template>
-        </sui-list>
-      </section>
-    }
-    @for (base of workspace.view.currentNodeChain(); track base.node.id) {
-      @let attributes = workspace.view.inheritedAttributes().get(base.node.id);
-      @if (attributes?.length) {
-        <section class="flex flex-col gap-1" [attr.aria-label]="t('editor.inheritedFrom', { name: base.node.name })">
-          <h3 class="text-base-content/60 text-xs font-medium">{{ t('editor.inheritedFrom', { name: base.node.name }) }}</h3>
-          <sui-list size="xs" [items]="attributes ?? []" [dividers]="false" [rowHover]="false" [ariaLabel]="t('editor.properties')">
-            <ng-template suiListItem let-item>
-              <app-node-attribute class="block w-full py-1" [attribute]="item.attribute" [modelSlot]="item.slot" [nodeId]="item.nodeId" />
+<div *transloco="let t" class="flex h-full min-h-0 flex-col gap-5">
+  <div class="editor-panel-scroll flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
+    @if (workspace.view.currentNode(); as node) {
+      @if (node.attributes.length) {
+        <section class="flex flex-col gap-1" [attr.aria-label]="t('editor.definedHere')">
+          @if (workspace.view.inheritedAttributes().size) {
+            <h3 class="text-base-content/60 text-xs font-medium">{{ t('editor.definedHere') }}</h3>
+          }
+          <sui-list size="xs" [items]="node.attributes" [dividers]="true" [rowHover]="false" [ariaLabel]="t('editor.properties')">
+            <ng-template suiListItem let-attribute>
+              <app-node-attribute
+                class="col-span-full block w-full py-2"
+                [attribute]="attribute"
+                [showActions]="false"
+                [modelSlot]="workspace.view.nodeOwner()?.slot ?? 0"
+                [nodeId]="node.id"
+              />
             </ng-template>
           </sui-list>
         </section>
       }
+      @for (base of workspace.view.currentNodeChain(); track base.node.id) {
+        @let attributes = workspace.view.inheritedAttributes().get(base.node.id);
+        @if (attributes?.length) {
+          <section class="flex flex-col gap-1" [attr.aria-label]="t('editor.inheritedFrom', { name: base.node.name })">
+            <sui-list size="xs" [items]="attributes ?? []" [dividers]="true" [rowHover]="false" [ariaLabel]="t('editor.properties')">
+              <ng-template suiListItem let-item>
+                <app-node-attribute
+                  class="col-span-full block w-full py-2"
+                  [attribute]="item.attribute"
+                  [showActions]="false"
+                  [modelSlot]="item.slot"
+                  [nodeId]="item.nodeId"
+                />
+              </ng-template>
+            </sui-list>
+          </section>
+        }
+      }
+      @if (!node.attributes.length && !workspace.view.inheritedAttributes().size) {
+        <p class="text-base-content/60 py-2 text-sm">{{ t('editor.noProperties') }}</p>
+      }
     }
-    @if (!node.attributes.length && !workspace.view.inheritedAttributes().size) {
-      <p class="text-base-content/60 py-2 text-sm">{{ t('editor.noProperties') }}</p>
-    }
-  }
-  @if (workspace.view.nodeEditable()) {
-    <button suiButton severity="neutral" size="sm" variant="outlined" class="w-full" (click)="handleOpenCreateAttribute()">
-      <svg lucidePlus class="size-3.5" aria-hidden="true"></svg>{{ t('editor.addProperty') }}
-    </button>
+  </div>
+  @if (workspace.view.nodeEditable() || (workspace.view.editable() && isAnnotation())) {
+    <footer class="flex shrink-0 flex-col gap-2">
+      @if (isAnnotation()) {
+        <button suiButton severity="neutral" variant="soft" size="sm" class="w-full" (click)="handleEditAnnotations()">
+          <svg lucideTags class="size-3.5" aria-hidden="true"></svg>{{ t('editor.editAnnotations') }}
+        </button>
+      }
+      @if (workspace.view.nodeEditable()) {
+        <button suiButton severity="primary" size="sm" class="w-full" (click)="handleEditProperties()">
+          <svg lucidePencil class="size-3.5" aria-hidden="true"></svg>{{ t('editor.editProperties') }}
+        </button>
+      }
+    </footer>
   }
 </div>

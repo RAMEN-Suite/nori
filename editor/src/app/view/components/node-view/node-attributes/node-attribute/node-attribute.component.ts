@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, input, type InputSignal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  input,
+  output,
+  type InputSignal,
+  type OutputEmitterRef,
+} from '@angular/core';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { LucideArrowUpRight, LucidePencil, LucideTrash } from '@lucide/angular';
 import { type Attribute, type Bounds } from '@ramen-suite/core/model';
@@ -27,6 +36,11 @@ export class NodeAttributeComponent {
 
   private dialogRef: DialogRef | null = null;
 
+  public readonly showActions: InputSignal<boolean> = input(true);
+  public readonly managed: InputSignal<boolean> = input(false);
+  public readonly editRequested: OutputEmitterRef<Attribute> = output();
+  public readonly removeRequested: OutputEmitterRef<Attribute> = output();
+
   public readonly nodeId: InputSignal<string | undefined> = input();
   public readonly modelSlot: InputSignal<number> = input(0);
   public readonly attribute: InputSignal<Attribute | undefined> = input();
@@ -38,15 +52,29 @@ export class NodeAttributeComponent {
     });
   }
 
-  protected formatAttributeType(bounds: Bounds, typeName: string): string {
-    const upper: string = bounds.upperBound === -1 ? '*' : String(bounds.upperBound);
-    return `${typeName} · ${bounds.lowerBound}..${upper}`;
+  protected formatAttributeCount(bounds: Bounds): string {
+    const { lowerBound: minimum, upperBound: maximum } = bounds;
+    if (maximum === 0) return this.translations.translate('editor.propertyCount.none');
+    if (minimum === 1 && maximum === 1) return this.translations.translate('editor.propertyCount.required');
+    if (minimum === 0 && maximum === 1) return this.translations.translate('editor.propertyCount.optional');
+    if (minimum === maximum) return this.translations.translate('editor.propertyCount.exact', { count: minimum });
+    if (maximum === -1) {
+      if (minimum === 0) return this.translations.translate('editor.propertyCount.any');
+      if (minimum === 1) return this.translations.translate('editor.propertyCount.oneOrMore');
+      return this.translations.translate('editor.propertyCount.atLeast', { count: minimum });
+    }
+    if (minimum === 0) return this.translations.translate('editor.propertyCount.atMost', { count: maximum });
+    return this.translations.translate('editor.propertyCount.range', { minimum, maximum });
   }
 
   protected handleOpenUpdateAttribute(): void {
     const currentAttribute: Attribute | undefined = this.attribute();
     if (!currentAttribute) return;
 
+    if (this.managed()) {
+      this.editRequested.emit(currentAttribute);
+      return;
+    }
     this.dialogRef?.close();
     this.dialogRef = this.dialogs.open(CreateAttributeDialog, {
       headerKey: 'editor.editProperty',
@@ -59,6 +87,10 @@ export class NodeAttributeComponent {
     const currentAttribute: Attribute | undefined = this.attribute();
     if (!currentAttribute) return;
 
+    if (this.managed()) {
+      this.removeRequested.emit(currentAttribute);
+      return;
+    }
     const currentNodeId: string | null = this.workspace.store.currentNodeId();
     if (!currentNodeId) return;
 

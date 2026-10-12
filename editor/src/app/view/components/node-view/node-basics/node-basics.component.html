@@ -1,5 +1,5 @@
 @if (workspace.view.currentNode(); as node) {
-  <section *transloco="let t" class="flex flex-col gap-4" [attr.aria-label]="node.name">
+  <section *transloco="let t" class="flex flex-col" [attr.aria-label]="node.name">
     <div class="flex min-h-8 items-start gap-2">
       @if (editingName() && workspace.view.nodeEditable()) {
         <input
@@ -41,36 +41,5 @@
         }
       }
     </div>
-    @if (base(); as parent) {
-      <div class="flex min-w-0 items-center gap-2">
-        <button
-          suiButton
-          severity="neutral"
-          variant="text"
-          class="h-auto min-w-0 p-0"
-          [attr.aria-label]="t('editor.openNodeSource', { name: parent.node.name, model: storage.modelsById().get(parent.modelId)?.name })"
-          [suiTooltip]="t('editor.refines', { name: parent.node.name })"
-          placement="bottom"
-          [showDelay]="600"
-          (click)="handleOpenNode(parent.modelId, parent.node.id)"
-        >
-          <sui-chip size="sm" severity="neutral" variant="soft" class="max-w-full">
-            <span class="size-2 shrink-0 rounded-full" [style.background-color]="baseColour()" aria-hidden="true"></span>
-            <span class="truncate">{{ parent.node.name }}</span>
-          </sui-chip>
-        </button>
-      </div>
-    } @else if (workspace.view.nodeOwner(); as owner) {
-      <button
-        suiButton
-        severity="neutral"
-        variant="text"
-        class="h-auto self-start p-0"
-        [attr.aria-label]="t('editor.openNodeSource', { name: node.name, model: owner.name })"
-        (click)="handleOpenNode(owner.gmodel.id, node.id)"
-      >
-        <sui-chip size="sm" severity="neutral" variant="soft" [label]="owner.name" />
-      </button>
-    }
   </section>
 }

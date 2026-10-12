@@ -1,16 +1,19 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, type Signal } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { LucidePlus } from '@lucide/angular';
+import { LucidePencil, LucideTags } from '@lucide/angular';
+import { RAMEN_ELEMENT } from '@ramen-suite/core/ramen';
 import { Button, List, ListItemTemplate } from '@sushi-kit/angular';
 import { DialogService, type DialogRef } from '../../../../services/dialog.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
-import { CreateAttributeDialog } from '../../dialogs/create-attribute/create-attribute.dialog';
+import type { NodeLevel } from '../../../../services/workspace/workspace.view';
+import { EditAnnotationsDialog } from '../../dialogs/edit-annotations/edit-annotations.dialog';
+import { EditPropertiesDialog } from '../../dialogs/edit-properties/edit-properties.dialog';
 import { NodeAttributeComponent } from './node-attribute/node-attribute.component';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-node-attributes',
-  imports: [TranslocoDirective, List, ListItemTemplate, NodeAttributeComponent, Button, LucidePlus],
+  imports: [TranslocoDirective, List, ListItemTemplate, NodeAttributeComponent, Button, LucidePencil, LucideTags],
   templateUrl: './node-attributes.component.html',
   styleUrl: './node-attributes.component.scss',
 })
@@ -21,6 +24,12 @@ export class NodeAttributesComponent {
 
   private dialogRef: DialogRef | null = null;
 
+  protected readonly isAnnotation: Signal<boolean> = computed(
+    (): boolean =>
+      this.workspace.view.currentNode()?.id === RAMEN_ELEMENT.ANNOTATION ||
+      this.workspace.view.currentNodeChain().some((base: NodeLevel): boolean => base.node.id === RAMEN_ELEMENT.ANNOTATION),
+  );
+
   public constructor() {
     this.destroyRef.onDestroy((): void => {
       this.dialogRef?.close();
@@ -28,10 +37,15 @@ export class NodeAttributesComponent {
     });
   }
 
-  protected handleOpenCreateAttribute(): void {
+  protected handleEditProperties(): void {
     this.dialogRef?.close();
-    this.dialogRef = this.dialogs.open(CreateAttributeDialog, {
-      headerKey: 'editor.addProperty',
+    this.dialogRef = this.dialogs.open(EditPropertiesDialog, {
+      headerKey: 'editor.editProperties',
     });
+  }
+
+  protected handleEditAnnotations(): void {
+    this.dialogRef?.close();
+    this.dialogRef = this.dialogs.open(EditAnnotationsDialog, { headerKey: 'editor.editAnnotations' });
   }
 }

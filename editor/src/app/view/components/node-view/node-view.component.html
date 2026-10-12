@@ -1,8 +1,4 @@
-<section *transloco="let t" class="flex min-h-full flex-col gap-6 px-5 pt-2 pb-5" [attr.aria-label]="t('editor.inspector')">
+<section *transloco="let t" class="flex h-full min-h-0 flex-col gap-3 px-5 pt-2 pb-5" [attr.aria-label]="t('editor.inspector')">
   <app-node-basics />
-  <div suiDivider class="m-0" aria-hidden="true"></div>
-  <section class="flex flex-col gap-4" [attr.aria-label]="t('editor.properties')">
-    <h3 class="text-sm font-semibold">{{ t('editor.properties') }}</h3>
-    <app-node-attributes />
-  </section>
+  <app-node-attributes class="min-h-0 flex-1" />
 </section>

@@ -20,7 +20,7 @@ import {
   type UpdateRelationInput,
   type WorkspaceElement,
 } from '@ramen-suite/core/model';
-import { RamenModel } from '@ramen-suite/core/ramen';
+import { RamenModel, type AnnotationInput, type AnnotationUpdate } from '@ramen-suite/core/ramen';
 import { type GraphView, type ModelRecord, type NodeColors, type ViewSettings } from '../../models/ModelRecord';
 import { StorageService } from '../storage.service';
 import { RelationHistory } from './relation-history';
@@ -107,6 +107,21 @@ export class WorkspaceActions {
 
   public async removeAttribute(nodeId: string, attributeId: string): Promise<void> {
     this.store.getDraft().removeAttribute(nodeId, attributeId);
+    await this.saveCurrentModel();
+  }
+
+  public async createAnnotation(input: AnnotationInput): Promise<void> {
+    this.store.getDraft().createAnnotation(input);
+    await this.saveCurrentModel();
+  }
+
+  public async updateAnnotation(annotationId: string, input: AnnotationUpdate): Promise<void> {
+    this.store.getDraft().updateAnnotation(annotationId, input);
+    await this.saveCurrentModel();
+  }
+
+  public async removeAnnotation(annotationId: string): Promise<void> {
+    this.store.getDraft().removeAnnotation(annotationId);
     await this.saveCurrentModel();
   }
 
