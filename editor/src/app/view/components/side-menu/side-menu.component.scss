@@ -6,30 +6,16 @@
 .node-group {
   position: relative;
 }
-.node-group + .node-group {
-  margin-top: 0.5rem;
-}
 .node-accordion {
   position: relative;
   z-index: 0;
-  --sui-accordion-background: transparent;
-  --sui-accordion-border-color: transparent;
-  --sui-accordion-content-color: inherit;
 }
 .node-group-add {
   position: absolute;
   z-index: 2;
-  top: 0.5rem;
+  top: 0.3125rem;
   right: 0.875rem;
 }
 .readonly-node {
   --editor-list-action-space: 0.75rem;
-}
-
-.editor-list-actions svg {
-  opacity: var(--nori-action-icon-opacity);
-  transition: opacity 160ms ease;
-}
-.editor-list-actions button:is(:hover, :focus-visible) svg {
-  opacity: 1;
 }

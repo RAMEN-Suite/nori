@@ -64,7 +64,7 @@ export class WorkspaceScreen implements OnInit {
   protected readonly inspectorOpen: WritableSignal<boolean> = signal(true);
 
   protected readonly levelsHeight: Signal<string> = computed(
-    (): string => `${128 + Math.min(5, Math.max(2, this.storage.records().length)) * 36}px`,
+    (): string => `calc(8.5rem + ${Math.min(6, Math.max(2, this.storage.records().length))} * 2.25rem)`,
   );
 
   protected readonly graphPadding: Signal<GraphPadding> = computed(

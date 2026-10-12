@@ -66,3 +66,28 @@
     max-height: 2rem;
   }
 }
+
+.node-accordion {
+  --sui-focus-ring-offset: -3px;
+  --sui-accordion-background: transparent;
+  --sui-accordion-border-color: transparent;
+  --sui-accordion-content-color: inherit;
+  --sui-accordion-trigger-min-height: 1.75rem;
+  --sui-accordion-trigger-padding-block: 0;
+  --sui-accordion-panel-padding-bottom: 0;
+}
+.node-accordion .editor-list {
+  padding-block: 0;
+}
+.node-group + .node-group,
+.node-accordion + .node-accordion {
+  --sui-focus-ring-offset: -3px;
+  margin-top: 0.625rem;
+}
+.editor-list-actions svg {
+  opacity: var(--nori-action-icon-opacity);
+  transition: opacity 160ms ease;
+}
+.editor-list-actions button:is(:hover, :focus-visible) svg {
+  opacity: 1;
+}

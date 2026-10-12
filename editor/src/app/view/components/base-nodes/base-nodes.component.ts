@@ -98,11 +98,6 @@ export class BaseNodesComponent {
       .filter((group: BaseNodeGroup): boolean => group.nodes.length > 0);
   });
 
-  protected handleListKey(event: KeyboardEvent): void {
-    const undo: boolean = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z';
-    if (event.key !== 'Tab' && event.key !== 'Escape' && !undo) event.stopPropagation();
-  }
-
   protected handleGroupExpansion(key: string, expanded: readonly string[]): void {
     this.collapsedGroups.update((current: ReadonlySet<string>): ReadonlySet<string> => {
       const next: Set<string> = new Set(current);

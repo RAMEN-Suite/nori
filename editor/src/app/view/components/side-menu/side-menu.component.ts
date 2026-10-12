@@ -121,11 +121,6 @@ export class SideMenuComponent {
     });
   }
 
-  protected handleListKey(event: KeyboardEvent): void {
-    const undo: boolean = (event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z';
-    if (event.key !== 'Tab' && event.key !== 'Escape' && !undo) event.stopPropagation();
-  }
-
   protected handleGroupTab(event: Event): void {
     if (!(event instanceof KeyboardEvent) || !(event.currentTarget instanceof HTMLElement)) return;
 

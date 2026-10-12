@@ -27,7 +27,6 @@
             @if (group.items.length) {
               <sui-list
                 class="editor-list"
-                (keydown)="handleListKey($event)"
                 size="xs"
                 [items]="group.items"
                 [trackBy]="trackNode"
