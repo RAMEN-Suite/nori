@@ -129,11 +129,13 @@ export class WorkspaceView {
     return choices.filter((choice: RelationSuggestion): boolean => !ancestors.has(choice.ref));
   }
 
-  public resolveTypeLabel(typeId: string): string {
-    const type: DataTypeSuggestion | undefined = this.dataTypeSuggestions().find(
-      (item: DataTypeSuggestion): boolean => item.ref === typeId || item.dataTypeId === typeId,
-    );
-    return type?.name ?? typeId;
+  public resolveTypeLabel(typeId: string, modelSlot: number = this.store.currentSlot()): string {
+    const modelId: string | undefined = this.storage.recordsBySlot().get(modelSlot)?.gmodel.id;
+    if (!modelId) return typeId;
+
+    const reference: string = ModelRef.isQualified(typeId) ? typeId : ModelRef.qualify(modelId, typeId);
+    const reader: RamenModel = this.editable() ? this.store.getDraft() : this.store.getWorkspace();
+    return reader.getDataType(reference)?.name ?? typeId;
   }
 
   private collectInheritedAttributes(): ReadonlyMap<string, readonly InheritedAttribute[]> {

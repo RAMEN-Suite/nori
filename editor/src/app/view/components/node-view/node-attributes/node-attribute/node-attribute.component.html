@@ -11,7 +11,7 @@
         }
       </div>
       <p class="text-base-content/60 mt-1 text-xs leading-relaxed break-words">
-        {{ workspace.view.resolveTypeLabel(property.typeId) }} · {{ formatAttributeCount(property.bounds) }}
+        {{ workspace.view.resolveTypeLabel(property.typeId, modelSlot()) }} · {{ formatAttributeCount(property.bounds) }}
       </p>
       @if (property.bounds.upperBound !== 1 && (property.isOrdered || property.isUnique)) {
         <p class="text-base-content/60 text-xs leading-relaxed">
