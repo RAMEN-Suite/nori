@@ -29,6 +29,7 @@ import { type GraphTool, GraphToolsService } from '../../../../services/workspac
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { ApplicationState } from '../../../../states/application.state';
 import { NodeActionsComponent } from '../node-actions/node-actions.component';
+import { GraphAutoLayout, type NodePosition } from './graph.auto-layout';
 import { getLinkPath } from './graph.geometry';
 import { GraphRenderer } from './graph.renderer';
 import { positionLinkLabels } from './graph.labels';
@@ -77,6 +78,9 @@ export class GraphComponent implements AfterViewInit {
   public readonly nodeSelected: OutputEmitterRef<void> = output();
 
   protected readonly nodeActionsPosition: WritableSignal<{ x: number; y: number } | null> = signal(null);
+
+  private readonly autoLayout: GraphAutoLayout = new GraphAutoLayout();
+  private layoutRequest: number = 0;
 
   private readonly renderer: GraphRenderer = new GraphRenderer(this.translations);
 
@@ -144,7 +148,45 @@ export class GraphComponent implements AfterViewInit {
   }
 
   public resetView(): void {
-    this.render(this.graphData(), true);
+    void this.resetLayout().catch((error: unknown): void => this.storage.reportError(error));
+  }
+
+  private async resetLayout(): Promise<void> {
+    const model: RenderModel | undefined = this.renderModel;
+    if (!model?.nodes.length) return;
+    const request: number = ++this.layoutRequest;
+    const positions: ReadonlyMap<string, NodePosition> = await this.autoLayout.arrange(model);
+    if (this.destroyRef.destroyed || request !== this.layoutRequest || model !== this.renderModel) return;
+
+    this.animateLayout(model, positions);
+  }
+
+  private animateLayout(model: RenderModel, positions: ReadonlyMap<string, NodePosition>): void {
+    const starts: Map<string, NodePosition> = new Map(
+      model.nodes.map((node: PositionedNode): [string, NodePosition] => [node.id, { x: node.x, y: node.y }]),
+    );
+    const move: (progress: number) => void = (progress: number): void => {
+      for (const node of model.nodes) {
+        const start: NodePosition | undefined = starts.get(node.id);
+        const target: NodePosition | undefined = positions.get(node.id);
+        if (start && target)
+          setNodePosition(node, start.x + (target.x - start.x) * progress, start.y + (target.y - start.y) * progress);
+      }
+      this.updateNodePositions();
+      this.updateLinkPositions();
+    };
+    this.rootGroupSelection?.interrupt('layout');
+    if (!this.appearance.state().animations) {
+      move(1);
+      this.fitView();
+      return;
+    }
+    this.rootGroupSelection
+      ?.transition('layout')
+      .duration(450)
+      .ease(d3.easeCubicInOut)
+      .tween('positions', (): ((progress: number) => void) => move)
+      .on('end', (): void => this.fitView());
   }
 
   private registerColorChangesEffect(): void {
@@ -224,14 +266,16 @@ export class GraphComponent implements AfterViewInit {
     this.updateViewBox();
   }
 
-  private render(data: GraphData, reset: boolean = false): void {
+  private render(data: GraphData): void {
+    this.layoutRequest++;
+    this.rootGroupSelection?.interrupt('layout');
     if (!this.rootGroupSelection) return;
     const record: ModelRecord | null = untracked((): ModelRecord | null => this.workspace.store.currentModelRecord());
     const recordId: string | null = record?.modelId ?? null;
 
     const changedLevel: boolean = this.recordId !== recordId;
     const saved: GraphView | undefined = changedLevel ? record?.view?.graph : undefined;
-    const previous: RenderModel | undefined = changedLevel || reset ? undefined : this.renderModel;
+    const previous: RenderModel | undefined = changedLevel ? undefined : this.renderModel;
     const viewport: ViewportSize = getViewportSize(this.getHostElement());
     const model: RenderModel = buildRenderModel({ data, settings: this.settings(), viewport });
     const needsFit: boolean = this.restorePositions(model, previous, saved);
@@ -388,6 +432,8 @@ export class GraphComponent implements AfterViewInit {
       .drag<SVGGElement, PositionedNode>()
       .filter((): boolean => this.graphTools.tool() !== 'disconnect' && !this.graphTools.pending())
       .on('start', (event: d3.D3DragEvent<SVGGElement, PositionedNode, unknown>): void => {
+        this.layoutRequest++;
+        this.rootGroupSelection?.interrupt('layout');
         if (this.graphTools.tool() === 'connect') {
           this.clearConnectionTimer();
         }
@@ -633,6 +679,8 @@ export class GraphComponent implements AfterViewInit {
   }
 
   private cleanup(): void {
+    this.layoutRequest++;
+    this.rootGroupSelection?.interrupt('layout');
     this.clearConnectionTimer();
     for (const id of this.frames) window.cancelAnimationFrame(id);
     this.frames.clear();

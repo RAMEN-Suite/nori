@@ -1,4 +1,5 @@
 <nav *transloco="let t" class="editor-chrome" [attr.aria-label]="t('editor.toolbar')">
+  @let catalogueShortcut = workspace.view.editable() ? 'R' : 'B';
   @let catalogueLabel = t(workspace.view.editable() ? 'editor.refinements' : 'editor.baseNodes');
   <a
     suiButton
@@ -29,10 +30,10 @@
         [variant]="catalogueOpen() ? 'soft' : 'text'"
         size="sm"
         shape="circle"
-        aria-keyshortcuts="K"
+        [attr.aria-keyshortcuts]="catalogueShortcut"
         [attr.aria-label]="catalogueLabel"
         [attr.aria-pressed]="catalogueOpen()"
-        [suiTooltip]="catalogueLabel + ' (K)'"
+        [suiTooltip]="catalogueLabel + ' (' + catalogueShortcut + ')'"
         placement="bottom"
         [showDelay]="600"
         (click)="toggleCatalogue.emit()"
@@ -131,14 +132,14 @@
         variant="text"
         size="sm"
         shape="circle"
-        aria-keyshortcuts="R"
+        aria-keyshortcuts="Shift+R"
         [attr.aria-label]="t('editor.reset')"
-        [suiTooltip]="t('editor.reset') + ' (R)'"
+        [suiTooltip]="t('editor.reset') + ' (Shift+R)'"
         placement="bottom"
         [showDelay]="600"
         (click)="resetGraph.emit()"
       >
-        <svg lucideRotateCcw class="size-4" aria-hidden="true"></svg>
+        <svg lucideNetwork class="size-4" aria-hidden="true"></svg>
       </button>
       <button
         suiButton

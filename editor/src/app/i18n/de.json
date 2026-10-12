@@ -115,7 +115,7 @@
     "emptyTitle": "Womit möchtest du beginnen?",
     "emptyDescription": "Verfeinere einen Knoten über das Plus neben seiner Kategorie oder wähle unten einen Ausgangsknoten.",
     "graphHint": "Auswählen zum Bearbeiten · Ziehen zum Anordnen · Scrollen zum Zoomen",
-    "reset": "Graph zurücksetzen",
+    "reset": "Layout zurücksetzen",
     "fit": "Ansicht einpassen",
     "hideIsolated": "Unverbundene Knoten ausblenden",
     "colours": "Knotenfarben",
@@ -168,12 +168,11 @@
     "chooseRelation": "Beziehung auswählen",
     "chooseRelationHint": "Wähle die Bedeutung der neuen Beziehung.",
     "noRelation": "Für diese Richtung ist keine Beziehung zwischen den Knoten erlaubt.",
-    "confirmRemoveConnection": "Die Beziehung „{{name}}“ von „{{from}}“ zu „{{to}}“ wird entfernt. Das kann nicht rückgängig gemacht werden.",
+    "confirmRemoveConnection": "Die Beziehung „{{name}}“ von „{{from}}“ zu „{{to}}“ wird mit ihren abhängigen Beziehungen entfernt.",
     "connectHint": "Start und Ziel auswählen oder eine Beziehung ziehen.\nDoppelklick für eine Selbstbeziehung.",
     "disconnectHint": "Klicke auf die Beziehung, die Du entfernen möchtest.",
     "connectionSourceHint": "{{name}} ist ausgewählt. Wähle den Zielknoten.",
     "cancelConnection": "Auswahl abbrechen",
-    "undoRelationChanged": "Die Beziehung wurde inzwischen bearbeitet. Sie kann nicht durch diese Aktion rückgängig gemacht werden.",
     "editProject": "Projekt bearbeiten",
     "removeConnectionTitle": "Beziehung entfernen?",
     "removeNodeTitle": "Knoten entfernen?",
@@ -211,6 +210,8 @@
     "confirmRemoveBaseNode": "„{{name}}“ wird aus dieser Zeichenfläche entfernt. Seine Beziehungen auf dieser Ebene und deren Verfeinerungen werden ebenfalls entfernt. Die ursprüngliche Knotendefinition bleibt erhalten.",
     "removeBaseNodeWithRelations": "Mit Beziehungen entfernen",
     "removeFromCanvas": "Von Zeichenfläche entfernen",
-    "showOnCanvas": "Auf Zeichenfläche anzeigen"
+    "showOnCanvas": "Auf Zeichenfläche anzeigen",
+    "undoRelation": "Beziehungsänderung rückgängig machen",
+    "redoRelation": "Beziehungsänderung wiederholen"
   }
 }

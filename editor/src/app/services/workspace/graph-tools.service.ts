@@ -32,8 +32,7 @@ export class GraphToolsService {
       const modelId: string | undefined = this.workspace.store.currentModel()?.id;
       if (modelId === this.modelId) return;
       this.modelId = modelId;
-      this.activeTool.set('select');
-      this.cancel();
+      this.exit();
     });
   }
 
@@ -45,6 +44,11 @@ export class GraphToolsService {
 
   public selectSource(id: string): void {
     this.selectedSource.set(id);
+  }
+
+  public exit(): void {
+    this.activeTool.set('select');
+    this.cancel();
   }
 
   public cancel(): void {

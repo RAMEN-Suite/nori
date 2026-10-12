@@ -21,7 +21,7 @@ import {
   LucidePalette,
   LucideGitBranch,
   LucidePencil,
-  LucideRotateCcw,
+  LucideNetwork,
   LucideUnlink,
 } from '@lucide/angular';
 import { Button, Card, Divider, Tooltip } from '@sushi-kit/angular';
@@ -57,7 +57,7 @@ import { SettingsButtonComponent } from '../settings-button/settings-button.comp
     LucideLayers,
     LucideBoxes,
     LucideArrowLeft,
-    LucideRotateCcw,
+    LucideNetwork,
     LucideMaximize,
     LucidePalette,
     LucideLink2,
@@ -87,13 +87,16 @@ export class ToolBarComponent {
   private readonly shortcuts: Readonly<Record<string, () => void>> = {
     l: (): void => this.graphTools.toggle('connect'),
     d: (): void => this.graphTools.toggle('disconnect'),
-    escape: (): void => this.graphTools.cancel(),
-    k: (): void => this.toggleCatalogue.emit(),
+    escape: (): void => this.graphTools.exit(),
+    r: (): void => {
+      if (this.workspace.view.editable()) this.toggleCatalogue.emit();
+    },
     b: (): void => {
       if (this.workspace.view.editable()) this.toggleBaseNodes.emit();
+      else this.toggleCatalogue.emit();
     },
     m: (): void => this.toggleLevels.emit(),
-    r: (): void => this.resetGraph.emit(),
+    'shift+r': (): void => this.resetGraph.emit(),
     f: (): void => this.fitGraph.emit(),
     c: (): void => this.configureColours.emit(),
     p: (): void => this.handleEditProject(),
@@ -113,13 +116,13 @@ export class ToolBarComponent {
   );
 
   protected handleShortcut(event: KeyboardEvent): void {
-    if (event.defaultPrevented || event.repeat || event.isComposing || this.dialogs.current()) return;
-    if (this.isTextInput(event.target)) return;
+    if (this.isShortcutBlocked(event)) return;
 
-    if (this.handleUndoShortcut(event) || this.handleBackShortcut(event)) return;
+    if (this.handleHistoryShortcut(event) || this.handleBackShortcut(event)) return;
     if (event.ctrlKey || event.metaKey || event.altKey) return;
 
-    const action: (() => void) | undefined = this.shortcuts[event.key.toLowerCase()];
+    const key: string = `${event.shiftKey ? 'shift+' : ''}${event.key.toLowerCase()}`;
+    const action: (() => void) | undefined = this.shortcuts[key];
     if (!action) return;
 
     event.preventDefault();
@@ -141,6 +144,24 @@ export class ToolBarComponent {
     }
   }
 
+  protected handleUndo(): void {
+    if (this.graphTools.pending()) return;
+    this.graphTools.cancel();
+    void this.workspace.actions.undoRelation().catch((error: unknown): void => this.storage.reportError(error));
+  }
+
+  protected handleRedo(): void {
+    if (this.graphTools.pending()) return;
+    this.graphTools.cancel();
+    void this.workspace.actions.redoRelation().catch((error: unknown): void => this.storage.reportError(error));
+  }
+
+  private isShortcutBlocked(event: KeyboardEvent): boolean {
+    return (
+      event.defaultPrevented || event.repeat || event.isComposing || !!this.dialogs.current() || this.isTextInput(event.target)
+    );
+  }
+
   private isTextInput(target: EventTarget | null): boolean {
     return (
       target instanceof Element &&
@@ -148,10 +169,14 @@ export class ToolBarComponent {
     );
   }
 
-  private handleUndoShortcut(event: KeyboardEvent): boolean {
-    if (!(event.ctrlKey || event.metaKey) || event.altKey || event.shiftKey || event.key.toLowerCase() !== 'z') return false;
+  private handleHistoryShortcut(event: KeyboardEvent): boolean {
+    if (!(event.ctrlKey || event.metaKey) || event.altKey) return false;
+    const key: string = event.key.toLowerCase();
+    if (key !== 'z' && !(key === 'y' && !event.shiftKey)) return false;
+
     event.preventDefault();
-    void this.workspace.actions.undoRelation().catch((error: unknown): void => this.storage.reportError(error));
+    if (event.shiftKey || key === 'y') this.handleRedo();
+    else this.handleUndo();
     return true;
   }
 

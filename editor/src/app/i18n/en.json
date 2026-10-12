@@ -115,7 +115,7 @@
     "emptyTitle": "Where would you like to start?",
     "emptyDescription": "Refine a node using the plus beside its category, or choose a starting node below.",
     "graphHint": "Select to edit · Drag to arrange · Scroll to zoom",
-    "reset": "Reset graph",
+    "reset": "Reset layout",
     "fit": "Fit to screen",
     "hideIsolated": "Hide isolated nodes",
     "colours": "Node colours",
@@ -168,12 +168,11 @@
     "chooseRelation": "Choose relationship",
     "chooseRelationHint": "Choose what the new relationship represents.",
     "noRelation": "No relationship is permitted between these nodes in this direction.",
-    "confirmRemoveConnection": "The relationship “{{name}}” from “{{from}}” to “{{to}}” will be removed. This cannot be undone.",
+    "confirmRemoveConnection": "The relationship “{{name}}” from “{{from}}” to “{{to}}” will be removed with its dependent relationships.",
     "connectHint": "Select a source and target or drag a relationship.\nDouble-click for a self-relationship.",
     "disconnectHint": "Click the relationship you want to remove.",
     "connectionSourceHint": "{{name}} is selected. Choose the target node.",
     "cancelConnection": "Cancel selection",
-    "undoRelationChanged": "The relationship has since been edited and cannot be undone by this action.",
     "editProject": "Edit project",
     "removeConnectionTitle": "Remove relationship?",
     "removeNodeTitle": "Remove node?",
@@ -211,6 +210,8 @@
     "confirmRemoveBaseNode": "“{{name}}” will be removed from this canvas, along with its relationships on this level and their refinements. The original node definition will remain available.",
     "removeBaseNodeWithRelations": "Remove with relationships",
     "removeFromCanvas": "Remove from canvas",
-    "showOnCanvas": "Show on canvas"
+    "showOnCanvas": "Show on canvas",
+    "undoRelation": "Undo relationship change",
+    "redoRelation": "Redo relationship change"
   }
 }

@@ -109,6 +109,10 @@ export class WorkspaceStore {
     );
   }
 
+  public restoreModels(models: readonly Model[]): void {
+    this.restoreWorkspace(structuredClone(models));
+  }
+
   public notifyChange(): void {
     this.change.update((value: number): number => value + 1);
   }

@@ -38,7 +38,7 @@ export function buildRenderModel(input: GraphInputModel): RenderModel {
 }
 
 /** The reference model starts in the same arrangement; saved positions still take precedence. */
-function placeRamenNodes(nodes: readonly PositionedNode[]): boolean {
+export function placeRamenNodes(nodes: readonly PositionedNode[]): boolean {
   const positions: Readonly<Record<string, Point>> = {
     [RAMEN_ELEMENT.COLLECTION]: { x: 0, y: -260 },
     [RAMEN_ELEMENT.ENTITY]: { x: 0, y: 260 },

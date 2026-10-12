@@ -1,4 +1,4 @@
-import { computed, effect, inject, Injectable, signal, type Signal, type WritableSignal } from '@angular/core';
+import { inject, Injectable, type Signal } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import {
   type AttributeInput,
@@ -23,13 +23,8 @@ import {
 import { RamenModel } from '@ramen-suite/core/ramen';
 import { type GraphView, type ModelRecord, type NodeColors, type ViewSettings } from '../../models/ModelRecord';
 import { StorageService } from '../storage.service';
+import { RelationHistory } from './relation-history';
 import { WorkspaceStore } from './workspace.store';
-
-interface CreatedRelation {
-  readonly modelId: string;
-  readonly id: string;
-  readonly definition: string;
-}
 
 export type CreateSlotInput = Required<Pick<ModelInput, 'name' | 'uri' | 'version'>>;
 export type UpdateSlotInput = CreateSlotInput;
@@ -40,21 +35,11 @@ export class WorkspaceActions {
   private readonly store: WorkspaceStore = inject(WorkspaceStore);
   private readonly translations: TranslocoService = inject(TranslocoService);
 
-  private readonly relationHistory: WritableSignal<readonly CreatedRelation[]> = signal([]);
-  private readonly undoing: WritableSignal<boolean> = signal(false);
+  private readonly relationHistory: RelationHistory = inject(RelationHistory);
   private pendingSave: Promise<void> = Promise.resolve();
 
-  public readonly canUndoRelation: Signal<boolean> = computed((): boolean => {
-    const modelId: string | undefined = this.store.currentModel()?.id;
-    return !this.undoing() && this.relationHistory().some((entry: CreatedRelation): boolean => entry.modelId === modelId);
-  });
-
-  public constructor() {
-    effect((): void => {
-      this.storage.loadedProjectId();
-      this.relationHistory.set([]);
-    });
-  }
+  public readonly canUndoRelation: Signal<boolean> = this.relationHistory.canUndo;
+  public readonly canRedoRelation: Signal<boolean> = this.relationHistory.canRedo;
 
   public async createNode(input: CreateNodeInput): Promise<Node> {
     this.requireAvailableNodeName(input.name);
@@ -138,46 +123,28 @@ export class WorkspaceActions {
   }
 
   public async createRelation(input: RelationInput): Promise<Relation> {
+    const before: readonly Model[] = this.relationHistory.capture();
     const draft: RamenModel = this.store.getDraft();
     const relation: Relation = draft.createRelation(input).element;
-    const modelId: string = draft.getModel().id;
-    this.relationHistory.update((history: readonly CreatedRelation[]): readonly CreatedRelation[] => [
-      ...history,
-      { modelId, id: relation.id, definition: JSON.stringify(relation) },
-    ]);
+    this.relationHistory.record(draft.getModel().id, before);
     await this.saveCurrentModel();
 
     return relation;
   }
 
-  /** Reverses the latest unchanged relationship creation on the active level. */
   public async undoRelation(): Promise<void> {
-    if (!this.canUndoRelation()) return;
-    const modelId: string | undefined = this.store.currentModel()?.id;
-    const entry: CreatedRelation | undefined = [...this.relationHistory()]
-      .reverse()
-      .find((item: CreatedRelation): boolean => item.modelId === modelId);
-    if (!entry) return;
+    await this.relationHistory.undo((): Promise<void> => this.saveCurrentModel());
+  }
 
-    const draft: RamenModel = this.store.getDraft();
-    const relation: Relation | undefined = draft.getModel().relations.find((item: Relation): boolean => item.id === entry.id);
-    if (relation && JSON.stringify(relation) !== entry.definition) {
-      throw new Error(this.translations.translate('editor.undoRelationChanged'));
-    }
-    this.undoing.set(true);
-    try {
-      if (relation) draft.removeRelation(entry.id);
-      this.relationHistory.update((history: readonly CreatedRelation[]): readonly CreatedRelation[] =>
-        history.filter((item: CreatedRelation): boolean => item !== entry),
-      );
-      if (relation) await this.saveCurrentModel();
-    } finally {
-      this.undoing.set(false);
-    }
+  public async redoRelation(): Promise<void> {
+    await this.relationHistory.redo((): Promise<void> => this.saveCurrentModel());
   }
 
   public async updateRelation(id: string, patch: UpdateRelationInput): Promise<void> {
-    this.store.getDraft().updateRelation(id, patch);
+    const before: readonly Model[] = this.relationHistory.capture();
+    const draft: RamenModel = this.store.getDraft();
+    draft.updateRelation(id, patch);
+    this.relationHistory.record(draft.getModel().id, before);
     await this.saveCurrentModel();
   }
 
@@ -186,7 +153,10 @@ export class WorkspaceActions {
   }
 
   public async removeRelation(id: string, cascade: boolean = false): Promise<void> {
-    this.store.getDraft().removeRelation(id, { cascade });
+    const before: readonly Model[] = this.relationHistory.capture();
+    const draft: RamenModel = this.store.getDraft();
+    draft.removeRelation(id, { cascade });
+    this.relationHistory.record(draft.getModel().id, before);
     await this.saveCurrentModel();
   }
 
