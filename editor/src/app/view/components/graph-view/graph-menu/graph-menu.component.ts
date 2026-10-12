@@ -81,9 +81,7 @@ export class GraphMenuComponent {
 
   public handleOpenColorsDialog(): void {
     this.dialogRef?.close();
-    this.dialogRef = this.dialogs.open(NodeColorsDialog, {
-      headerKey: 'editor.colours',
-    });
+    this.dialogRef = this.dialogs.open(NodeColorsDialog, { width: '34rem', headerKey: 'editor.colours' });
   }
 
   public handleLayoutReset(): void {

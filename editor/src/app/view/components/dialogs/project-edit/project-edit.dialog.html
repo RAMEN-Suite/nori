@@ -1,34 +1,36 @@
 <form *transloco="let t" #form="ngForm" class="flex flex-col gap-5" (ngSubmit)="handleSave(form)">
-  <label class="flex flex-col gap-2">
-    <span class="text-sm font-medium">{{ t('create.name') }}</span>
-    <input
-      suiInput
-      fluid
-      name="name"
-      required
-      minlength="3"
-      maxlength="70"
-      [(ngModel)]="draft.name"
-      [disabled]="dialogs.pending()"
-      aria-describedby="edit-project-name-hint"
-    />
-    <span id="edit-project-name-hint" class="text-base-content/55 text-xs">{{ t('create.nameHint') }}</span>
-  </label>
-  <label class="flex flex-col gap-2">
-    <span class="text-sm font-medium"
-      >{{ t('create.summary') }} <span class="text-base-content/50 font-normal">{{ t('create.optional') }}</span></span
-    >
-    <textarea
-      suiTextarea
-      fluid
-      name="description"
-      rows="3"
-      maxlength="140"
-      [(ngModel)]="draft.description"
-      [disabled]="dialogs.pending()"
-      [placeholder]="t('create.summaryPlaceholder')"
-    ></textarea>
-  </label>
+  <div class="nori-dialog-scroll flex min-w-0 flex-col gap-4">
+    <label class="flex flex-col gap-2">
+      <span class="text-sm font-medium">{{ t('create.name') }}</span>
+      <input
+        suiInput
+        fluid
+        name="name"
+        required
+        minlength="3"
+        maxlength="70"
+        [(ngModel)]="draft.name"
+        [disabled]="dialogs.pending()"
+        aria-describedby="edit-project-name-hint"
+      />
+      <span id="edit-project-name-hint" class="text-base-content/55 text-xs">{{ t('create.nameHint') }}</span>
+    </label>
+    <label class="flex flex-col gap-2">
+      <span class="text-sm font-medium"
+        >{{ t('create.summary') }} <span class="text-base-content/50 font-normal">{{ t('create.optional') }}</span></span
+      >
+      <textarea
+        suiTextarea
+        fluid
+        name="description"
+        rows="3"
+        maxlength="140"
+        [(ngModel)]="draft.description"
+        [disabled]="dialogs.pending()"
+        [placeholder]="t('create.summaryPlaceholder')"
+      ></textarea>
+    </label>
+  </div>
   <footer class="nori-dialog-actions">
     <button suiButton type="button" severity="neutral" variant="text" [disabled]="dialogs.pending()" (click)="dialogs.close()">
       {{ t('common.cancel') }}

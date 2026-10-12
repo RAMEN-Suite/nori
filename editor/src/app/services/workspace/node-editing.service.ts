@@ -76,7 +76,7 @@ export class NodeEditingService {
           ],
         ],
       };
-      this.dialogs.open(ConfirmationDialog, { header: options.title, inputValues: { options } });
+      this.dialogs.open(ConfirmationDialog, { size: 'compact', header: options.title, inputValues: { options } });
     } catch (error: unknown) {
       this.storage.reportError(error);
     }
@@ -107,7 +107,7 @@ export class NodeEditingService {
           ],
         ],
       };
-      this.dialogs.open(ConfirmationDialog, { header: options.title, inputValues: { options } });
+      this.dialogs.open(ConfirmationDialog, { size: 'compact', header: options.title, inputValues: { options } });
     } catch (error: unknown) {
       this.storage.reportError(error);
     }

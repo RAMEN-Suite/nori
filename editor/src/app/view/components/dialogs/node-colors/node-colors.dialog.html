@@ -1,29 +1,37 @@
-<div *transloco="let t" class="flex min-w-0 flex-col gap-4">
-  <p class="text-base-content/65 text-sm leading-relaxed">{{ t('editor.coloursHint') }}</p>
-  <div class="colour-list max-h-80 overflow-y-auto p-2">
-    <sui-list size="xs" [items]="nodes()" [dividers]="false" [rowHover]="false">
-      <ng-template suiListItem let-option>
-        <div class="colour-row col-span-full flex items-center justify-between gap-4 rounded-(--nori-radius-input) px-3 py-2">
-          <label class="min-w-0 truncate font-medium" [for]="'node-colour-' + option.id">{{ option.name }}</label>
-          <sui-color-picker
-            class="w-44 shrink-0"
-            [id]="'node-colour-' + option.id"
-            [ariaLabel]="option.name"
-            [value]="colours()[option.id] ?? '#789cc2'"
-            (valueChange)="handleColourChange(option.id, $event)"
-          />
-        </div>
-      </ng-template>
-    </sui-list>
+<div *transloco="let t" class="nori-dialog-content">
+  <div appScrollOverflow #colourScroll="scrollOverflow" class="nori-dialog-scroll flex min-w-0 flex-col gap-4">
+    <p class="text-base-content/65 text-sm leading-relaxed">{{ t('editor.coloursHint') }}</p>
+    <div class="colour-list">
+      <sui-list size="xs" [items]="nodes()" [dividers]="false" [rowHover]="false">
+        <ng-template suiListItem let-option>
+          <div class="colour-row col-span-full flex items-center justify-between gap-4 rounded-(--nori-radius-input) px-2 py-2">
+            <label class="min-w-0 truncate text-sm font-medium" [for]="'node-colour-' + option.id">{{ option.name }}</label>
+            <sui-color-picker
+              class="w-36 shrink-0"
+              size="sm"
+              [id]="'node-colour-' + option.id"
+              [ariaLabel]="option.name"
+              [value]="colours()[option.id] ?? '#789cc2'"
+              (valueChange)="handleColourChange(option.id, $event)"
+            />
+          </div>
+        </ng-template>
+      </sui-list>
+    </div>
   </div>
-  <div class="flex flex-wrap gap-2">
+  <footer class="nori-dialog-actions">
+    @if (colourScroll.overflowing()) {
+      <span class="text-base-content/60 mr-auto flex items-center gap-1.5 text-xs"
+        ><svg lucideChevronsDown class="size-3.5 shrink-0" aria-hidden="true"></svg>{{ t('editor.scrollColours') }}</span
+      >
+    }
     <button suiButton severity="neutral" variant="soft" size="sm" [disabled]="dialogs.pending()" (click)="handleGenerateColours()">
       <svg lucideShuffle class="size-4" aria-hidden="true"></svg>
       {{ t('editor.generateColours') }}
     </button>
-    <button suiButton severity="neutral" variant="text" size="sm" [disabled]="dialogs.pending()" (click)="handleResetColours()">
+    <button suiButton severity="neutral" variant="soft" size="sm" [disabled]="dialogs.pending()" (click)="handleResetColours()">
       <svg lucideRotateCcw class="size-4" aria-hidden="true"></svg>
       {{ t('editor.resetColours') }}
     </button>
-  </div>
+  </footer>
 </div>

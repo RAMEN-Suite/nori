@@ -1,86 +1,64 @@
-<div *transloco="let t" class="flex min-w-0 flex-col gap-2">
-  @if (currentSlot() === undefined) {
-    <p class="text-base-content/60 mb-3 text-sm">{{ t('editor.levelParent', { name: parentName() }) }}</p>
-  }
-  <fieldset suiFieldset>
-    <legend suiFieldsetLegend>Basics</legend>
-    <div class="flex flex-col gap-3">
-      <div class="flex flex-col gap-2">
-        <div class="flex flex-col gap-2">
-          <input
-            #nameModel="ngModel"
-            [(ngModel)]="draftModel().name"
-            [invalid]="(nameModel.touched || isSubmitted) && !isModelNameValid()"
-            id="name"
-            name="name"
-            maxlength="70"
-            autocomplete="off"
-            suiInput
-            fluid
-            required
-          />
-          <label for="name">Model Name</label>
-        </div>
-
-        @if ((nameModel.touched || isSubmitted) && !isModelNameValid()) {
-          <p suiMessage severity="error" size="sm" variant="soft">Model name must be at least 3 characters.</p>
-        }
-      </div>
+<div *transloco="let t" class="nori-dialog-content">
+  <div class="nori-dialog-scroll flex min-w-0 flex-col gap-5">
+    @if (currentSlot() === undefined) {
+      <p class="text-base-content/65 text-sm">{{ t('editor.levelParent', { name: parentName() }) }}</p>
+    }
+    <div class="flex flex-col gap-2">
+      <label for="level-name" class="text-sm font-medium">{{ t('editor.levelName') }}</label>
+      <input
+        #nameModel="ngModel"
+        suiInput
+        fluid
+        id="level-name"
+        name="name"
+        maxlength="70"
+        autocomplete="off"
+        required
+        [(ngModel)]="draftModel().name"
+        [invalid]="(nameModel.touched || isSubmitted) && !isModelNameValid()"
+      />
+      @if ((nameModel.touched || isSubmitted) && !isModelNameValid()) {
+        <p suiMessage severity="error" size="sm" variant="soft">{{ t('editor.invalidLevelName') }}</p>
+      }
     </div>
-  </fieldset>
-
-  <fieldset suiFieldset>
-    <legend suiFieldsetLegend>Semantics</legend>
-    <div class="flex flex-col gap-3">
-      <div class="flex flex-col gap-2">
-        <div class="flex flex-col gap-2">
-          <input
-            #versionModel="ngModel"
-            [(ngModel)]="draftModel().version"
-            [invalid]="(versionModel.touched || isSubmitted) && !isVersionValid()"
-            [maxlength]="30"
-            id="version"
-            placeholder="1.0.0"
-            autocomplete="off"
-            name="version"
-            suiInput
-            fluid
-            required
-          />
-          <label for="version">Model Version</label>
-        </div>
-
-        @if ((versionModel.touched || isSubmitted) && !isVersionValid()) {
-          <p suiMessage severity="error" size="sm" variant="soft">
-            Version must comply to
-            <a href="https://semver.org/" class="text-primary" target="_blank"> semantic versioning </a>
-          </p>
-        }
-      </div>
-      <div class="flex flex-col gap-2">
-        <div class="flex flex-col gap-2">
-          <input
-            #uriModel="ngModel"
-            [(ngModel)]="draftModel().uri"
-            [invalid]="(uriModel.touched || isSubmitted) && !isUriValid()"
-            placeholder="https://example.com/"
-            id="uri"
-            autocomplete="off"
-            name="uri"
-            suiInput
-            fluid
-            required
-          />
-          <label for="uri">Model URI</label>
-        </div>
-
-        @if ((uriModel.touched || isSubmitted) && !isUriValid()) {
-          <p suiMessage severity="error" size="sm" variant="soft">Expected an absolute URI with a scheme, e.g. 'https://example.com'.</p>
-        }
-      </div>
+    <div class="flex flex-col gap-2">
+      <label for="level-version" class="text-sm font-medium">{{ t('editor.modelVersion') }}</label>
+      <input
+        #versionModel="ngModel"
+        suiInput
+        fluid
+        id="level-version"
+        name="version"
+        maxlength="30"
+        placeholder="1.0.0"
+        autocomplete="off"
+        required
+        [(ngModel)]="draftModel().version"
+        [invalid]="(versionModel.touched || isSubmitted) && !isVersionValid()"
+      />
+      @if ((versionModel.touched || isSubmitted) && !isVersionValid()) {
+        <p suiMessage severity="error" size="sm" variant="soft">{{ t('editor.invalidModelVersion') }}</p>
+      }
     </div>
-  </fieldset>
-
+    <div class="flex flex-col gap-2">
+      <label for="level-uri" class="text-sm font-medium">{{ t('editor.modelUri') }}</label>
+      <input
+        #uriModel="ngModel"
+        suiInput
+        fluid
+        id="level-uri"
+        name="uri"
+        placeholder="https://example.com/"
+        autocomplete="off"
+        required
+        [(ngModel)]="draftModel().uri"
+        [invalid]="(uriModel.touched || isSubmitted) && !isUriValid()"
+      />
+      @if ((uriModel.touched || isSubmitted) && !isUriValid()) {
+        <p suiMessage severity="error" size="sm" variant="soft">{{ t('editor.invalidModelUri') }}</p>
+      }
+    </div>
+  </div>
   <footer class="nori-dialog-actions">
     <button suiButton severity="neutral" variant="text" [disabled]="dialogs.pending()" (click)="handleCloseModal()">
       {{ t('common.cancel') }}

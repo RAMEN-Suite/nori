@@ -1,16 +1,18 @@
-<div *transloco="let t" class="flex min-w-0 flex-col gap-4">
-  <p class="text-sm font-medium">{{ workspace.store.currentModel()?.name }}</p>
-  <div class="editor-panel-scroll max-h-80 overflow-y-auto p-2">
-    <sui-list size="xs" [items]="workspace.view.validation()?.diagnostics ?? []" [dividers]="false" [rowHover]="false">
-      <ng-template suiListItem let-diagnostic>
-        <div suiMessage class="col-span-full" [severity]="diagnostic.severity === 'error' ? 'error' : 'warning'" variant="soft">
-          <p class="text-sm leading-relaxed">{{ diagnostic.message }}</p>
-        </div>
-      </ng-template>
-    </sui-list>
-    @if (!workspace.view.validation()?.diagnostics?.length) {
-      <p suiMessage severity="success" variant="soft">{{ t('editor.valid') }}</p>
-    }
+<div *transloco="let t" class="nori-dialog-content">
+  <div class="nori-dialog-scroll flex min-w-0 flex-col gap-4">
+    <p class="text-sm font-medium">{{ workspace.store.currentModel()?.name }}</p>
+    <div class="flex min-w-0 flex-col gap-3">
+      <sui-list size="xs" [items]="workspace.view.validation()?.diagnostics ?? []" [dividers]="false" [rowHover]="false">
+        <ng-template suiListItem let-diagnostic>
+          <div suiMessage class="col-span-full" [severity]="diagnostic.severity === 'error' ? 'error' : 'warning'" variant="soft">
+            <p class="text-sm leading-relaxed">{{ diagnostic.message }}</p>
+          </div>
+        </ng-template>
+      </sui-list>
+      @if (!workspace.view.validation()?.diagnostics?.length) {
+        <p suiMessage severity="success" variant="soft">{{ t('editor.valid') }}</p>
+      }
+    </div>
   </div>
   <footer class="nori-dialog-actions">
     <button suiButton severity="neutral" variant="text" (click)="dialogs.close()">{{ t('common.close') }}</button>

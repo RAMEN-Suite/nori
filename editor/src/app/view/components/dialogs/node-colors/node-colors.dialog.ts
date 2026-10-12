@@ -1,18 +1,30 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, type Signal, type WritableSignal } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { LucideRotateCcw, LucideShuffle } from '@lucide/angular';
+import { LucideRotateCcw, LucideShuffle, LucideChevronsDown } from '@lucide/angular';
 import { type Node } from '@ramen-suite/core/model';
 import { Button, ColorPicker, List, ListItemTemplate } from '@sushi-kit/angular';
 import iwanthue from 'iwanthue';
 import { getDefaultNodeColours } from '../../../../core/utils/NodeColours';
 import { type NodeColors } from '../../../../models/ModelRecord';
+import { ScrollOverflowDirective } from '../../../../directives/scroll-overflow.directive';
 import { DialogService } from '../../../../services/dialog.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-set-colors',
-  imports: [ColorPicker, Button, List, ListItemTemplate, TranslocoDirective, LucideRotateCcw, LucideShuffle],
+  imports: [
+    ScrollOverflowDirective,
+    LucideChevronsDown,
+    ColorPicker,
+    Button,
+    List,
+    ListItemTemplate,
+    TranslocoDirective,
+    LucideRotateCcw,
+    LucideShuffle,
+    LucideChevronsDown,
+  ],
   templateUrl: './node-colors.dialog.html',
   styleUrl: './node-colors.dialog.scss',
 })

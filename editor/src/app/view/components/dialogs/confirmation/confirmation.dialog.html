@@ -1,12 +1,16 @@
-<section class="flex min-w-0 flex-col gap-5">
-  <p class="text-base-content/75 text-sm leading-relaxed break-words">{{ options().message }}</p>
-  @if (options().details?.length) {
-    <ul class="text-base-content/65 list-disc space-y-1 pl-5 text-sm">
-      @for (detail of options().details; track $index) {
-        <li>{{ detail }}</li>
+<section class="nori-dialog-content">
+  <div class="nori-dialog-scroll">
+    <div class="min-w-0 space-y-3">
+      <p class="text-base-content/75 text-sm leading-relaxed break-words">{{ options().message }}</p>
+      @if (options().details?.length) {
+        <ul class="text-base-content/65 list-disc space-y-1 pl-5 text-sm">
+          @for (detail of options().details; track $index) {
+            <li>{{ detail }}</li>
+          }
+        </ul>
       }
-    </ul>
-  }
+    </div>
+  </div>
   <footer class="nori-dialog-actions">
     @for (group of options().buttons; track $index) {
       @for (button of group; track button.label) {

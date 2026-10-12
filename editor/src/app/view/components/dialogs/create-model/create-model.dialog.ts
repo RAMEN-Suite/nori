@@ -13,7 +13,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { RAMEN_MODEL } from '@ramen-suite/core/ramen';
-import { Button, Fieldset, FieldsetLegend, Input, Message } from '@sushi-kit/angular';
+import { Button, Input, Message } from '@sushi-kit/angular';
 import { type ModelRecord } from '../../../../models/ModelRecord';
 import { DialogService } from '../../../../services/dialog.service';
 import { NavigationService } from '../../../../services/navigation.service';
@@ -24,7 +24,7 @@ import { WorkspaceService } from '../../../../services/workspace/workspace.servi
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-modal-create-model',
-  imports: [TranslocoDirective, Input, Button, Fieldset, FieldsetLegend, Message, FormsModule],
+  imports: [TranslocoDirective, Input, Button, Message, FormsModule],
   templateUrl: './create-model.dialog.html',
   styleUrl: './create-model.dialog.scss',
 })
@@ -66,7 +66,7 @@ export class CreateModelDialog {
 
   protected isModelNameValid(): boolean {
     const modelName: string = this.draftModel().name.trim();
-    return modelName !== '' && modelName.length >= 3;
+    return modelName.length >= 3 && modelName.length <= 70;
   }
 
   protected isVersionValid(): boolean {

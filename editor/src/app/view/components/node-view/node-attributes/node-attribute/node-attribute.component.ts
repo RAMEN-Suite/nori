@@ -113,7 +113,7 @@ export class NodeAttributeComponent {
         ],
       ],
     };
-    this.dialogRef = this.dialogs.open(ConfirmationDialog, { header: options.title, inputValues: { options } });
+    this.dialogRef = this.dialogs.open(ConfirmationDialog, { size: 'compact', header: options.title, inputValues: { options } });
   }
 
   protected handleOpenQualifiedReference(): void {

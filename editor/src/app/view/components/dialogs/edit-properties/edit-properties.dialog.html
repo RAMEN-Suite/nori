@@ -1,4 +1,4 @@
-<section *transloco="let t" class="flex min-w-0 flex-col gap-5">
+<section *transloco="let t" class="nori-dialog-content">
   @switch (mode()) {
     @case ('edit') {
       <app-create-attribute [embedded]="true" [currentAttribute]="selected()" (completed)="handleBack()" />
@@ -16,43 +16,45 @@
       </footer>
     }
     @default {
-      @if (workspace.view.currentNode(); as node) {
-        @if (node.attributes.length) {
-          <sui-list size="sm" [items]="node.attributes" [dividers]="true" [rowHover]="false" [ariaLabel]="t('editor.properties')">
-            <ng-template suiListItem let-attribute>
-              <app-node-attribute
-                class="col-span-full block w-full py-2"
-                [attribute]="attribute"
-                [modelSlot]="workspace.store.currentSlot()"
-                [nodeId]="node.id"
-                [managed]="true"
-                (editRequested)="handleEdit($event)"
-                (removeRequested)="handleConfirmRemoval($event)"
-              />
-            </ng-template>
-          </sui-list>
-        } @else {
-          <p class="text-base-content/60 text-sm">{{ t('editor.noOwnProperties') }}</p>
-        }
-      }
-      @for (base of workspace.view.currentNodeChain(); track base.node.id) {
-        @let attributes = workspace.view.inheritedAttributes().get(base.node.id);
-        @if (attributes?.length) {
-          <section class="flex flex-col gap-2">
-            <h3 class="text-base-content/60 text-xs font-medium">{{ t('editor.inheritedFrom', { name: base.node.name }) }}</h3>
-            <sui-list size="sm" [items]="attributes ?? []" [dividers]="true" [rowHover]="false" [ariaLabel]="t('editor.properties')">
-              <ng-template suiListItem let-item>
+      <div class="nori-dialog-scroll flex min-w-0 flex-col gap-4">
+        @if (workspace.view.currentNode(); as node) {
+          @if (node.attributes.length) {
+            <sui-list size="sm" [items]="node.attributes" [dividers]="true" [rowHover]="false" [ariaLabel]="t('editor.properties')">
+              <ng-template suiListItem let-attribute>
                 <app-node-attribute
                   class="col-span-full block w-full py-2"
-                  [attribute]="item.attribute"
-                  [modelSlot]="item.slot"
-                  [nodeId]="item.nodeId"
+                  [attribute]="attribute"
+                  [modelSlot]="workspace.store.currentSlot()"
+                  [nodeId]="node.id"
+                  [managed]="true"
+                  (editRequested)="handleEdit($event)"
+                  (removeRequested)="handleConfirmRemoval($event)"
                 />
               </ng-template>
             </sui-list>
-          </section>
+          } @else {
+            <p class="text-base-content/60 text-sm">{{ t('editor.noOwnProperties') }}</p>
+          }
         }
-      }
+        @for (base of workspace.view.currentNodeChain(); track base.node.id) {
+          @let attributes = workspace.view.inheritedAttributes().get(base.node.id);
+          @if (attributes?.length) {
+            <section class="flex flex-col gap-2">
+              <h3 class="text-base-content/60 text-xs font-medium">{{ t('editor.inheritedFrom', { name: base.node.name }) }}</h3>
+              <sui-list size="sm" [items]="attributes ?? []" [dividers]="true" [rowHover]="false" [ariaLabel]="t('editor.properties')">
+                <ng-template suiListItem let-item>
+                  <app-node-attribute
+                    class="col-span-full block w-full py-2"
+                    [attribute]="item.attribute"
+                    [modelSlot]="item.slot"
+                    [nodeId]="item.nodeId"
+                  />
+                </ng-template>
+              </sui-list>
+            </section>
+          }
+        }
+      </div>
       <footer class="nori-dialog-actions">
         <button suiButton severity="neutral" variant="text" (click)="dialogs.close()">{{ t('common.close') }}</button>
         <button suiButton severity="primary" (click)="handleEdit()">

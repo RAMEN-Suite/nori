@@ -1,4 +1,4 @@
-<section *transloco="let t" class="flex min-w-0 flex-col gap-5">
+<section *transloco="let t" class="nori-dialog-content">
   @switch (mode()) {
     @case ('edit') {
       <form class="flex flex-col gap-5" (ngSubmit)="handleSave()">
@@ -29,48 +29,50 @@
       </footer>
     }
     @default {
-      <p class="text-base-content/65 text-sm leading-relaxed">{{ t('editor.annotationTypesHint') }}</p>
-      @if (annotations().length) {
-        <sui-list size="sm" [items]="annotations()" [dividers]="true" [rowHover]="false" [ariaLabel]="t('editor.editAnnotations')">
-          <ng-template suiListItem let-annotation>
-            <div class="col-span-full flex min-w-0 items-center justify-between gap-3 py-1">
-              <span class="min-w-0 text-sm font-medium break-words">{{ annotation.type }}</span>
-              <div class="flex shrink-0 gap-0.5">
-                <button
-                  suiButton
-                  severity="neutral"
-                  variant="text"
-                  size="xs"
-                  shape="circle"
-                  [attr.aria-label]="t('editor.editNamedAnnotation', { type: annotation.type })"
-                  [suiTooltip]="t('editor.editAnnotation')"
-                  placement="bottom"
-                  [showDelay]="600"
-                  (click)="handleEdit(annotation)"
-                >
-                  <svg lucidePencil class="size-3.5" aria-hidden="true"></svg>
-                </button>
-                <button
-                  suiButton
-                  severity="error"
-                  variant="text"
-                  size="xs"
-                  shape="circle"
-                  [attr.aria-label]="t('editor.removeNamedAnnotation', { type: annotation.type })"
-                  [suiTooltip]="t('editor.removeAnnotation')"
-                  placement="bottom"
-                  [showDelay]="600"
-                  (click)="handleConfirmRemoval(annotation)"
-                >
-                  <svg lucideTrash class="size-3.5" aria-hidden="true"></svg>
-                </button>
+      <div class="nori-dialog-scroll flex min-w-0 flex-col gap-4">
+        <p class="text-base-content/65 text-sm leading-relaxed">{{ t('editor.annotationTypesHint') }}</p>
+        @if (annotations().length) {
+          <sui-list size="sm" [items]="annotations()" [dividers]="true" [rowHover]="false" [ariaLabel]="t('editor.editAnnotations')">
+            <ng-template suiListItem let-annotation>
+              <div class="col-span-full flex min-w-0 items-center justify-between gap-3 py-1">
+                <span class="min-w-0 text-sm font-medium break-words">{{ annotation.type }}</span>
+                <div class="flex shrink-0 gap-0.5">
+                  <button
+                    suiButton
+                    severity="neutral"
+                    variant="text"
+                    size="xs"
+                    shape="circle"
+                    [attr.aria-label]="t('editor.editNamedAnnotation', { type: annotation.type })"
+                    [suiTooltip]="t('editor.editAnnotation')"
+                    placement="bottom"
+                    [showDelay]="600"
+                    (click)="handleEdit(annotation)"
+                  >
+                    <svg lucidePencil class="size-3.5" aria-hidden="true"></svg>
+                  </button>
+                  <button
+                    suiButton
+                    severity="error"
+                    variant="text"
+                    size="xs"
+                    shape="circle"
+                    [attr.aria-label]="t('editor.removeNamedAnnotation', { type: annotation.type })"
+                    [suiTooltip]="t('editor.removeAnnotation')"
+                    placement="bottom"
+                    [showDelay]="600"
+                    (click)="handleConfirmRemoval(annotation)"
+                  >
+                    <svg lucideTrash class="size-3.5" aria-hidden="true"></svg>
+                  </button>
+                </div>
               </div>
-            </div>
-          </ng-template>
-        </sui-list>
-      } @else {
-        <p class="text-base-content/60 text-sm">{{ t('editor.noAnnotations') }}</p>
-      }
+            </ng-template>
+          </sui-list>
+        } @else {
+          <p class="text-base-content/60 text-sm">{{ t('editor.noAnnotations') }}</p>
+        }
+      </div>
       <footer class="nori-dialog-actions">
         <button suiButton severity="neutral" variant="text" (click)="dialogs.close()">{{ t('common.close') }}</button>
         <button suiButton severity="primary" (click)="handleEdit()">

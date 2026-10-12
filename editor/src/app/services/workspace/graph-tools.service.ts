@@ -67,6 +67,7 @@ export class GraphToolsService {
       if (choices.length === 1 && choices[0]) await connect(choices[0].ref);
       else
         this.dialogs.open(ChooseRelationDialog, {
+          size: 'compact',
           headerKey: 'editor.chooseRelation',
           inputValues: {
             choices,
@@ -115,7 +116,7 @@ export class GraphToolsService {
         ],
       };
 
-      this.dialogs.open(ConfirmationDialog, { header: options.title, inputValues: { options } });
+      this.dialogs.open(ConfirmationDialog, { size: 'compact', header: options.title, inputValues: { options } });
     } catch (error: unknown) {
       this.storage.reportError(error);
     }

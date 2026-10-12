@@ -165,7 +165,7 @@ export class ModelLevelsComponent {
         ],
       ],
     };
-    this.dialogs.open(ConfirmationDialog, { header: options.title, inputValues: { options } });
+    this.dialogs.open(ConfirmationDialog, { size: 'compact', header: options.title, inputValues: { options } });
   }
 
   private async removeLevel(record: ModelRecord): Promise<void> {

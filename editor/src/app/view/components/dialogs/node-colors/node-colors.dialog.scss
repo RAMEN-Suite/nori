@@ -1,8 +1,8 @@
 .colour-list {
-  scrollbar-width: thin;
-  scrollbar-color: var(--nori-border) transparent;
+  padding: 0.5rem;
+  border: 1px solid var(--nori-border);
+  border-radius: var(--nori-radius-input);
 }
-
 .colour-row {
-  background: var(--color-base-200);
+  min-height: 3rem;
 }

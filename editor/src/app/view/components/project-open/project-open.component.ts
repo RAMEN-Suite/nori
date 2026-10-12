@@ -113,7 +113,11 @@ export class ProjectOpenComponent implements OnInit {
         ],
       ],
     };
-    this.dialogRef = this.dialogs.open(ConfirmationDialog, { headerKey: 'open.removeTitle', inputValues: { options } });
+    this.dialogRef = this.dialogs.open(ConfirmationDialog, {
+      size: 'compact',
+      headerKey: 'open.removeTitle',
+      inputValues: { options },
+    });
   }
 
   private async loadProjects(): Promise<void> {
