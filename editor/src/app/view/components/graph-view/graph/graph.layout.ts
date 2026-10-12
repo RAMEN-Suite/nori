@@ -192,7 +192,7 @@ export function getFitViewport(
   const horizontal: GraphPadding = viewport.width > 720 ? padding : { ...padding, left: 24, right: 24 };
   const width: number = Math.max(1, viewport.width - horizontal.left - horizontal.right);
   const height: number = Math.max(1, viewport.height - padding.top - padding.bottom);
-  const scale: number = Math.max(0.2, Math.min(1, width / bounds.width, height / bounds.height));
+  const scale: number = Math.max(0.2, Math.min(1.25, (width - 32) / bounds.width, (height - 32) / bounds.height));
 
   return {
     x: horizontal.left + (width - bounds.width * scale) / 2 - bounds.x * scale,
