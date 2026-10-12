@@ -39,6 +39,7 @@ import {
   GRAPH_NODE_WIDTH,
   GRAPH_NODE_HEIGHT,
   type GraphLayoutSettings,
+  type GraphPadding,
   type LinkSelection,
   type NodeDrag,
   type NodeSelection,
@@ -269,7 +270,11 @@ export class GraphComponent implements AfterViewInit {
     const saved: GraphView | undefined = changedLevel ? record?.view?.graph : undefined;
     const previous: RenderModel | undefined = changedLevel ? undefined : this.renderModel;
     const viewport: ViewportSize = getViewportSize(this.getHostElement());
-    const model: RenderModel = buildRenderModel({ data, settings: this.settings(), viewport });
+    const model: RenderModel = buildRenderModel({
+      data,
+      settings: { ...this.settings(), padding: this.getCanvasPadding() },
+      viewport,
+    });
     const needsFit: boolean = this.restorePositions(model, previous, saved);
 
     this.recordId = recordId;
@@ -308,7 +313,7 @@ export class GraphComponent implements AfterViewInit {
     const transform: ZoomTransform = saved
       ? d3.zoomIdentity.translate(saved.viewport.x, saved.viewport.y).scale(saved.viewport.scale)
       : this.currentTransform;
-    return placeNodes(added, retained, getViewportSize(this.getHostElement()), this.settings().padding, transform);
+    return placeNodes(added, retained, getViewportSize(this.getHostElement()), this.getCanvasPadding(), transform);
   }
 
   private restoreViewport(saved: GraphView | undefined, fit: boolean, needsFit: boolean): void {
@@ -576,6 +581,18 @@ export class GraphComponent implements AfterViewInit {
     this.svgSelection.attr('viewBox', `0 0 ${viewport.width} ${viewport.height}`);
   }
 
+  private getCanvasPadding(): GraphPadding {
+    const root: HTMLElement = this.getHostElement().ownerDocument.documentElement;
+    const scale: number = Number.parseFloat(window.getComputedStyle(root).fontSize) / 16;
+    const padding: GraphPadding = this.settings().padding;
+    return {
+      top: padding.top * scale,
+      bottom: padding.bottom * scale,
+      left: padding.left * scale,
+      right: padding.right * scale,
+    };
+  }
+
   private fitToLayoutAnimated(durationMilliseconds: number = 180): void {
     if (!this.svgSelection || !this.zoomBehavior || !this.rootGroupSelection) return;
 
@@ -583,7 +600,7 @@ export class GraphComponent implements AfterViewInit {
     if (!rootGroupElement) return;
 
     const viewport: ViewportSize = getViewportSize(this.getHostElement());
-    const target: GraphView['viewport'] | null = getFitViewport(viewport, this.settings().padding, rootGroupElement.getBBox());
+    const target: GraphView['viewport'] | null = getFitViewport(viewport, this.getCanvasPadding(), rootGroupElement.getBBox());
     if (!target) return;
 
     this.applyViewTransform(d3.zoomIdentity.translate(target.x, target.y).scale(target.scale), durationMilliseconds);

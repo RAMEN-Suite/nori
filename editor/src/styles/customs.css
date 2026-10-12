@@ -3,12 +3,16 @@ body {
   height: 100%;
   overflow: hidden;
 }
+html {
+  font-size: var(--nori-ui-font-size);
+}
 body {
   margin: 0;
   background: var(--color-base-200);
   color: var(--color-base-content);
 }
 :root {
+  --nori-ui-font-size: clamp(100%, calc(64% + 0.4vw), 118%);
   --nori-graph-dimmed-opacity: 0.25;
   --nori-graph-node-tint: 7%;
   --nori-action-icon-opacity: 0.55;
