@@ -1,89 +1,166 @@
-<div *transloco="let t" class="flex min-w-0 flex-col gap-6">
-  <section class="flex min-w-0 flex-col gap-3" aria-labelledby="settings-language">
-    <h3 id="settings-language" class="flex items-center gap-2 text-sm font-medium">
-      <svg lucideLanguages class="size-4 opacity-60" aria-hidden="true"></svg>{{ t('settings.language') }}
-    </h3>
-    <sui-select
-      ariaLabelledby="settings-language"
-      [fluid]="true"
-      [options]="[
-        { value: 'system', label: t('settings.languageOptions.system') },
-        { value: 'de', label: t('settings.languageOptions.de') },
-        { value: 'en', label: t('settings.languageOptions.en') },
-      ]"
-      [value]="appState.state().language"
-      (valueChange)="handleLanguage($event)"
-    />
-  </section>
+<div *transloco="let t">
+  <sui-tabs
+    class="settings-tabs"
+    style="--sui-tabs-panel-padding: 0"
+    value="appearance"
+    orientation="vertical"
+    variant="plain"
+    size="sm"
+    [ariaLabel]="t('common.settings')"
+  >
+    <ng-template suiTab value="appearance" [label]="t('settings.appearance')">
+      <div class="settings-page">
+        <div class="settings-scroll editor-panel-scroll flex min-w-0 flex-col gap-7">
+          <section class="flex min-w-0 flex-col gap-3" aria-labelledby="settings-language">
+            <h3 id="settings-language" class="flex items-center gap-2 text-sm font-medium">
+              <svg lucideLanguages class="size-4 opacity-60" aria-hidden="true"></svg>{{ t('settings.language') }}
+            </h3>
+            <sui-select
+              ariaLabelledby="settings-language"
+              [fluid]="true"
+              [options]="[
+                { value: 'system', label: t('settings.languageOptions.system') },
+                { value: 'de', label: t('settings.languageOptions.de') },
+                { value: 'en', label: t('settings.languageOptions.en') },
+              ]"
+              [value]="appState.state().language"
+              (valueChange)="handleLanguage($event)"
+            />
+          </section>
 
-  <fieldset class="flex min-w-0 flex-col gap-3">
-    <legend class="mb-3 flex items-center gap-2 text-sm font-medium">
-      <svg lucidePalette class="size-4 opacity-60" aria-hidden="true"></svg>{{ t('settings.theme') }}
-    </legend>
-    <sui-card size="xs" variant="border">
-      <sui-list size="xs" [items]="themes" [ariaLabel]="t('settings.theme')" [dividers]="true" [rowHover]="true">
-        <ng-template suiListItem let-theme>
-          <label class="settings-row">
-            <span
-              class="settings-swatch shrink-0"
-              aria-hidden="true"
-              [attr.data-theme]="theme.id === 'system' ? appState.theme().sushiTheme : theme.sushiTheme"
+          <fieldset class="flex min-w-0 flex-col gap-3">
+            <legend class="mb-3 flex items-center gap-2 text-sm font-medium">
+              <svg lucidePalette class="size-4 opacity-60" aria-hidden="true"></svg>{{ t('settings.theme') }}
+            </legend>
+            <sui-card size="xs" variant="border">
+              <sui-list size="xs" [items]="themes" [ariaLabel]="t('settings.theme')" [dividers]="true" [rowHover]="true">
+                <ng-template suiListItem let-theme>
+                  <label class="settings-row">
+                    <span
+                      class="settings-swatch shrink-0"
+                      aria-hidden="true"
+                      [attr.data-theme]="theme.id === 'system' ? appState.theme().sushiTheme : theme.sushiTheme"
+                    >
+                      <span class="settings-swatch-sidebar"></span>
+                      <span class="settings-swatch-content"><span></span><span></span><span></span></span>
+                    </span>
+                    <span class="flex min-w-0 flex-1 flex-col gap-0">
+                      <span class="text-sm leading-snug font-medium">{{ t('settings.themeOptions.' + theme.id + '.name') }}</span>
+                      <span class="text-xs leading-snug text-(--color-base-content)/65">{{
+                        t('settings.themeOptions.' + theme.id + '.description')
+                      }}</span>
+                    </span>
+                    <span class="settings-control">
+                      <input
+                        suiRadio
+                        type="radio"
+                        name="theme"
+                        severity="neutral"
+                        [value]="theme.id"
+                        [attr.aria-label]="t('settings.themeOptions.' + theme.id + '.name')"
+                        [checked]="appState.state().theme === theme.id"
+                        (change)="appState.setTheme(theme.id)"
+                      />
+                    </span>
+                  </label>
+                </ng-template>
+              </sui-list>
+            </sui-card>
+          </fieldset>
+          <section class="flex flex-col gap-3" aria-labelledby="settings-behaviour">
+            <h3 id="settings-behaviour" class="flex items-center gap-2 text-sm font-medium">
+              <svg lucideSlidersHorizontal class="size-4 opacity-60" aria-hidden="true"></svg>{{ t('settings.behaviour') }}
+            </h3>
+            <sui-card size="xs" variant="border">
+              <sui-list size="xs" [items]="animationSettings" [ariaLabel]="t('settings.behaviour')" [dividers]="true" [rowHover]="true">
+                <ng-template suiListItem>
+                  <label class="settings-row">
+                    <span class="settings-visual" aria-hidden="true">
+                      <svg lucidePlay class="size-5 opacity-60"></svg>
+                    </span>
+                    <span class="flex min-w-0 flex-1 flex-col gap-0">
+                      <span class="text-sm leading-snug font-medium">{{ t('settings.animations') }}</span>
+                      <span class="text-xs leading-snug text-(--color-base-content)/65">{{ t('settings.animationsDescription') }}</span>
+                    </span>
+                    <span class="settings-control">
+                      <input
+                        suiToggle
+                        type="checkbox"
+                        severity="neutral"
+                        [attr.aria-label]="t('settings.animations')"
+                        [checked]="appState.state().animations"
+                        (change)="appState.setAnimations($event.target.checked)"
+                      />
+                    </span>
+                  </label>
+                </ng-template>
+              </sui-list>
+            </sui-card>
+          </section>
+        </div>
+      </div>
+    </ng-template>
+    <ng-template suiTab value="shortcuts" [label]="t('settings.shortcuts')">
+      <div class="settings-page">
+        <div appScrollOverflow #shortcutScroll="scrollOverflow" class="settings-scroll editor-panel-scroll flex min-w-0 flex-col gap-7">
+          <p class="text-base-content/65 mb-1 text-xs leading-relaxed">{{ t('settings.shortcutsDescription') }}</p>
+          @if (shortcutError(); as error) {
+            <p class="text-error text-xs" role="alert">{{ error }}</p>
+          }
+          @for (group of shortcutGroups; track group.category) {
+            <section class="flex flex-col gap-3" [attr.aria-labelledby]="'shortcuts-' + group.category">
+              <h3 class="flex items-center gap-2 text-sm font-medium" [id]="'shortcuts-' + group.category">
+                @switch (group.category) {
+                  @case ('views') {
+                    <svg lucidePanelsTopLeft class="size-4 opacity-60" aria-hidden="true"></svg>
+                  }
+                  @case ('graph') {
+                    <svg lucideNetwork class="size-4 opacity-60" aria-hidden="true"></svg>
+                  }
+                  @case ('project') {
+                    <svg lucideFolder class="size-4 opacity-60" aria-hidden="true"></svg>
+                  }
+                  @case ('navigation') {
+                    <svg lucideNavigation class="size-4 opacity-60" aria-hidden="true"></svg>
+                  }
+                }
+                {{ t('settings.shortcutCategories.' + group.category) }}
+              </h3>
+              <sui-card size="xs" variant="border">
+                <div class="flex flex-col gap-2 p-1">
+                  @for (shortcut of group.shortcuts; track shortcut.id) {
+                    <label class="shortcut-row">
+                      <span class="text-sm">{{ t(shortcut.label) }}</span>
+                      <input
+                        suiInput
+                        size="sm"
+                        readonly
+                        class="shortcut-input"
+                        [attr.aria-label]="t(shortcut.label)"
+                        [value]="recording() === shortcut.id ? t('settings.recordShortcut') : shortcutService.display(shortcut.id)"
+                        (focus)="recording.set(shortcut.id)"
+                        (click)="recording.set(shortcut.id)"
+                        (blur)="recording.set(null)"
+                        (keydown)="handleShortcut($event, shortcut.id)"
+                      />
+                    </label>
+                  }
+                </div>
+              </sui-card>
+            </section>
+          }
+        </div>
+        <footer class="settings-actions">
+          @if (shortcutScroll.overflowing()) {
+            <span class="text-base-content/60 flex items-center gap-1.5 text-xs"
+              ><svg lucideChevronsDown class="size-3.5 shrink-0" aria-hidden="true"></svg>{{ t('settings.scrollShortcuts') }}</span
             >
-              <span class="settings-swatch-sidebar"></span>
-              <span class="settings-swatch-content"><span></span><span></span><span></span></span>
-            </span>
-            <span class="flex min-w-0 flex-1 flex-col gap-0">
-              <span class="text-sm leading-snug font-medium">{{ t('settings.themeOptions.' + theme.id + '.name') }}</span>
-              <span class="text-xs leading-snug text-(--color-base-content)/65">{{
-                t('settings.themeOptions.' + theme.id + '.description')
-              }}</span>
-            </span>
-            <span class="settings-control">
-              <input
-                suiRadio
-                type="radio"
-                name="theme"
-                severity="neutral"
-                [value]="theme.id"
-                [attr.aria-label]="t('settings.themeOptions.' + theme.id + '.name')"
-                [checked]="appState.state().theme === theme.id"
-                (change)="appState.setTheme(theme.id)"
-              />
-            </span>
-          </label>
-        </ng-template>
-      </sui-list>
-    </sui-card>
-  </fieldset>
-
-  <section class="flex flex-col gap-3" aria-labelledby="settings-behaviour">
-    <h3 id="settings-behaviour" class="flex items-center gap-2 text-sm font-medium">
-      <svg lucideSlidersHorizontal class="size-4 opacity-60" aria-hidden="true"></svg>{{ t('settings.behaviour') }}
-    </h3>
-    <sui-card size="xs" variant="border">
-      <sui-list size="xs" [items]="animationSettings" [ariaLabel]="t('settings.behaviour')" [dividers]="true" [rowHover]="true">
-        <ng-template suiListItem>
-          <label class="settings-row">
-            <span class="settings-visual" aria-hidden="true">
-              <svg lucidePlay class="size-5 opacity-60"></svg>
-            </span>
-            <span class="flex min-w-0 flex-1 flex-col gap-0">
-              <span class="text-sm leading-snug font-medium">{{ t('settings.animations') }}</span>
-              <span class="text-xs leading-snug text-(--color-base-content)/65">{{ t('settings.animationsDescription') }}</span>
-            </span>
-            <span class="settings-control">
-              <input
-                suiToggle
-                type="checkbox"
-                severity="neutral"
-                [attr.aria-label]="t('settings.animations')"
-                [checked]="appState.state().animations"
-                (change)="appState.setAnimations($event.target.checked)"
-              />
-            </span>
-          </label>
-        </ng-template>
-      </sui-list>
-    </sui-card>
-  </section>
+          }
+          <button suiButton severity="neutral" variant="soft" size="sm" (click)="handleResetShortcuts()">
+            {{ t('settings.resetShortcuts') }}
+          </button>
+        </footer>
+      </div>
+    </ng-template>
+  </sui-tabs>
 </div>

@@ -9,6 +9,8 @@ import {
   type OutputEmitterRef,
   type Signal,
 } from '@angular/core';
+import { type ShortcutAction } from '../../../models/Shortcut';
+import { ShortcutService } from '../../../services/shortcut.service';
 import { Router, RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import {
@@ -88,31 +90,38 @@ export class ToolBarComponent {
   public readonly fitGraph: OutputEmitterRef<void> = output();
   public readonly configureColours: OutputEmitterRef<void> = output();
 
-  private readonly shortcuts: Readonly<Record<string, () => void>> = {
-    l: (): void => this.graphTools.toggle('connect'),
-    d: (): void => this.graphTools.toggle('disconnect'),
-    escape: (): void => this.graphTools.exit(),
-    r: (): void => {
+  protected readonly shortcuts: ShortcutService = inject(ShortcutService);
+
+  private readonly actions: Readonly<Record<ShortcutAction, () => void>> = {
+    connect: (): void => this.graphTools.toggle('connect'),
+    disconnect: (): void => this.graphTools.toggle('disconnect'),
+    refinements: (): void => {
       if (this.workspace.view.editable()) this.toggleCatalogue.emit();
     },
-    b: (): void => {
+    baseNodes: (): void => {
       if (this.workspace.view.editable()) this.toggleBaseNodes.emit();
       else this.toggleCatalogue.emit();
     },
-    m: (): void => this.toggleLevels.emit(),
-    i: (): void => this.toggleInspector.emit(),
-    'shift+r': (): void => this.handleResetLayout(),
-    f: (): void => this.fitGraph.emit(),
-    c: (): void => this.configureColours.emit(),
-    p: (): void => this.handleEditProject(),
-    v: (): void => {
-      this.dialogs.open(ModelDiagnosticsDialog, { headerKey: 'editor.validationTitle' });
+    levels: (): void => this.toggleLevels.emit(),
+    inspector: (): void => this.toggleInspector.emit(),
+    reset: (): void => this.handleResetLayout(),
+    fit: (): void => this.fitGraph.emit(),
+    colours: (): void => this.configureColours.emit(),
+    project: (): void => this.handleEditProject(),
+    validation: (): void => {
+      this.dialogs.open(ModelDiagnosticsDialog, { size: 'compact', headerKey: 'editor.validationTitle' });
     },
-    e: (): void => {
+    export: (): void => {
       if (this.canExport()) void this.handleExportModel();
     },
-    ',': (): void => {
-      this.dialogs.open(SettingsDialog, { headerKey: 'common.settings' });
+    undo: (): void => this.handleUndo(),
+    redo: (): void => this.handleRedo(),
+    redoAlternative: (): void => this.handleRedo(),
+    back: (): void => {
+      void this.router.navigate(['/']).catch((error: unknown): void => this.storage.reportError(error));
+    },
+    settings: (): void => {
+      this.dialogs.open(SettingsDialog, { headerKey: 'common.settings', width: '42rem' });
     },
   };
 
@@ -123,15 +132,16 @@ export class ToolBarComponent {
   protected handleShortcut(event: KeyboardEvent): void {
     if (this.isShortcutBlocked(event)) return;
 
-    if (this.handleHistoryShortcut(event) || this.handleBackShortcut(event)) return;
-    if (event.ctrlKey || event.metaKey || event.altKey) return;
-
-    const key: string = `${event.shiftKey ? 'shift+' : ''}${event.key.toLowerCase()}`;
-    const action: (() => void) | undefined = this.shortcuts[key];
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      this.graphTools.exit();
+      return;
+    }
+    const action: ShortcutAction | null = this.shortcuts.resolve(event);
     if (!action) return;
 
     event.preventDefault();
-    action();
+    this.actions[action]();
   }
 
   protected handleEditProject(): void {
@@ -176,23 +186,5 @@ export class ToolBarComponent {
       target instanceof Element &&
       !!target.closest('input, textarea, select, [contenteditable], [role="textbox"], [role="combobox"]')
     );
-  }
-
-  private handleHistoryShortcut(event: KeyboardEvent): boolean {
-    if (!(event.ctrlKey || event.metaKey) || event.altKey) return false;
-    const key: string = event.key.toLowerCase();
-    if (key !== 'z' && !(key === 'y' && !event.shiftKey)) return false;
-
-    event.preventDefault();
-    if (event.shiftKey || key === 'y') this.handleRedo();
-    else this.handleUndo();
-    return true;
-  }
-
-  private handleBackShortcut(event: KeyboardEvent): boolean {
-    if (!event.altKey || event.key !== 'ArrowLeft' || event.ctrlKey || event.metaKey) return false;
-    event.preventDefault();
-    void this.router.navigate(['/']).catch((error: unknown): void => this.storage.reportError(error));
-    return true;
   }
 }

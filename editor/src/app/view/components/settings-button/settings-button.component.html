@@ -7,7 +7,7 @@
   size="sm"
   shape="circle"
   [attr.aria-label]="t('common.settings')"
-  [attr.aria-keyshortcuts]="shortcut()"
+  [attr.aria-keyshortcuts]="shortcut() ? shortcuts.aria('settings') : null"
   [suiTooltip]="shortcut() ? t('common.settings') + ' (' + shortcut() + ')' : ''"
   placement="bottom"
   [showDelay]="600"

@@ -47,7 +47,21 @@
       "system": "System",
       "de": "Deutsch",
       "en": "English"
-    }
+    },
+    "appearance": "Appearance",
+    "shortcuts": "Keyboard shortcuts",
+    "shortcutsDescription": "Choose a shortcut and press your preferred key combination to change it. Your changes are saved automatically.",
+    "recordShortcut": "Press keys…",
+    "shortcutConflict": "This shortcut is already assigned to “{{action}}”.",
+    "unsupportedShortcut": "This key combination is not supported.",
+    "resetShortcuts": "Restore default shortcuts",
+    "shortcutCategories": {
+      "views": "Views",
+      "graph": "Graph & relationships",
+      "project": "Project",
+      "navigation": "Navigation"
+    },
+    "scrollShortcuts": "Scroll for all shortcuts"
   },
   "create": {
     "title": "Create project",
@@ -149,7 +163,7 @@
     "importHint": "Open an exported model as a project.",
     "levelParent": "The new level builds on {{name}}.",
     "confirmRemoveLevels": "“{{name}}” and all dependent model levels will be removed. The project will remain. The following levels will be permanently removed:",
-    "coloursHint": "Choose colours for the base types. Their refinements share these colours on this model level.",
+    "coloursHint": "Choose a colour for each base type to make your graph easier to read. Its refinements use the same colour, and changes apply immediately.",
     "resetColours": "Default palette",
     "generateColours": "Generate colours",
     "saveColours": "Save colours",
@@ -240,6 +254,13 @@
     "removeAnnotation": "Remove annotation type",
     "removeNamedAnnotation": "Remove {{type}}",
     "removeAnnotationTitle": "Remove annotation type?",
-    "confirmRemoveAnnotation": "The annotation type “{{type}}” will be removed from this model level. Recorded data will not be deleted. This cannot be undone."
+    "confirmRemoveAnnotation": "The annotation type “{{type}}” will be removed from this model level. Recorded data will not be deleted. This cannot be undone.",
+    "redoRelationAlternative": "Redo relationship change (alternative)",
+    "modelVersion": "Model version",
+    "modelUri": "Model URI",
+    "invalidLevelName": "Use between 3 and 70 characters.",
+    "invalidModelVersion": "Use a semantic version, e.g. 1.0.0.",
+    "invalidModelUri": "Enter an absolute URI, e.g. https://example.com/.",
+    "scrollColours": "Scroll for all colours"
   }
 }

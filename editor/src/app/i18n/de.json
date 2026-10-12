@@ -47,7 +47,21 @@
       "system": "System",
       "de": "Deutsch",
       "en": "English"
-    }
+    },
+    "appearance": "Aussehen",
+    "shortcuts": "Tastenkürzel",
+    "shortcutsDescription": "Wähle ein Tastenkürzel aus und drücke die gewünschte Tastenkombination. Deine Änderungen werden automatisch gespeichert.",
+    "recordShortcut": "Tasten drücken…",
+    "shortcutConflict": "Dieses Kürzel ist bereits für „{{action}}“ vergeben.",
+    "unsupportedShortcut": "Diese Tastenkombination wird nicht unterstützt.",
+    "resetShortcuts": "Standardkürzel wiederherstellen",
+    "shortcutCategories": {
+      "views": "Ansichten",
+      "graph": "Graph & Beziehungen",
+      "project": "Projekt",
+      "navigation": "Navigation"
+    },
+    "scrollShortcuts": "Alle Tastenkürzel durch Scrollen"
   },
   "create": {
     "title": "Projekt erstellen",
@@ -149,7 +163,7 @@
     "importHint": "Ein exportiertes Modell als Projekt öffnen.",
     "levelParent": "Die neue Ebene baut auf {{name}} auf.",
     "confirmRemoveLevels": "„{{name}}“ und alle davon abhängigen Modellebenen werden entfernt. Das Projekt bleibt erhalten. Folgende Ebenen werden unwiderruflich entfernt:",
-    "coloursHint": "Wähle Farben für die Grundtypen. Ihre Verfeinerungen übernehmen diese Farben in dieser Modellebene.",
+    "coloursHint": "Mit einer Farbe je Grundtyp bleibt Dein Graph übersichtlich. Verfeinerungen übernehmen die Farbe, und Änderungen gelten sofort.",
     "resetColours": "Startpalette",
     "generateColours": "Farben generieren",
     "saveColours": "Farben speichern",
@@ -240,6 +254,13 @@
     "removeAnnotation": "Annotationstyp entfernen",
     "removeNamedAnnotation": "{{type}} entfernen",
     "removeAnnotationTitle": "Annotationstyp entfernen?",
-    "confirmRemoveAnnotation": "Der Annotationstyp „{{type}}“ wird aus dieser Modellebene entfernt. Aufgezeichnete Daten werden nicht gelöscht. Das kann nicht rückgängig gemacht werden."
+    "confirmRemoveAnnotation": "Der Annotationstyp „{{type}}“ wird aus dieser Modellebene entfernt. Aufgezeichnete Daten werden nicht gelöscht. Das kann nicht rückgängig gemacht werden.",
+    "redoRelationAlternative": "Beziehungsänderung wiederholen (alternativ)",
+    "modelVersion": "Modellversion",
+    "modelUri": "Modell-URI",
+    "invalidLevelName": "Verwende zwischen 3 und 70 Zeichen.",
+    "invalidModelVersion": "Verwende eine semantische Version, z. B. 1.0.0.",
+    "invalidModelUri": "Gib eine absolute URI ein, z. B. https://example.com/.",
+    "scrollColours": "Alle Farben durch Scrollen"
   }
 }

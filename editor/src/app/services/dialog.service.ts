@@ -1,8 +1,12 @@
 import { Injectable, signal, type Type, type WritableSignal } from '@angular/core';
 
+export type DialogSize = 'compact' | 'form';
+
 export interface DialogOptions {
+  readonly size?: DialogSize;
   readonly header?: string;
   readonly headerKey?: string;
+  readonly width?: string;
   readonly inputValues?: Record<string, unknown>;
 }
 
@@ -14,10 +18,10 @@ export interface OpenDialog {
   readonly component: Type<unknown>;
   readonly title: string;
   readonly titleKey: string | null;
+  readonly width: string | null;
   readonly inputs: Record<string, unknown>;
 }
 
-/** Opens one application dialog with shared focus, error and pending state. */
 @Injectable({ providedIn: 'root' })
 export class DialogService {
   public readonly current: WritableSignal<OpenDialog | null> = signal(null);
@@ -30,6 +34,7 @@ export class DialogService {
       component,
       title: options.header ?? '',
       titleKey: options.headerKey ?? null,
+      width: options.width ?? (options.size === 'compact' ? 'var(--nori-dialog-width-compact)' : null),
       inputs: options.inputValues ?? {},
     };
     this.current.set(dialog);

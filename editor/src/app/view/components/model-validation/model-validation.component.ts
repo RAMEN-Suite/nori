@@ -3,6 +3,7 @@ import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { LucideShieldCheck } from '@lucide/angular';
 import { type Diagnostic } from '@ramen-suite/core/model';
 import { Button, ToastService, Tooltip } from '@sushi-kit/angular';
+import { ShortcutService } from '../../../services/shortcut.service';
 import { DialogService } from '../../../services/dialog.service';
 import { WorkspaceService } from '../../../services/workspace/workspace.service';
 import { ModelDiagnosticsDialog } from '../dialogs/model-diagnostics/model-diagnostics.dialog';
@@ -14,6 +15,8 @@ import { ModelDiagnosticsDialog } from '../dialogs/model-diagnostics/model-diagn
   templateUrl: './model-validation.component.html',
 })
 export class ModelValidationComponent {
+  protected readonly shortcuts: ShortcutService = inject(ShortcutService);
+
   private readonly workspace: WorkspaceService = inject(WorkspaceService);
   private readonly dialogs: DialogService = inject(DialogService);
   private readonly toasts: ToastService = inject(ToastService);
@@ -43,7 +46,7 @@ export class ModelValidationComponent {
   }
 
   protected handleShowDetails(): void {
-    this.dialogs.open(ModelDiagnosticsDialog, { headerKey: 'editor.validationTitle' });
+    this.dialogs.open(ModelDiagnosticsDialog, { size: 'compact', headerKey: 'editor.validationTitle' });
   }
 
   private announce(findings: readonly Diagnostic[]): void {
