@@ -19,7 +19,7 @@ export class App {
   private readonly storage: StorageService = inject(StorageService);
   private readonly toasts: ToastService = inject(ToastService);
   private readonly translations: TranslocoService = inject(TranslocoService);
-  private readonly editorState: ApplicationState = inject(ApplicationState);
+  protected readonly editorState: ApplicationState = inject(ApplicationState);
   private readonly document: Document = inject(DOCUMENT);
 
   private errorToastId: string | null = null;

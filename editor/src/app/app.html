@@ -11,5 +11,7 @@
   horizontal="center"
   vertical="top"
   [maxVisible]="3"
+  [dismissLabel]="'common.close' | transloco"
+  [motion]="editorState.state().animations ? 'fade' : 'none'"
   [ariaLabel]="'common.notifications' | transloco"
 />
