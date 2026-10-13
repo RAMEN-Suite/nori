@@ -150,7 +150,8 @@ export class ToolBarComponent {
 
   protected handleEditProject(): void {
     const project: Manifest | null = this.storage.selectedManifest();
-    if (project) this.dialogs.open(ProjectEditDialog, { headerKey: 'editor.editProject', inputValues: { project } });
+    if (project)
+      this.dialogs.open(ProjectEditDialog, { headerKey: 'editor.editProject', width: '30rem', inputValues: { project } });
   }
 
   protected async handleExportModel(): Promise<void> {

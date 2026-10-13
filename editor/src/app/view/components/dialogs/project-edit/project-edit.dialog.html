@@ -1,36 +1,49 @@
 <form *transloco="let t" #form="ngForm" class="nori-dialog-content" (ngSubmit)="handleSave(form)">
-  <p class="text-base-content/65 shrink-0 text-sm leading-relaxed">{{ t('editor.editProjectHint') }}</p>
-  <div class="nori-dialog-scroll nori-dialog-scroll-edge min-w-0">
-    <div class="flex flex-col gap-4 rounded-(--nori-radius-input) border border-(--nori-border) p-4">
+  <div class="nori-dialog-scroll min-w-0">
+    <div class="flex min-w-0 flex-col gap-6">
       <label class="flex flex-col gap-2">
         <span class="text-sm font-medium">{{ t('create.name') }}</span>
         <input
           suiInput
           fluid
+          class="project-name-input"
           name="name"
+          #nameField="ngModel"
           required
           minlength="3"
           maxlength="70"
           [(ngModel)]="draft.name"
+          [invalid]="nameField.touched && draft.name.trim().length < 3"
           [disabled]="dialogs.pending()"
           aria-describedby="edit-project-name-hint"
         />
-        <span id="edit-project-name-hint" class="text-base-content/55 text-xs">{{ t('create.nameHint') }}</span>
+        <span id="edit-project-name-hint" class="text-xs">
+          @if (nameField.touched && draft.name.trim().length < 3) {
+            <span class="text-error">{{ t('editor.projectNameTooShort') }}</span>
+          } @else {
+            <span class="text-base-content/50">{{ t('editor.projectNameLength') }}</span>
+          }
+        </span>
       </label>
       <label class="flex flex-col gap-2">
-        <span class="text-sm font-medium"
-          >{{ t('create.summary') }} <span class="text-base-content/50 font-normal">{{ t('create.optional') }}</span></span
-        >
+        <span class="flex items-baseline justify-between gap-3 text-sm font-medium">
+          {{ t('create.summary') }}
+          <span class="text-base-content/50 text-xs font-normal">{{ t('create.optional') }}</span>
+        </span>
         <textarea
           suiTextarea
           fluid
           name="description"
-          rows="3"
+          rows="4"
+          aria-describedby="edit-project-description-count"
           maxlength="140"
           [(ngModel)]="draft.description"
           [disabled]="dialogs.pending()"
           [placeholder]="t('create.summaryPlaceholder')"
         ></textarea>
+        <span id="edit-project-description-count" class="text-base-content/45 text-right text-xs tabular-nums"
+          >{{ draft.description.length }} / 140</span
+        >
       </label>
     </div>
   </div>
@@ -44,10 +57,10 @@
       type="submit"
       size="sm"
       [loading]="dialogs.pending()"
-      [disabled]="!form.valid || draft.name.trim().length < 3 || dialogs.pending()"
+      [disabled]="!form.valid || draft.name.trim().length < 3 || !hasChanges() || dialogs.pending()"
     >
       <svg lucideSave class="size-4 shrink-0" aria-hidden="true"></svg>
-      {{ t('common.save') }}
+      {{ t('editor.saveProject') }}
     </button>
   </footer>
 </form>

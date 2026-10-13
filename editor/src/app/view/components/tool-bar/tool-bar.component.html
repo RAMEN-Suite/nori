@@ -16,9 +16,14 @@
   ></a>
   <sui-card class="editor-tools" data-nori-motion size="xs" variant="border">
     <div class="editor-tools-content flex items-center gap-1 px-3" data-nori-motion>
-      <span class="max-w-24 truncate px-2 text-sm font-medium select-none sm:max-w-48" (dblclick)="handleEditProject()">
+      <button
+        type="button"
+        class="max-w-24 cursor-pointer truncate rounded-(--nori-radius-input) px-2 text-sm font-medium sm:max-w-48"
+        [attr.aria-label]="t('editor.editProject')"
+        (click)="handleEditProject()"
+      >
         {{ storage.selectedManifest()?.name }}
-      </span>
+      </button>
       <div suiDivider orientation="vertical" class="mx-1 my-0 h-6 self-center" style="--sui-divider-margin: 0" aria-hidden="true"></div>
       <button
         suiButton
