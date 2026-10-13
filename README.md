@@ -100,7 +100,7 @@ Both commands automatically build the Angular editor and Electron process before
 
 ## Editor maintenance
 
-See [the component and extension guide](docs/editor-components.md) for component responsibilities, adding hotkeys and the recommended next refactoring boundaries.
+Start with [code conventions](docs/code-conventions.md) and [dialog design](docs/dialog-design.md). See [the component and extension guide](docs/editor-components.md) for component responsibilities, adding hotkeys and the recommended next refactoring boundaries.
 
 ---
 

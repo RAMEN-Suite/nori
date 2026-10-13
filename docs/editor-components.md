@@ -2,19 +2,21 @@
 
 ## Where behaviour belongs
 
-| Area                                      | Owner                                            | Responsibility                                                                          |
-| ----------------------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------- |
-| Panel placement and available graph space | `WorkspaceScreen`                                | Open state, column heights and canvas padding.                                          |
-| Panel frame                               | `EditorPanelComponent`                           | Shared heading, icon slot, close action, animation and hidden-state accessibility.      |
-| Refinement catalogue                      | `SideMenuComponent`                              | Categories, selection, inline naming, keyboard order and revealing newly created nodes. |
-| Base-node catalogue                       | `BaseNodesComponent`                             | Ancestor groups and adding/removing references on the current canvas.                   |
-| Model levels                              | `ModelLevelsComponent`                           | Level selection, naming and creation/removal.                                           |
-| Inspector                                 | `NodeViewComponent` and its attribute components | Selected node information and access to property/annotation editing.                    |
-| Graph                                     | `GraphComponent`                                 | Coordinate rendering, interactions, viewport and persistence.                           |
-| Graph drawing                             | `GraphRenderer`                                  | SVG nodes, edges, labels and highlighting.                                              |
-| Graph layout                              | `graph.layout.ts` and `GraphAutoLayout`          | Geometry, placement, fit calculation and automatic layout.                              |
-| Settings                                  | `SettingsDialog`                                 | Appearance and shortcut editing through the corresponding services.                     |
-| Modal lifecycle                           | `DialogService` and `DialogHostComponent`        | Opening/closing, sizing, focus, errors and pending state.                               |
+| Area                                      | Owner                                                                        | Responsibility                                                                                                                                 |
+| ----------------------------------------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Panel placement and available graph space | `WorkspaceScreen`                                                            | Open state, column heights and canvas padding.                                                                                                 |
+| Panel frame                               | `EditorPanelComponent`                                                       | Shared heading, icon slot, close action, animation and hidden-state accessibility.                                                             |
+| Scroll indicators                         | `ScrollOverflowDirective` and `ScrollHintsComponent`                         | Measure overflow and remaining scroll directions; render non-interactive hints inside a relative wrapper around the scroll area.               |
+| Refinement catalogue                      | `SideMenuComponent`                                                          | Categories, selection, inline naming, keyboard order and revealing newly created nodes.                                                        |
+| Base-node catalogue                       | `BaseNodesComponent`                                                         | Ancestor groups and adding/removing references on the current canvas.                                                                          |
+| Model levels                              | `ModelLevelsComponent`                                                       | Level selection, naming and creation/removal.                                                                                                  |
+| Property editing                          | `PropertyEditingService`, `PropertyEditorComponent`, `PropertyFormComponent` | Shared dialog editor with expandable property cards, conditional options, unsaved-change handling and inline validation; closes on navigation. |
+| Inspector                                 | `NodeViewComponent` and its attribute components                             | Selected node information and access to property/annotation editing.                                                                           |
+| Graph                                     | `GraphComponent`                                                             | Coordinate rendering, interactions, viewport and persistence.                                                                                  |
+| Graph drawing                             | `GraphRenderer`                                                              | SVG nodes, edges, labels and highlighting.                                                                                                     |
+| Graph layout                              | `graph.layout.ts` and `GraphAutoLayout`                                      | Geometry, placement, fit calculation and automatic layout.                                                                                     |
+| Settings                                  | `SettingsDialog`                                                             | Appearance and shortcut editing through the corresponding services.                                                                            |
+| Modal lifecycle                           | `DialogService` and `DialogHostComponent`                                    | Opening/closing, sizing, focus, errors and pending state.                                                                                      |
 
 Components use `WorkspaceService.store` for state, `.view` for derived information and `.actions` for changes. Keep persistence and RAMEN rules out of templates and catalogue components. `NodeEditingService` owns shared node actions; `GraphToolsService` owns relationship-tool state.
 
@@ -35,6 +37,7 @@ Bindings use lowercase keys joined with `+`, for example `shift+r` or `mod+z`. `
 
 - Build panels with `EditorPanelComponent`, place them in `WorkspaceScreen`, and include their occupied space in canvas padding. Keep animation and column resizing in the screen/frame rather than the panel contents.
 - Open dialogs through `DialogService.open`. Use the compact size for confirmations and short choices; use the default form size for editing. Use the shared scroll-content and action-footer classes.
+- Use `TooltipDirective` with `appTooltip` for Sushi tooltips. It suppresses the single automatic focus return after a dialog closes; normal hover and keyboard focus retain Sushi’s behaviour.
 - Use public Sushi tokens and APIs. The catalogue uses an inset focus offset because Sushi clips outward accordion outlines. Keep focus visible on headers, list rows and action buttons.
 - `ScrollOverflowDirective` observes the scroll container and its rendered direct children. Keep it attached to the actual scrolling element. If a future view replaces those children after initial render, extend its observation lifecycle rather than adding a second overflow detector.
 
@@ -67,3 +70,14 @@ Keep Base Nodes and Refinements as separate components: their source data and ac
 ## Verification
 
 Run `npm run lint`, `npm run format`, `npm run typecheck` and `npx ngc -p editor/tsconfig.app.json --noEmit`. For UI changes, also check keyboard navigation and focus at the edges of scrolling content. For graph changes, check saved viewport restoration and fit with panels both open and closed.
+
+## Review checkpoint (2026-10-13)
+
+Reviewed the view components against the shared conventions: presentation versus model actions, typed inputs/outputs, lifecycle cleanup, focus/keyboard behaviour, repeated UI patterns and extension points.
+
+- Kept small presentational components together; they do not benefit from per-row services or extra wrapper components.
+- Normalised imports and removed duplicate dependencies. Workspace navigation now has one subscription for selection synchronisation and editor cleanup.
+- Confirmation summaries resolve nodes and relationships from all project models, with separate compact scroll areas. Their presentation is independent of removal actions.
+- Property validation runs on a Core snapshot before changes reach the live workspace. The form preserves existing constraints and validates inherited names and keys.
+- The graph viewport remains the next meaningful extraction if graph interactions change. Its existing renderer, geometry and automatic layout boundaries are preserved.
+- The current property dialog is the baseline for the next node-editor experiment; replace its presentation without duplicating schema rules or persistence.

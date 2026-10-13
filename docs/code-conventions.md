@@ -1,0 +1,30 @@
+# Code conventions
+
+## Structure
+
+- Prefer the simplest explicit solution. Avoid speculative abstractions, hidden state, tightly coupled components and duplicated rules (KISS; avoid STUPID design).
+- Group code by responsibility: imports, types, component metadata, dependencies, inputs/outputs, state, lifecycle, user actions, private helpers. Use clear names instead of section comments.
+- Keep Angular imports first, external libraries next, project imports last. Keep all imports above declarations. Remove unused and duplicate dependencies.
+- Components own presentation and interaction. Workspace store/view/actions own model state, derived data and mutations. Persistence belongs to StorageService; RAMEN Core owns schema rules.
+- Extract a component or class when it owns a coherent behaviour, not merely to shorten a file. Prefer small typed APIs over generic components with many modes.
+
+## Angular and types
+
+- Use standalone OnPush components, signal inputs/outputs/state, computed derived state, inject and host metadata.
+- Follow ESLint: explicit member visibility, variable/parameter types and function return types; readonly references where appropriate. Avoid any, unchecked casts and non-null assertions.
+- Use effects for external synchronisation, not a second copy of derived state. Clean up observers, listeners, timers and subscriptions.
+- Guard pending actions, stale selections and model changes. Validate a trial change before mutating live model data.
+- Use semantic HTML and accessible labels. Keep focus visible and preserve keyboard navigation. Translate user-facing text into German and English.
+
+## UI and extensions
+
+- Build on public Sushi components, APIs and tokens. Share panel/dialog frames, list spacing and tooltips. Avoid private DOM selectors and one-off behaviour in consumers.
+- Keep forms, lists and actions together by task. Show validation next to its field or form. Never nest editing dialogs.
+- Comments explain a necessary constraint or surprising behaviour only. Do not narrate what the code already says.
+- See [Editor components](editor-components.md) for extension points and [Dialog design](dialog-design.md) for presentation rules.
+
+## Verification and commits
+
+- Run lint, formatting, type checks and Angular compilation. Check changed UI with mouse, keyboard, scrolling and reduced motion; test model rules with meaningful scenarios.
+- Add tests for behaviour that can regress, not for trivial reversible styling. Stop expanding checks when the concrete risk is covered.
+- Keep commits coherent. Use `type(scope): description`, with scopes defined in commitlint.config.cjs. Validate every commit with Commitlint.
