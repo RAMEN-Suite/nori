@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { LucideNetwork, LucideFolderPlus, LucideFolderOpen } from '@lucide/angular';
+import { LucideNetwork, LucidePencil, LucideFolderPlus, LucideFolderOpen } from '@lucide/angular';
 import { Button } from '@sushi-kit/angular';
 import { ElectronService } from '../../../../services/electron.service';
 import { WindowState } from '../../../../states/window.state';
@@ -8,7 +8,7 @@ import { WindowState } from '../../../../states/window.state';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-title-bar',
-  imports: [TranslocoPipe, Button, LucideNetwork, LucideFolderPlus, LucideFolderOpen],
+  imports: [TranslocoPipe, Button, LucideNetwork, LucidePencil, LucideFolderPlus, LucideFolderOpen],
   templateUrl: './title-bar.component.html',
   styleUrl: './title-bar.component.scss',
 })

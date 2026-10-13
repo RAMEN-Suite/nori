@@ -101,7 +101,7 @@ export class WorkspaceScreen implements OnInit {
 
     effect((): void => {
       const manifest: Manifest | null = this.storage.selectedManifest();
-      this.windowState.setTitle(manifest?.name ?? '');
+      this.windowState.setTitle(manifest?.name ?? '', 'pencil');
     });
   }
 

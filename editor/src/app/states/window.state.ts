@@ -3,7 +3,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslocoService } from '@jsverse/transloco';
 import { Title } from '@angular/platform-browser';
 
-export type WindowIcon = 'network' | 'folder-plus' | 'folder-open';
+export type WindowIcon = 'network' | 'pencil' | 'folder-plus' | 'folder-open';
 
 interface State {
   title: string;
@@ -33,7 +33,7 @@ export class WindowState {
     const { title, titleKey }: State = this.state();
     if (titleKey) return this.translations.translate(titleKey);
 
-    return title ? `${title} in Nori` : homeTitle;
+    return title || homeTitle;
   });
 
   public constructor() {
@@ -42,8 +42,8 @@ export class WindowState {
     });
   }
 
-  public setTitle(title: string): void {
-    this.state.set({ ...defaultState, title });
+  public setTitle(title: string, icon: WindowIcon = 'network'): void {
+    this.state.set({ ...defaultState, title, icon });
   }
 
   public setTitleKey(titleKey: string, icon: WindowIcon = 'network'): void {
