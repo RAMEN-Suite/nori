@@ -1,15 +1,16 @@
 import { ChangeDetectionStrategy, Component, inject, input, type InputSignal } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { LucideSettings } from '@lucide/angular';
-import { Button, Tooltip } from '@sushi-kit/angular';
-import { ShortcutService } from '../../../services/shortcut.service';
+import { Button } from '@sushi-kit/angular';
+import { TooltipDirective } from '../../../directives/tooltip.directive';
 import { DialogService } from '../../../services/dialog.service';
+import { ShortcutService } from '../../../services/shortcut.service';
 import { SettingsDialog } from '../dialogs/settings/settings.dialog';
 
 @Component({
   selector: 'app-settings-button',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslocoDirective, Button, Tooltip, LucideSettings],
+  imports: [TranslocoDirective, Button, TooltipDirective, LucideSettings],
   templateUrl: './settings-button.component.html',
 })
 export class SettingsButtonComponent {
@@ -19,6 +20,6 @@ export class SettingsButtonComponent {
   public readonly shortcut: InputSignal<string | null> = input<string | null>(null);
 
   protected handleOpen(): void {
-    this.dialogs.open(SettingsDialog, { headerKey: 'common.settings', width: '42rem' });
+    this.dialogs.open(SettingsDialog, { closeOnBackdrop: true, headerKey: 'common.settings', width: '42rem' });
   }
 }

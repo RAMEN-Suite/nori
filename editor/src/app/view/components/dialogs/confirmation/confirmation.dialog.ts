@@ -1,11 +1,17 @@
 import { ChangeDetectionStrategy, Component, inject, input, type InputSignal } from '@angular/core';
+import { LucideCheck, LucideTrash, LucideX } from '@lucide/angular';
 import { Button, type ButtonSeverity } from '@sushi-kit/angular';
+import { type AffectedLevel, type AffectedRelation } from '../../../../core/utils/RemovalSummary';
 import { DialogService } from '../../../../services/dialog.service';
+import { ConfirmationContentComponent, type AffectedNode } from './confirmation-content.component';
 
 export interface ConfirmationOptions {
   title: string;
   message: string;
   details?: readonly string[];
+  affectedNodes?: readonly AffectedNode[];
+  affectedRelations?: readonly AffectedRelation[];
+  affectedLevels?: readonly AffectedLevel[];
   buttons: ConfirmationButton[][];
 }
 
@@ -19,7 +25,7 @@ export interface ConfirmationButton {
 @Component({
   selector: 'app-confirmation',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Button],
+  imports: [Button, ConfirmationContentComponent, LucideCheck, LucideTrash, LucideX],
   templateUrl: './confirmation.dialog.html',
   styleUrl: './confirmation.dialog.scss',
 })

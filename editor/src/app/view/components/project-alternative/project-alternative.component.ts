@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, output, type InputSignal, type OutputEmitterRef } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { Button } from '@sushi-kit/angular';
 import { LucideFolderOpen, LucideFolderPlus } from '@lucide/angular';
+import { Button } from '@sushi-kit/angular';
 
 @Component({
   selector: 'app-project-alternative',

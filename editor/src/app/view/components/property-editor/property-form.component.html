@@ -1,0 +1,128 @@
+<form *transloco="let t" class="property-form" (ngSubmit)="handleSave()">
+  <fieldset class="property-fields" [disabled]="!editable() || pending()">
+    <div class="property-basics">
+      <label class="property-field"
+        >{{ t('editor.propertyName') }}
+        <input suiInput fluid size="sm" name="name" [(ngModel)]="name" required />
+      </label>
+      <div class="property-field">
+        <span>{{ t('editor.dataType') }}</span>
+        <sui-select
+          [fluid]="true"
+          size="sm"
+          [disabled]="!editable() || pending()"
+          [ariaLabel]="t('editor.dataType')"
+          [options]="typeOptions()"
+          [value]="typeId"
+          (valueChange)="handleType($event)"
+        />
+      </div>
+    </div>
+    <div class="property-options">
+      <label class="property-option-row">
+        <span>{{ t('editor.propertyCount.required') }}</span>
+        <input
+          suiToggle
+          severity="neutral"
+          size="sm"
+          type="checkbox"
+          name="required"
+          [ngModel]="required"
+          (ngModelChange)="handleRequired($event)"
+        />
+      </label>
+      <label class="property-option-row">
+        <span>{{ t('editor.propertyCount.multiple') }}</span>
+        <input
+          suiToggle
+          severity="neutral"
+          size="sm"
+          type="checkbox"
+          name="multiple"
+          [ngModel]="multiple"
+          (ngModelChange)="handleMultiple($event)"
+        />
+      </label>
+      <label class="property-option-row">
+        <span>{{ t('editor.readOnlyProperty') }}</span>
+        <input suiToggle severity="neutral" size="sm" type="checkbox" name="readonly" [(ngModel)]="isReadOnly" />
+      </label>
+      @if (multiple) {
+        <div class="property-dependent" data-nori-motion>
+          <label class="property-option-row">
+            <span>{{ t('editor.orderedValues') }}</span>
+            <input suiToggle severity="neutral" size="sm" type="checkbox" name="ordered" [(ngModel)]="isOrdered" />
+          </label>
+          <label class="property-option-row">
+            <span>{{ t('editor.allowDuplicates') }}</span>
+            <input
+              suiToggle
+              severity="neutral"
+              size="sm"
+              type="checkbox"
+              name="duplicates"
+              [ngModel]="!isUnique"
+              (ngModelChange)="isUnique = !$event"
+            />
+          </label>
+        </div>
+      }
+      @if (lowerBound === 1 && upperBound === 1 && (!hasOtherKey() || isKey)) {
+        <div class="property-dependent" data-nori-motion>
+          <label class="property-option-row">
+            <span>{{ t('editor.useAsKey') }}</span>
+            <input suiToggle severity="neutral" size="sm" type="checkbox" name="key" [(ngModel)]="isKey" />
+          </label>
+        </div>
+      }
+    </div>
+    <details #limits [open]="advanced" (toggle)="advanced = limits.open">
+      <summary class="property-advanced-title">{{ t('editor.morePropertyOptions') }}</summary>
+      <div class="mt-3 grid grid-cols-2 gap-3">
+        <label class="property-field"
+          >{{ t('editor.minimumCount') }}
+          <input
+            suiInput
+            fluid
+            size="sm"
+            type="number"
+            name="minimum"
+            min="0"
+            [(ngModel)]="lowerBound"
+            (ngModelChange)="handleBounds()"
+            required
+          />
+        </label>
+        <label class="property-field"
+          >{{ t('editor.maximumCount') }}
+          <input
+            suiInput
+            fluid
+            size="sm"
+            type="number"
+            name="maximum"
+            min="-1"
+            [(ngModel)]="upperBound"
+            (ngModelChange)="handleBounds()"
+            required
+          />
+        </label>
+      </div>
+    </details>
+  </fieldset>
+  @if (error(); as message) {
+    <p class="text-error text-sm" role="alert">{{ message }}</p>
+  }
+  @if (editable()) {
+    <footer class="nori-dialog-actions">
+      <button suiButton type="button" severity="neutral" variant="text" size="sm" (click)="handleCancel()" [disabled]="pending()">
+        <svg lucideX class="size-4 shrink-0" aria-hidden="true"></svg>
+        {{ t('common.cancel') }}
+      </button>
+      <button suiButton type="submit" size="sm" [loading]="pending()" [disabled]="!name.trim() || !typeId || pending()">
+        <svg lucideSave class="size-4 shrink-0" aria-hidden="true"></svg>
+        {{ t('common.save') }}
+      </button>
+    </footer>
+  }
+</form>

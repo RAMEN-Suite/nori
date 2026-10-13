@@ -1,0 +1,76 @@
+:host {
+  min-width: 0;
+}
+.property-form {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1rem;
+}
+.property-fields {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1rem;
+}
+.property-basics {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 0.75rem;
+}
+.property-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+.property-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.property-option-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+.property-dependent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.875rem;
+  border-radius: var(--nori-radius-input);
+  background: color-mix(in oklab, var(--color-base-content) 3%, transparent);
+  animation: property-options-arrive 180ms ease-out both;
+}
+.property-advanced-title {
+  font-size: 0.75rem;
+  color: color-mix(in oklab, var(--color-base-content) 65%, transparent);
+  cursor: pointer;
+}
+@keyframes property-options-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .property-dependent {
+    animation: none;
+  }
+}
+@media (max-width: 480px) {
+  .property-basics {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

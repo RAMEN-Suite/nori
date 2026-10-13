@@ -8,9 +8,11 @@
         </label>
         <footer class="nori-dialog-actions">
           <button suiButton type="button" severity="neutral" variant="text" [disabled]="dialogs.pending()" (click)="handleBack()">
+            <svg lucideX class="size-4 shrink-0" aria-hidden="true"></svg>
             {{ t('common.cancel') }}
           </button>
           <button suiButton type="submit" severity="primary" [loading]="dialogs.pending()" [disabled]="!type().trim() || dialogs.pending()">
+            <svg lucideSave class="size-4 shrink-0" aria-hidden="true"></svg>
             {{ t('common.save') }}
           </button>
         </footer>
@@ -18,12 +20,14 @@
     }
     @case ('remove') {
       <h3 class="text-sm font-semibold">{{ t('editor.removeAnnotationTitle') }}</h3>
-      <p class="text-base-content/75 text-sm leading-relaxed">{{ t('editor.confirmRemoveAnnotation', { type: selected()?.type }) }}</p>
+      <app-confirmation-content [message]="t('editor.confirmRemoveAnnotation', { type: selected()?.type })" />
       <footer class="nori-dialog-actions">
         <button suiButton severity="neutral" variant="text" [disabled]="dialogs.pending()" (click)="handleBack()">
+          <svg lucideX class="size-4 shrink-0" aria-hidden="true"></svg>
           {{ t('common.cancel') }}
         </button>
         <button suiButton severity="error" [loading]="dialogs.pending()" [disabled]="dialogs.pending()" (click)="handleRemove()">
+          <svg lucideTrash class="size-4 shrink-0" aria-hidden="true"></svg>
           {{ t('editor.removeAnnotation') }}
         </button>
       </footer>
@@ -44,7 +48,7 @@
                     size="xs"
                     shape="circle"
                     [attr.aria-label]="t('editor.editNamedAnnotation', { type: annotation.type })"
-                    [suiTooltip]="t('editor.editAnnotation')"
+                    [appTooltip]="t('editor.editAnnotation')"
                     placement="bottom"
                     [showDelay]="600"
                     (click)="handleEdit(annotation)"
@@ -58,7 +62,7 @@
                     size="xs"
                     shape="circle"
                     [attr.aria-label]="t('editor.removeNamedAnnotation', { type: annotation.type })"
-                    [suiTooltip]="t('editor.removeAnnotation')"
+                    [appTooltip]="t('editor.removeAnnotation')"
                     placement="bottom"
                     [showDelay]="600"
                     (click)="handleConfirmRemoval(annotation)"
@@ -74,7 +78,9 @@
         }
       </div>
       <footer class="nori-dialog-actions">
-        <button suiButton severity="neutral" variant="text" (click)="dialogs.close()">{{ t('common.close') }}</button>
+        <button suiButton severity="neutral" variant="text" (click)="dialogs.close()">
+          <svg lucideX class="size-4 shrink-0" aria-hidden="true"></svg> {{ t('common.close') }}
+        </button>
         <button suiButton severity="primary" (click)="handleEdit()">
           <svg lucidePlus class="size-4" aria-hidden="true"></svg>{{ t('editor.addAnnotation') }}
         </button>

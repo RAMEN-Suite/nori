@@ -2,6 +2,7 @@ import { effect, inject, Injectable, signal, type Signal, type WritableSignal } 
 import { TranslocoService } from '@jsverse/transloco';
 import { ModelRef, type Relation, type RelationRemovalPreview, type RelationSuggestion } from '@ramen-suite/core/model';
 import { type RamenModel } from '@ramen-suite/core/ramen';
+import { getAffectedRelations } from '../../core/utils/RemovalSummary';
 import { ChooseRelationDialog } from '../../view/components/dialogs/choose-relation/choose-relation.dialog';
 import { ConfirmationDialog, type ConfirmationOptions } from '../../view/components/dialogs/confirmation/confirmation.dialog';
 import { DialogService } from '../dialog.service';
@@ -97,10 +98,7 @@ export class GraphToolsService {
           from: draft.getNode(relation.from.nodeId)?.name,
           to: draft.getNode(relation.to.nodeId)?.name,
         }),
-        details:
-          preview.relations.length > 1
-            ? [this.translations.translate('editor.affectedRelations', { count: preview.relations.length })]
-            : [],
+        affectedRelations: getAffectedRelations(this.workspace.store.getModels(), preview, this.storage.records()),
         buttons: [
           [{ label: this.translations.translate('common.cancel'), severity: 'neutral' }],
           [

@@ -5,8 +5,8 @@ import { type Node } from '@ramen-suite/core/model';
 import { Button, ColorPicker, List, ListItemTemplate } from '@sushi-kit/angular';
 import iwanthue from 'iwanthue';
 import { getDefaultNodeColours } from '../../../../core/utils/NodeColours';
-import { type NodeColors } from '../../../../models/ModelRecord';
 import { ScrollOverflowDirective } from '../../../../directives/scroll-overflow.directive';
+import { type NodeColors } from '../../../../models/ModelRecord';
 import { DialogService } from '../../../../services/dialog.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 
@@ -23,7 +23,6 @@ import { WorkspaceService } from '../../../../services/workspace/workspace.servi
     TranslocoDirective,
     LucideRotateCcw,
     LucideShuffle,
-    LucideChevronsDown,
   ],
   templateUrl: './node-colors.dialog.html',
   styleUrl: './node-colors.dialog.scss',

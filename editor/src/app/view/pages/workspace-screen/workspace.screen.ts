@@ -19,12 +19,13 @@ import { type Manifest } from '../../../models/Manifest';
 import { type ModelRecord } from '../../../models/ModelRecord';
 import { StorageService } from '../../../services/storage.service';
 import { NodeEditingService } from '../../../services/workspace/node-editing.service';
+import { PropertyEditingService } from '../../../services/workspace/property-editing.service';
 import { WorkspaceService } from '../../../services/workspace/workspace.service';
 import { WindowState } from '../../../states/window.state';
-import { GraphMenuComponent } from '../../components/graph-view/graph-menu/graph-menu.component';
-import { type GraphPadding } from '../../components/graph-view/graph/graph.types';
 import { BaseNodesComponent } from '../../components/base-nodes/base-nodes.component';
 import { EditorPanelComponent } from '../../components/editor-panel/editor-panel.component';
+import { GraphMenuComponent } from '../../components/graph-view/graph-menu/graph-menu.component';
+import { type GraphPadding } from '../../components/graph-view/graph/graph.types';
 import { ModelLevelsComponent } from '../../components/model-levels/model-levels.component';
 import { SideMenuComponent } from '../../components/side-menu/side-menu.component';
 import { ToolBarComponent } from '../../components/tool-bar/tool-bar.component';
@@ -56,6 +57,8 @@ export class WorkspaceScreen implements OnInit {
   private readonly router: Router = inject(Router);
   private readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
 
+  protected readonly propertyEditing: PropertyEditingService = inject(PropertyEditingService);
+
   private readonly nodeEditing: NodeEditingService = inject(NodeEditingService);
 
   protected readonly levelsOpen: WritableSignal<boolean> = signal(true);
@@ -71,8 +74,8 @@ export class WorkspaceScreen implements OnInit {
     (): GraphPadding => ({
       top: 100,
       bottom: 64,
-      left: this.catalogueOpen() || (this.baseNodesOpen() && this.workspace.view.editable()) ? 304 : 32,
-      right: this.inspectorOpen() || this.levelsOpen() ? 304 : 32,
+      left: this.catalogueOpen() || (this.baseNodesOpen() && this.workspace.view.editable()) ? 320 : 32,
+      right: this.inspectorOpen() || this.levelsOpen() ? 320 : 32,
     }),
   );
 
@@ -85,7 +88,10 @@ export class WorkspaceScreen implements OnInit {
         filter((event: unknown): event is NavigationEnd => event instanceof NavigationEnd),
         takeUntilDestroyed(),
       )
-      .subscribe(this.syncRouteSelection.bind(this));
+      .subscribe((): void => {
+        this.syncRouteSelection();
+        this.propertyEditing.close();
+      });
 
     effect((): void => this.ensureSelectedLevel());
 

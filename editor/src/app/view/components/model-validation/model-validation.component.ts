@@ -2,16 +2,17 @@ import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, injec
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { LucideShieldCheck } from '@lucide/angular';
 import { type Diagnostic } from '@ramen-suite/core/model';
-import { Button, ToastService, Tooltip } from '@sushi-kit/angular';
-import { ShortcutService } from '../../../services/shortcut.service';
+import { Button, ToastService } from '@sushi-kit/angular';
+import { TooltipDirective } from '../../../directives/tooltip.directive';
 import { DialogService } from '../../../services/dialog.service';
+import { ShortcutService } from '../../../services/shortcut.service';
 import { WorkspaceService } from '../../../services/workspace/workspace.service';
 import { ModelDiagnosticsDialog } from '../dialogs/model-diagnostics/model-diagnostics.dialog';
 
 @Component({
   selector: 'app-model-validation',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslocoDirective, Button, Tooltip, LucideShieldCheck],
+  imports: [TranslocoDirective, Button, TooltipDirective, LucideShieldCheck],
   templateUrl: './model-validation.component.html',
 })
 export class ModelValidationComponent {

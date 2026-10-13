@@ -1,6 +1,7 @@
 import { inject, Injectable, signal, type WritableSignal } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { type Node, type NodeRemovalPreview, type RelationRemovalPreview } from '@ramen-suite/core/model';
+import { getAffectedNodes, getAffectedRelations } from '../../core/utils/RemovalSummary';
 import { ConfirmationDialog, type ConfirmationOptions } from '../../view/components/dialogs/confirmation/confirmation.dialog';
 import { DialogService } from '../dialog.service';
 import { NavigationService } from '../navigation.service';
@@ -61,10 +62,8 @@ export class NodeEditingService {
       const options: ConfirmationOptions = {
         title: this.translations.translate('editor.removeNodeTitle'),
         message: this.translations.translate('editor.confirmRemoveNode', { name: node.name }),
-        details: [
-          this.translations.translate('editor.affectedNodes', { count: preview.nodes.length }),
-          this.translations.translate('editor.affectedRelations', { count: preview.relations.length }),
-        ],
+        affectedNodes: getAffectedNodes(this.workspace.store.getModels(), preview, this.storage.records()),
+        affectedRelations: getAffectedRelations(this.workspace.store.getModels(), preview, this.storage.records()),
         buttons: [
           [{ label: this.translations.translate('common.cancel'), severity: 'neutral' }],
           [
@@ -91,9 +90,7 @@ export class NodeEditingService {
       const options: ConfirmationOptions = {
         title: this.translations.translate('editor.removeBaseNodeTitle'),
         message: this.translations.translate('editor.confirmRemoveBaseNode', { name: node.name }),
-        details: preview.relations.length
-          ? [this.translations.translate('editor.affectedRelations', { count: preview.relations.length })]
-          : [],
+        affectedRelations: getAffectedRelations(this.workspace.store.getModels(), preview, this.storage.records()),
         buttons: [
           [{ label: this.translations.translate('common.cancel'), severity: 'neutral' }],
           [

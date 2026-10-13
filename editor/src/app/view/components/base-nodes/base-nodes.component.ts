@@ -22,14 +22,16 @@ import {
   Input,
   List,
   ListItemTemplate,
-  Tooltip,
   type ListTrackBy,
 } from '@sushi-kit/angular';
+import { ScrollOverflowDirective } from '../../../directives/scroll-overflow.directive';
+import { TooltipDirective } from '../../../directives/tooltip.directive';
 import { type ModelRecord } from '../../../models/ModelRecord';
 import { NavigationService } from '../../../services/navigation.service';
 import { StorageService } from '../../../services/storage.service';
 import { NodeEditingService } from '../../../services/workspace/node-editing.service';
 import { WorkspaceService } from '../../../services/workspace/workspace.service';
+import { ScrollHintsComponent } from '../scroll-hints/scroll-hints.component';
 
 interface BaseNodeGroup {
   readonly record: ModelRecord;
@@ -40,6 +42,8 @@ interface BaseNodeGroup {
   selector: 'app-base-nodes',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    ScrollOverflowDirective,
+    ScrollHintsComponent,
     FormsModule,
     TranslocoDirective,
     Accordion,
@@ -50,7 +54,7 @@ interface BaseNodeGroup {
     Input,
     List,
     ListItemTemplate,
-    Tooltip,
+    TooltipDirective,
     LucideChevronRight,
     LucideGitBranch,
     LucideTrash,

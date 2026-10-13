@@ -1,7 +1,7 @@
 import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { Button } from '@sushi-kit/angular';
 import { LucideNetwork, LucideFolderPlus, LucideFolderOpen } from '@lucide/angular';
+import { Button } from '@sushi-kit/angular';
 import { ElectronService } from '../../../../services/electron.service';
 import { WindowState } from '../../../../states/window.state';
 

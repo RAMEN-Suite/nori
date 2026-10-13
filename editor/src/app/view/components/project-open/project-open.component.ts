@@ -17,7 +17,8 @@ import {
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { LucideCopy, LucideFolderOpen, LucideSearch, LucideTrash } from '@lucide/angular';
-import { Button, Card, Input, List, ListItemTemplate, Message, Tooltip } from '@sushi-kit/angular';
+import { Button, Card, Input, List, ListItemTemplate, Message } from '@sushi-kit/angular';
+import { TooltipDirective } from '../../../directives/tooltip.directive';
 import { type Manifest } from '../../../models/Manifest';
 import { DialogService, type DialogRef } from '../../../services/dialog.service';
 import { NavigationService } from '../../../services/navigation.service';
@@ -38,7 +39,7 @@ import { ProjectAlternativeComponent } from '../project-alternative/project-alte
     List,
     ListItemTemplate,
     Message,
-    Tooltip,
+    TooltipDirective,
     LucideCopy,
     LucideFolderOpen,
     LucideSearch,

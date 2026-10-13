@@ -61,14 +61,17 @@
   </div>
   <footer class="nori-dialog-actions">
     <button suiButton severity="neutral" variant="text" [disabled]="dialogs.pending()" (click)="handleCloseModal()">
+      <svg lucideX class="size-4 shrink-0" aria-hidden="true"></svg>
       {{ t('common.cancel') }}
     </button>
     @if (currentSlot() === undefined) {
       <button suiButton [loading]="dialogs.pending()" [disabled]="!isFormValid() || dialogs.pending()" (click)="handleCreateModel()">
+        <svg lucidePlus class="size-4 shrink-0" aria-hidden="true"></svg>
         {{ t('editor.createLevel') }}
       </button>
     } @else {
       <button suiButton [loading]="dialogs.pending()" [disabled]="!isFormValid() || dialogs.pending()" (click)="handleUpdateModel()">
+        <svg lucideSave class="size-4 shrink-0" aria-hidden="true"></svg>
         {{ t('common.save') }}
       </button>
     }

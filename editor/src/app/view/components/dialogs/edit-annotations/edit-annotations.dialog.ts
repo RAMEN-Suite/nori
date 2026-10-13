@@ -10,24 +10,29 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { LucidePencil, LucidePlus, LucideTrash } from '@lucide/angular';
+import { LucidePencil, LucidePlus, LucideSave, LucideTrash, LucideX } from '@lucide/angular';
 import { ModelRef } from '@ramen-suite/core/model';
 import type { RamenAnnotation } from '@ramen-suite/core/ramen';
-import { Button, Input, List, ListItemTemplate, Tooltip } from '@sushi-kit/angular';
+import { Button, Input, List, ListItemTemplate } from '@sushi-kit/angular';
+import { TooltipDirective } from '../../../../directives/tooltip.directive';
 import { DialogService } from '../../../../services/dialog.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
+import { ConfirmationContentComponent } from '../confirmation/confirmation-content.component';
 
 @Component({
   selector: 'app-edit-annotations',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    LucideSave,
+    LucideX,
+    ConfirmationContentComponent,
     TranslocoDirective,
     FormsModule,
     Button,
     Input,
     List,
     ListItemTemplate,
-    Tooltip,
+    TooltipDirective,
     LucidePencil,
     LucidePlus,
     LucideTrash,

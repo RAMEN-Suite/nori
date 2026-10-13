@@ -35,6 +35,5 @@ export const routes: Routes = [
       },
     ],
   },
-  // todo, add not found screen.
   { path: '**', redirectTo: '' },
 ];

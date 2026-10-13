@@ -1,4 +1,21 @@
 import { ChangeDetectionStrategy, Component, inject, signal, type WritableSignal } from '@angular/core';
+import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
+import {
+  LucideChevronsDown,
+  LucideFolder,
+  LucideLanguages,
+  LucideNavigation,
+  LucideNetwork,
+  LucidePalette,
+  LucidePanelsTopLeft,
+  LucidePlay,
+  LucideRotateCcw,
+  LucideSlidersHorizontal,
+} from '@lucide/angular';
+import { Card, Radio, Toggle, List, ListItemTemplate, Select, Tabs, Tab, Input, Button } from '@sushi-kit/angular';
+import { ScrollOverflowDirective } from '../../../../directives/scroll-overflow.directive';
+import { APP_THEMES, type AppTheme } from '../../../../models/Appearance';
+import { APP_LANGUAGES, type AppLanguage } from '../../../../models/Language';
 import {
   EDITOR_SHORTCUTS,
   SHORTCUT_CATEGORIES,
@@ -10,28 +27,13 @@ import {
   type ShortcutGroup,
 } from '../../../../models/Shortcut';
 import { ShortcutService } from '../../../../services/shortcut.service';
-import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
-import { Card, Radio, Toggle, List, ListItemTemplate, Select, Tabs, Tab, Input, Button } from '@sushi-kit/angular';
-import {
-  LucidePalette,
-  LucidePlay,
-  LucideSlidersHorizontal,
-  LucideLanguages,
-  LucidePanelsTopLeft,
-  LucideNetwork,
-  LucideFolder,
-  LucideNavigation,
-  LucideChevronsDown,
-} from '@lucide/angular';
-import { APP_THEMES, type AppTheme } from '../../../../models/Appearance';
-import { APP_LANGUAGES, type AppLanguage } from '../../../../models/Language';
-import { ScrollOverflowDirective } from '../../../../directives/scroll-overflow.directive';
 import { ApplicationState } from '../../../../states/application.state';
 
 @Component({
   selector: 'app-settings',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    LucideRotateCcw,
     TranslocoDirective,
     ScrollOverflowDirective,
     Card,

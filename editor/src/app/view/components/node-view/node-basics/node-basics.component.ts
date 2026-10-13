@@ -14,16 +14,17 @@ import {
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { LucidePencil } from '@lucide/angular';
-import { Button, Input, Tooltip } from '@sushi-kit/angular';
+import { Button, Input } from '@sushi-kit/angular';
 import { Transformer } from '../../../../core/helper/Transformer';
 import { AutoselectDirective } from '../../../../directives/autoselect.directive';
+import { TooltipDirective } from '../../../../directives/tooltip.directive';
 import { StorageService } from '../../../../services/storage.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-node-basics',
-  imports: [TranslocoDirective, Button, Input, Tooltip, FormsModule, AutoselectDirective, LucidePencil],
+  imports: [TranslocoDirective, Button, Input, TooltipDirective, FormsModule, AutoselectDirective, LucidePencil],
   templateUrl: './node-basics.component.html',
 })
 export class NodeBasicsComponent {

@@ -16,7 +16,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { LucideChevronRight, LucideGitBranch, LucidePlus, LucideTrash } from '@lucide/angular';
+import { LucideChevronRight, LucideCopy, LucidePlus, LucideTrash } from '@lucide/angular';
 import { ModelRef, type Node } from '@ramen-suite/core/model';
 import {
   Accordion,
@@ -28,16 +28,18 @@ import {
   List,
   ListItemTemplate,
   type ListTrackBy,
-  Tooltip,
 } from '@sushi-kit/angular';
 import { Transformer } from '../../../core/helper/Transformer';
 import { AutoselectDirective } from '../../../directives/autoselect.directive';
+import { ScrollOverflowDirective } from '../../../directives/scroll-overflow.directive';
+import { TooltipDirective } from '../../../directives/tooltip.directive';
 import { NavigationService } from '../../../services/navigation.service';
 import { StorageService } from '../../../services/storage.service';
 import { NodeEditingService } from '../../../services/workspace/node-editing.service';
 import { WorkspaceService } from '../../../services/workspace/workspace.service';
 import { type NodeLevel } from '../../../services/workspace/workspace.view';
 import { ApplicationState } from '../../../states/application.state';
+import { ScrollHintsComponent } from '../scroll-hints/scroll-hints.component';
 
 interface NodeItem {
   readonly value: string;
@@ -58,19 +60,21 @@ interface MutableNodeGroup extends Omit<NodeGroup, 'items'> {
   selector: 'app-side-menu',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    ScrollOverflowDirective,
+    ScrollHintsComponent,
     TranslocoDirective,
     FormsModule,
     Button,
     Input,
     List,
     ListItemTemplate,
-    Tooltip,
+    TooltipDirective,
     Accordion,
     AccordionItem,
     AccordionHeaderTemplate,
     AccordionIndicatorTemplate,
     LucideChevronRight,
-    LucideGitBranch,
+    LucideCopy,
     LucideTrash,
     LucidePlus,
     AutoselectDirective,

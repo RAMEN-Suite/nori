@@ -1,46 +1,52 @@
-<form *transloco="let t" #form="ngForm" class="flex flex-col gap-5" (ngSubmit)="handleSave(form)">
-  <div class="nori-dialog-scroll flex min-w-0 flex-col gap-4">
-    <label class="flex flex-col gap-2">
-      <span class="text-sm font-medium">{{ t('create.name') }}</span>
-      <input
-        suiInput
-        fluid
-        name="name"
-        required
-        minlength="3"
-        maxlength="70"
-        [(ngModel)]="draft.name"
-        [disabled]="dialogs.pending()"
-        aria-describedby="edit-project-name-hint"
-      />
-      <span id="edit-project-name-hint" class="text-base-content/55 text-xs">{{ t('create.nameHint') }}</span>
-    </label>
-    <label class="flex flex-col gap-2">
-      <span class="text-sm font-medium"
-        >{{ t('create.summary') }} <span class="text-base-content/50 font-normal">{{ t('create.optional') }}</span></span
-      >
-      <textarea
-        suiTextarea
-        fluid
-        name="description"
-        rows="3"
-        maxlength="140"
-        [(ngModel)]="draft.description"
-        [disabled]="dialogs.pending()"
-        [placeholder]="t('create.summaryPlaceholder')"
-      ></textarea>
-    </label>
+<form *transloco="let t" #form="ngForm" class="nori-dialog-content" (ngSubmit)="handleSave(form)">
+  <p class="text-base-content/65 shrink-0 text-sm leading-relaxed">{{ t('editor.editProjectHint') }}</p>
+  <div class="nori-dialog-scroll nori-dialog-scroll-edge min-w-0">
+    <div class="flex flex-col gap-4 rounded-(--nori-radius-input) border border-(--nori-border) p-4">
+      <label class="flex flex-col gap-2">
+        <span class="text-sm font-medium">{{ t('create.name') }}</span>
+        <input
+          suiInput
+          fluid
+          name="name"
+          required
+          minlength="3"
+          maxlength="70"
+          [(ngModel)]="draft.name"
+          [disabled]="dialogs.pending()"
+          aria-describedby="edit-project-name-hint"
+        />
+        <span id="edit-project-name-hint" class="text-base-content/55 text-xs">{{ t('create.nameHint') }}</span>
+      </label>
+      <label class="flex flex-col gap-2">
+        <span class="text-sm font-medium"
+          >{{ t('create.summary') }} <span class="text-base-content/50 font-normal">{{ t('create.optional') }}</span></span
+        >
+        <textarea
+          suiTextarea
+          fluid
+          name="description"
+          rows="3"
+          maxlength="140"
+          [(ngModel)]="draft.description"
+          [disabled]="dialogs.pending()"
+          [placeholder]="t('create.summaryPlaceholder')"
+        ></textarea>
+      </label>
+    </div>
   </div>
-  <footer class="nori-dialog-actions">
-    <button suiButton type="button" severity="neutral" variant="text" [disabled]="dialogs.pending()" (click)="dialogs.close()">
+  <footer class="nori-dialog-actions shrink-0">
+    <button suiButton type="button" severity="neutral" variant="text" size="sm" [disabled]="dialogs.pending()" (click)="dialogs.close()">
+      <svg lucideX class="size-4 shrink-0" aria-hidden="true"></svg>
       {{ t('common.cancel') }}
     </button>
     <button
       suiButton
       type="submit"
+      size="sm"
       [loading]="dialogs.pending()"
       [disabled]="!form.valid || draft.name.trim().length < 3 || dialogs.pending()"
     >
+      <svg lucideSave class="size-4 shrink-0" aria-hidden="true"></svg>
       {{ t('common.save') }}
     </button>
   </footer>

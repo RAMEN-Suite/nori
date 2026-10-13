@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
+import { LucidePlus, LucideSave, LucideX } from '@lucide/angular';
 import { RAMEN_MODEL } from '@ramen-suite/core/ramen';
 import { Button, Input, Message } from '@sushi-kit/angular';
 import { type ModelRecord } from '../../../../models/ModelRecord';
@@ -24,7 +25,7 @@ import { WorkspaceService } from '../../../../services/workspace/workspace.servi
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-modal-create-model',
-  imports: [TranslocoDirective, Input, Button, Message, FormsModule],
+  imports: [LucidePlus, LucideSave, LucideX, TranslocoDirective, Input, Button, Message, FormsModule],
   templateUrl: './create-model.dialog.html',
   styleUrl: './create-model.dialog.scss',
 })

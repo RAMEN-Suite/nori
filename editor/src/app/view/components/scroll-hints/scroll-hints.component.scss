@@ -1,0 +1,39 @@
+:host {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+.scroll-hint {
+  position: absolute;
+  left: 0;
+  right: 0.5rem;
+  display: flex;
+  height: 1.75rem;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 180ms ease;
+  color: color-mix(in oklab, var(--color-base-content) 55%, transparent);
+  svg {
+    border-radius: var(--nori-radius-input);
+    background: var(--color-base-100);
+  }
+}
+.scroll-hint.is-visible {
+  opacity: 1;
+}
+.scroll-hint-up {
+  top: 0;
+  align-items: flex-start;
+  background: linear-gradient(to bottom, var(--color-base-100), transparent);
+}
+.scroll-hint-down {
+  bottom: 0;
+  align-items: flex-end;
+  background: linear-gradient(to top, var(--color-base-100), transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-hint {
+    transition: none;
+  }
+}

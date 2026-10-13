@@ -15,8 +15,10 @@ import { FormsModule } from '@angular/forms';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { LucidePencil, LucidePlus, LucideTrash } from '@lucide/angular';
 import { type ModelRemovalPreview } from '@ramen-suite/core/model';
-import { Button, Input, List, ListItemTemplate, Tooltip, type ListTrackBy } from '@sushi-kit/angular';
+import { Button, Input, List, ListItemTemplate, type ListTrackBy } from '@sushi-kit/angular';
 import { AutoselectDirective } from '../../../directives/autoselect.directive';
+import { ScrollOverflowDirective } from '../../../directives/scroll-overflow.directive';
+import { TooltipDirective } from '../../../directives/tooltip.directive';
 import { type ModelRecord } from '../../../models/ModelRecord';
 import { DialogService } from '../../../services/dialog.service';
 import { NavigationService } from '../../../services/navigation.service';
@@ -24,11 +26,14 @@ import { StorageService } from '../../../services/storage.service';
 import { WorkspaceService } from '../../../services/workspace/workspace.service';
 import { ConfirmationDialog, type ConfirmationOptions } from '../dialogs/confirmation/confirmation.dialog';
 import { CreateModelDialog } from '../dialogs/create-model/create-model.dialog';
+import { ScrollHintsComponent } from '../scroll-hints/scroll-hints.component';
 
 @Component({
   selector: 'app-model-levels',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    ScrollOverflowDirective,
+    ScrollHintsComponent,
     FormsModule,
     AutoselectDirective,
     Input,
@@ -36,7 +41,7 @@ import { CreateModelDialog } from '../dialogs/create-model/create-model.dialog';
     Button,
     List,
     ListItemTemplate,
-    Tooltip,
+    TooltipDirective,
     LucidePencil,
     LucideTrash,
     LucidePlus,
@@ -153,7 +158,10 @@ export class ModelLevelsComponent {
       message: this.translations.translate('editor.confirmRemoveLevels', {
         name: record.name,
       }),
-      details: preview.models.map((model): string => model.name),
+      affectedLevels: preview.models.map((model) => ({
+        modelName: model.name,
+        modelSlot: this.storage.records().find((item): boolean => item.gmodel.id === model.id)?.slot ?? null,
+      })),
       buttons: [
         [{ label: this.translations.translate('common.cancel'), severity: 'neutral' }],
         [

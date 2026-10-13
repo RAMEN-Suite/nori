@@ -1,0 +1,79 @@
+<div class="flex min-w-0 flex-col gap-3">
+  <p class="text-base-content/75 text-sm leading-relaxed break-words">{{ message() }}</p>
+  @if (affectedLevels().length) {
+    <section class="impact-box">
+      <div class="impact-heading">
+        <h3>{{ 'editor.affectedLevelsLabel' | transloco }}</h3>
+        <span suiBadge severity="neutral" variant="soft" size="xs">{{ affectedLevels().length }}</span>
+      </div>
+      <ul class="impact-list">
+        @for (level of affectedLevels(); track $index) {
+          <li class="flex items-center gap-2 text-xs">
+            {{ level.modelSlot !== null ? level.modelSlot + ' – ' : '' }}{{ level.modelName }}
+          </li>
+        }
+      </ul>
+    </section>
+  }
+  @if (affectedNodes().length) {
+    <section class="impact-box">
+      <div class="impact-heading">
+        <h3>{{ 'editor.affectedNodesLabel' | transloco }}</h3>
+        <span suiBadge severity="neutral" variant="soft" size="xs">{{ affectedNodes().length }}</span>
+      </div>
+      <ul class="impact-list">
+        @for (group of nodeGroups(); track group.modelName) {
+          <li class="flex min-w-0 flex-col gap-1">
+            <h4 class="text-base-content/55 text-[0.6875rem] break-words">
+              {{ group.modelSlot !== null ? group.modelSlot + ' – ' : '' }}{{ group.modelName }}
+            </h4>
+            <p class="text-xs leading-5 font-medium break-words">{{ group.names.join(', ') }}</p>
+          </li>
+        }
+      </ul>
+    </section>
+  }
+  @if (affectedRelations().length) {
+    <section class="impact-box">
+      <div class="impact-heading">
+        <h3>{{ 'editor.affectedRelationsLabel' | transloco }}</h3>
+        <span suiBadge severity="neutral" variant="soft" size="xs">{{ affectedRelations().length }}</span>
+      </div>
+      <ul class="impact-list">
+        @for (group of relationGroups(); track $index) {
+          <li class="flex min-w-0 flex-col gap-1 break-words">
+            <div class="text-base-content/55 flex items-center justify-between gap-3 text-[0.6875rem]">
+              <h4 class="m-0 min-w-0 leading-none">{{ group.name }}</h4>
+              <span class="min-w-0 text-right leading-none">
+                {{ group.modelSlot !== null ? group.modelSlot + ' – ' : '' }}{{ group.modelName }}
+              </span>
+            </div>
+            <p class="text-xs leading-5 font-medium">
+              @for (relation of group.relations; track $index; let last = $last) {
+                <span class="inline-flex max-w-full items-center gap-1 align-middle">
+                  <span class="min-w-0">{{ relation.from }}</span>
+                  <svg lucideArrowRight class="text-base-content/45 size-3 shrink-0" aria-hidden="true"></svg>
+                  <span class="sr-only">{{ 'editor.relationTarget' | transloco }}</span>
+                  <span class="min-w-0">{{ relation.to }}</span>
+                </span>
+                @if (!last) {
+                  <span>, </span>
+                }
+              }
+            </p>
+          </li>
+        }
+      </ul>
+    </section>
+  }
+  @if (details().length) {
+    <section class="impact-box">
+      <h3 class="impact-heading">{{ 'common.removalImpact' | transloco }}</h3>
+      <ul class="impact-list text-base-content/65 text-xs leading-relaxed break-words">
+        @for (detail of details(); track $index) {
+          <li>{{ detail }}</li>
+        }
+      </ul>
+    </section>
+  }
+</div>

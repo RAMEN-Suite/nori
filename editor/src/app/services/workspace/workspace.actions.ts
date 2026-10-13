@@ -1,10 +1,12 @@
 import { inject, Injectable, type Signal } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import {
+  type Attribute,
   type AttributeInput,
   type CreateDataTypeInput,
   type CreateNodeInput,
   type DataType,
+  type Diagnostic,
   type Model,
   type ModelChange,
   type ModelInput,
@@ -20,7 +22,7 @@ import {
   type UpdateRelationInput,
   type WorkspaceElement,
 } from '@ramen-suite/core/model';
-import { RamenModel, type AnnotationInput, type AnnotationUpdate } from '@ramen-suite/core/ramen';
+import { RamenModel, RamenModelFormat, type AnnotationInput, type AnnotationUpdate } from '@ramen-suite/core/ramen';
 import { type GraphView, type ModelRecord, type NodeColors, type ViewSettings } from '../../models/ModelRecord';
 import { StorageService } from '../storage.service';
 import { RelationHistory } from './relation-history';
@@ -96,11 +98,15 @@ export class WorkspaceActions {
   }
 
   public async createAttribute(nodeId: string, input: AttributeInput): Promise<void> {
+    this.requireValidAttributeChange((draft: RamenModel): ModelChange<Attribute> => draft.createAttribute(nodeId, input));
     this.store.getDraft().createAttribute(nodeId, input);
     await this.saveCurrentModel();
   }
 
   public async updateAttribute(nodeId: string, attributeId: string, patch: UpdateAttributeInput): Promise<void> {
+    this.requireValidAttributeChange(
+      (draft: RamenModel): ModelChange<Attribute> => draft.updateAttribute(nodeId, attributeId, patch),
+    );
     this.store.getDraft().updateAttribute(nodeId, attributeId, patch);
     await this.saveCurrentModel();
   }
@@ -285,6 +291,34 @@ export class WorkspaceActions {
     const save: Promise<void> = this.pendingSave.then(action);
     this.pendingSave = save.catch((): void => undefined);
     await save;
+  }
+
+  private requireValidAttributeChange(edit: (draft: RamenModel) => ModelChange<Attribute>): void {
+    const trial: RamenModel = this.store.getDraft().snapshot();
+    const levels: readonly RamenModel[] = this.store
+      .getModels()
+      .filter(RamenModelFormat.isDocument)
+      .map((model: Model): RamenModel => trial.openLevel(model.id));
+    const errors: () => readonly Diagnostic[] = (): readonly Diagnostic[] =>
+      levels.flatMap((level: RamenModel): readonly Diagnostic[] =>
+        level.validate().diagnostics.filter((issue: Diagnostic): boolean => issue.severity === 'error'),
+      );
+    const previousErrors: ReadonlySet<string> = new Set(errors().map((issue: Diagnostic): string => JSON.stringify(issue)));
+    edit(trial);
+    const issue: Diagnostic | undefined = errors().find(
+      (diagnostic: Diagnostic): boolean => !previousErrors.has(JSON.stringify(diagnostic)),
+    );
+    if (!issue) return;
+
+    const messageKeys: Record<string, string> = {
+      ATTRIBUTE_NAME_DUPLICATE: 'editor.propertyNameTaken',
+      ATTRIBUTE_NAME_SHADOWS_SUPERTYPE: 'editor.propertyNameTaken',
+      ATTRIBUTE_MULTIPLE_KEYS: 'editor.propertyMultipleKeys',
+      ATTRIBUTE_BOUNDS_INVALID: 'editor.propertyInvalidBounds',
+      ATTRIBUTE_KEY_BOUNDS_INVALID: 'editor.propertyKeyBounds',
+    };
+    const key: string = messageKeys[issue.code] ?? 'editor.propertyChangeInvalid';
+    throw new Error(this.translations.translate(key, { reason: issue.message }));
   }
 
   private requireAvailableNodeName(name: string, excludedId?: string): void {

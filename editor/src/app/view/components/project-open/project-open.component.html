@@ -63,7 +63,7 @@
                 }
                 <span class="text-xs font-normal opacity-50"
                   >{{ t('open.updated') }}
-                  <time [attr.datetime]="project.updatedAt">{{ project.updatedAt | date: 'dd.MM.yyyy' }}</time></span
+                  <time [attr.datetime]="project.updatedAt">{{ project.updatedAt | date: 'dd.MM.yyyy, HH:mm:ss' }}</time></span
                 >
               </span>
             </button>
@@ -75,7 +75,7 @@
                 size="sm"
                 shape="circle"
                 [attr.aria-label]="t('open.duplicateProject', { name: project.name })"
-                [suiTooltip]="t('open.duplicate')"
+                [appTooltip]="t('open.duplicate')"
                 placement="bottom"
                 [showDelay]="600"
                 [disabled]="busy() || disabled()"
@@ -90,7 +90,7 @@
                 size="sm"
                 shape="circle"
                 [attr.aria-label]="t('open.removeProject', { name: project.name })"
-                [suiTooltip]="t('open.remove')"
+                [appTooltip]="t('open.remove')"
                 placement="bottom"
                 [showDelay]="600"
                 [disabled]="busy() || disabled()"

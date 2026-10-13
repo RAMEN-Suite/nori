@@ -1,3 +1,4 @@
+import { NgComponentOutlet } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -10,7 +11,6 @@ import {
 } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LucideCircleAlert } from '@lucide/angular';
-import { NgComponentOutlet } from '@angular/common';
 import { Dialog, DialogHeader, DialogBody, Message } from '@sushi-kit/angular';
 import { DialogService, type OpenDialog } from '../../../../services/dialog.service';
 import { ApplicationState } from '../../../../states/application.state';
@@ -22,18 +22,21 @@ import { ApplicationState } from '../../../../states/application.state';
   template: `
     <sui-dialog
       #dialog="suiDialog"
-      style="--sui-dialog-radius: var(--nori-radius); --sui-dialog-border-color: var(--nori-border); --sui-dialog-shadow: none; --sui-dialog-enter-duration: 240ms; --sui-dialog-exit-duration: 180ms; --sui-dialog-motion-easing: cubic-bezier(0.22, 1, 0.36, 1)"
+      [class.nori-dialog-motion]="appearance.state().animations"
+      style="--sui-dialog-radius: var(--nori-radius); --sui-dialog-border-color: var(--nori-border); --sui-dialog-shadow: none; --sui-dialog-enter-duration: 280ms; --sui-dialog-exit-duration: 180ms; --sui-dialog-motion-easing: cubic-bezier(0.22, 1, 0.36, 1)"
       [style.--sui-dialog-width]="content()?.width ?? 'var(--nori-dialog-width)'"
       [open]="dialogs.current() !== null && contentReady()"
       [ariaLabel]="content()?.title || (content()?.titleKey || 'common.confirm' | transloco)"
       [closeLabel]="'common.close' | transloco"
       [motion]="appearance.state().animations ? 'fade' : 'none'"
       [closeOnEscape]="!dialogs.pending()"
-      [closeOnBackdrop]="false"
+      [closeOnBackdrop]="!!content()?.closeOnBackdrop && !dialogs.pending()"
       (closed)="handleClosed(dialog)"
     >
       @if (content(); as current) {
-        <header suiDialogHeader>{{ current.titleKey ? (current.titleKey | transloco) : current.title }}</header>
+        <header suiDialogHeader class="min-h-14">
+          {{ current.titleKey ? (current.titleKey | transloco) : current.title }}
+        </header>
       }
       <div suiDialogBody>
         @if (content(); as current) {

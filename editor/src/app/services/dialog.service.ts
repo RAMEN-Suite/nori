@@ -1,9 +1,10 @@
-import { Injectable, signal, type Type, type WritableSignal } from '@angular/core';
+import { DOCUMENT, inject, Injectable, signal, type Type, type WritableSignal } from '@angular/core';
 
 export type DialogSize = 'compact' | 'form';
 
 export interface DialogOptions {
   readonly size?: DialogSize;
+  readonly closeOnBackdrop?: boolean;
   readonly header?: string;
   readonly headerKey?: string;
   readonly width?: string;
@@ -16,6 +17,7 @@ export interface DialogRef {
 
 export interface OpenDialog {
   readonly component: Type<unknown>;
+  readonly closeOnBackdrop: boolean;
   readonly title: string;
   readonly titleKey: string | null;
   readonly width: string | null;
@@ -28,10 +30,21 @@ export class DialogService {
   public readonly error: WritableSignal<string | null> = signal(null);
   public readonly pending: WritableSignal<boolean> = signal(false);
 
+  private readonly document: Document = inject(DOCUMENT);
+  private tooltipRestoreTarget: Element | null = null;
+
+  public consumeRestoredFocus(target: Element): boolean {
+    if (target !== this.tooltipRestoreTarget) return false;
+    this.tooltipRestoreTarget = null;
+    return true;
+  }
+
   public open(component: Type<unknown>, options: DialogOptions = {}): DialogRef {
+    this.tooltipRestoreTarget = this.document.activeElement;
     this.error.set(null);
     const dialog: OpenDialog = {
       component,
+      closeOnBackdrop: options.closeOnBackdrop ?? false,
       title: options.header ?? '',
       titleKey: options.headerKey ?? null,
       width: options.width ?? (options.size === 'compact' ? 'var(--nori-dialog-width-compact)' : null),

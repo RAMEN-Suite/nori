@@ -1,80 +1,122 @@
 @if (attribute(); as property) {
   <div *transloco="let t" class="flex items-start justify-between gap-2">
-    <div class="min-w-0">
-      <div class="flex flex-wrap items-center gap-1.5">
-        <span class="text-sm font-medium break-words">{{ property.name }}</span>
-        @if (property.isKey) {
-          <span suiBadge size="xs" severity="neutral" variant="soft">{{ t('editor.keyProperty') }}</span>
-        }
-        @if (property.isReadOnly) {
-          <span suiBadge size="xs" severity="neutral" variant="soft">{{ t('editor.readOnlyProperty') }}</span>
+    <div class="min-w-0 flex-1">
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex min-h-5 min-w-0 flex-1 items-center gap-1.5">
+          <div class="flex min-w-0 items-center gap-0.5" [class.flex-1]="editingName()">
+            @if (editingName()) {
+              <input
+                suiInput
+                size="xs"
+                appAutoselect
+                [focusOnCreate]="true"
+                class="w-0 min-w-0 flex-1 px-1 py-0 text-xs"
+                style="height: 1.25rem"
+                [attr.aria-label]="t('editor.propertyName')"
+                [ngModel]="draftName()"
+                (ngModelChange)="draftName.set($event)"
+                [readOnly]="savingName()"
+                (keydown.enter)="$event.preventDefault(); $event.stopPropagation(); handleSaveName()"
+                (keydown.escape)="$event.stopPropagation(); handleCancelRename()"
+                (blur)="handleSaveName()"
+              />
+            } @else {
+              <span
+                class="min-w-0 text-xs leading-5 font-medium break-words"
+                [class.cursor-default]="!canRename()"
+                [class.cursor-text]="canRename()"
+                tabindex="0"
+                (dblclick)="handleStartRename()"
+                >{{ property.name }}</span
+              >
+            }
+            @if (property.bounds.lowerBound > 0) {
+              <span
+                class="text-error shrink-0 cursor-pointer text-xs leading-5 font-semibold"
+                [appTooltip]="t('editor.propertyCount.required')"
+                placement="bottom"
+                [offset]="12"
+                [showDelay]="600"
+                tabindex="0"
+                ><span aria-hidden="true">*</span><span class="sr-only">{{ t('editor.propertyCount.required') }}</span></span
+              >
+            }
+          </div>
+          <span suiBadge size="xs" severity="neutral" variant="soft" class="shrink-0">
+            {{ workspace.view.resolveTypeLabel(property.typeId, modelSlot()) }}{{ isMultiValue(property.bounds) ? ' [ ]' : '' }}
+          </span>
+        </div>
+        @if (property.isKey || property.isReadOnly || isMultiValue(property.bounds)) {
+          <div class="flex h-5 shrink-0 items-center gap-2">
+            @if (isMultiValue(property.bounds)) {
+              @if (property.isOrdered) {
+                <span
+                  tabindex="0"
+                  role="img"
+                  class="text-base-content/60 inline-flex shrink-0 cursor-pointer"
+                  [attr.aria-label]="t('editor.orderedValues')"
+                  [appTooltip]="t('editor.orderedValues')"
+                  placement="bottom"
+                  [offset]="12"
+                  [showDelay]="600"
+                >
+                  <svg lucideListOrdered class="size-3.5" aria-hidden="true"></svg>
+                </span>
+              }
+              @let duplicatesLabel = t(property.isUnique !== false ? 'editor.uniqueValues' : 'editor.duplicateValues');
+              <span
+                tabindex="0"
+                role="img"
+                class="text-base-content/60 inline-flex shrink-0 cursor-pointer"
+                [attr.aria-label]="duplicatesLabel"
+                [appTooltip]="duplicatesLabel"
+                placement="bottom"
+                [offset]="12"
+                [showDelay]="600"
+              >
+                @if (property.isUnique !== false) {
+                  <svg lucideCopySlash class="size-3.5" aria-hidden="true"></svg>
+                } @else {
+                  <svg lucideCopy class="size-3.5" aria-hidden="true"></svg>
+                }
+              </span>
+            }
+
+            @if (property.isKey) {
+              <span
+                tabindex="0"
+                role="img"
+                class="text-base-content/60 inline-flex shrink-0 cursor-pointer"
+                [attr.aria-label]="t('editor.keyProperty')"
+                [appTooltip]="t('editor.keyProperty')"
+                placement="bottom"
+                [offset]="12"
+                [showDelay]="600"
+              >
+                <svg lucideKeyRound class="size-3.5" aria-hidden="true"></svg>
+              </span>
+            }
+            @if (property.isReadOnly) {
+              <span
+                tabindex="0"
+                role="img"
+                class="text-base-content/60 inline-flex shrink-0 cursor-pointer"
+                [attr.aria-label]="t('editor.readOnlyProperty')"
+                [appTooltip]="t('editor.readOnlyProperty')"
+                placement="bottom"
+                [offset]="12"
+                [showDelay]="600"
+              >
+                <svg lucideLockKeyhole class="size-3.5" aria-hidden="true"></svg>
+              </span>
+            }
+          </div>
         }
       </div>
-      <p class="text-base-content/60 mt-1 text-xs leading-relaxed break-words">
-        {{ workspace.view.resolveTypeLabel(property.typeId, modelSlot()) }} · {{ formatAttributeCount(property.bounds) }}
-      </p>
-      @if (property.bounds.upperBound !== 1 && (property.isOrdered || property.isUnique)) {
-        <p class="text-base-content/60 text-xs leading-relaxed">
-          @if (property.isOrdered) {
-            {{ t('editor.orderedValues') }}
-          }
-          @if (property.isOrdered && property.isUnique) {
-            <span aria-hidden="true"> · </span>
-          }
-          @if (property.isUnique) {
-            {{ t('editor.uniqueValues') }}
-          }
-        </p>
+      @let count = formatAttributeCount(property.bounds);
+      @if (count) {
+        <p class="text-base-content/60 mt-1 text-xs leading-relaxed">{{ count }}</p>
       }
     </div>
-    @if (showActions()) {
-      <div class="flex shrink-0 gap-0.5">
-        @if (workspace.view.nodeEditable() && workspace.store.currentSlot() === modelSlot()) {
-          <button
-            suiButton
-            severity="neutral"
-            size="xs"
-            variant="text"
-            shape="circle"
-            [attr.aria-label]="t('editor.editNamedProperty', { name: property.name })"
-            [suiTooltip]="t('editor.editProperty')"
-            placement="bottom"
-            [showDelay]="600"
-            (click)="handleOpenUpdateAttribute()"
-          >
-            <svg lucidePencil class="size-3.5" aria-hidden="true"></svg>
-          </button>
-          <button
-            suiButton
-            severity="error"
-            size="xs"
-            variant="text"
-            shape="circle"
-            [attr.aria-label]="t('editor.removeNamedProperty', { name: property.name })"
-            [suiTooltip]="t('editor.removeProperty')"
-            placement="bottom"
-            [showDelay]="600"
-            (click)="handleRemoveAttribute()"
-          >
-            <svg lucideTrash class="size-3.5" aria-hidden="true"></svg>
-          </button>
-        } @else {
-          <button
-            suiButton
-            severity="neutral"
-            size="xs"
-            variant="text"
-            shape="circle"
-            [attr.aria-label]="t('editor.openNamedPropertySource', { name: property.name })"
-            [suiTooltip]="t('editor.openPropertySource')"
-            placement="bottom"
-            [showDelay]="600"
-            (click)="handleOpenQualifiedReference()"
-          >
-            <svg lucideArrowUpRight class="size-3.5" aria-hidden="true"></svg>
-          </button>
-        }
-      </div>
-    }
   </div>
 }

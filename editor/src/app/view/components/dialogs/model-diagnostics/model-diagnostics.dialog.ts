@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
+import { LucideX } from '@lucide/angular';
 import { Button, List, ListItemTemplate, Message } from '@sushi-kit/angular';
 import { DialogService } from '../../../../services/dialog.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
@@ -7,7 +8,7 @@ import { WorkspaceService } from '../../../../services/workspace/workspace.servi
 @Component({
   selector: 'app-model-diagnostics',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslocoDirective, Button, List, ListItemTemplate, Message],
+  imports: [LucideX, TranslocoDirective, Button, List, ListItemTemplate, Message],
   templateUrl: './model-diagnostics.dialog.html',
 })
 export class ModelDiagnosticsDialog {

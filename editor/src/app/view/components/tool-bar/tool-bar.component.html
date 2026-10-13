@@ -16,7 +16,9 @@
   ></a>
   <sui-card class="editor-tools" data-nori-motion size="xs" variant="border">
     <div class="editor-tools-content flex items-center gap-1 px-3" data-nori-motion>
-      <span class="max-w-24 truncate px-2 text-sm font-medium select-none sm:max-w-48">{{ storage.selectedManifest()?.name }}</span>
+      <span class="max-w-24 truncate px-2 text-sm font-medium select-none sm:max-w-48" (dblclick)="handleEditProject()">
+        {{ storage.selectedManifest()?.name }}
+      </span>
       <div suiDivider orientation="vertical" class="mx-1 my-0 h-6 self-center" style="--sui-divider-margin: 0" aria-hidden="true"></div>
       <button
         suiButton
@@ -28,7 +30,7 @@
         [attr.aria-label]="catalogueLabel"
         class="nori-panel-toggle"
         [attr.aria-pressed]="catalogueOpen()"
-        [suiTooltip]="catalogueLabel + ' (' + catalogueShortcut + ')'"
+        [appTooltip]="catalogueLabel + ' (' + catalogueShortcut + ')'"
         placement="bottom"
         [showDelay]="600"
         (click)="toggleCatalogue.emit()"
@@ -50,7 +52,7 @@
           [attr.aria-label]="t('editor.baseNodes')"
           class="nori-panel-toggle"
           [attr.aria-pressed]="baseNodesOpen()"
-          [suiTooltip]="t('editor.baseNodes') + ' (' + shortcuts.display('baseNodes') + ')'"
+          [appTooltip]="t('editor.baseNodes') + ' (' + shortcuts.display('baseNodes') + ')'"
           placement="bottom"
           [showDelay]="600"
           (click)="toggleBaseNodes.emit()"
@@ -68,7 +70,7 @@
         [attr.aria-label]="t('editor.levels')"
         class="nori-panel-toggle"
         [attr.aria-pressed]="levelsOpen()"
-        [suiTooltip]="t('editor.levels') + ' (' + shortcuts.display('levels') + ')'"
+        [appTooltip]="t('editor.levels') + ' (' + shortcuts.display('levels') + ')'"
         placement="bottom"
         [showDelay]="600"
         (click)="toggleLevels.emit()"
@@ -85,7 +87,7 @@
         [attr.aria-label]="t('editor.inspector')"
         class="nori-panel-toggle"
         [attr.aria-pressed]="inspectorOpen()"
-        [suiTooltip]="t('editor.inspector') + ' (' + shortcuts.display('inspector') + ')'"
+        [appTooltip]="t('editor.inspector') + ' (' + shortcuts.display('inspector') + ')'"
         placement="bottom"
         [showDelay]="600"
         (click)="toggleInspector.emit()"
@@ -103,7 +105,7 @@
         class="nori-panel-toggle"
         [attr.aria-pressed]="graphTools.tool() === 'connect'"
         [attr.aria-label]="t('editor.drawConnection')"
-        [suiTooltip]="t('editor.drawConnection') + ' (' + shortcuts.display('connect') + ')'"
+        [appTooltip]="t('editor.drawConnection') + ' (' + shortcuts.display('connect') + ')'"
         placement="bottom"
         [showDelay]="600"
         [disabled]="!workspace.view.editable() || graphTools.pending()"
@@ -121,7 +123,7 @@
         class="nori-panel-toggle"
         [attr.aria-pressed]="graphTools.tool() === 'disconnect'"
         [attr.aria-label]="t('editor.removeConnection')"
-        [suiTooltip]="t('editor.removeConnection') + ' (' + shortcuts.display('disconnect') + ')'"
+        [appTooltip]="t('editor.removeConnection') + ' (' + shortcuts.display('disconnect') + ')'"
         placement="bottom"
         [showDelay]="600"
         [disabled]="!workspace.view.editable() || graphTools.pending()"
@@ -138,7 +140,7 @@
         shape="circle"
         [attr.aria-keyshortcuts]="shortcuts.aria('reset')"
         [attr.aria-label]="t('editor.reset')"
-        [suiTooltip]="t('editor.reset') + ' (' + shortcuts.display('reset') + ')'"
+        [appTooltip]="t('editor.reset') + ' (' + shortcuts.display('reset') + ')'"
         placement="bottom"
         [showDelay]="600"
         [disabled]="!workspace.view.editable()"
@@ -154,7 +156,7 @@
         shape="circle"
         [attr.aria-keyshortcuts]="shortcuts.aria('fit')"
         [attr.aria-label]="t('editor.fit')"
-        [suiTooltip]="t('editor.fit') + ' (' + shortcuts.display('fit') + ')'"
+        [appTooltip]="t('editor.fit') + ' (' + shortcuts.display('fit') + ')'"
         placement="bottom"
         [showDelay]="600"
         (click)="fitGraph.emit()"
@@ -169,7 +171,7 @@
         shape="circle"
         [attr.aria-keyshortcuts]="shortcuts.aria('colours')"
         [attr.aria-label]="t('editor.colours')"
-        [suiTooltip]="t('editor.colours') + ' (' + shortcuts.display('colours') + ')'"
+        [appTooltip]="t('editor.colours') + ' (' + shortcuts.display('colours') + ')'"
         placement="bottom"
         [showDelay]="600"
         (click)="configureColours.emit()"
@@ -185,7 +187,7 @@
         shape="circle"
         [attr.aria-keyshortcuts]="shortcuts.aria('project')"
         [attr.aria-label]="t('editor.editProject')"
-        [suiTooltip]="t('editor.editProject') + ' (' + shortcuts.display('project') + ')'"
+        [appTooltip]="t('editor.editProject') + ' (' + shortcuts.display('project') + ')'"
         placement="bottom"
         [showDelay]="600"
         [disabled]="!storage.selectedManifest()"
@@ -202,7 +204,7 @@
         shape="circle"
         [attr.aria-keyshortcuts]="shortcuts.aria('export')"
         [attr.aria-label]="t('editor.export')"
-        [suiTooltip]="t('editor.export') + ' (' + shortcuts.display('export') + ')'"
+        [appTooltip]="t('editor.export') + ' (' + shortcuts.display('export') + ')'"
         placement="bottom"
         [showDelay]="600"
         [disabled]="!canExport()"

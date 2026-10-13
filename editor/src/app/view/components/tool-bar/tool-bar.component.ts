@@ -9,8 +9,6 @@ import {
   type OutputEmitterRef,
   type Signal,
 } from '@angular/core';
-import { type ShortcutAction } from '../../../models/Shortcut';
-import { ShortcutService } from '../../../services/shortcut.service';
 import { Router, RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import {
@@ -27,11 +25,14 @@ import {
   LucideUnlink,
   LucideScanEye,
 } from '@lucide/angular';
-import { Button, Card, Divider, Tooltip } from '@sushi-kit/angular';
+import { Button, Card, Divider } from '@sushi-kit/angular';
 import { Transformer } from '../../../core/helper/Transformer';
+import { TooltipDirective } from '../../../directives/tooltip.directive';
 import { type Manifest } from '../../../models/Manifest';
+import { type ShortcutAction } from '../../../models/Shortcut';
 import { DialogService } from '../../../services/dialog.service';
 import { ExportService } from '../../../services/export.service';
+import { ShortcutService } from '../../../services/shortcut.service';
 import { StorageService } from '../../../services/storage.service';
 import { GraphToolsService } from '../../../services/workspace/graph-tools.service';
 import { WorkspaceService } from '../../../services/workspace/workspace.service';
@@ -51,7 +52,7 @@ import { SettingsButtonComponent } from '../settings-button/settings-button.comp
     Card,
     TranslocoDirective,
     SettingsButtonComponent,
-    Tooltip,
+    TooltipDirective,
     Divider,
     RouterLink,
     LucideDownload,
@@ -121,7 +122,7 @@ export class ToolBarComponent {
       void this.router.navigate(['/']).catch((error: unknown): void => this.storage.reportError(error));
     },
     settings: (): void => {
-      this.dialogs.open(SettingsDialog, { headerKey: 'common.settings', width: '42rem' });
+      this.dialogs.open(SettingsDialog, { closeOnBackdrop: true, headerKey: 'common.settings', width: '42rem' });
     },
   };
 

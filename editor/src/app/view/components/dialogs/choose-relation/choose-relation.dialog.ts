@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input, type InputSignal } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { LucideArrowRight, LucideLink2 } from '@lucide/angular';
+import { LucideArrowRight, LucideLink2, LucideX } from '@lucide/angular';
 import { type RelationSuggestion } from '@ramen-suite/core/model';
 import { Button, List, ListItemTemplate } from '@sushi-kit/angular';
 import { DialogService } from '../../../../services/dialog.service';
@@ -9,7 +9,7 @@ import { StorageService } from '../../../../services/storage.service';
 @Component({
   selector: 'app-choose-relation',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslocoDirective, Button, List, ListItemTemplate, LucideArrowRight, LucideLink2],
+  imports: [LucideX, TranslocoDirective, Button, List, ListItemTemplate, LucideArrowRight, LucideLink2],
   templateUrl: './choose-relation.dialog.html',
 })
 export class ChooseRelationDialog {

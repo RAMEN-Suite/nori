@@ -1,15 +1,12 @@
 <section class="nori-dialog-content">
   <div class="nori-dialog-scroll">
-    <div class="min-w-0 space-y-3">
-      <p class="text-base-content/75 text-sm leading-relaxed break-words">{{ options().message }}</p>
-      @if (options().details?.length) {
-        <ul class="text-base-content/65 list-disc space-y-1 pl-5 text-sm">
-          @for (detail of options().details; track $index) {
-            <li>{{ detail }}</li>
-          }
-        </ul>
-      }
-    </div>
+    <app-confirmation-content
+      [message]="options().message"
+      [details]="options().details ?? []"
+      [affectedNodes]="options().affectedNodes ?? []"
+      [affectedRelations]="options().affectedRelations ?? []"
+      [affectedLevels]="options().affectedLevels ?? []"
+    />
   </div>
   <footer class="nori-dialog-actions">
     @for (group of options().buttons; track $index) {
@@ -22,6 +19,13 @@
           [loading]="dialogs.pending() && button.severity === 'error'"
           (click)="handleAction(button)"
         >
+          @if (!button.click) {
+            <svg lucideX class="size-4 shrink-0" aria-hidden="true"></svg>
+          } @else if (button.severity === 'error') {
+            <svg lucideTrash class="size-4 shrink-0" aria-hidden="true"></svg>
+          } @else {
+            <svg lucideCheck class="size-4 shrink-0" aria-hidden="true"></svg>
+          }
           {{ button.label }}
         </button>
       }

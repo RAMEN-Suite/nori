@@ -31,9 +31,9 @@ import { ApplicationState } from '../../../../states/application.state';
 import { NodeActionsComponent } from '../node-actions/node-actions.component';
 import { GraphAutoLayout, type NodePosition } from './graph.auto-layout';
 import { getLinkPath } from './graph.geometry';
-import { GraphRenderer } from './graph.renderer';
 import { positionLinkLabels } from './graph.labels';
 import { buildRenderModel, getFitViewport, getViewportSize, placeNodes, setNodePosition } from './graph.layout';
+import { GraphRenderer } from './graph.renderer';
 import {
   DEFAULT_GRAPH_LAYOUT_SETTINGS,
   GRAPH_NODE_WIDTH,
