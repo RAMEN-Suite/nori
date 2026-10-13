@@ -33,7 +33,7 @@ export class WindowState {
     const { title, titleKey }: State = this.state();
     if (titleKey) return this.translations.translate(titleKey);
 
-    return title ? `${title} — Nori` : homeTitle;
+    return title ? `${title} in Nori` : homeTitle;
   });
 
   public constructor() {
