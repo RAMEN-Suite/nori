@@ -4,7 +4,7 @@
       d="M-40 15L28 40L135 66L240 24L355 60L500 -60 M28 40L65 155L180 145L135 66 M180 145L240 24 M65 155L22 265L102 290L180 145 M22 265L-40 310 M102 290L-60 390 M65 155L-40 120 M240 24L280 -40"
     />
     @for (node of nodes; track $index) {
-      <circle [attr.cx]="node.x" [attr.cy]="node.y" [attr.r]="node.radius" />
+      <circle [class.accent-node]="$index === 1 || $index === 6" [attr.cx]="node.x" [attr.cy]="node.y" [attr.r]="node.radius" />
     }
   </svg>
 }

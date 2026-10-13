@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal, type WritableSignal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
-import { LucideArrowUpRight, LucideFolderOpen, LucidePlus } from '@lucide/angular';
+import { LucideArrowUpRight, LucideBoxes, LucideCodeXml, LucideFileBraces, LucideFolderOpen, LucidePlus } from '@lucide/angular';
 import { Button, Card, Message } from '@sushi-kit/angular';
 import { environment } from '../../../../environments/environment';
 import { ExternalLinkDirective } from '../../../directives/external-link.directive';
@@ -22,6 +22,9 @@ import { SettingsButtonComponent } from '../../components/settings-button/settin
     Card,
     Message,
     LucideArrowUpRight,
+    LucideBoxes,
+    LucideCodeXml,
+    LucideFileBraces,
     LucideFolderOpen,
     LucidePlus,
     ExternalLinkDirective,
@@ -41,10 +44,14 @@ export class HomeScreen implements OnInit {
   protected readonly importing: WritableSignal<boolean> = signal(false);
   protected readonly importError: WritableSignal<string | null> = signal(null);
 
-  protected readonly resources: readonly { readonly label: string; readonly url: string }[] = [
-    { label: 'RAMEN Schema', url: environment.schemaURL },
-    { label: 'RAMEN Suite', url: environment.repositoryURL },
-    { label: 'RAMEN Core', url: environment.coreURL },
+  protected readonly resources: readonly {
+    readonly icon: 'schema' | 'suite' | 'core';
+    readonly label: string;
+    readonly url: string;
+  }[] = [
+    { icon: 'schema', label: 'RAMEN Schema', url: environment.schemaURL },
+    { icon: 'suite', label: 'RAMEN Suite', url: environment.repositoryURL },
+    { icon: 'core', label: 'RAMEN Core', url: environment.coreURL },
   ];
 
   public ngOnInit(): void {

@@ -18,11 +18,16 @@ svg {
 }
 
 path {
-  opacity: 0.6;
+  opacity: 0.8;
 }
 
 circle {
-  fill: var(--color-base-100);
+  fill: var(--nori-graph-fill);
+}
+
+circle.accent-node {
+  stroke: var(--nori-focus);
+  fill: color-mix(in oklab, var(--color-primary) 6%, var(--color-base-100));
 }
 
 .top-left {

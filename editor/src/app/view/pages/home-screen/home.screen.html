@@ -13,7 +13,7 @@
       <h1 id="home-title" class="sr-only">Nori</h1>
     </div>
 
-    <sui-card class="entry-card home-actions mx-auto block w-full max-w-md" data-nori-motion size="lg" variant="border">
+    <sui-card class="entry-card home-actions mx-auto block w-full max-w-[30rem]" data-nori-motion size="lg" variant="border">
       <div class="flex flex-col gap-4">
         <div class="flex flex-col gap-4">
           <h2 class="home-action-title">{{ t('home.title') }}</h2>
@@ -24,7 +24,18 @@
         <nav class="flex flex-wrap gap-2" [attr.aria-label]="t('home.resources')">
           @for (resource of resources; track resource.url) {
             <a suiButton severity="neutral" variant="soft" size="xs" [appExternalLink]="resource.url">
-              {{ resource.label }}<svg lucideArrowUpRight class="size-3" aria-hidden="true"></svg>
+              @switch (resource.icon) {
+                @case ('schema') {
+                  <svg lucideFileBraces class="size-3 shrink-0" aria-hidden="true"></svg>
+                }
+                @case ('suite') {
+                  <svg lucideBoxes class="size-3 shrink-0" aria-hidden="true"></svg>
+                }
+                @case ('core') {
+                  <svg lucideCodeXml class="size-3 shrink-0" aria-hidden="true"></svg>
+                }
+              }
+              {{ resource.label }}<svg lucideArrowUpRight class="size-3 shrink-0" aria-hidden="true"></svg>
             </a>
           }
         </nav>

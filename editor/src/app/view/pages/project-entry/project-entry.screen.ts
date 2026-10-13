@@ -1,5 +1,5 @@
-import { ChangeDetectionStrategy, Component, DOCUMENT, inject, OnInit, signal, type WritableSignal } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
+import { ChangeDetectionStrategy, Component, DOCUMENT, inject, OnInit, signal, type WritableSignal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { LucideArrowLeft } from '@lucide/angular';
@@ -7,9 +7,9 @@ import { Button } from '@sushi-kit/angular';
 import { ApplicationState } from '../../../states/application.state';
 import { WindowState } from '../../../states/window.state';
 import { EntryBackdropComponent } from '../../components/entry-backdrop/entry-backdrop.component';
-import { SettingsButtonComponent } from '../../components/settings-button/settings-button.component';
 import { ProjectCreateComponent } from '../../components/project-create/project-create.component';
 import { ProjectOpenComponent } from '../../components/project-open/project-open.component';
+import { SettingsButtonComponent } from '../../components/settings-button/settings-button.component';
 
 /** Keeps each card mounted when the alternative is revealed, preserving in-progress input. */
 @Component({
