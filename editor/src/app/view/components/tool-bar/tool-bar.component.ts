@@ -12,17 +12,18 @@ import {
 import { Router, RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import {
+  LucideMousePointer2,
   LucideArrowLeft,
   LucideDownload,
   LucideLayers,
   LucideBoxes,
-  LucideLink2,
+  LucideSpline,
   LucideMaximize,
   LucidePalette,
   LucideGitBranch,
   LucidePencil,
   LucideNetwork,
-  LucideUnlink,
+  LucideEraser,
   LucideScanEye,
 } from '@lucide/angular';
 import { Button, Card, Divider } from '@sushi-kit/angular';
@@ -60,12 +61,13 @@ import { SettingsButtonComponent } from '../settings-button/settings-button.comp
     LucideGitBranch,
     LucideLayers,
     LucideBoxes,
+    LucideMousePointer2,
     LucideArrowLeft,
     LucideNetwork,
     LucideMaximize,
     LucidePalette,
-    LucideLink2,
-    LucideUnlink,
+    LucideSpline,
+    LucideEraser,
     LucideScanEye,
   ],
   templateUrl: './tool-bar.component.html',
@@ -95,7 +97,8 @@ export class ToolBarComponent {
 
   private readonly actions: Readonly<Record<ShortcutAction, () => void>> = {
     connect: (): void => this.graphTools.toggle('connect'),
-    disconnect: (): void => this.graphTools.toggle('disconnect'),
+    select: (): void => this.graphTools.exit(),
+    erase: (): void => this.graphTools.toggle('erase'),
     refinements: (): void => {
       if (this.workspace.view.editable()) this.toggleCatalogue.emit();
     },

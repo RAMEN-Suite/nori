@@ -18,7 +18,7 @@
 | Settings                                  | `SettingsDialog`                                                             | Appearance and shortcut editing through the corresponding services.                                                                            |
 | Modal lifecycle                           | `DialogService` and `DialogHostComponent`                                    | Opening/closing, sizing, focus, errors and pending state.                                                                                      |
 
-Components use `WorkspaceService.store` for state, `.view` for derived information and `.actions` for changes. Keep persistence and RAMEN rules out of templates and catalogue components. `NodeEditingService` owns shared node actions; `GraphToolsService` owns relationship-tool state.
+Components use `WorkspaceService.store` for state, `.view` for derived information and `.actions` for changes. Keep persistence and RAMEN rules out of templates and catalogue components. `NodeEditingService` owns shared node actions; `GraphToolsService` owns selection, connection and eraser modes. The graph routes eraser clicks on local nodes to `NodeEditingService.confirmRemoval`, on base nodes to `.confirmCanvasRemoval`, and on edges to `GraphToolsService.remove`. All three use the existing affected-element previews.
 
 ## Adding a hotkey
 

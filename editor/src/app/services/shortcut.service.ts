@@ -89,7 +89,8 @@ export class ShortcutService {
     const overrides: ShortcutOverrides = {};
     const used: Set<string> = new Set();
     for (const shortcut of EDITOR_SHORTCUTS) {
-      const candidate: unknown = shortcut.id in stored ? Reflect.get(stored, shortcut.id) : shortcut.key;
+      const storedId: string = shortcut.id === 'erase' && !('erase' in stored) ? 'disconnect' : shortcut.id;
+      const candidate: unknown = storedId in stored ? Reflect.get(stored, storedId) : shortcut.key;
       const binding: string = isShortcutBinding(candidate) ? candidate : shortcut.key;
       if (used.has(binding)) return {};
       used.add(binding);

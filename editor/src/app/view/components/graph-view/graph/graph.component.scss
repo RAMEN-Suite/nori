@@ -8,10 +8,16 @@ app-graph {
     position: absolute;
     transform: translate(-50%, -100%);
   }
+  .graph-node-name-editor {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    font-weight: 600;
+  }
   .host {
     height: 100%;
   }
-  .host > svg:not(.is-connecting, .is-disconnecting) {
+  .host > svg:not(.is-connecting, .is-erasing) {
     cursor: grab;
 
     &:active {
@@ -54,18 +60,60 @@ app-graph {
     stroke-width: 16;
     pointer-events: none;
   }
-  .is-disconnecting .link-hit {
-    pointer-events: stroke;
-    cursor: crosshair;
+  .is-erasing {
+    --nori-eraser-cursor: url("./eraser-cursor.svg") 7 17, crosshair;
+    cursor: var(--nori-eraser-cursor);
   }
-  .is-disconnecting .link:hover,
-  .link-hit:focus-visible {
-    stroke: var(--color-error);
-    stroke-opacity: 0.7;
+  .is-erasing .link-hit {
+    pointer-events: stroke;
+    cursor: var(--nori-eraser-cursor);
+  }
+  .link-hit:focus {
     outline: none;
   }
+  .is-erasing .link.is-erase-target {
+    stroke: var(--color-error);
+    stroke-opacity: 1;
+    stroke-width: 2.5;
+    opacity: 1;
+  }
+  .link-feedback {
+    pointer-events: none;
+  }
+  .link-feedback path {
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    vector-effect: non-scaling-stroke;
+  }
+  .link-feedback-halo {
+    stroke: var(--color-base-100);
+    stroke-width: 7;
+    stroke-opacity: 0.9;
+  }
+  .link-feedback-stroke {
+    stroke: var(--color-error);
+    stroke-width: 3;
+  }
+  .link-label.is-erase-target {
+    fill: var(--color-error);
+    opacity: 1;
+    font-weight: 600;
+  }
+  .is-connecting {
+    --nori-pencil-cursor: url("./pencil-cursor.svg") 5 19, crosshair;
+    cursor: var(--nori-pencil-cursor);
+  }
   .is-connecting .node {
-    cursor: crosshair;
+    cursor: var(--nori-pencil-cursor);
+  }
+  .is-erasing .node {
+    cursor: var(--nori-eraser-cursor);
+  }
+  .is-erasing .node:hover .node-body,
+  .is-erasing .node-body:focus-visible {
+    stroke: var(--color-error);
+    outline: 2px solid var(--color-error);
+    outline-offset: 5px;
   }
   .connection-preview {
     fill: none;

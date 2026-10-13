@@ -23,24 +23,105 @@
       <button
         suiButton
         severity="neutral"
-        [variant]="catalogueOpen() ? 'soft' : 'text'"
+        [variant]="graphTools.tool() === 'select' ? 'soft' : 'text'"
         size="sm"
         shape="circle"
-        [attr.aria-keyshortcuts]="shortcuts.aria(workspace.view.editable() ? 'refinements' : 'baseNodes')"
-        [attr.aria-label]="catalogueLabel"
         class="nori-panel-toggle"
-        [attr.aria-pressed]="catalogueOpen()"
-        [appTooltip]="catalogueLabel + ' (' + catalogueShortcut + ')'"
+        [attr.aria-keyshortcuts]="shortcuts.aria('select')"
+        [attr.aria-pressed]="graphTools.tool() === 'select'"
+        [attr.aria-label]="t('editor.selectTool')"
+        [appTooltip]="t('editor.selectTool') + ' (' + shortcuts.display('select') + ')'"
         placement="bottom"
         [showDelay]="600"
-        (click)="toggleCatalogue.emit()"
+        [disabled]="graphTools.pending()"
+        (click)="graphTools.exit()"
       >
-        @if (workspace.view.editable()) {
-          <svg lucideGitBranch class="size-4" aria-hidden="true"></svg>
-        } @else {
-          <svg lucideBoxes class="size-4" aria-hidden="true"></svg>
-        }
+        <svg lucideMousePointer2 class="size-4" aria-hidden="true"></svg>
       </button>
+      <button
+        suiButton
+        severity="neutral"
+        [variant]="graphTools.tool() === 'connect' ? 'soft' : 'text'"
+        size="sm"
+        shape="circle"
+        [attr.aria-keyshortcuts]="shortcuts.aria('connect')"
+        class="nori-panel-toggle"
+        [attr.aria-pressed]="graphTools.tool() === 'connect'"
+        [attr.aria-label]="t('editor.drawConnection')"
+        [appTooltip]="t('editor.drawConnection') + ' (' + shortcuts.display('connect') + ')'"
+        placement="bottom"
+        [showDelay]="600"
+        [disabled]="!workspace.view.editable() || graphTools.pending()"
+        (click)="graphTools.toggle('connect')"
+      >
+        <svg lucideSpline class="size-4" aria-hidden="true"></svg>
+      </button>
+      <button
+        suiButton
+        severity="neutral"
+        [variant]="graphTools.tool() === 'erase' ? 'soft' : 'text'"
+        size="sm"
+        shape="circle"
+        [attr.aria-keyshortcuts]="shortcuts.aria('erase')"
+        class="nori-panel-toggle"
+        [attr.aria-pressed]="graphTools.tool() === 'erase'"
+        [attr.aria-label]="t('editor.eraseElements')"
+        [appTooltip]="t('editor.eraseElements') + ' (' + shortcuts.display('erase') + ')'"
+        placement="bottom"
+        [showDelay]="600"
+        [disabled]="!workspace.view.editable() || graphTools.pending()"
+        (click)="graphTools.toggle('erase')"
+      >
+        <svg lucideEraser class="size-4" aria-hidden="true"></svg>
+      </button>
+      <div suiDivider orientation="vertical" class="mx-1 my-0 h-6 self-center" style="--sui-divider-margin: 0" aria-hidden="true"></div>
+      <button
+        suiButton
+        severity="neutral"
+        variant="text"
+        size="sm"
+        shape="circle"
+        [attr.aria-keyshortcuts]="shortcuts.aria('fit')"
+        [attr.aria-label]="t('editor.fit')"
+        [appTooltip]="t('editor.fit') + ' (' + shortcuts.display('fit') + ')'"
+        placement="bottom"
+        [showDelay]="600"
+        (click)="fitGraph.emit()"
+      >
+        <svg lucideMaximize class="size-4" aria-hidden="true"></svg>
+      </button>
+      <button
+        suiButton
+        severity="neutral"
+        variant="text"
+        size="sm"
+        shape="circle"
+        [attr.aria-keyshortcuts]="shortcuts.aria('reset')"
+        [attr.aria-label]="t('editor.reset')"
+        [appTooltip]="t('editor.reset') + ' (' + shortcuts.display('reset') + ')'"
+        placement="bottom"
+        [showDelay]="600"
+        [disabled]="!workspace.view.editable()"
+        (click)="handleResetLayout()"
+      >
+        <svg lucideNetwork class="size-4" aria-hidden="true"></svg>
+      </button>
+      <button
+        suiButton
+        severity="neutral"
+        variant="text"
+        size="sm"
+        shape="circle"
+        [attr.aria-keyshortcuts]="shortcuts.aria('colours')"
+        [attr.aria-label]="t('editor.colours')"
+        [appTooltip]="t('editor.colours') + ' (' + shortcuts.display('colours') + ')'"
+        placement="bottom"
+        [showDelay]="600"
+        (click)="configureColours.emit()"
+      >
+        <svg lucidePalette class="size-4" aria-hidden="true"></svg>
+      </button>
+      <div suiDivider orientation="vertical" class="mx-1 my-0 h-6 self-center" style="--sui-divider-margin: 0" aria-hidden="true"></div>
       @if (workspace.view.editable()) {
         <button
           suiButton
@@ -60,6 +141,27 @@
           <svg lucideBoxes class="size-4" aria-hidden="true"></svg>
         </button>
       }
+      <button
+        suiButton
+        severity="neutral"
+        [variant]="catalogueOpen() ? 'soft' : 'text'"
+        size="sm"
+        shape="circle"
+        [attr.aria-keyshortcuts]="shortcuts.aria(workspace.view.editable() ? 'refinements' : 'baseNodes')"
+        [attr.aria-label]="catalogueLabel"
+        class="nori-panel-toggle"
+        [attr.aria-pressed]="catalogueOpen()"
+        [appTooltip]="catalogueLabel + ' (' + catalogueShortcut + ')'"
+        placement="bottom"
+        [showDelay]="600"
+        (click)="toggleCatalogue.emit()"
+      >
+        @if (workspace.view.editable()) {
+          <svg lucideGitBranch class="size-4" aria-hidden="true"></svg>
+        } @else {
+          <svg lucideBoxes class="size-4" aria-hidden="true"></svg>
+        }
+      </button>
       <button
         suiButton
         severity="neutral"
@@ -93,90 +195,6 @@
         (click)="toggleInspector.emit()"
       >
         <svg lucideScanEye class="size-4" aria-hidden="true"></svg>
-      </button>
-      <div suiDivider orientation="vertical" class="mx-1 my-0 h-6 self-center" style="--sui-divider-margin: 0" aria-hidden="true"></div>
-      <button
-        suiButton
-        severity="neutral"
-        [variant]="graphTools.tool() === 'connect' ? 'soft' : 'text'"
-        size="sm"
-        shape="circle"
-        [attr.aria-keyshortcuts]="shortcuts.aria('connect')"
-        class="nori-panel-toggle"
-        [attr.aria-pressed]="graphTools.tool() === 'connect'"
-        [attr.aria-label]="t('editor.drawConnection')"
-        [appTooltip]="t('editor.drawConnection') + ' (' + shortcuts.display('connect') + ')'"
-        placement="bottom"
-        [showDelay]="600"
-        [disabled]="!workspace.view.editable() || graphTools.pending()"
-        (click)="graphTools.toggle('connect')"
-      >
-        <svg lucideLink2 class="size-4" aria-hidden="true"></svg>
-      </button>
-      <button
-        suiButton
-        severity="neutral"
-        [variant]="graphTools.tool() === 'disconnect' ? 'soft' : 'text'"
-        size="sm"
-        shape="circle"
-        [attr.aria-keyshortcuts]="shortcuts.aria('disconnect')"
-        class="nori-panel-toggle"
-        [attr.aria-pressed]="graphTools.tool() === 'disconnect'"
-        [attr.aria-label]="t('editor.removeConnection')"
-        [appTooltip]="t('editor.removeConnection') + ' (' + shortcuts.display('disconnect') + ')'"
-        placement="bottom"
-        [showDelay]="600"
-        [disabled]="!workspace.view.editable() || graphTools.pending()"
-        (click)="graphTools.toggle('disconnect')"
-      >
-        <svg lucideUnlink class="size-4" aria-hidden="true"></svg>
-      </button>
-      <div suiDivider orientation="vertical" class="mx-1 my-0 h-6 self-center" style="--sui-divider-margin: 0" aria-hidden="true"></div>
-      <button
-        suiButton
-        severity="neutral"
-        variant="text"
-        size="sm"
-        shape="circle"
-        [attr.aria-keyshortcuts]="shortcuts.aria('reset')"
-        [attr.aria-label]="t('editor.reset')"
-        [appTooltip]="t('editor.reset') + ' (' + shortcuts.display('reset') + ')'"
-        placement="bottom"
-        [showDelay]="600"
-        [disabled]="!workspace.view.editable()"
-        (click)="handleResetLayout()"
-      >
-        <svg lucideNetwork class="size-4" aria-hidden="true"></svg>
-      </button>
-      <button
-        suiButton
-        severity="neutral"
-        variant="text"
-        size="sm"
-        shape="circle"
-        [attr.aria-keyshortcuts]="shortcuts.aria('fit')"
-        [attr.aria-label]="t('editor.fit')"
-        [appTooltip]="t('editor.fit') + ' (' + shortcuts.display('fit') + ')'"
-        placement="bottom"
-        [showDelay]="600"
-        (click)="fitGraph.emit()"
-      >
-        <svg lucideMaximize class="size-4" aria-hidden="true"></svg>
-      </button>
-      <button
-        suiButton
-        severity="neutral"
-        variant="text"
-        size="sm"
-        shape="circle"
-        [attr.aria-keyshortcuts]="shortcuts.aria('colours')"
-        [attr.aria-label]="t('editor.colours')"
-        [appTooltip]="t('editor.colours') + ' (' + shortcuts.display('colours') + ')'"
-        placement="bottom"
-        [showDelay]="600"
-        (click)="configureColours.emit()"
-      >
-        <svg lucidePalette class="size-4" aria-hidden="true"></svg>
       </button>
       <div suiDivider orientation="vertical" class="mx-1 my-0 h-6 self-center" style="--sui-divider-margin: 0" aria-hidden="true"></div>
       <button

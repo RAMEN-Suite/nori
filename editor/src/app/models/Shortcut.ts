@@ -3,8 +3,9 @@ export type ShortcutAction =
   | 'baseNodes'
   | 'levels'
   | 'inspector'
+  | 'select'
   | 'connect'
-  | 'disconnect'
+  | 'erase'
   | 'fit'
   | 'reset'
   | 'colours'
@@ -38,14 +39,15 @@ export const EDITOR_SHORTCUTS: readonly ShortcutDefinition[] = [
   { id: 'baseNodes', category: 'views', key: 'b', label: 'editor.baseNodes' },
   { id: 'levels', category: 'views', key: 'm', label: 'editor.levels' },
   { id: 'inspector', category: 'views', key: 'i', label: 'editor.inspector' },
+  { id: 'select', category: 'graph', key: 'v', label: 'editor.selectTool' },
   { id: 'connect', category: 'graph', key: 'l', label: 'editor.drawConnection' },
-  { id: 'disconnect', category: 'graph', key: 'd', label: 'editor.removeConnection' },
+  { id: 'erase', category: 'graph', key: 'e', label: 'editor.eraseElements' },
   { id: 'fit', category: 'graph', key: 'f', label: 'editor.fit' },
   { id: 'reset', category: 'graph', key: 'shift+r', label: 'editor.reset' },
   { id: 'colours', category: 'graph', key: 'c', label: 'editor.colours' },
   { id: 'project', category: 'project', key: 'p', label: 'editor.editProject' },
-  { id: 'validation', category: 'project', key: 'v', label: 'editor.validationTitle' },
-  { id: 'export', category: 'project', key: 'e', label: 'editor.export' },
+  { id: 'validation', category: 'project', key: 'shift+v', label: 'editor.validationTitle' },
+  { id: 'export', category: 'project', key: 'mod+shift+e', label: 'editor.export' },
   { id: 'settings', category: 'navigation', key: ',', label: 'common.settings' },
   { id: 'undo', category: 'graph', key: 'mod+z', label: 'editor.undoRelation' },
   { id: 'redo', category: 'graph', key: 'mod+shift+z', label: 'editor.redoRelation' },

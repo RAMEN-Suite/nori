@@ -9,7 +9,7 @@ import { DialogService } from '../dialog.service';
 import { StorageService } from '../storage.service';
 import { WorkspaceService } from './workspace.service';
 
-export type GraphTool = 'select' | 'connect' | 'disconnect';
+export type GraphTool = 'select' | 'connect' | 'erase';
 
 /** Coordinates graph tools with Core suggestions and dependent removal previews. */
 @Injectable({ providedIn: 'root' })

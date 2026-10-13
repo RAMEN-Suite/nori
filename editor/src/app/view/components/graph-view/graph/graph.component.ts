@@ -18,14 +18,20 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormsModule } from '@angular/forms';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
+import { type Node as ModelNode } from '@ramen-suite/core/model';
+import { Input } from '@sushi-kit/angular';
 import type { ZoomTransform } from 'd3';
 import * as d3 from 'd3';
+import { Transformer } from '../../../../core/helper/Transformer';
 import type { GraphData } from '../../../../core/utils/ModelGraph';
+import { AutoselectDirective } from '../../../../directives/autoselect.directive';
 import { type GraphView, type ModelRecord } from '../../../../models/ModelRecord';
 import { NavigationService } from '../../../../services/navigation.service';
 import { StorageService } from '../../../../services/storage.service';
 import { type GraphTool, GraphToolsService } from '../../../../services/workspace/graph-tools.service';
+import { NodeEditingService } from '../../../../services/workspace/node-editing.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { ApplicationState } from '../../../../states/application.state';
 import { NodeActionsComponent } from '../node-actions/node-actions.component';
@@ -57,12 +63,13 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-graph',
   encapsulation: ViewEncapsulation.None,
-  imports: [TranslocoDirective, NodeActionsComponent],
+  imports: [TranslocoDirective, NodeActionsComponent, FormsModule, Input, AutoselectDirective],
   templateUrl: './graph.component.html',
   styleUrl: './graph.component.scss',
 })
 export class GraphComponent implements AfterViewInit {
   protected readonly graphTools: GraphToolsService = inject(GraphToolsService);
+  private readonly nodeEditing: NodeEditingService = inject(NodeEditingService);
   private readonly appearance: ApplicationState = inject(ApplicationState);
   private readonly translations: TranslocoService = inject(TranslocoService);
   private readonly storage: StorageService = inject(StorageService);
@@ -78,6 +85,10 @@ export class GraphComponent implements AfterViewInit {
   public readonly nodeSelected: OutputEmitterRef<void> = output();
 
   protected readonly nodeActionsPosition: WritableSignal<{ x: number; y: number } | null> = signal(null);
+  protected readonly nameEditorPosition: WritableSignal<{ x: number; y: number; width: number } | null> = signal(null);
+  protected readonly renamingNode: WritableSignal<{ id: string; modelId: string } | null> = signal(null);
+  protected readonly draftName: WritableSignal<string> = signal('');
+  protected readonly savingName: WritableSignal<boolean> = signal(false);
 
   private readonly autoLayout: GraphAutoLayout = new GraphAutoLayout();
   private layoutRequest: number = 0;
@@ -85,6 +96,7 @@ export class GraphComponent implements AfterViewInit {
   private readonly renderer: GraphRenderer = new GraphRenderer(this.translations);
 
   private connectionTimer: number | null = null;
+  private eraseTargetId: string | null = null;
   private dragStart: { x: number; y: number } | null = null;
   private dragMoved: boolean = false;
   private svgSelection?: SVGSelection;
@@ -114,8 +126,9 @@ export class GraphComponent implements AfterViewInit {
       const selected: string | null = untracked((): string | null => this.workspace.store.currentNodeId());
       if (tool === 'connect' && selected) this.graphTools.selectSource(selected);
       this.rootGroupSelection?.selectAll('.connection-preview').remove();
-      this.svgSelection?.classed('is-connecting', tool === 'connect').classed('is-disconnecting', tool === 'disconnect');
+      this.svgSelection?.classed('is-connecting', tool === 'connect').classed('is-erasing', tool === 'erase');
       this.updateLinkAccessibility();
+      this.updateNodeOverlaysPosition();
     });
 
     effect((): void => {
@@ -126,7 +139,7 @@ export class GraphComponent implements AfterViewInit {
 
     effect((): void => {
       this.refreshHover();
-      this.updateNodeActionsPosition();
+      this.updateNodeOverlaysPosition();
     });
     this.registerColorChangesEffect();
     this.registerGraphChangesEffect();
@@ -237,7 +250,7 @@ export class GraphComponent implements AfterViewInit {
       .on('zoom', (event: ZoomEvent): void => {
         this.currentTransform = event.transform;
         this.rootGroupSelection?.attr('transform', event.transform.toString());
-        this.updateNodeActionsPosition();
+        this.updateNodeOverlaysPosition();
       })
       .on('end', (event: ZoomEvent): void => {
         if (event.sourceEvent) this.saveView();
@@ -339,6 +352,14 @@ export class GraphComponent implements AfterViewInit {
     this.rootGroupSelection
       ?.selectAll<SVGPathElement, ResolvedLink>('path.link-hit')
       .on('click', this.handleLinkClick.bind(this))
+      .on('mouseenter focus', (_: Event, link: ResolvedLink): void => this.highlightEraseLink(link.id))
+      .on('mouseleave blur', (): void => {
+        const active: Element | null = document.activeElement;
+        const focused: ResolvedLink | undefined = active?.classList.contains('link-hit')
+          ? d3.select<Element, ResolvedLink>(active).datum()
+          : undefined;
+        this.highlightEraseLink(focused?.id ?? null);
+      })
       .on('keydown', (event: KeyboardEvent, link: ResolvedLink): void => {
         if (event.key !== 'Enter' && event.key !== ' ') return;
         event.preventDefault();
@@ -357,13 +378,14 @@ export class GraphComponent implements AfterViewInit {
 
   private updateNodePositions(): void {
     this.nodeSelection?.attr('transform', (node: PositionedNode): string => `translate(${node.x}, ${node.y})`);
-    this.updateNodeActionsPosition();
+    this.updateNodeOverlaysPosition();
   }
 
-  private updateNodeActionsPosition(): void {
+  private updateNodeOverlaysPosition(): void {
+    this.updateNameEditorPosition();
     const selectedId: string | null = this.workspace.store.currentNodeId();
     const node: PositionedNode | undefined = selectedId ? this.renderModel?.nodesById.get(selectedId) : undefined;
-    if (!node || !this.workspace.view.editable() || this.graphTools.tool() !== 'select') {
+    if (!node || this.renamingNode() || !this.workspace.view.editable() || this.graphTools.tool() !== 'select') {
       this.nodeActionsPosition.set(null);
       return;
     }
@@ -372,6 +394,26 @@ export class GraphComponent implements AfterViewInit {
       x: this.currentTransform.applyX(node.x),
       y: this.currentTransform.applyY(node.y - GRAPH_NODE_HEIGHT / 2) - 14,
     });
+  }
+
+  private updateNameEditorPosition(): void {
+    const renaming: { id: string; modelId: string } | null = this.renamingNode();
+    const editingNode: PositionedNode | undefined = renaming ? this.renderModel?.nodesById.get(renaming.id) : undefined;
+    if (
+      editingNode &&
+      renaming?.modelId === this.workspace.store.currentModel()?.id &&
+      this.workspace.view.editable() &&
+      this.graphTools.tool() === 'select'
+    ) {
+      this.nameEditorPosition.set({
+        x: this.currentTransform.applyX(editingNode.x),
+        y: this.currentTransform.applyY(editingNode.y - 10),
+        width: Math.max(140, (GRAPH_NODE_WIDTH - 16) * this.currentTransform.k),
+      });
+    } else {
+      this.renamingNode.set(null);
+      this.nameEditorPosition.set(null);
+    }
   }
 
   private updateLinkPositions(): void {
@@ -385,10 +427,19 @@ export class GraphComponent implements AfterViewInit {
       .selectAll<SVGPathElement, ResolvedLink>('path.link-hit')
       .attr('d', (link: ResolvedLink): string => paths.get(link.id) ?? '');
     positionLinkLabels(this.rootGroupSelection, this.linkSelection, nodes);
+    this.highlightEraseLink(this.eraseTargetId);
   }
 
   private updateLinkAccessibility(): void {
-    const removing: boolean = this.graphTools.tool() === 'disconnect';
+    const removing: boolean = this.graphTools.tool() === 'erase';
+    this.highlightEraseLink(null);
+    this.nodeSelection?.select('rect.node-body').attr('aria-label', (node: PositionedNode): string => {
+      if (!removing) return `${node.label}, ${node.baseName || node.modelName}`;
+      return this.translations.translate(
+        this.workspace.view.currentNodesById().has(node.id) ? 'editor.eraseNamedNode' : 'editor.hideBaseNode',
+        { name: node.label },
+      );
+    });
     const active: Element | null = document.activeElement;
     if (!removing && active?.classList.contains('link-hit')) {
       this.focusSelectedNode();
@@ -401,6 +452,31 @@ export class GraphComponent implements AfterViewInit {
       .attr('aria-label', (link: ResolvedLink): string | null =>
         removing ? this.translations.translate('editor.removeNamedConnection', { name: link.label }) : null,
       );
+  }
+
+  private highlightEraseLink(id: string | null): void {
+    this.eraseTargetId = this.graphTools.tool() === 'erase' ? id : null;
+    this.rootGroupSelection
+      ?.selectAll<SVGElement, ResolvedLink>('path.link, text.link-label')
+      .classed('is-erase-target', (link: ResolvedLink): boolean => link.id === this.eraseTargetId);
+    if (!this.rootGroupSelection || !this.renderModel) return;
+    const target: ResolvedLink | undefined = this.renderModel.links.find(
+      (link: ResolvedLink): boolean => link.id === this.eraseTargetId,
+    );
+    const feedback: d3.Selection<SVGGElement, ResolvedLink, SVGGElement, unknown> = this.rootGroupSelection
+      .selectAll<SVGGElement, ResolvedLink>('g.link-feedback')
+      .data(target ? [target] : [])
+      .join('g')
+      .attr('class', 'link-feedback')
+      .attr('aria-hidden', 'true')
+      .raise();
+    feedback
+      .selectAll<SVGPathElement, string>('path')
+      .data(['halo', 'stroke'])
+      .join('path')
+      .attr('class', (kind: string): string => `link-feedback-${kind}`)
+      .attr('fill', 'none')
+      .attr('d', target ? getLinkPath(target, this.renderModel.nodes) : '');
   }
 
   private refreshHover(): void {
@@ -427,7 +503,7 @@ export class GraphComponent implements AfterViewInit {
   private createDragBehavior(): NodeDrag {
     return d3
       .drag<SVGGElement, PositionedNode>()
-      .filter((): boolean => this.graphTools.tool() !== 'disconnect' && !this.graphTools.pending())
+      .filter((): boolean => this.graphTools.tool() !== 'erase' && !this.graphTools.pending())
       .on('start', (event: d3.D3DragEvent<SVGGElement, PositionedNode, unknown>): void => {
         this.layoutRequest++;
         this.rootGroupSelection?.interrupt('layout');
@@ -515,7 +591,12 @@ export class GraphComponent implements AfterViewInit {
   private handleNodeClick(event: MouseEvent | KeyboardEvent, node: PositionedNode): void {
     event.stopPropagation();
     if (event instanceof MouseEvent && event.detail > 1) return;
-    if (this.graphTools.tool() === 'disconnect') return;
+    if (this.graphTools.pending()) return;
+    if (this.graphTools.tool() === 'erase') {
+      if (this.workspace.view.currentNodesById().has(node.id)) this.nodeEditing.confirmRemoval(node.id);
+      else this.nodeEditing.confirmCanvasRemoval(node.id);
+      return;
+    }
     if (this.graphTools.tool() === 'connect' && this.handleConnectionClick(event, node)) return;
 
     void this.navigation
@@ -541,6 +622,17 @@ export class GraphComponent implements AfterViewInit {
   }
 
   private handleNodeDoubleClick(event: MouseEvent, node: PositionedNode): void {
+    if (this.graphTools.tool() === 'select') {
+      const local: ModelNode | undefined = this.workspace.view.currentNodesById().get(node.id);
+      const modelId: string | undefined = this.workspace.store.currentModel()?.id;
+      if (!local || !modelId || !this.workspace.view.editable() || this.savingName()) return;
+      event.preventDefault();
+      event.stopPropagation();
+      this.draftName.set(local.name);
+      this.renamingNode.set({ id: node.id, modelId });
+      this.updateNodeOverlaysPosition();
+      return;
+    }
     if (this.graphTools.tool() !== 'connect') return;
     event.preventDefault();
     event.stopPropagation();
@@ -549,9 +641,52 @@ export class GraphComponent implements AfterViewInit {
     void this.graphTools.connect(node.id, node.id);
   }
 
+  protected handleCancelRename(restoreFocus: boolean = true): void {
+    const id: string | undefined = this.renamingNode()?.id;
+    this.renamingNode.set(null);
+    this.nameEditorPosition.set(null);
+    if (restoreFocus && id) {
+      this.scheduleFrame((): void => {
+        this.nodeSelection
+          ?.filter((node: PositionedNode): boolean => node.id === id)
+          .select<SVGRectElement>('rect.node-body')
+          .node()
+          ?.focus();
+      });
+    }
+  }
+
+  protected async handleSaveName(restoreFocus: boolean = false): Promise<void> {
+    const editing: { id: string; modelId: string } | null = this.renamingNode();
+    if (!editing || this.savingName()) return;
+    if (editing.modelId !== this.workspace.store.currentModel()?.id || !this.workspace.view.editable()) {
+      this.handleCancelRename(false);
+      return;
+    }
+    const enteredName: string = this.draftName().trim();
+    if (!enteredName) {
+      this.handleCancelRename(restoreFocus);
+      return;
+    }
+    const name: string = Transformer.toPascalName(enteredName);
+    if (name === this.workspace.view.currentNodesById().get(editing.id)?.name) {
+      this.handleCancelRename(restoreFocus);
+      return;
+    }
+    this.savingName.set(true);
+    try {
+      await this.workspace.actions.updateNode(editing.id, { name });
+      if (this.renamingNode() === editing) this.handleCancelRename(restoreFocus);
+    } catch (error: unknown) {
+      this.storage.reportError(error);
+    } finally {
+      this.savingName.set(false);
+    }
+  }
+
   private handleLinkClick(event: MouseEvent | KeyboardEvent, link: ResolvedLink): void {
     event.stopPropagation();
-    if (this.graphTools.tool() === 'disconnect') this.graphTools.remove(link.id);
+    if (this.graphTools.tool() === 'erase') this.graphTools.remove(link.id);
   }
 
   private handleBackgroundClick(event: MouseEvent): void {
