@@ -84,6 +84,10 @@ html[data-motion="off"] [data-nori-motion] {
   transition: none;
 }
 
+[appScrollOverflow]:is(:hover, :focus-within) ~ app-scroll-hints {
+  --nori-scroll-hint-play-state: running;
+}
+
 /* The selected entry card arrives from below. Revealing its alternative slides the existing card left without resizing it. */
 ::view-transition-group(project-form),
 ::view-transition-group(project-list) {

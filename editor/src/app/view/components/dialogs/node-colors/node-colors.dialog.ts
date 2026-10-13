@@ -1,22 +1,27 @@
+import { CDK_CONNECTED_OVERLAY_DEFAULT_CONFIG } from '@angular/cdk/overlay';
 import { ChangeDetectionStrategy, Component, computed, inject, signal, type Signal, type WritableSignal } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { LucideRotateCcw, LucideShuffle, LucideChevronsDown } from '@lucide/angular';
+import { LucideRotateCcw, LucideShuffle } from '@lucide/angular';
 import { type Node } from '@ramen-suite/core/model';
-import { Button, ColorPicker, List, ListItemTemplate } from '@sushi-kit/angular';
+import { Button, ColorPicker, List, ListItemTemplate, Popover, PopoverTrigger } from '@sushi-kit/angular';
 import iwanthue from 'iwanthue';
 import { getDefaultNodeColours } from '../../../../core/utils/NodeColours';
 import { ScrollOverflowDirective } from '../../../../directives/scroll-overflow.directive';
 import { type NodeColors } from '../../../../models/ModelRecord';
 import { DialogService } from '../../../../services/dialog.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
+import { ScrollHintsComponent } from '../../scroll-hints/scroll-hints.component';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-set-colors',
+  providers: [{ provide: CDK_CONNECTED_OVERLAY_DEFAULT_CONFIG, useValue: { usePopover: 'inline' } }],
   imports: [
     ScrollOverflowDirective,
-    LucideChevronsDown,
+    ScrollHintsComponent,
     ColorPicker,
+    Popover,
+    PopoverTrigger,
     Button,
     List,
     ListItemTemplate,
@@ -30,6 +35,8 @@ import { WorkspaceService } from '../../../../services/workspace/workspace.servi
 export class NodeColorsDialog {
   protected readonly dialogs: DialogService = inject(DialogService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
+
+  protected readonly presetColours: readonly string[] = ['#6EBEF5', '#FC9C99', '#97B887', '#E4A175', '#D8B8D1', '#E6CE85'];
 
   private readonly recordId: string | null = this.workspace.store.currentModelRecord()?.modelId ?? null;
   private pendingColours: NodeColors | null = null;

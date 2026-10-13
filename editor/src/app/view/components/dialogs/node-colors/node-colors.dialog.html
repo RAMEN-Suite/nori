@@ -1,28 +1,41 @@
 <div *transloco="let t" class="nori-dialog-content">
   <p class="text-base-content/65 shrink-0 text-sm leading-relaxed">{{ t('editor.coloursHint') }}</p>
-  <div appScrollOverflow #colourScroll="scrollOverflow" class="colour-list min-w-0">
-    <sui-list size="xs" [items]="nodes()" [dividers]="false" [rowHover]="false">
-      <ng-template suiListItem let-option>
-        <div class="colour-row col-span-full flex items-center justify-between gap-4 rounded-(--nori-radius-input) px-2 py-2">
-          <label class="min-w-0 truncate text-sm font-medium" [for]="'node-colour-' + option.id">{{ option.name }}</label>
-          <sui-color-picker
-            class="w-36 shrink-0"
-            size="sm"
-            [id]="'node-colour-' + option.id"
-            [ariaLabel]="option.name"
-            [value]="colours()[option.id] ?? '#789cc2'"
-            (valueChange)="handleColourChange(option.id, $event)"
-          />
-        </div>
-      </ng-template>
-    </sui-list>
+  <div class="colour-frame">
+    <div appScrollOverflow #colourScroll="scrollOverflow" class="colour-list min-w-0">
+      <sui-list size="xs" [items]="nodes()" [dividers]="false" [rowHover]="false">
+        <ng-template suiListItem let-option>
+          @let colour = colours()[option.id] ?? '#789cc2';
+          <button
+            suiButton
+            severity="neutral"
+            variant="text"
+            class="colour-row col-span-full"
+            [suiPopoverTrigger]="picker"
+            [attr.aria-label]="t('editor.colourForNode', { name: option.name })"
+          >
+            <span class="colour-node-preview" [style.--preview-colour]="colour" aria-hidden="true"></span>
+            <span class="min-w-0 flex-1 text-left text-sm font-medium break-words">{{ option.name }}</span>
+            <span class="text-base-content/55 shrink-0 font-mono text-xs font-normal uppercase">{{ colour }}</span>
+          </button>
+          <sui-popover #picker="suiPopover" placement="right" [offset]="10" [ariaLabel]="t('editor.colourForNode', { name: option.name })">
+            <div class="flex w-52 flex-col gap-3">
+              <p class="text-sm font-medium">{{ option.name }}</p>
+              <sui-color-picker
+                fluid
+                size="sm"
+                [ariaLabel]="t('editor.colourForNode', { name: option.name })"
+                [value]="colour"
+                [presets]="presetColours"
+                (valueChange)="handleColourChange(option.id, $event)"
+              />
+            </div>
+          </sui-popover>
+        </ng-template>
+      </sui-list>
+    </div>
+    <app-scroll-hints [up]="colourScroll.canScrollUp()" [down]="colourScroll.canScrollDown()" />
   </div>
   <footer class="nori-dialog-actions shrink-0">
-    @if (colourScroll.overflowing()) {
-      <span class="text-base-content/60 mr-auto flex items-center gap-1.5 text-xs"
-        ><svg lucideChevronsDown class="size-3.5 shrink-0" aria-hidden="true"></svg>{{ t('editor.scrollColours') }}</span
-      >
-    }
     <button suiButton severity="neutral" variant="soft" size="sm" (click)="handleGenerateColours()">
       <svg lucideShuffle class="size-4" aria-hidden="true"></svg>
       {{ t('editor.generateColours') }}

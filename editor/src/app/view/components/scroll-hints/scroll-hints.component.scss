@@ -21,19 +21,40 @@
 }
 .scroll-hint.is-visible {
   opacity: 1;
+  svg {
+    animation: scroll-hint-nudge 1200ms ease-in-out infinite;
+    animation-play-state: var(--nori-scroll-hint-play-state, paused);
+  }
 }
 .scroll-hint-up {
+  --scroll-hint-distance: -3px;
   top: 0;
   align-items: flex-start;
   background: linear-gradient(to bottom, var(--color-base-100), transparent);
 }
 .scroll-hint-down {
+  --scroll-hint-distance: 3px;
   bottom: 0;
   align-items: flex-end;
   background: linear-gradient(to top, var(--color-base-100), transparent);
 }
+:host-context(html[data-motion="off"]) .scroll-hint svg {
+  animation: none;
+}
+@keyframes scroll-hint-nudge {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(var(--scroll-hint-distance));
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .scroll-hint {
     transition: none;
+  }
+  .scroll-hint.is-visible svg {
+    animation: none;
   }
 }

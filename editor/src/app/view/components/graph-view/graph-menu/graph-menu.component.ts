@@ -83,7 +83,7 @@ export class GraphMenuComponent {
     this.dialogRef?.close();
     this.dialogRef = this.dialogs.open(NodeColorsDialog, {
       closeOnBackdrop: true,
-      width: '34rem',
+      width: '30rem',
       headerKey: 'editor.adjustNodeColours',
     });
   }
