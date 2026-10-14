@@ -17,7 +17,7 @@ import { Button, Input, List, ListItemTemplate } from '@sushi-kit/angular';
 import { TooltipDirective } from '../../../../directives/tooltip.directive';
 import { DialogService } from '../../../../services/dialog.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
-import { ConfirmationContentComponent } from '../confirmation/confirmation-content.component';
+import { ConfirmationContentComponent } from '../confirmation/confirmation-content/confirmation-content.component';
 
 @Component({
   selector: 'nori-edit-annotations-dialog',
@@ -95,7 +95,7 @@ export class EditAnnotationsDialog {
     const type: string = this.type().trim();
     const nodeId: string | null = this.nodeId;
     const current: RamenAnnotation | undefined = this.selected();
-    if (!type || !nodeId || !this.workspace.view.editable()) return;
+    if (!type || !nodeId || !this.workspace.queries.editable()) return;
 
     await this.dialogs.run(
       async (): Promise<void> => {
@@ -109,7 +109,7 @@ export class EditAnnotationsDialog {
 
   protected async handleRemove(): Promise<void> {
     const annotation: RamenAnnotation | undefined = this.selected();
-    if (!annotation || !this.workspace.view.editable()) return;
+    if (!annotation || !this.workspace.queries.editable()) return;
     await this.dialogs.run((): Promise<void> => this.workspace.actions.removeAnnotation(annotation.id), {
       closeOnSuccess: false,
     });

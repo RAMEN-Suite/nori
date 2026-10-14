@@ -1,0 +1,91 @@
+<section *transloco="let t" class="flex h-full min-h-0 flex-col">
+  <div class="relative flex min-h-0 flex-1 flex-col">
+    <div noriScrollOverflow #scroll="scrollOverflow" class="editor-list-content editor-panel-scroll min-h-0 flex-1 overflow-y-auto">
+      <sui-list
+        class="editor-list"
+        size="xs"
+        [items]="levels()"
+        [trackBy]="trackLevel"
+        [ariaLabel]="t('editor.levels')"
+        [dividers]="false"
+        [rowHover]="false"
+      >
+        <ng-template suiListItem let-record>
+          <div class="editor-list-row" [class.selected]="workspace.store.currentSlot() === record.slot" data-nori-motion>
+            @if (editingId() === record.modelId) {
+              <div class="editor-name-editor">
+                <input
+                  suiInput
+                  fluid
+                  noriAutoselect
+                  size="sm"
+                  [attr.aria-label]="t('editor.levelName')"
+                  [ngModel]="draftName()"
+                  (ngModelChange)="draftName.set($event)"
+                  [readOnly]="savingName()"
+                  (keydown.enter)="$event.preventDefault(); handleSaveName(true)"
+                  (keydown.escape)="$event.stopPropagation(); handleCancelRename(true)"
+                  (blur)="handleSaveName()"
+                />
+              </div>
+            } @else {
+              <button
+                suiButton
+                severity="neutral"
+                variant="text"
+                class="editor-list-entry"
+                [attr.aria-current]="workspace.store.currentSlot() === record.slot ? 'page' : null"
+                (click)="handleSelect(record.slot)"
+                (dblclick)="handleRename(record)"
+                [attr.data-level-id]="record.modelId"
+              >
+                <span class="level-number" [noriTooltip]="levelSource(record)" placement="bottom" [showDelay]="600" aria-hidden="true">{{
+                  record.slot
+                }}</span>
+                <span class="truncate text-xs font-medium">{{ record.name }}</span>
+              </button>
+            }
+            <div class="editor-list-actions flex gap-0.5">
+              @if (record.slot !== 0) {
+                <button
+                  suiButton
+                  severity="neutral"
+                  variant="text"
+                  size="xs"
+                  shape="circle"
+                  [attr.aria-label]="t('editor.editNamedLevel', { name: record.name })"
+                  [noriTooltip]="t('editor.editLevel')"
+                  placement="bottom"
+                  [showDelay]="600"
+                  (click)="handleEdit(record)"
+                >
+                  <svg lucidePencil class="size-3.5" aria-hidden="true"></svg>
+                </button>
+                <button
+                  suiButton
+                  severity="error"
+                  variant="text"
+                  size="xs"
+                  shape="circle"
+                  [attr.aria-label]="t('editor.removeNamedLevel', { name: record.name })"
+                  [noriTooltip]="t('editor.removeLevel')"
+                  placement="bottom"
+                  [showDelay]="600"
+                  (click)="handleRemove(record)"
+                >
+                  <svg lucideTrash class="size-3.5" aria-hidden="true"></svg>
+                </button>
+              }
+            </div>
+          </div>
+        </ng-template>
+      </sui-list>
+    </div>
+    <nori-scroll-hints [up]="scroll.canScrollUp()" [down]="scroll.canScrollDown()" />
+  </div>
+  <footer class="flex flex-col gap-3 p-3">
+    <button suiButton severity="primary" size="sm" class="w-full" (click)="handleCreate()">
+      <svg lucidePlus class="size-4" aria-hidden="true"></svg>{{ t('editor.createLevel') }}
+    </button>
+  </footer>
+</section>

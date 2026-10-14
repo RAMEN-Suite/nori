@@ -1,0 +1,29 @@
+<div *transloco="let t" class="relative flex h-full min-h-0 flex-col">
+  <div class="absolute inset-0 overflow-hidden">
+    <nori-graph (nodeSelected)="nodeSelected.emit()" [graphData]="graphData()" [settings]="settings()" />
+    @if (!graphData().nodes.length) {
+      <div class="absolute inset-0 flex flex-col items-center justify-center gap-4 text-center">
+        <svg lucideMousePointer2 class="text-base-content/30 size-8" aria-hidden="true"></svg>
+        <h2 class="text-lg font-medium">{{ t('editor.emptyTitle') }}</h2>
+        <p class="text-base-content/60 max-w-[calc(16rem+20px)] text-sm">{{ t('editor.emptyDescription') }}</p>
+        @if (workspace.queries.editable()) {
+          <div class="flex max-w-lg flex-wrap justify-center gap-2 px-6">
+            @for (node of startingNodes(); track node.ref) {
+              <button
+                suiButton
+                severity="neutral"
+                variant="soft"
+                size="sm"
+                [disabled]="nodeEditing.creating()"
+                [attr.aria-label]="t('editor.refineNamedNode', { name: node.name })"
+                (click)="nodeEditing.refine(node.ref)"
+              >
+                <svg lucidePlus class="size-4" aria-hidden="true"></svg>{{ node.name }}
+              </button>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

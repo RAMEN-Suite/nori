@@ -8,6 +8,24 @@
 - Components own presentation and interaction. Workspace store/view/actions own model state, derived data and mutations. Persistence belongs to StorageService; RAMEN Core owns schema rules.
 - Extract a component or class when it owns a coherent behaviour, not merely to shorten a file. Prefer small typed APIs over generic components with many modes.
 
+## Folder responsibilities
+
+Keep the separation between `view`, `services`, `models`, `states`, `directives`, `guards` and `utils`. Group related UI components within `view/components`:
+
+| Component directory | Contents                                                                                |
+| ------------------- | --------------------------------------------------------------------------------------- |
+| `projects/`         | Project forms, entry illustrations and shared entry styles                              |
+| `workspace/`        | Catalogue, graph, inspector, model levels, validation, property editing and toolbar     |
+| `dialogs/`          | Dialog components and their inner content                                               |
+| `shell/`            | Title bar, footer, global dialog host, settings button and running-action notification  |
+| `shared/`           | Reusable UI independent of an individual feature, such as panel frames and scroll hints |
+
+`view/screens` contains the complete application views: `home`, `project-entry` and `workspace`. Each screen, component and dialog has its own directory containing its TypeScript, template and component styles. Keep private child components in their own directories beneath their owner, such as `property-editor/property-form` and `confirmation/confirmation-content`.
+
+Workspace services stay grouped under `services/workspace`; `WorkspaceStore` belongs in `states`. Keep view-specific helpers with their owner, such as graph data preparation with the graph. Put pure model helpers in `utils`, including import ordering, names, colours and removal summaries. Reserve `services` for application services; keep state containers in `states`. Do not add a `core` wrapper without a distinct responsibility.
+
+`models` contains shared data contracts; shortcut definitions and keyboard helpers belong in `utils/shortcuts.ts`.
+
 ## Angular naming
 
 - Use one project prefix: `nori-*` for component selectors and `nori` with camelCase for directive selectors, such as `noriTooltip`. Sushi components keep their public `sui` prefix.
@@ -24,7 +42,7 @@
 - Follow ESLint: explicit member visibility, variable/parameter types and function return types; readonly references where appropriate. Avoid any, unchecked casts and non-null assertions.
 - Use effects for external synchronisation, not a second copy of derived state. Clean up observers, listeners, timers and subscriptions.
 - Guard pending actions, stale selections and model changes. Validate a trial change before mutating live model data.
-- Use semantic HTML and accessible labels. Keep focus visible and preserve keyboard navigation. Translate user-facing text into German and English.
+- Use semantic HTML and accessible labels. Keep focus visible and preserve keyboard navigation. Translate user-facing text into every registered language.
 
 ## UI and extensions
 

@@ -1,7 +1,7 @@
 import { inject, Injectable, signal, type WritableSignal } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { type Node, type NodeRemovalPreview, type RelationRemovalPreview } from '@ramen-suite/core/model';
-import { getAffectedNodes, getAffectedRelations } from '../../core/utils/RemovalSummary';
+import { getAffectedNodes, getAffectedRelations } from '../../utils/removal-summary';
 import { ConfirmationDialog, type ConfirmationOptions } from '../../view/components/dialogs/confirmation/confirmation.dialog';
 import { DialogService } from '../dialog.service';
 import { NavigationService } from '../navigation.service';
@@ -20,7 +20,7 @@ export class NodeEditingService {
   public readonly createdRefinement: WritableSignal<{ modelId: string; baseNodeId: string; node: Node } | null> = signal(null);
 
   public async refine(baseNodeId: string): Promise<void> {
-    if (this.creating() || !this.workspace.view.editable()) return;
+    if (this.creating() || !this.workspace.queries.editable()) return;
     const base: Node | undefined = this.workspace.store.getDraft().getNode(baseNodeId);
     const modelId: string | undefined = this.workspace.store.currentModel()?.id;
     if (!base || !modelId) return;
@@ -42,7 +42,7 @@ export class NodeEditingService {
   }
 
   public async duplicate(nodeId: string): Promise<void> {
-    if (!this.workspace.view.editable() || !this.workspace.view.currentNodesById().has(nodeId)) return;
+    if (!this.workspace.queries.editable() || !this.workspace.queries.currentNodesById().has(nodeId)) return;
     const slot: number = this.workspace.store.currentSlot();
     const modelId: string | undefined = this.workspace.store.currentModel()?.id;
     try {
@@ -55,8 +55,8 @@ export class NodeEditingService {
 
   public confirmRemoval(nodeId: string): void {
     try {
-      const node: Node | undefined = this.workspace.view.currentNodesById().get(nodeId);
-      if (!node || !this.workspace.view.editable()) return;
+      const node: Node | undefined = this.workspace.queries.currentNodesById().get(nodeId);
+      if (!node || !this.workspace.queries.editable()) return;
       const preview: NodeRemovalPreview = this.workspace.actions.previewNodeRemoval(nodeId);
       const modelId: string | undefined = this.workspace.store.currentModel()?.id;
       const options: ConfirmationOptions = {
@@ -88,7 +88,7 @@ export class NodeEditingService {
   public confirmCanvasRemoval(reference: string): void {
     try {
       const node: Node | undefined = this.workspace.store.getDraft().getNode(reference);
-      if (!node || !this.workspace.view.editable()) return;
+      if (!node || !this.workspace.queries.editable()) return;
       const preview: RelationRemovalPreview = this.workspace.actions.previewVisibleNodeRemoval(reference);
       const modelId: string | undefined = this.workspace.store.currentModel()?.id;
       const options: ConfirmationOptions = {

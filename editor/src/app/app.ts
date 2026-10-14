@@ -4,10 +4,10 @@ import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { Toast, ToastService } from '@sushi-kit/angular';
 import { StorageService } from './services/storage.service';
 import { ApplicationState } from './states/application.state';
-import { DialogHostComponent } from './view/components/dialogs/host/dialog-host.component';
-import { RunningActionNotificationComponent } from './view/components/running-action-notification/running-action-notification.component';
-import { VersionFooterComponent } from './view/components/version-footer/version-footer.component';
-import { TitleBarComponent } from './view/components/window/title-bar/title-bar.component';
+import { DialogHostComponent } from './view/components/shell/dialog-host/dialog-host.component';
+import { RunningActionNotificationComponent } from './view/components/shell/running-action-notification/running-action-notification.component';
+import { VersionFooterComponent } from './view/components/shell/version-footer/version-footer.component';
+import { TitleBarComponent } from './view/components/shell/title-bar/title-bar.component';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,

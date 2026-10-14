@@ -5,12 +5,12 @@ import { LucideRotateCcw, LucideShuffle } from '@lucide/angular';
 import { type Node } from '@ramen-suite/core/model';
 import { Button, ColorPicker, List, ListItemTemplate, Popover, PopoverTrigger } from '@sushi-kit/angular';
 import iwanthue from 'iwanthue';
-import { getDefaultNodeColours } from '../../../../core/utils/NodeColours';
+import { getDefaultNodeColours } from '../../../../utils/node-colours';
 import { ScrollOverflowDirective } from '../../../../directives/scroll-overflow.directive';
 import { type NodeColors } from '../../../../models/ModelRecord';
 import { DialogService } from '../../../../services/dialog.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
-import { ScrollHintsComponent } from '../../scroll-hints/scroll-hints.component';
+import { ScrollHintsComponent } from '../../shared/scroll-hints/scroll-hints.component';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -54,7 +54,7 @@ export class NodeColorsDialog {
   protected readonly colours: WritableSignal<NodeColors> = signal(structuredClone(this.workspace.store.currentNodeColors()));
 
   protected readonly nodes: Signal<readonly Node[]> = computed((): readonly Node[] =>
-    this.workspace.view.baseModel() ? this.workspace.view.baseNodes() : this.workspace.view.currentNodes(),
+    this.workspace.queries.baseModel() ? this.workspace.queries.baseNodes() : this.workspace.queries.currentNodes(),
   );
 
   protected async handleGenerateColours(): Promise<void> {

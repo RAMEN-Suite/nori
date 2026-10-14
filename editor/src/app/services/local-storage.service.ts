@@ -4,16 +4,17 @@ import { Injectable } from '@angular/core';
   providedIn: 'root',
 })
 export class LocalStorageService {
-  public get<T>(key: string, fallback: T | null = null): T | null {
+  public get(key: string): unknown {
     const raw: string | null = localStorage.getItem(key);
-    if (raw === null) return fallback;
+    if (raw === null) return null;
 
     try {
-      return JSON.parse(raw) as T;
+      const value: unknown = JSON.parse(raw);
+      return value;
     } catch {
       console.warn(`[LocalStorage] Invalid JSON for key "${key}", removing.`);
       localStorage.removeItem(key);
-      return fallback;
+      return null;
     }
   }
 
@@ -23,9 +24,5 @@ export class LocalStorageService {
     } catch (error: unknown) {
       console.error(`[LocalStorage] Failed to set key "${key}".`, error);
     }
-  }
-
-  public remove(key: string): void {
-    localStorage.removeItem(key);
   }
 }

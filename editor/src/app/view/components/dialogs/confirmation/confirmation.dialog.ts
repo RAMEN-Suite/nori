@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject, input, type InputSignal } from '@angular/core';
 import { LucideCheck, LucideEraser, LucideX } from '@lucide/angular';
 import { Button, type ButtonSeverity } from '@sushi-kit/angular';
-import { type AffectedLevel, type AffectedRelation } from '../../../../core/utils/RemovalSummary';
+import { type AffectedLevel, type AffectedRelation } from '../../../../utils/removal-summary';
 import { type ConfirmationMessage } from '../../../../models/ConfirmationMessage';
 import { type RemovalReviewPosition } from '../../../../services/removal-review.service';
 import { DialogService } from '../../../../services/dialog.service';
-import { ConfirmationContentComponent, type AffectedNode } from './confirmation-content.component';
+import { ConfirmationContentComponent, type AffectedNode } from './confirmation-content/confirmation-content.component';
 
 export interface ConfirmationOptions {
   reviewPosition?: RemovalReviewPosition;

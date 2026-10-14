@@ -1,0 +1,44 @@
+@if (workspace.queries.currentNode(); as node) {
+  <section *transloco="let t" class="flex flex-col" [attr.aria-label]="node.name">
+    <div class="flex min-h-8 items-start gap-2">
+      @if (editingName() && workspace.queries.nodeEditable()) {
+        <input
+          suiInput
+          fluid
+          noriAutoselect
+          name="nodeName"
+          size="sm"
+          maxlength="40"
+          class="h-8 text-xl font-semibold"
+          [attr.aria-label]="t('editor.nodeName')"
+          [ngModel]="draftName()"
+          (ngModelChange)="draftName.set($event)"
+          [readOnly]="savingName()"
+          (keydown.enter)="handleSaveName(true)"
+          (blur)="handleSaveName()"
+          (keydown.escape)="$event.stopPropagation(); handleCancelRename()"
+        />
+      } @else {
+        <h1 class="min-w-0 text-xl leading-8 font-semibold break-words" (dblclick)="handleStartRename()">{{ node.name }}</h1>
+        @if (workspace.queries.nodeEditable()) {
+          <button
+            suiButton
+            severity="neutral"
+            variant="text"
+            size="xs"
+            shape="circle"
+            #renameButton
+            class="mt-0.5 shrink-0"
+            [attr.aria-label]="t('editor.renameNode')"
+            [noriTooltip]="t('editor.renameNode')"
+            placement="bottom"
+            [showDelay]="600"
+            (click)="handleStartRename()"
+          >
+            <svg lucidePencil class="size-3.5" aria-hidden="true"></svg>
+          </button>
+        }
+      }
+    </div>
+  </section>
+}

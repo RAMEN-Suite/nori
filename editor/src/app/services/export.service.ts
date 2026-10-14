@@ -1,19 +1,11 @@
 import { Injectable } from '@angular/core';
 
-export interface ExportOptions {
-  fileName?: string;
-  isPretty?: boolean;
-}
-
 @Injectable({
   providedIn: 'root',
 })
 export class ExportService {
-  public async exportJSON(data: unknown, options?: ExportOptions): Promise<void> {
-    const fileName: string = options?.fileName ?? 'data.json';
-    const isPretty: boolean = options?.isPretty ?? true;
-
-    const contents: string = JSON.stringify(data, null, isPretty ? 4 : 0);
+  public async exportJSON(data: unknown, fileName: string): Promise<void> {
+    const contents: string = JSON.stringify(data, null, 4);
     if (this.isFileSystemAccessSupported()) {
       try {
         await this.exportWithFilePicker(contents, fileName);
@@ -27,7 +19,7 @@ export class ExportService {
     this.exportWithBlob(contents, fileName);
   }
 
-  protected async exportWithFilePicker(content: string, fileName: string): Promise<void> {
+  private async exportWithFilePicker(content: string, fileName: string): Promise<void> {
     const handle: FileSystemFileHandle = await window.showSaveFilePicker({
       suggestedName: fileName,
       types: [
@@ -43,7 +35,7 @@ export class ExportService {
     await writable.close();
   }
 
-  protected exportWithBlob(content: string, fileName: string): void {
+  private exportWithBlob(content: string, fileName: string): void {
     const blob: Blob = new Blob([content], { type: 'application/json;charset=utf-8' });
 
     const url: string = URL.createObjectURL(blob);

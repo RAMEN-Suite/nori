@@ -1,0 +1,241 @@
+<nav *transloco="let t" class="editor-chrome" [attr.aria-label]="t('editor.toolbar')">
+  @let catalogueShortcut = shortcuts.display(workspace.queries.editable() ? 'refinements' : 'baseNodes');
+  @let catalogueLabel = t(workspace.queries.editable() ? 'editor.refinements' : 'editor.baseNodes');
+  <a
+    suiButton
+    class="editor-back"
+    [attr.aria-keyshortcuts]="shortcuts.aria('back')"
+    data-nori-motion
+    routerLink="/"
+    severity="neutral"
+    variant="text"
+    size="sm"
+    shape="circle"
+    [attr.aria-label]="t('common.back')"
+    ><svg lucideArrowLeft class="size-5" aria-hidden="true"></svg
+  ></a>
+  <sui-card class="editor-tools" data-nori-motion size="xs" variant="border">
+    <div class="editor-tools-content flex items-center gap-1 px-3" data-nori-motion>
+      <button
+        type="button"
+        class="max-w-24 cursor-pointer truncate rounded-(--nori-radius-input) px-2 text-sm font-medium sm:max-w-48"
+        [attr.aria-label]="t('editor.editProject')"
+        (click)="handleEditProject()"
+      >
+        {{ storage.selectedManifest()?.name }}
+      </button>
+      <div suiDivider orientation="vertical" class="mx-1 my-0 h-6 self-center" style="--sui-divider-margin: 0" aria-hidden="true"></div>
+      <button
+        suiButton
+        severity="neutral"
+        [variant]="graphTools.tool() === 'select' ? 'soft' : 'text'"
+        size="sm"
+        shape="circle"
+        class="nori-panel-toggle"
+        [attr.aria-keyshortcuts]="shortcuts.aria('select')"
+        [attr.aria-pressed]="graphTools.tool() === 'select'"
+        [attr.aria-label]="t('editor.selectTool')"
+        [noriTooltip]="t('editor.selectTool') + ' (' + shortcuts.display('select') + ')'"
+        placement="bottom"
+        [showDelay]="600"
+        [disabled]="graphTools.pending()"
+        (click)="graphTools.exit()"
+      >
+        <svg lucideMousePointer2 class="size-4" aria-hidden="true"></svg>
+      </button>
+      <button
+        suiButton
+        severity="neutral"
+        [variant]="graphTools.tool() === 'connect' ? 'soft' : 'text'"
+        size="sm"
+        shape="circle"
+        [attr.aria-keyshortcuts]="shortcuts.aria('connect')"
+        class="nori-panel-toggle"
+        [attr.aria-pressed]="graphTools.tool() === 'connect'"
+        [attr.aria-label]="t('editor.drawConnection')"
+        [noriTooltip]="t('editor.drawConnection') + ' (' + shortcuts.display('connect') + ')'"
+        placement="bottom"
+        [showDelay]="600"
+        [disabled]="!workspace.queries.editable() || graphTools.pending()"
+        (click)="graphTools.toggle('connect')"
+      >
+        <svg lucideSpline class="size-4" aria-hidden="true"></svg>
+      </button>
+      <button
+        suiButton
+        severity="neutral"
+        [variant]="graphTools.tool() === 'erase' ? 'soft' : 'text'"
+        size="sm"
+        shape="circle"
+        [attr.aria-keyshortcuts]="shortcuts.aria('erase')"
+        class="nori-panel-toggle"
+        [attr.aria-pressed]="graphTools.tool() === 'erase'"
+        [attr.aria-label]="t('editor.eraseElements')"
+        [noriTooltip]="t('editor.eraseElements') + ' (' + shortcuts.display('erase') + ')'"
+        placement="bottom"
+        [showDelay]="600"
+        [disabled]="!workspace.queries.editable() || graphTools.pending()"
+        (click)="graphTools.toggle('erase')"
+      >
+        <svg lucideEraser class="size-4" aria-hidden="true"></svg>
+      </button>
+      <div suiDivider orientation="vertical" class="mx-1 my-0 h-6 self-center" style="--sui-divider-margin: 0" aria-hidden="true"></div>
+      <button
+        suiButton
+        severity="neutral"
+        variant="text"
+        size="sm"
+        shape="circle"
+        [attr.aria-keyshortcuts]="shortcuts.aria('fit')"
+        [attr.aria-label]="t('editor.fit')"
+        [noriTooltip]="t('editor.fit') + ' (' + shortcuts.display('fit') + ')'"
+        placement="bottom"
+        [showDelay]="600"
+        (click)="fitGraph.emit()"
+      >
+        <svg lucideMaximize class="size-4" aria-hidden="true"></svg>
+      </button>
+      <button
+        suiButton
+        severity="neutral"
+        variant="text"
+        size="sm"
+        shape="circle"
+        [attr.aria-keyshortcuts]="shortcuts.aria('reset')"
+        [attr.aria-label]="t('editor.reset')"
+        [noriTooltip]="t('editor.reset') + ' (' + shortcuts.display('reset') + ')'"
+        placement="bottom"
+        [showDelay]="600"
+        [disabled]="!workspace.queries.editable()"
+        (click)="handleResetLayout()"
+      >
+        <svg lucideNetwork class="size-4" aria-hidden="true"></svg>
+      </button>
+      <button
+        suiButton
+        severity="neutral"
+        variant="text"
+        size="sm"
+        shape="circle"
+        [attr.aria-keyshortcuts]="shortcuts.aria('colours')"
+        [attr.aria-label]="t('editor.colours')"
+        [noriTooltip]="t('editor.colours') + ' (' + shortcuts.display('colours') + ')'"
+        placement="bottom"
+        [showDelay]="600"
+        (click)="configureColours.emit()"
+      >
+        <svg lucidePalette class="size-4" aria-hidden="true"></svg>
+      </button>
+      <div suiDivider orientation="vertical" class="mx-1 my-0 h-6 self-center" style="--sui-divider-margin: 0" aria-hidden="true"></div>
+      @if (workspace.queries.editable()) {
+        <button
+          suiButton
+          severity="neutral"
+          [variant]="baseNodesOpen() ? 'soft' : 'text'"
+          size="sm"
+          shape="circle"
+          [attr.aria-keyshortcuts]="shortcuts.aria('baseNodes')"
+          [attr.aria-label]="t('editor.baseNodes')"
+          class="nori-panel-toggle"
+          [attr.aria-pressed]="baseNodesOpen()"
+          [noriTooltip]="t('editor.baseNodes') + ' (' + shortcuts.display('baseNodes') + ')'"
+          placement="bottom"
+          [showDelay]="600"
+          (click)="toggleBaseNodes.emit()"
+        >
+          <svg lucideBoxes class="size-4" aria-hidden="true"></svg>
+        </button>
+      }
+      <button
+        suiButton
+        severity="neutral"
+        [variant]="catalogueOpen() ? 'soft' : 'text'"
+        size="sm"
+        shape="circle"
+        [attr.aria-keyshortcuts]="shortcuts.aria(workspace.queries.editable() ? 'refinements' : 'baseNodes')"
+        [attr.aria-label]="catalogueLabel"
+        class="nori-panel-toggle"
+        [attr.aria-pressed]="catalogueOpen()"
+        [noriTooltip]="catalogueLabel + ' (' + catalogueShortcut + ')'"
+        placement="bottom"
+        [showDelay]="600"
+        (click)="toggleCatalogue.emit()"
+      >
+        @if (workspace.queries.editable()) {
+          <svg lucideGitBranch class="size-4" aria-hidden="true"></svg>
+        } @else {
+          <svg lucideBoxes class="size-4" aria-hidden="true"></svg>
+        }
+      </button>
+      <button
+        suiButton
+        severity="neutral"
+        [variant]="levelsOpen() ? 'soft' : 'text'"
+        size="sm"
+        shape="circle"
+        [attr.aria-keyshortcuts]="shortcuts.aria('levels')"
+        [attr.aria-label]="t('editor.levels')"
+        class="nori-panel-toggle"
+        [attr.aria-pressed]="levelsOpen()"
+        [noriTooltip]="t('editor.levels') + ' (' + shortcuts.display('levels') + ')'"
+        placement="bottom"
+        [showDelay]="600"
+        (click)="toggleLevels.emit()"
+      >
+        <svg lucideLayers class="size-4" aria-hidden="true"></svg>
+      </button>
+      <button
+        suiButton
+        severity="neutral"
+        [variant]="inspectorOpen() ? 'soft' : 'text'"
+        size="sm"
+        shape="circle"
+        [attr.aria-keyshortcuts]="shortcuts.aria('inspector')"
+        [attr.aria-label]="t('editor.inspector')"
+        class="nori-panel-toggle"
+        [attr.aria-pressed]="inspectorOpen()"
+        [noriTooltip]="t('editor.inspector') + ' (' + shortcuts.display('inspector') + ')'"
+        placement="bottom"
+        [showDelay]="600"
+        (click)="toggleInspector.emit()"
+      >
+        <svg lucideScanEye class="size-4" aria-hidden="true"></svg>
+      </button>
+      <div suiDivider orientation="vertical" class="mx-1 my-0 h-6 self-center" style="--sui-divider-margin: 0" aria-hidden="true"></div>
+      <button
+        suiButton
+        severity="neutral"
+        variant="text"
+        size="sm"
+        shape="circle"
+        [attr.aria-keyshortcuts]="shortcuts.aria('project')"
+        [attr.aria-label]="t('editor.editProject')"
+        [noriTooltip]="t('editor.editProject') + ' (' + shortcuts.display('project') + ')'"
+        placement="bottom"
+        [showDelay]="600"
+        [disabled]="!storage.selectedManifest()"
+        (click)="handleEditProject()"
+      >
+        <svg lucidePencil class="size-4" aria-hidden="true"></svg>
+      </button>
+      <nori-model-validation />
+      <button
+        suiButton
+        severity="neutral"
+        variant="text"
+        size="sm"
+        shape="circle"
+        [attr.aria-keyshortcuts]="shortcuts.aria('export')"
+        [attr.aria-label]="t('editor.export')"
+        [noriTooltip]="t('editor.export') + ' (' + shortcuts.display('export') + ')'"
+        placement="bottom"
+        [showDelay]="600"
+        [disabled]="!canExport()"
+        (click)="handleExportModel()"
+      >
+        <svg lucideDownload class="size-4" aria-hidden="true"></svg>
+      </button>
+    </div>
+  </sui-card>
+  <nori-settings-button [shortcut]="shortcuts.display('settings')" class="editor-settings" data-nori-motion />
+</nav>

@@ -24,9 +24,9 @@ import {
   type ShortcutCategory,
   type ShortcutDefinition,
   type ShortcutGroup,
-} from '../../../../models/Shortcut';
+} from '../../../../utils/shortcuts';
 import { ShortcutService } from '../../../../services/shortcut.service';
-import { ScrollHintsComponent } from '../../scroll-hints/scroll-hints.component';
+import { ScrollHintsComponent } from '../../shared/scroll-hints/scroll-hints.component';
 import { ApplicationState } from '../../../../states/application.state';
 
 @Component({

@@ -19,7 +19,7 @@ import { type ModelRecord } from '../../../../models/ModelRecord';
 import { DialogService } from '../../../../services/dialog.service';
 import { NavigationService } from '../../../../services/navigation.service';
 import { StorageService } from '../../../../services/storage.service';
-import { type CreateSlotInput } from '../../../../services/workspace/workspace.actions';
+import { type CreateSlotInput } from '../../../../services/workspace/workspace-actions.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 
 @Component({

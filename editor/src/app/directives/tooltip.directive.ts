@@ -2,6 +2,7 @@ import { Directive, ElementRef, inject } from '@angular/core';
 import { Tooltip } from '@sushi-kit/angular';
 import { DialogService } from '../services/dialog.service';
 
+/** Use Sushi tooltips without reopening them when a dialog restores focus. */
 @Directive({
   selector: '[noriTooltip]',
   hostDirectives: [

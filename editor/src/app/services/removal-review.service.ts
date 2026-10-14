@@ -1,6 +1,6 @@
 import { afterNextRender, inject, Injectable, Injector } from '@angular/core';
 import { Router } from '@angular/router';
-import { type RemovalLocation } from '../core/utils/RemovalSummary';
+import { type RemovalLocation } from '../utils/removal-summary';
 import { DialogService, type OpenDialog } from './dialog.service';
 import { RunningActionService } from './running-action.service';
 import { StorageService } from './storage.service';

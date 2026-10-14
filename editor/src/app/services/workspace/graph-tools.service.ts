@@ -2,7 +2,7 @@ import { effect, inject, Injectable, signal, type Signal, type WritableSignal } 
 import { TranslocoService } from '@jsverse/transloco';
 import { ModelRef, type Relation, type RelationRemovalPreview, type RelationSuggestion } from '@ramen-suite/core/model';
 import { type RamenModel } from '@ramen-suite/core/ramen';
-import { getAffectedRelations } from '../../core/utils/RemovalSummary';
+import { getAffectedRelations } from '../../utils/removal-summary';
 import { ChooseRelationDialog } from '../../view/components/dialogs/choose-relation/choose-relation.dialog';
 import { ConfirmationDialog, type ConfirmationOptions } from '../../view/components/dialogs/confirmation/confirmation.dialog';
 import { DialogService } from '../dialog.service';
@@ -38,7 +38,7 @@ export class GraphToolsService {
   }
 
   public toggle(tool: GraphTool): void {
-    if (this.pending() || !this.workspace.view.editable()) return;
+    if (this.pending() || !this.workspace.queries.editable()) return;
     this.cancel();
     this.activeTool.update((active: GraphTool): GraphTool => (active === tool ? 'select' : tool));
   }
@@ -57,10 +57,10 @@ export class GraphToolsService {
   }
 
   public async connect(from: string, to: string): Promise<void> {
-    if (this.pending() || !this.workspace.view.editable()) return;
+    if (this.pending() || !this.workspace.queries.editable()) return;
     try {
       const draft: RamenModel = this.workspace.store.getDraft();
-      const choices: readonly RelationSuggestion[] = this.workspace.view.resolveRelationChoices(from, to);
+      const choices: readonly RelationSuggestion[] = this.workspace.queries.resolveRelationChoices(from, to);
       const modelId: string | undefined = this.workspace.store.currentModel()?.id;
       if (!choices.length) throw new Error(this.translations.translate('editor.noRelation'));
 
@@ -83,7 +83,7 @@ export class GraphToolsService {
   }
 
   public remove(id: string): void {
-    if (this.pending() || !this.workspace.view.editable()) return;
+    if (this.pending() || !this.workspace.queries.editable()) return;
     try {
       const draft: RamenModel = this.workspace.store.getDraft();
       const relation: Relation | undefined = draft.getRelation(id);

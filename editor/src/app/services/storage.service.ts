@@ -7,7 +7,7 @@ import { type Manifest } from '../models/Manifest';
 import { type ModelRecord, type ViewSettings } from '../models/ModelRecord';
 import { database } from '../app.database';
 import { environment } from '../../environments/environment';
-import { orderModelsByImports } from '../core/utils/ModelOrder';
+import { orderModelsByImports } from '../utils/model-order';
 
 export type CreateManifest = Pick<Manifest, 'name' | 'description' | 'metamodelName' | 'metamodelId' | 'metamodelVersion'>;
 export type UpdateManifest = Pick<Manifest, 'name' | 'description'>;

@@ -1,5 +1,7 @@
 # Editor components and extension guide
 
+The UI keeps separate component folders under `view/components`, grouped by purpose where useful; see [Folder responsibilities](code-conventions.md#folder-responsibilities). Full application views live in `view/screens`.
+
 ## Where behaviour belongs
 
 | Area                                      | Owner                                                                        | Responsibility                                                                                                                                 |
@@ -7,7 +9,7 @@
 | Panel placement and available graph space | `WorkspaceScreen`                                                            | Open state, column heights and canvas padding.                                                                                                 |
 | Panel frame                               | `EditorPanelComponent`                                                       | Shared heading, icon slot, close action, animation and hidden-state accessibility.                                                             |
 | Scroll indicators                         | `ScrollOverflowDirective` and `ScrollHintsComponent`                         | Measure overflow and remaining scroll directions; render non-interactive hints inside a relative wrapper around the scroll area.               |
-| Refinement catalogue                      | `SideMenuComponent`                                                          | Categories, selection, inline naming, keyboard order and revealing newly created nodes.                                                        |
+| Refinement catalogue                      | `RefinementsComponent`                                                       | Categories, selection, inline naming, keyboard order and revealing newly created nodes.                                                        |
 | Base-node catalogue                       | `BaseNodesComponent`                                                         | Ancestor groups and adding/removing references on the current canvas.                                                                          |
 | Model levels                              | `ModelLevelsComponent`                                                       | Level selection, naming and creation/removal.                                                                                                  |
 | Property editing                          | `PropertyEditingService`, `PropertyEditorComponent`, `PropertyFormComponent` | Shared dialog editor with expandable property cards, conditional options, unsaved-change handling and inline validation; closes on navigation. |
@@ -18,15 +20,15 @@
 | Settings                                  | `SettingsDialog`                                                             | Appearance and shortcut editing through the corresponding services.                                                                            |
 | Modal lifecycle                           | `DialogService` and `DialogHostComponent`                                    | Opening/closing, sizing, focus, errors and pending state.                                                                                      |
 
-Components use `WorkspaceService.store` for state, `.view` for derived information and `.actions` for changes. Keep persistence and RAMEN rules out of templates and catalogue components. `NodeEditingService` owns shared node actions; `GraphToolsService` owns selection, connection and eraser modes. The graph routes eraser clicks on local nodes to `NodeEditingService.confirmRemoval`, on base nodes to `.confirmCanvasRemoval`, and on edges to `GraphToolsService.remove`. All three use the existing affected-element previews.
+Components use `WorkspaceService.store` for state, `.queries` for derived information and `.actions` for changes. Keep persistence and RAMEN rules out of templates and catalogue components. `NodeEditingService` owns shared node actions; `GraphToolsService` owns selection, connection and eraser modes. The graph routes eraser clicks on local nodes to `NodeEditingService.confirmRemoval`, on base nodes to `.confirmCanvasRemoval`, and on edges to `GraphToolsService.remove`. All three use the existing affected-element previews.
 
 ## Adding a hotkey
 
-1. Add its ID to `ShortcutAction` in `editor/src/app/models/Shortcut.ts`.
-2. Add one entry to `EDITOR_SHORTCUTS` with its ID, category, default key and translation key. Use an existing category unless the action really needs another group.
+1. Add its definition to `EDITOR_SHORTCUTS` in `editor/src/app/utils/shortcuts.ts`; `ShortcutAction` is derived from these entries.
+2. Give the entry its ID, category, default key and translation key. Use an existing category unless the action really needs another group.
 3. Add the operation to the typed `actions` record in `ToolBarComponent`. TypeScript requires an implementation for every action ID. Route changes through existing workspace actions or component outputs.
 4. Add the visible action where appropriate. Use `ShortcutService.display(id)` in its tooltip and `.aria(id)` for `aria-keyshortcuts`; never repeat a default key in the template.
-5. Add any new labels to both `i18n/en.json` and `i18n/de.json`. The Settings rows are generated from the definitions, so they need no manual entry.
+5. Add any new labels to every registered translation file under `i18n`. The Settings rows are generated from the definitions, so they need no manual entry.
 6. Check default execution, reassignment, duplicate rejection, reload persistence and reset. Shortcuts must not execute while a dialog or text control is active.
 
 Bindings use lowercase keys joined with `+`, for example `shift+r` or `mod+z`. `mod` means Control on Windows/Linux and Command on macOS. Escape and Tab are reserved for cancelling capture and navigating. A new category also needs an entry in `SHORTCUT_CATEGORIES`, translations and a heading icon in Settings.
@@ -59,7 +61,7 @@ There is no benefit in separate components for every shortcut row or theme label
 
 ### 3. Catalogue grouping — a smaller, independent extraction
 
-`SideMenuComponent.groupLocalNodes` can become a pure grouping function if more filtering or category rules are added. This separates model grouping from DOM focus/reveal behaviour and gives the grouping rules a clear test boundary.
+`RefinementsComponent.groupLocalNodes` can become a pure grouping function if more filtering or category rules are added. This separates model grouping from DOM focus/reveal behaviour and gives the grouping rules a clear test boundary.
 
 Keep Base Nodes and Refinements as separate components: their source data and actions differ. Share visual tokens and list styles, not a large generic component with many conditional modes. Keep the existing category-plus tab order explicit until Sushi supports a sibling action slot with the required keyboard order.
 

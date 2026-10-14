@@ -5,7 +5,7 @@ import {
   shortcutFromEvent,
   type ShortcutAction,
   type ShortcutOverrides,
-} from '../models/Shortcut';
+} from '../utils/shortcuts';
 import { LocalStorageService } from './local-storage.service';
 
 @Injectable({ providedIn: 'root' })
