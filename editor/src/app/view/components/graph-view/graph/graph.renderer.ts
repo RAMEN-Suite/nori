@@ -1,6 +1,7 @@
 import { TranslocoService } from '@jsverse/transloco';
 import { ModelRef } from '@ramen-suite/core/model';
 import type { Selection } from 'd3';
+import { getLinkPath } from './graph.geometry';
 import {
   GRAPH_NODE_WIDTH,
   GRAPH_NODE_HEIGHT,
@@ -145,25 +146,34 @@ export class GraphRenderer {
       }
     }
 
-    const isNodeRelated: (candidate: PositionedNode) => boolean = (candidate: PositionedNode): boolean =>
-      relatedNodeIds.has(candidate.id);
-
-    nodes
-      .classed('is-dimmed', (candidate: PositionedNode): boolean => !isNodeRelated(candidate))
-      .classed('is-highlighted', (candidate: PositionedNode): boolean => isNodeRelated(candidate));
+    nodes.classed('is-dimmed', (candidate: PositionedNode): boolean => !relatedNodeIds.has(candidate.id));
 
     root
       .selectAll<SVGElement, ResolvedLink>('path.link, text.link-label')
-      .classed('is-dimmed', (candidate: ResolvedLink): boolean => !relatedLinkIds.has(candidate.id))
-      .classed('is-highlighted', (candidate: ResolvedLink): boolean => relatedLinkIds.has(candidate.id));
+      .classed('is-dimmed', (candidate: ResolvedLink): boolean => !relatedLinkIds.has(candidate.id));
+  }
+
+  public drawRelationFeedback(root: RootSelection, model: RenderModel, relationId: string | null, selecting: boolean): void {
+    const target: ResolvedLink | undefined = model.links.find((link: ResolvedLink): boolean => link.id === relationId);
+    const feedback: Selection<SVGGElement, ResolvedLink, SVGGElement, unknown> = root
+      .selectAll<SVGGElement, ResolvedLink>('g.link-feedback')
+      .data(target ? [target] : [])
+      .join((enter) => enter.insert('g', 'text.link-label'))
+      .attr('class', selecting ? 'link-feedback is-relation-selection' : 'link-feedback')
+      .attr('aria-hidden', 'true');
+    feedback
+      .selectAll<SVGPathElement, string>('path')
+      .data(['halo', 'stroke'])
+      .join('path')
+      .attr('class', (kind: string): string => `link-feedback-${kind}`)
+      .attr('fill', 'none')
+      .attr('marker-end', (kind: string): string | null => (kind === 'stroke' ? 'url(#g-arrow)' : null))
+      .attr('d', target ? getLinkPath(target, model.nodes) : '');
   }
 
   public clearHoverHighlight(root: RootSelection, nodes: NodeSelection): void {
-    nodes.classed('is-dimmed', false).classed('is-highlighted', false);
-    root
-      .selectAll<SVGElement, ResolvedLink>('path.link, text.link-label')
-      .classed('is-dimmed', false)
-      .classed('is-highlighted', false);
+    nodes.classed('is-dimmed', false);
+    root.selectAll<SVGElement, ResolvedLink>('path.link, text.link-label').classed('is-dimmed', false);
   }
 
   private drawLinkTargets(root: RootSelection, links: ResolvedLink[]): void {

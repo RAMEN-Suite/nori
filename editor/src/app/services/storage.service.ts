@@ -11,7 +11,6 @@ import { orderModelsByImports } from '../core/utils/ModelOrder';
 
 export type CreateManifest = Pick<Manifest, 'name' | 'description' | 'metamodelName' | 'metamodelId' | 'metamodelVersion'>;
 export type UpdateManifest = Pick<Manifest, 'name' | 'description'>;
-export type UpdateRecordInput = Partial<Pick<ModelRecord, 'gmodel' | 'name' | 'view'>>;
 
 @Injectable({ providedIn: 'root' })
 export class StorageService {
@@ -124,23 +123,6 @@ export class StorageService {
     this.modelChanges.next(id);
     if (this.selectedProjectId() === id) this.selectProject(null);
     await this.refreshManifests();
-  }
-
-  public async updateRecord(id: string, patch: UpdateRecordInput): Promise<void> {
-    const record: ModelRecord | undefined = await database.models.get(id);
-    if (!record) throw new Error('Model record not found.');
-    const updated: ModelRecord = {
-      ...record,
-      ...patch,
-      updatedAt: new Date().toISOString(),
-      revision: record.revision + (patch.gmodel ? 1 : 0),
-    };
-    await database.models.put(updated);
-    if (patch.gmodel) this.modelChanges.next(record.projectId);
-    if (this.selectedProjectId() === record.projectId)
-      this.records.update((records: ModelRecord[]): ModelRecord[] =>
-        records.map((item: ModelRecord): ModelRecord => (item.modelId === id ? updated : item)),
-      );
   }
 
   public async updateView(id: string, patch: Partial<ViewSettings>): Promise<void> {

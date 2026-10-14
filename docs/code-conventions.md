@@ -11,6 +11,7 @@
 ## Angular and types
 
 - Use standalone OnPush components, signal inputs/outputs/state, computed derived state, inject and host metadata.
+- TypeScript rejects unused locals and parameters. Check template bindings, framework callbacks and dynamic translation keys before removing declarations.
 - Follow ESLint: explicit member visibility, variable/parameter types and function return types; readonly references where appropriate. Avoid any, unchecked casts and non-null assertions.
 - Use effects for external synchronisation, not a second copy of derived state. Clean up observers, listeners, timers and subscriptions.
 - Guard pending actions, stale selections and model changes. Validate a trial change before mutating live model data.

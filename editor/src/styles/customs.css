@@ -43,7 +43,6 @@ body {
   --nori-region-fill: color-mix(in oklab, var(--color-primary) 28%, transparent);
   --nori-grid: color-mix(in oklab, var(--color-base-content) 6%, transparent);
   --title-bar-height: 0px;
-  --tool-bar-height: 0px;
 }
 [suiInput],
 [suiTextarea] {
@@ -54,20 +53,6 @@ sui-chip {
   --sui-chip-radius: var(--nori-radius-action);
 }
 
-.main-window {
-  height: calc(100dvh - var(--title-bar-height) - var(--tool-bar-height));
-}
-.background-circle {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  z-index: -1;
-  border-radius: 50%;
-  border: 1px solid var(--color-base-300);
-  background: var(--color-base-100);
-  pointer-events: none;
-}
 .title-bar {
   -webkit-app-region: drag;
 }
@@ -240,11 +225,6 @@ sui-toast.nori-notifications {
   margin: -0.375rem;
   scrollbar-width: thin;
   scrollbar-color: var(--nori-scrollbar-thumb) transparent;
-}
-
-.nori-dialog-scroll-edge {
-  margin-inline-end: -1rem;
-  padding-inline-end: 1rem;
 }
 
 .settings-tabs [role="tabpanel"]:focus-visible {

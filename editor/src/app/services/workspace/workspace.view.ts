@@ -78,18 +78,6 @@ export class WorkspaceView {
   public readonly baseNodes: Signal<readonly Node[]> = computed(
     (): readonly Node[] => this.baseModel()?.classifiers.filter((item): item is Node => item.kind === 'Node') ?? [],
   );
-  public readonly currentNodesByBaseId: Signal<ReadonlyMap<string, readonly Node[]>> = computed(
-    (): ReadonlyMap<string, readonly Node[]> => {
-      const groups: Map<string, Node[]> = new Map();
-      for (const node of this.currentNodes()) {
-        const base: string = ModelRef.localId(node.superTypes[0] ?? '');
-        const items: Node[] = groups.get(base) ?? [];
-        items.push(node);
-        groups.set(base, items);
-      }
-      return groups;
-    },
-  );
   public readonly currentNodeChain: Signal<readonly NodeLevel[]> = computed((): readonly NodeLevel[] => {
     const node: Node | null = this.currentNode();
     if (!node || !this.validation()?.valid) return [];
@@ -103,9 +91,6 @@ export class WorkspaceView {
   });
   public readonly inheritedAttributes: Signal<ReadonlyMap<string, readonly InheritedAttribute[]>> = computed(
     (): ReadonlyMap<string, readonly InheritedAttribute[]> => this.collectInheritedAttributes(),
-  );
-  public readonly currentBaseNode: Signal<Node | null> = computed(
-    (): Node | null => this.currentNodeChain().at(-1)?.node ?? null,
   );
 
   public resolveNodeLabel(reference: string): string {

@@ -136,10 +136,6 @@ export class WorkspaceStore {
     this.currentNodeColors.set(colors);
   }
 
-  public updateCurrentNodeColors(nodeId: Id, colour: string): void {
-    this.currentNodeColors.update((colours: NodeColors): NodeColors => ({ ...colours, [nodeId]: colour }));
-  }
-
   private restoreWorkspace(models: readonly Model[]): void {
     this.levels.clear();
     this.referenceModels = models.filter((model: Model): boolean => !RamenModelFormat.isDocument(model));

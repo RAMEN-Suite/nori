@@ -1,4 +1,4 @@
-import { inject, Injectable, type Signal } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import {
   type Attribute,
@@ -39,9 +39,6 @@ export class WorkspaceActions {
 
   private readonly relationHistory: RelationHistory = inject(RelationHistory);
   private pendingSave: Promise<void> = Promise.resolve();
-
-  public readonly canUndoRelation: Signal<boolean> = this.relationHistory.canUndo;
-  public readonly canRedoRelation: Signal<boolean> = this.relationHistory.canRedo;
 
   public async createNode(input: CreateNodeInput): Promise<Node> {
     this.requireAvailableNodeName(input.name);

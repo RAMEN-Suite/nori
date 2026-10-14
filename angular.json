@@ -31,12 +31,7 @@
                 "input": "editor/public"
               }
             ],
-            "styles": [
-              "editor/src/styles/tailwind.css",
-              "editor/src/styles/fonts.css",
-              "editor/src/styles/customs.css",
-              "node_modules/animate.css/animate.css"
-            ]
+            "styles": ["editor/src/styles/tailwind.css", "editor/src/styles/fonts.css", "editor/src/styles/customs.css"]
           },
           "configurations": {
             "production": {
@@ -100,12 +95,7 @@
                 "input": "editor/public"
               }
             ],
-            "styles": [
-              "editor/src/styles/tailwind.css",
-              "editor/src/styles/fonts.css",
-              "editor/src/styles/customs.css",
-              "node_modules/animate.css/animate.css"
-            ]
+            "styles": ["editor/src/styles/tailwind.css", "editor/src/styles/fonts.css", "editor/src/styles/customs.css"]
           }
         }
       }

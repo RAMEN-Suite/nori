@@ -22,7 +22,6 @@ import { TitleBarComponent } from './view/components/window/title-bar/title-bar.
     TranslocoPipe,
   ],
   templateUrl: './app.html',
-  styleUrl: './app.scss',
 })
 export class App {
   private readonly storage: StorageService = inject(StorageService);

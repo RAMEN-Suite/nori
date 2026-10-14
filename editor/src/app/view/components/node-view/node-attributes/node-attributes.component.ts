@@ -42,7 +42,6 @@ interface InspectorPropertyGroup {
     LucideTags,
   ],
   templateUrl: './node-attributes.component.html',
-  styleUrl: './node-attributes.component.scss',
 })
 export class NodeAttributesComponent {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);

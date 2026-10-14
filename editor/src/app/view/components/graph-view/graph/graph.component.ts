@@ -352,13 +352,13 @@ export class GraphComponent implements AfterViewInit {
     this.rootGroupSelection
       ?.selectAll<SVGElement, ResolvedLink>('path.link-hit, text.link-label')
       .on('click', this.handleLinkClick.bind(this))
-      .on('mouseenter focus', (_: Event, link: ResolvedLink): void => this.highlightEraseLink(link.id))
+      .on('mouseenter focus', (_: Event, link: ResolvedLink): void => this.highlightRelation(link.id))
       .on('mouseleave blur', (): void => {
         const active: Element | null = document.activeElement;
         const focused: ResolvedLink | undefined = active?.classList.contains('link-hit')
           ? d3.select<Element, ResolvedLink>(active).datum()
           : undefined;
-        this.highlightEraseLink(focused?.id ?? null);
+        this.highlightRelation(focused?.id ?? null);
       })
       .on('keydown', (event: KeyboardEvent, link: ResolvedLink): void => {
         if (event.key !== 'Enter' && event.key !== ' ') return;
@@ -427,12 +427,12 @@ export class GraphComponent implements AfterViewInit {
       .selectAll<SVGPathElement, ResolvedLink>('path.link-hit')
       .attr('d', (link: ResolvedLink): string => paths.get(link.id) ?? '');
     positionLinkLabels(this.rootGroupSelection, this.linkSelection, nodes);
-    this.highlightEraseLink(this.eraseTargetId);
+    this.highlightRelation(this.eraseTargetId);
   }
 
   private updateLinkAccessibility(): void {
     const removing: boolean = this.graphTools.tool() === 'erase';
-    this.highlightEraseLink(null);
+    this.highlightRelation(null);
     this.nodeSelection?.select('rect.node-body').attr('aria-label', (node: PositionedNode): string => {
       if (!removing) return `${node.label}, ${node.baseName || node.modelName}`;
       return this.translations.translate(
@@ -458,7 +458,7 @@ export class GraphComponent implements AfterViewInit {
       );
   }
 
-  private highlightEraseLink(id: string | null): void {
+  private highlightRelation(id: string | null): void {
     this.eraseTargetId = this.graphTools.tool() === 'erase' ? id : null;
     this.rootGroupSelection
       ?.selectAll<SVGElement, ResolvedLink>('path.link, text.link-label')
@@ -466,21 +466,7 @@ export class GraphComponent implements AfterViewInit {
     if (!this.rootGroupSelection || !this.renderModel) return;
     const targetId: string | null =
       this.graphTools.tool() === 'select' ? (id ?? this.workspace.store.currentRelationId()) : this.eraseTargetId;
-    const target: ResolvedLink | undefined = this.renderModel.links.find((link: ResolvedLink): boolean => link.id === targetId);
-    const feedback: d3.Selection<SVGGElement, ResolvedLink, SVGGElement, unknown> = this.rootGroupSelection
-      .selectAll<SVGGElement, ResolvedLink>('g.link-feedback')
-      .data(target ? [target] : [])
-      .join((enter) => enter.insert('g', 'text.link-label'))
-      .attr('class', this.graphTools.tool() === 'select' ? 'link-feedback is-relation-selection' : 'link-feedback')
-      .attr('aria-hidden', 'true');
-    feedback
-      .selectAll<SVGPathElement, string>('path')
-      .data(['halo', 'stroke'])
-      .join('path')
-      .attr('class', (kind: string): string => `link-feedback-${kind}`)
-      .attr('fill', 'none')
-      .attr('marker-end', (kind: string): string | null => (kind === 'stroke' ? 'url(#g-arrow)' : null))
-      .attr('d', target ? getLinkPath(target, this.renderModel.nodes) : '');
+    this.renderer.drawRelationFeedback(this.rootGroupSelection, this.renderModel, targetId, this.graphTools.tool() === 'select');
   }
 
   private refreshHover(): void {
@@ -495,7 +481,7 @@ export class GraphComponent implements AfterViewInit {
     this.rootGroupSelection
       ?.selectAll<SVGPathElement, ResolvedLink>('path.link-hit')
       .attr('aria-pressed', (link: ResolvedLink): string => String(link.id === relationId));
-    this.highlightEraseLink(null);
+    this.highlightRelation(null);
   }
 
   private applySelectedHighlight(nodeId: string | null): void {

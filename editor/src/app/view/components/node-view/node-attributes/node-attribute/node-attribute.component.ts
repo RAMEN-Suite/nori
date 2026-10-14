@@ -37,7 +37,6 @@ import { WorkspaceService } from '../../../../../services/workspace/workspace.se
     LucideLockKeyhole,
   ],
   templateUrl: './node-attribute.component.html',
-  styleUrl: './node-attribute.component.scss',
 })
 export class NodeAttributeComponent {
   private readonly storage: StorageService = inject(StorageService);

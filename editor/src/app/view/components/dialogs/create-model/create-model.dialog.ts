@@ -27,7 +27,6 @@ import { WorkspaceService } from '../../../../services/workspace/workspace.servi
   selector: 'app-modal-create-model',
   imports: [LucidePlus, LucideSave, LucideX, TranslocoDirective, Input, Button, Message, FormsModule],
   templateUrl: './create-model.dialog.html',
-  styleUrl: './create-model.dialog.scss',
 })
 export class CreateModelDialog {
   private readonly workspace: WorkspaceService = inject(WorkspaceService);
