@@ -20,6 +20,7 @@ import { provideTransloco, TranslocoService } from '@jsverse/transloco';
 import { TranslationLoader } from './i18n/translation-loader';
 import { routes } from './app.routes';
 import { PARAMETERS } from './app-route-parameters';
+import { Languages } from './i18n/languages';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -27,9 +28,9 @@ export const appConfig: ApplicationConfig = {
     provideZonelessChangeDetection(),
     provideTransloco({
       config: {
-        availableLangs: ['de', 'en'],
-        defaultLang: 'en',
-        fallbackLang: 'en',
+        availableLangs: [...Languages.supported],
+        defaultLang: Languages.defaultLanguage,
+        fallbackLang: Languages.defaultLanguage,
         reRenderOnLangChange: true,
         prodMode: !isDevMode(),
       },

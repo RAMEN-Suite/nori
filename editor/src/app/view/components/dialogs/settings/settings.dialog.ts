@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal, type WritableSignal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal, type Signal, type WritableSignal } from '@angular/core';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import {
   LucideFolder,
@@ -14,7 +14,7 @@ import {
 import { Card, Radio, Toggle, List, ListItemTemplate, Select, Tabs, Tab, Input, Button } from '@sushi-kit/angular';
 import { ScrollOverflowDirective } from '../../../../directives/scroll-overflow.directive';
 import { APP_THEMES, type AppTheme } from '../../../../models/Appearance';
-import { APP_LANGUAGES, type AppLanguage } from '../../../../models/Language';
+import { Languages, type AppLanguage } from '../../../../i18n/languages';
 import {
   EDITOR_SHORTCUTS,
   SHORTCUT_CATEGORIES,
@@ -61,6 +61,14 @@ import { ApplicationState } from '../../../../states/application.state';
 })
 export class SettingsDialog {
   protected readonly appState: ApplicationState = inject(ApplicationState);
+
+  protected readonly languageOptions: Signal<readonly { value: AppLanguage; label: string }[]> = computed(() => {
+    this.appState.language();
+    return Languages.options.map((language: AppLanguage): { value: AppLanguage; label: string } => ({
+      value: language,
+      label: this.translations.translate(`settings.languageOptions.${language}`),
+    }));
+  });
 
   protected readonly themes: readonly AppTheme[] = APP_THEMES;
   protected readonly animationSettings: readonly string[] = ['animations'];
@@ -111,7 +119,7 @@ export class SettingsDialog {
   }
 
   protected handleLanguage(value: unknown): void {
-    const language: AppLanguage | undefined = APP_LANGUAGES.find((candidate: AppLanguage): boolean => candidate === value);
+    const language: AppLanguage | undefined = Languages.options.find((candidate: AppLanguage): boolean => candidate === value);
     if (language) this.appState.setLanguage(language);
   }
 }

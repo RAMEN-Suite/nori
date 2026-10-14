@@ -47,7 +47,8 @@
     "languageOptions": {
       "system": "System",
       "de": "Deutsch",
-      "en": "English"
+      "en": "English",
+      "it": "Italiano"
     },
     "appearance": "Appearance",
     "shortcuts": "Keyboard shortcuts",

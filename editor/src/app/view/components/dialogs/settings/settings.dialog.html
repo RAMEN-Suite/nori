@@ -23,11 +23,7 @@
               <sui-select
                 ariaLabelledby="settings-language"
                 [fluid]="true"
-                [options]="[
-                  { value: 'system', label: t('settings.languageOptions.system') },
-                  { value: 'de', label: t('settings.languageOptions.de') },
-                  { value: 'en', label: t('settings.languageOptions.en') },
-                ]"
+                [options]="languageOptions()"
                 [value]="appState.state().language"
                 (valueChange)="handleLanguage($event)"
               />

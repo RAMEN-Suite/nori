@@ -10,7 +10,7 @@ import {
   type WritableSignal,
 } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
-import { APP_LANGUAGES, getSystemLanguage, type AppLanguage, type TranslationLanguage } from '../models/Language';
+import { Languages, type AppLanguage, type TranslationLanguage } from '../i18n/languages';
 import { LocalStorageService } from '../services/local-storage.service';
 import { APP_THEME, APP_THEMES, DEFAULT_THEME, type AppTheme } from '../models/Appearance';
 
@@ -33,7 +33,7 @@ export class ApplicationState {
   private readonly storageService: LocalStorageService = inject(LocalStorageService);
   private readonly translations: TranslocoService = inject(TranslocoService);
   private readonly document: Document = inject(DOCUMENT);
-  private readonly systemLanguage: WritableSignal<TranslationLanguage> = signal(getSystemLanguage());
+  private readonly systemLanguage: WritableSignal<TranslationLanguage> = signal(Languages.resolve(navigator.languages));
   private readonly preferences: WritableSignal<State> = signal(defaultState);
 
   private readonly colourPreference: MediaQueryList = window.matchMedia('(prefers-color-scheme: dark)');
@@ -60,7 +60,7 @@ export class ApplicationState {
     this.colourPreference.addEventListener('change', updateSystemTheme);
     inject(DestroyRef).onDestroy((): void => this.colourPreference.removeEventListener('change', updateSystemTheme));
 
-    const updateSystemLanguage: () => void = (): void => this.systemLanguage.set(getSystemLanguage());
+    const updateSystemLanguage: () => void = (): void => this.systemLanguage.set(Languages.resolve(navigator.languages));
     window.addEventListener('languagechange', updateSystemLanguage);
     inject(DestroyRef).onDestroy((): void => window.removeEventListener('languagechange', updateSystemLanguage));
 
@@ -92,7 +92,9 @@ export class ApplicationState {
     const theme: AppTheme | undefined =
       'theme' in stored ? APP_THEMES.find((candidate: AppTheme): boolean => candidate.id === stored.theme) : undefined;
     const language: AppLanguage | undefined =
-      'language' in stored ? APP_LANGUAGES.find((candidate: AppLanguage): boolean => candidate === stored.language) : undefined;
+      'language' in stored
+        ? Languages.options.find((candidate: AppLanguage): boolean => candidate === stored.language)
+        : undefined;
     const animations: unknown = 'animations' in stored ? stored.animations : undefined;
 
     return {

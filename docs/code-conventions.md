@@ -24,7 +24,9 @@ Keep the separation between `view`, `services`, `models`, `states`, `directives`
 
 Workspace services stay grouped under `services/workspace`; `WorkspaceStore` belongs in `states`. Keep view-specific helpers with their owner, such as graph data preparation with the graph. Put pure model helpers in `utils`, including import ordering, names, colours and removal summaries. Reserve `services` for application services; keep state containers in `states`. Do not add a `core` wrapper without a distinct responsibility.
 
-`models` contains shared data contracts; shortcut definitions and keyboard helpers belong in `utils/shortcuts.ts`.
+`models` contains data contracts for projects, model records, appearance and confirmation messages. Translation registration and language matching belong in `i18n/languages.ts`; shortcut definitions and keyboard helpers belong in `utils/shortcuts.ts`.
+
+To add a language, extend `TranslationLanguage` in `i18n/languages.ts`, import its bundled JSON and register it in `Languages.translations`. TypeScript requires a translation entry for each supported language. Add its `settings.languageOptions` label to the translation files; loader selection, Transloco configuration and the settings options follow the registry.
 
 ## Angular naming
 
