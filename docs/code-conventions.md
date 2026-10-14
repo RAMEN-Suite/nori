@@ -8,6 +8,15 @@
 - Components own presentation and interaction. Workspace store/view/actions own model state, derived data and mutations. Persistence belongs to StorageService; RAMEN Core owns schema rules.
 - Extract a component or class when it owns a coherent behaviour, not merely to shorten a file. Prefer small typed APIs over generic components with many modes.
 
+## Angular naming
+
+- Use one project prefix: `nori-*` for component selectors and `nori` with camelCase for directive selectors, such as `noriTooltip`. Sushi components keep their public `sui` prefix.
+- Use `Screen` for a complete application view that composes its areas. A routed inspector or other nested view is not automatically a screen. Keep the existing `.screen.ts` file convention for these views.
+- Use `Dialog` and `.dialog.ts` for components opened as dialogs. Inner dialog components retain names describing their own task.
+- Name other components after their concrete responsibility, such as `ProjectOpenComponent` or `NodeAttributesComponent`. Do not encode categories such as `block` or `shared` in selector prefixes.
+- Group related code by feature. Reserve `shared` for reusable UI independent of an individual feature.
+- Angular ESLint enforces the project prefix and selector casing; Angular generators use the same prefix.
+
 ## Angular and types
 
 - Use standalone OnPush components, signal inputs/outputs/state, computed derived state, inject and host metadata.

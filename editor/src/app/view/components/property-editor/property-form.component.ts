@@ -21,7 +21,7 @@ import { DialogService } from '../../../services/dialog.service';
 import { WorkspaceService } from '../../../services/workspace/workspace.service';
 
 @Component({
-  selector: 'app-property-form',
+  selector: 'nori-property-form',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LucideSave, LucideX, TranslocoDirective, FormsModule, Button, Input, Select, Toggle],
   templateUrl: './property-form.component.html',

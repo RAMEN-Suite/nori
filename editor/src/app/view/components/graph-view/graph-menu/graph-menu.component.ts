@@ -30,7 +30,7 @@ import {
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'app-visualizer',
+  selector: 'nori-graph-menu',
   imports: [GraphComponent, Button, TranslocoDirective, LucideMousePointer2, LucidePlus],
   templateUrl: './graph-menu.component.html',
 })

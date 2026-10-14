@@ -19,7 +19,7 @@ interface RelationEndpoint {
 }
 
 @Component({
-  selector: 'app-relation-view',
+  selector: 'nori-relation-view',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TranslocoDirective, Badge, Button, Divider, LucideArrowUpRight, ScrollOverflowDirective, ScrollHintsComponent],
   templateUrl: './relation-view.component.html',

@@ -56,8 +56,8 @@ export default defineConfig(
       '@angular-eslint/prefer-signal-model': 'error',
       '@angular-eslint/prefer-signals': 'error',
       '@angular-eslint/no-output-on-prefix': 'off',
-      '@angular-eslint/directive-selector': ['error', { type: 'attribute', prefix: 'app', style: 'camelCase' }],
-      '@angular-eslint/component-selector': ['error', { type: 'element', prefix: 'app', style: 'kebab-case' }],
+      '@angular-eslint/directive-selector': ['error', { type: 'attribute', prefix: 'nori', style: 'camelCase' }],
+      '@angular-eslint/component-selector': ['error', { type: 'element', prefix: 'nori', style: 'kebab-case' }],
     },
   },
   {
@@ -69,7 +69,7 @@ export default defineConfig(
     extends: [js.configs.recommended, tseslint.configs.strictTypeChecked, tseslint.configs.stylisticTypeChecked],
     languageOptions: {
       globals: globals.node,
-      parserOptions: { projectService: { allowDefaultProject: ['forge.config.ts'] }, tsconfigRootDir: import.meta.dirname },
+      parserOptions: { projectService: true, tsconfigRootDir: import.meta.dirname },
     },
     rules,
   },

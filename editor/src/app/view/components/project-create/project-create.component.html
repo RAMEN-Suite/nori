@@ -4,7 +4,7 @@
       <div class="flex flex-wrap items-center justify-between gap-3">
         <h1 id="create-title" class="project-title">{{ t('create.title') }}</h1>
         <span [class.invisible]="!alternativeVisible()" [attr.inert]="alternativeVisible() ? null : ''">
-          <app-project-alternative
+          <nori-project-alternative
             current="create"
             [disabled]="!alternativeVisible() || busy() || disabled()"
             (selected)="showAlternative.emit()"

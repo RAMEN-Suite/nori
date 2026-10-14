@@ -1,6 +1,6 @@
 <div *transloco="let t" class="flex h-full min-h-0 flex-col gap-3">
   <div class="relative flex min-h-0 flex-1 flex-col">
-    <div appScrollOverflow #scroll="scrollOverflow" class="editor-panel-scroll -mx-2 min-h-0 flex-1 overflow-y-auto">
+    <div noriScrollOverflow #scroll="scrollOverflow" class="editor-panel-scroll -mx-2 min-h-0 flex-1 overflow-y-auto">
       @for (group of propertyGroups(); track group.slot) {
         <div suiDivider placement="start" class="text-base-content/60 text-xs" style="--sui-divider-margin: 0.75rem">
           {{ group.modelName ? t('editor.propertySource', { name: group.modelName }) : t('editor.propertyLevel', { level: group.slot }) }}
@@ -15,7 +15,7 @@
             [ariaLabel]="t('editor.properties')"
           >
             <ng-template suiListItem let-item>
-              <app-node-attribute
+              <nori-node-attribute
                 class="col-span-full block w-full py-1"
                 [attribute]="item.attribute"
                 [inlineRename]="true"
@@ -29,7 +29,7 @@
         <p class="text-base-content/60 px-4 py-1 text-xs">{{ t('editor.noProperties') }}</p>
       }
     </div>
-    <app-scroll-hints [up]="scroll.canScrollUp()" [down]="scroll.canScrollDown()" />
+    <nori-scroll-hints [up]="scroll.canScrollUp()" [down]="scroll.canScrollDown()" />
   </div>
   @if (workspace.view.nodeEditable() || (workspace.view.editable() && isAnnotation())) {
     <footer class="flex shrink-0 flex-col gap-2">

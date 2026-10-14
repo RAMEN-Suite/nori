@@ -7,7 +7,7 @@ import { WindowState } from '../../../../states/window.state';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'app-title-bar',
+  selector: 'nori-title-bar',
   imports: [TranslocoPipe, Button, LucideNetwork, LucidePencil, LucideFolderPlus, LucideFolderOpen],
   templateUrl: './title-bar.component.html',
   styleUrl: './title-bar.component.scss',

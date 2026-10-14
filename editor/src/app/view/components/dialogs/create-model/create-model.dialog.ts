@@ -24,7 +24,7 @@ import { WorkspaceService } from '../../../../services/workspace/workspace.servi
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'app-modal-create-model',
+  selector: 'nori-create-model-dialog',
   imports: [LucidePlus, LucideSave, LucideX, TranslocoDirective, Input, Button, Message, FormsModule],
   templateUrl: './create-model.dialog.html',
 })

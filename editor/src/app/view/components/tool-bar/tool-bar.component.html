@@ -35,7 +35,7 @@
         [attr.aria-keyshortcuts]="shortcuts.aria('select')"
         [attr.aria-pressed]="graphTools.tool() === 'select'"
         [attr.aria-label]="t('editor.selectTool')"
-        [appTooltip]="t('editor.selectTool') + ' (' + shortcuts.display('select') + ')'"
+        [noriTooltip]="t('editor.selectTool') + ' (' + shortcuts.display('select') + ')'"
         placement="bottom"
         [showDelay]="600"
         [disabled]="graphTools.pending()"
@@ -53,7 +53,7 @@
         class="nori-panel-toggle"
         [attr.aria-pressed]="graphTools.tool() === 'connect'"
         [attr.aria-label]="t('editor.drawConnection')"
-        [appTooltip]="t('editor.drawConnection') + ' (' + shortcuts.display('connect') + ')'"
+        [noriTooltip]="t('editor.drawConnection') + ' (' + shortcuts.display('connect') + ')'"
         placement="bottom"
         [showDelay]="600"
         [disabled]="!workspace.view.editable() || graphTools.pending()"
@@ -71,7 +71,7 @@
         class="nori-panel-toggle"
         [attr.aria-pressed]="graphTools.tool() === 'erase'"
         [attr.aria-label]="t('editor.eraseElements')"
-        [appTooltip]="t('editor.eraseElements') + ' (' + shortcuts.display('erase') + ')'"
+        [noriTooltip]="t('editor.eraseElements') + ' (' + shortcuts.display('erase') + ')'"
         placement="bottom"
         [showDelay]="600"
         [disabled]="!workspace.view.editable() || graphTools.pending()"
@@ -88,7 +88,7 @@
         shape="circle"
         [attr.aria-keyshortcuts]="shortcuts.aria('fit')"
         [attr.aria-label]="t('editor.fit')"
-        [appTooltip]="t('editor.fit') + ' (' + shortcuts.display('fit') + ')'"
+        [noriTooltip]="t('editor.fit') + ' (' + shortcuts.display('fit') + ')'"
         placement="bottom"
         [showDelay]="600"
         (click)="fitGraph.emit()"
@@ -103,7 +103,7 @@
         shape="circle"
         [attr.aria-keyshortcuts]="shortcuts.aria('reset')"
         [attr.aria-label]="t('editor.reset')"
-        [appTooltip]="t('editor.reset') + ' (' + shortcuts.display('reset') + ')'"
+        [noriTooltip]="t('editor.reset') + ' (' + shortcuts.display('reset') + ')'"
         placement="bottom"
         [showDelay]="600"
         [disabled]="!workspace.view.editable()"
@@ -119,7 +119,7 @@
         shape="circle"
         [attr.aria-keyshortcuts]="shortcuts.aria('colours')"
         [attr.aria-label]="t('editor.colours')"
-        [appTooltip]="t('editor.colours') + ' (' + shortcuts.display('colours') + ')'"
+        [noriTooltip]="t('editor.colours') + ' (' + shortcuts.display('colours') + ')'"
         placement="bottom"
         [showDelay]="600"
         (click)="configureColours.emit()"
@@ -138,7 +138,7 @@
           [attr.aria-label]="t('editor.baseNodes')"
           class="nori-panel-toggle"
           [attr.aria-pressed]="baseNodesOpen()"
-          [appTooltip]="t('editor.baseNodes') + ' (' + shortcuts.display('baseNodes') + ')'"
+          [noriTooltip]="t('editor.baseNodes') + ' (' + shortcuts.display('baseNodes') + ')'"
           placement="bottom"
           [showDelay]="600"
           (click)="toggleBaseNodes.emit()"
@@ -156,7 +156,7 @@
         [attr.aria-label]="catalogueLabel"
         class="nori-panel-toggle"
         [attr.aria-pressed]="catalogueOpen()"
-        [appTooltip]="catalogueLabel + ' (' + catalogueShortcut + ')'"
+        [noriTooltip]="catalogueLabel + ' (' + catalogueShortcut + ')'"
         placement="bottom"
         [showDelay]="600"
         (click)="toggleCatalogue.emit()"
@@ -177,7 +177,7 @@
         [attr.aria-label]="t('editor.levels')"
         class="nori-panel-toggle"
         [attr.aria-pressed]="levelsOpen()"
-        [appTooltip]="t('editor.levels') + ' (' + shortcuts.display('levels') + ')'"
+        [noriTooltip]="t('editor.levels') + ' (' + shortcuts.display('levels') + ')'"
         placement="bottom"
         [showDelay]="600"
         (click)="toggleLevels.emit()"
@@ -194,7 +194,7 @@
         [attr.aria-label]="t('editor.inspector')"
         class="nori-panel-toggle"
         [attr.aria-pressed]="inspectorOpen()"
-        [appTooltip]="t('editor.inspector') + ' (' + shortcuts.display('inspector') + ')'"
+        [noriTooltip]="t('editor.inspector') + ' (' + shortcuts.display('inspector') + ')'"
         placement="bottom"
         [showDelay]="600"
         (click)="toggleInspector.emit()"
@@ -210,7 +210,7 @@
         shape="circle"
         [attr.aria-keyshortcuts]="shortcuts.aria('project')"
         [attr.aria-label]="t('editor.editProject')"
-        [appTooltip]="t('editor.editProject') + ' (' + shortcuts.display('project') + ')'"
+        [noriTooltip]="t('editor.editProject') + ' (' + shortcuts.display('project') + ')'"
         placement="bottom"
         [showDelay]="600"
         [disabled]="!storage.selectedManifest()"
@@ -218,7 +218,7 @@
       >
         <svg lucidePencil class="size-4" aria-hidden="true"></svg>
       </button>
-      <app-model-validation />
+      <nori-model-validation />
       <button
         suiButton
         severity="neutral"
@@ -227,7 +227,7 @@
         shape="circle"
         [attr.aria-keyshortcuts]="shortcuts.aria('export')"
         [attr.aria-label]="t('editor.export')"
-        [appTooltip]="t('editor.export') + ' (' + shortcuts.display('export') + ')'"
+        [noriTooltip]="t('editor.export') + ' (' + shortcuts.display('export') + ')'"
         placement="bottom"
         [showDelay]="600"
         [disabled]="!canExport()"
@@ -237,5 +237,5 @@
       </button>
     </div>
   </sui-card>
-  <app-settings-button [shortcut]="shortcuts.display('settings')" class="editor-settings" data-nori-motion />
+  <nori-settings-button [shortcut]="shortcuts.display('settings')" class="editor-settings" data-nori-motion />
 </nav>

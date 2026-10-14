@@ -5,7 +5,7 @@ import { Button } from '@sushi-kit/angular';
 import { RunningActionService } from '../../../services/running-action.service';
 
 @Component({
-  selector: 'app-running-action-notification',
+  selector: 'nori-running-action-notification',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TranslocoDirective, Button, LucideArrowLeft, LucideEraser, LucideX],
   template: `

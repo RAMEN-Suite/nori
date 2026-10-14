@@ -33,19 +33,24 @@ Install scripts are disabled in `.npmrc`. `setup:electron` explicitly downloads 
 Start the full development environment:
 
 ```
-npm run start:electron
+npm start
 ```
 
 This will:
 
-1. Build the Electron process
-2. Start the Angular editor development server
-3. Wait for the editor to be available
-4. Launch the Electron application
+1. Ensure the Electron executable is installed
+2. Build the Electron process
+3. Start the Angular editor development server
+4. Wait for the editor to be available
+5. Launch the Electron application
+
+Closing Electron also stops the development server.
 
 The Angular editor dev server runs at:
 
 http://localhost:4200
+
+For access from another device on the same network, use `npm run start:network`.
 
 If you only want to run the editor:
 
@@ -57,7 +62,7 @@ npm run start:editor
 
 ## Building
 
-Build the Angular editor:
+Build both parts with `npm run build`. Build the Angular editor separately:
 
 ```
 npm run build:editor
@@ -74,11 +79,7 @@ npm run build:electron
 ## Checks
 
 ```sh
-npm run lint
-npm run typecheck
-npm run format
-npm run build:editor
-npm run build:electron
+npm run verify
 ```
 
 The editor build also checks Angular templates. Automated scenario tests will follow the migration.
@@ -97,7 +98,7 @@ Create distributable installers:
 npm run make
 ```
 
-Both commands automatically build the Angular editor and Electron process before packaging.
+Both commands automatically build the Angular editor and Electron process before packaging. They target the host architecture by default; use `npm run make -- --arch x64` to select another architecture. `npm run release` builds and publishes through the configured Forge publishers.
 
 ---
 

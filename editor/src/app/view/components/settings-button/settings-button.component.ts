@@ -8,7 +8,7 @@ import { ShortcutService } from '../../../services/shortcut.service';
 import { SettingsDialog } from '../dialogs/settings/settings.dialog';
 
 @Component({
-  selector: 'app-settings-button',
+  selector: 'nori-settings-button',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TranslocoDirective, Button, TooltipDirective, LucideSettings],
   templateUrl: './settings-button.component.html',

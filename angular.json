@@ -7,7 +7,7 @@
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": { "type": "component", "style": "scss" },
-        "@schematics/angular:directive": { "type": "directive" },
+        "@schematics/angular:directive": { "type": "directive", "prefix": "nori" },
         "@schematics/angular:service": { "type": "service" },
         "@schematics/angular:guard": { "typeSeparator": "." },
         "@schematics/angular:interceptor": { "typeSeparator": "." },
@@ -17,7 +17,7 @@
       },
       "root": "editor",
       "sourceRoot": "editor/src",
-      "prefix": "app",
+      "prefix": "nori",
       "architect": {
         "build": {
           "builder": "@angular/build:application",
@@ -75,6 +75,12 @@
             }
           },
           "defaultConfiguration": "development"
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": ["editor/src/**/*.ts", "editor/src/**/*.html"]
+          }
         },
         "extract-i18n": {
           "builder": "@angular/build:extract-i18n"

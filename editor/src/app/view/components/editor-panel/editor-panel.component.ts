@@ -3,7 +3,7 @@ import { LucideX } from '@lucide/angular';
 import { Button, Card } from '@sushi-kit/angular';
 
 @Component({
-  selector: 'app-editor-panel',
+  selector: 'nori-editor-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [Button, Card, LucideX],
   templateUrl: './editor-panel.component.html',

@@ -30,7 +30,7 @@
             size="xs"
             shape="circle"
             [attr.aria-label]="t('editor.removeNamedProperty', { name: property.name })"
-            [appTooltip]="t('editor.removeProperty')"
+            [noriTooltip]="t('editor.removeProperty')"
             placement="bottom"
             [offset]="12"
             [showDelay]="600"
@@ -42,7 +42,7 @@
         </div>
         <div [id]="'property-fields-' + property.id">
           @if (attribute()?.id === property.id && !collapsed()) {
-            <app-property-form
+            <nori-property-form
               class="property-card-fields"
               [style.display]="discarding() ? 'none' : 'flex'"
               [currentAttribute]="property"
@@ -56,7 +56,7 @@
     @if (!attribute()) {
       <article class="property-card is-expanded">
         <h3 class="px-4 pt-4 text-sm font-medium">{{ t('editor.addProperty') }}</h3>
-        <app-property-form
+        <nori-property-form
           class="property-card-fields"
           [style.display]="discarding() ? 'none' : 'flex'"
           (saved)="editing.select($event)"
@@ -69,7 +69,7 @@
   <footer class="property-editor-footer">
     @if (removing(); as property) {
       <section class="flex w-full flex-col gap-4">
-        <app-confirmation-content [message]="{ key: 'editor.confirmRemoveProperty', params: { name: property.name } }" />
+        <nori-confirmation-content [message]="{ key: 'editor.confirmRemoveProperty', params: { name: property.name } }" />
         <div class="nori-dialog-actions">
           <button suiButton size="sm" severity="neutral" variant="text" [disabled]="formPending()" (click)="cancelRemoval()">
             <svg lucideX class="size-4 shrink-0" aria-hidden="true"></svg>

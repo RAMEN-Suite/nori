@@ -22,7 +22,7 @@ import { WorkspaceService } from '../../../../../services/workspace/workspace.se
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'app-node-attribute',
+  selector: 'nori-node-attribute',
   imports: [
     FormsModule,
     AutoselectDirective,

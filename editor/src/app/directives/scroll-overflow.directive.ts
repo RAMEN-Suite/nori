@@ -1,7 +1,7 @@
 import { afterNextRender, DestroyRef, Directive, ElementRef, inject, signal, type WritableSignal } from '@angular/core';
 
 @Directive({
-  selector: '[appScrollOverflow]',
+  selector: '[noriScrollOverflow]',
   exportAs: 'scrollOverflow',
   host: { '(scroll)': 'measure()' },
 })

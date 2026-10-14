@@ -61,7 +61,7 @@ import {
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'app-graph',
+  selector: 'nori-graph',
   encapsulation: ViewEncapsulation.None,
   imports: [TranslocoDirective, NodeActionsComponent, FormsModule, Input, AutoselectDirective],
   templateUrl: './graph.component.html',

@@ -1,6 +1,6 @@
 import { Directive, ElementRef, inject, input, afterNextRender, type InputSignal } from '@angular/core';
 
-@Directive({ selector: '[appAutoselect]', host: { '(focus)': 'onFocus()' } })
+@Directive({ selector: '[noriAutoselect]', host: { '(focus)': 'onFocus()' } })
 export class AutoselectDirective {
   private readonly element: ElementRef<HTMLInputElement> = inject<ElementRef<HTMLInputElement>>(ElementRef);
 

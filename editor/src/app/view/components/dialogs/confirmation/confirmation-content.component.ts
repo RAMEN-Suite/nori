@@ -48,7 +48,7 @@ interface ImpactAction {
   readonly count: number;
 }
 @Component({
-  selector: 'app-confirmation-content',
+  selector: 'nori-confirmation-content',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ScrollOverflowDirective,

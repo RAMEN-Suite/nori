@@ -8,7 +8,7 @@ import { DialogService } from '../../../../services/dialog.service';
 import { StorageService, type UpdateManifest } from '../../../../services/storage.service';
 
 @Component({
-  selector: 'app-project-edit',
+  selector: 'nori-project-edit-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LucideSave, LucideX, FormsModule, TranslocoDirective, Button, Input, Textarea],
   templateUrl: './project-edit.dialog.html',

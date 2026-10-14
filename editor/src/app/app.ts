@@ -11,7 +11,7 @@ import { TitleBarComponent } from './view/components/window/title-bar/title-bar.
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'app-root',
+  selector: 'nori-root',
   imports: [
     RunningActionNotificationComponent,
     DialogHostComponent,

@@ -20,7 +20,7 @@ import { WorkspaceService } from '../../../../services/workspace/workspace.servi
 import { ConfirmationContentComponent } from '../confirmation/confirmation-content.component';
 
 @Component({
-  selector: 'app-edit-annotations',
+  selector: 'nori-edit-annotations-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     LucideSave,

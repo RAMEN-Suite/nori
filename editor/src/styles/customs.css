@@ -69,7 +69,7 @@ html[data-motion="off"] [data-nori-motion] {
   transition: none;
 }
 
-[appScrollOverflow]:is(:hover, :focus-within) ~ app-scroll-hints {
+[noriScrollOverflow]:is(:hover, :focus-within) ~ nori-scroll-hints {
   --nori-scroll-hint-play-state: running;
 }
 

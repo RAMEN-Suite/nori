@@ -30,7 +30,7 @@ import { ScrollHintsComponent } from '../../scroll-hints/scroll-hints.component'
 import { ApplicationState } from '../../../../states/application.state';
 
 @Component({
-  selector: 'app-settings',
+  selector: 'nori-settings-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     LucideRotateCcw,

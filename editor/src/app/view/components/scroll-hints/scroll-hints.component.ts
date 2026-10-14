@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, input, type InputSignal } from '@an
 import { LucideChevronDown, LucideChevronUp } from '@lucide/angular';
 
 @Component({
-  selector: 'app-scroll-hints',
+  selector: 'nori-scroll-hints',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LucideChevronDown, LucideChevronUp],
   host: { 'aria-hidden': 'true' },

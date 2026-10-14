@@ -1,8 +1,8 @@
 <main *transloco="let t" class="workspace-shell">
   <section class="workspace-canvas" data-nori-motion [attr.aria-label]="t('editor.graph')">
-    <app-visualizer #graph [canvasPadding]="graphPadding()" (nodeSelected)="inspectorOpen.set(true)" class="block h-full" />
+    <nori-graph-menu #graph [canvasPadding]="graphPadding()" (nodeSelected)="inspectorOpen.set(true)" class="block h-full" />
   </section>
-  <app-tool-bar
+  <nori-tool-bar
     class="workspace-toolbar"
     [catalogueOpen]="catalogueOpen()"
     [levelsOpen]="levelsOpen()"
@@ -23,7 +23,7 @@
     [class.both-open]="catalogueOpen() && baseNodesOpen() && workspace.view.editable()"
   >
     <div class="panel-slot top-slot" data-nori-motion>
-      <app-editor-panel
+      <nori-editor-panel
         class="workspace-catalogue"
         [open]="catalogueOpen()"
         [title]="t(workspace.store.currentSlot() > 0 ? 'editor.refinements' : 'editor.baseNodes')"
@@ -37,19 +37,19 @@
             <svg lucideBoxes class="size-4 shrink-0" aria-hidden="true"></svg>
           }
         </span>
-        <app-side-menu (nodeSelected)="inspectorOpen.set(true)" class="block h-full min-h-0" />
-      </app-editor-panel>
+        <nori-side-menu (nodeSelected)="inspectorOpen.set(true)" class="block h-full min-h-0" />
+      </nori-editor-panel>
     </div>
     <div class="panel-slot bottom-slot" data-nori-motion>
-      <app-editor-panel
+      <nori-editor-panel
         [open]="baseNodesOpen() && workspace.view.editable()"
         [title]="t('editor.baseNodes')"
         [closeLabel]="t('editor.closeBaseNodes')"
         (closePanel)="baseNodesOpen.set(false)"
       >
         <svg panel-icon lucideBoxes class="size-4 shrink-0" aria-hidden="true"></svg>
-        <app-base-nodes (nodeSelected)="inspectorOpen.set(true)" class="block h-full min-h-0" />
-      </app-editor-panel>
+        <nori-base-nodes (nodeSelected)="inspectorOpen.set(true)" class="block h-full min-h-0" />
+      </nori-editor-panel>
     </div>
   </div>
 
@@ -60,7 +60,7 @@
     [class.levels-open]="levelsOpen()"
   >
     <div class="panel-slot top-slot" data-nori-motion>
-      <app-editor-panel
+      <nori-editor-panel
         [open]="inspectorOpen()"
         side="right"
         [title]="t('editor.inspector')"
@@ -71,10 +71,10 @@
         <div class="editor-panel-scroll absolute inset-0 overflow-auto">
           <router-outlet class="hidden" />
         </div>
-      </app-editor-panel>
+      </nori-editor-panel>
     </div>
     <div class="panel-slot bottom-slot" data-nori-motion>
-      <app-editor-panel
+      <nori-editor-panel
         side="right"
         [open]="levelsOpen()"
         [title]="t('editor.levels')"
@@ -82,8 +82,8 @@
         (closePanel)="levelsOpen.set(false)"
       >
         <svg panel-icon lucideLayers class="size-4 shrink-0" aria-hidden="true"></svg>
-        <app-model-levels class="block h-full min-h-0" />
-      </app-editor-panel>
+        <nori-model-levels class="block h-full min-h-0" />
+      </nori-editor-panel>
     </div>
   </div>
 </main>

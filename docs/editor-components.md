@@ -37,7 +37,7 @@ Bindings use lowercase keys joined with `+`, for example `shift+r` or `mod+z`. `
 
 - Build panels with `EditorPanelComponent`, place them in `WorkspaceScreen`, and include their occupied space in canvas padding. Keep animation and column resizing in the screen/frame rather than the panel contents.
 - Open dialogs through `DialogService.open`. Use the compact size for confirmations and short choices; use the default form size for editing. Use the shared scroll-content and action-footer classes.
-- Use `TooltipDirective` with `appTooltip` for Sushi tooltips. It suppresses the single automatic focus return after a dialog closes; normal hover and keyboard focus retain Sushi’s behaviour.
+- Use `TooltipDirective` with `noriTooltip` for Sushi tooltips. It suppresses the single automatic focus return after a dialog closes; normal hover and keyboard focus retain Sushi’s behaviour.
 - Use public Sushi tokens and APIs. The catalogue uses an inset focus offset because Sushi clips outward accordion outlines. Keep focus visible on headers, list rows and action buttons.
 - `ScrollOverflowDirective` observes the scroll container and its rendered direct children. Keep it attached to the actual scrolling element. If a future view replaces those children after initial render, extend its observation lifecycle rather than adding a second overflow detector.
 

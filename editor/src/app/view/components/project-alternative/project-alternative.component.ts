@@ -4,7 +4,7 @@ import { LucideFolderOpen, LucideFolderPlus } from '@lucide/angular';
 import { Button } from '@sushi-kit/angular';
 
 @Component({
-  selector: 'app-project-alternative',
+  selector: 'nori-project-alternative',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TranslocoDirective, Button, LucideFolderOpen, LucideFolderPlus],
   templateUrl: './project-alternative.component.html',

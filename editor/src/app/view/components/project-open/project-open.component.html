@@ -4,7 +4,7 @@
       <div class="flex flex-wrap items-center justify-between gap-3">
         <h1 id="open-title" class="project-title">{{ t('open.title') }}</h1>
         <span [class.invisible]="!alternativeVisible()" [attr.inert]="alternativeVisible() ? null : ''">
-          <app-project-alternative
+          <nori-project-alternative
             current="open"
             [disabled]="!alternativeVisible() || busy() || disabled()"
             (selected)="showAlternative.emit()"
@@ -75,7 +75,7 @@
                 size="sm"
                 shape="circle"
                 [attr.aria-label]="t('open.duplicateProject', { name: project.name })"
-                [appTooltip]="t('open.duplicate')"
+                [noriTooltip]="t('open.duplicate')"
                 placement="bottom"
                 [showDelay]="600"
                 [disabled]="busy() || disabled()"
@@ -90,7 +90,7 @@
                 size="sm"
                 shape="circle"
                 [attr.aria-label]="t('open.removeProject', { name: project.name })"
-                [appTooltip]="t('open.remove')"
+                [noriTooltip]="t('open.remove')"
                 placement="bottom"
                 [showDelay]="600"
                 [disabled]="busy() || disabled()"

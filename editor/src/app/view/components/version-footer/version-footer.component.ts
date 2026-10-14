@@ -3,7 +3,7 @@ import { TranslocoDirective } from '@jsverse/transloco';
 import { environment } from '../../../../environments/environment';
 
 @Component({
-  selector: 'app-version-footer',
+  selector: 'nori-version-footer',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TranslocoDirective],
   templateUrl: './version-footer.component.html',

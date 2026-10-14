@@ -28,7 +28,7 @@ import { ProjectAlternativeComponent } from '../project-alternative/project-alte
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'app-project-open',
+  selector: 'nori-project-open',
   imports: [
     FormsModule,
     DatePipe,

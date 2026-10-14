@@ -10,7 +10,7 @@ import { WorkspaceService } from '../../../services/workspace/workspace.service'
 import { ModelDiagnosticsDialog } from '../dialogs/model-diagnostics/model-diagnostics.dialog';
 
 @Component({
-  selector: 'app-model-validation',
+  selector: 'nori-model-validation',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TranslocoDirective, Button, TooltipDirective, LucideShieldCheck],
   templateUrl: './model-validation.component.html',

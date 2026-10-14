@@ -33,7 +33,7 @@ import { ToolBarComponent } from '../../components/tool-bar/tool-bar.component';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'app-workspace',
+  selector: 'nori-workspace',
   imports: [
     ToolBarComponent,
     SideMenuComponent,

@@ -26,7 +26,7 @@ export interface ConfirmationButton {
 }
 
 @Component({
-  selector: 'app-confirmation',
+  selector: 'nori-confirmation-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [Button, ConfirmationContentComponent, LucideCheck, LucideEraser, LucideX],
   templateUrl: './confirmation.dialog.html',

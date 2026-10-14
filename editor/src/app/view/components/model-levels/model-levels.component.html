@@ -1,6 +1,6 @@
 <section *transloco="let t" class="flex h-full min-h-0 flex-col">
   <div class="relative flex min-h-0 flex-1 flex-col">
-    <div appScrollOverflow #scroll="scrollOverflow" class="editor-list-content editor-panel-scroll min-h-0 flex-1 overflow-y-auto">
+    <div noriScrollOverflow #scroll="scrollOverflow" class="editor-list-content editor-panel-scroll min-h-0 flex-1 overflow-y-auto">
       <sui-list
         class="editor-list"
         size="xs"
@@ -17,7 +17,7 @@
                 <input
                   suiInput
                   fluid
-                  appAutoselect
+                  noriAutoselect
                   [focusOnCreate]="true"
                   size="sm"
                   [attr.aria-label]="t('editor.levelName')"
@@ -40,7 +40,7 @@
                 (dblclick)="handleRename(record)"
                 [attr.data-level-id]="record.modelId"
               >
-                <span class="level-number" [appTooltip]="levelSource(record)" placement="bottom" [showDelay]="600" aria-hidden="true">{{
+                <span class="level-number" [noriTooltip]="levelSource(record)" placement="bottom" [showDelay]="600" aria-hidden="true">{{
                   record.slot
                 }}</span>
                 <span class="truncate text-xs font-medium">{{ record.name }}</span>
@@ -55,7 +55,7 @@
                   size="xs"
                   shape="circle"
                   [attr.aria-label]="t('editor.editNamedLevel', { name: record.name })"
-                  [appTooltip]="t('editor.editLevel')"
+                  [noriTooltip]="t('editor.editLevel')"
                   placement="bottom"
                   [showDelay]="600"
                   (click)="handleEdit(record)"
@@ -69,7 +69,7 @@
                   size="xs"
                   shape="circle"
                   [attr.aria-label]="t('editor.removeNamedLevel', { name: record.name })"
-                  [appTooltip]="t('editor.removeLevel')"
+                  [noriTooltip]="t('editor.removeLevel')"
                   placement="bottom"
                   [showDelay]="600"
                   (click)="handleRemove(record)"
@@ -82,7 +82,7 @@
         </ng-template>
       </sui-list>
     </div>
-    <app-scroll-hints [up]="scroll.canScrollUp()" [down]="scroll.canScrollDown()" />
+    <nori-scroll-hints [up]="scroll.canScrollUp()" [down]="scroll.canScrollDown()" />
   </div>
   <footer class="flex flex-col gap-3 p-3">
     <button suiButton severity="primary" size="sm" class="w-full" (click)="handleCreate()">

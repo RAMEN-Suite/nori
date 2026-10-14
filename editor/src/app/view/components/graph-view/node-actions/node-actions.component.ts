@@ -8,7 +8,7 @@ import { NodeEditingService } from '../../../../services/workspace/node-editing.
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 
 @Component({
-  selector: 'app-node-actions',
+  selector: 'nori-node-actions',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TranslocoDirective, Button, Card, TooltipDirective, LucideCopy, LucideGitBranch, LucideTrash],
   templateUrl: './node-actions.component.html',

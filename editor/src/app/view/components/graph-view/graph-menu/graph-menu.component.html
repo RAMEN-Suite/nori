@@ -1,6 +1,6 @@
 <div *transloco="let t" class="relative flex h-full min-h-0 flex-col">
   <div class="absolute inset-0 overflow-hidden">
-    <app-graph (nodeSelected)="nodeSelected.emit()" [graphData]="graphData()" [settings]="settings()" />
+    <nori-graph (nodeSelected)="nodeSelected.emit()" [graphData]="graphData()" [settings]="settings()" />
     @if (!graphData().nodes.length) {
       <div class="absolute inset-0 flex flex-col items-center justify-center gap-4 text-center">
         <svg lucideMousePointer2 class="text-base-content/30 size-8" aria-hidden="true"></svg>

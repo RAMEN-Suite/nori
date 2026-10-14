@@ -45,7 +45,7 @@ import { SettingsButtonComponent } from '../settings-button/settings-button.comp
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'app-tool-bar',
+  selector: 'nori-tool-bar',
   host: { '(document:keydown)': 'handleShortcut($event)' },
   imports: [
     ModelValidationComponent,

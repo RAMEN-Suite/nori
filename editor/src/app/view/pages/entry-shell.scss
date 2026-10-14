@@ -3,8 +3,8 @@
   min-width: 0;
 }
 
-:host(app-home),
-:host(app-project-entry) {
+:host(nori-home),
+:host(nori-project-entry) {
   height: calc(100dvh - var(--title-bar-height));
 }
 

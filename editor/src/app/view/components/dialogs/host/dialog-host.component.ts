@@ -26,7 +26,7 @@ import { ConfirmationDialog } from '../confirmation/confirmation.dialog';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'app-dialog-host',
+  selector: 'nori-dialog-host',
   imports: [TranslocoPipe, NgComponentOutlet, Dialog, DialogHeader, DialogBody, Message, LucideCircleAlert],
   template: `
     @for (frame of frames(); track frame.component) {

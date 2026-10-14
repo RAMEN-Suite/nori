@@ -8,7 +8,7 @@
               <input
                 suiInput
                 size="xs"
-                appAutoselect
+                noriAutoselect
                 [focusOnCreate]="true"
                 class="w-0 min-w-0 flex-1 px-1 py-0 text-xs"
                 style="height: 1.25rem"
@@ -33,7 +33,7 @@
             @if (property.bounds.lowerBound > 0) {
               <span
                 class="text-error shrink-0 cursor-pointer text-xs leading-5 font-semibold"
-                [appTooltip]="t('editor.propertyCount.required')"
+                [noriTooltip]="t('editor.propertyCount.required')"
                 placement="bottom"
                 [offset]="12"
                 [showDelay]="600"
@@ -55,7 +55,7 @@
                   role="img"
                   class="text-base-content/60 inline-flex shrink-0 cursor-pointer"
                   [attr.aria-label]="t('editor.orderedValues')"
-                  [appTooltip]="t('editor.orderedValues')"
+                  [noriTooltip]="t('editor.orderedValues')"
                   placement="bottom"
                   [offset]="12"
                   [showDelay]="600"
@@ -69,7 +69,7 @@
                 role="img"
                 class="text-base-content/60 inline-flex shrink-0 cursor-pointer"
                 [attr.aria-label]="duplicatesLabel"
-                [appTooltip]="duplicatesLabel"
+                [noriTooltip]="duplicatesLabel"
                 placement="bottom"
                 [offset]="12"
                 [showDelay]="600"
@@ -88,7 +88,7 @@
                 role="img"
                 class="text-base-content/60 inline-flex shrink-0 cursor-pointer"
                 [attr.aria-label]="t('editor.keyProperty')"
-                [appTooltip]="t('editor.keyProperty')"
+                [noriTooltip]="t('editor.keyProperty')"
                 placement="bottom"
                 [offset]="12"
                 [showDelay]="600"
@@ -102,7 +102,7 @@
                 role="img"
                 class="text-base-content/60 inline-flex shrink-0 cursor-pointer"
                 [attr.aria-label]="t('editor.readOnlyProperty')"
-                [appTooltip]="t('editor.readOnlyProperty')"
+                [noriTooltip]="t('editor.readOnlyProperty')"
                 placement="bottom"
                 [offset]="12"
                 [showDelay]="600"

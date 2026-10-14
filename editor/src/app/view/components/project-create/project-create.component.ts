@@ -23,7 +23,7 @@ import { ProjectAlternativeComponent } from '../project-alternative/project-alte
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'app-project-create',
+  selector: 'nori-project-create',
   imports: [
     FormsModule,
     TranslocoDirective,

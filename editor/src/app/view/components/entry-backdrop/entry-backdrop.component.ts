@@ -7,7 +7,7 @@ interface BackdropNode {
 }
 
 @Component({
-  selector: 'app-entry-backdrop',
+  selector: 'nori-entry-backdrop',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { 'aria-hidden': 'true', inert: '' },
   templateUrl: './entry-backdrop.component.html',

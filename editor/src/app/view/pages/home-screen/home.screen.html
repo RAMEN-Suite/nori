@@ -1,7 +1,7 @@
 <main *transloco="let t" class="entry-screen relative isolate flex min-h-full flex-col overflow-y-auto">
-  <app-entry-backdrop class="home-backdrop" />
+  <nori-entry-backdrop class="home-backdrop" />
   <header class="entry-chrome flex justify-end px-5 py-5 sm:px-6" data-nori-motion>
-    <app-settings-button />
+    <nori-settings-button />
   </header>
 
   <section
@@ -9,7 +9,7 @@
     aria-labelledby="home-title"
   >
     <div class="home-brand flex flex-col items-center justify-center gap-5 text-center md:gap-3">
-      <app-brand-illustration />
+      <nori-brand-illustration />
       <h1 id="home-title" class="sr-only">Nori</h1>
     </div>
 
@@ -23,7 +23,7 @@
         </div>
         <nav class="flex flex-wrap gap-2" [attr.aria-label]="t('home.resources')">
           @for (resource of resources; track resource.url) {
-            <a suiButton severity="neutral" variant="soft" size="xs" [appExternalLink]="resource.url">
+            <a suiButton severity="neutral" variant="soft" size="xs" [noriExternalLink]="resource.url">
               @switch (resource.icon) {
                 @case ('schema') {
                   <svg lucideFileBraces class="size-3 shrink-0" aria-hidden="true"></svg>

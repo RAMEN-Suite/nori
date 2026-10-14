@@ -21,7 +21,7 @@ import { ConfirmationContentComponent } from '../dialogs/confirmation/confirmati
 import { PropertyFormComponent } from './property-form.component';
 
 @Component({
-  selector: 'app-property-editor',
+  selector: 'nori-property-editor',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     LucidePencil,

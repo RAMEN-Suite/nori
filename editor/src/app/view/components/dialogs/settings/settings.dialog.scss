@@ -111,7 +111,7 @@
   &:focus-within {
     --nori-scroll-hint-play-state: running;
   }
-  app-scroll-hints {
+  nori-scroll-hints {
     inset: 0.25rem 1rem 0.25rem 0.25rem;
   }
 }

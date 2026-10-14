@@ -13,7 +13,7 @@ import { SettingsButtonComponent } from '../../components/settings-button/settin
 
 /** Keeps each card mounted when the alternative is revealed, preserving in-progress input. */
 @Component({
-  selector: 'app-project-entry',
+  selector: 'nori-project-entry',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     NgTemplateOutlet,

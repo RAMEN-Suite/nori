@@ -1,6 +1,6 @@
 <section *transloco="let t" class="flex h-full min-h-0 flex-col">
   <div class="relative flex min-h-0 flex-1 flex-col">
-    <div appScrollOverflow #scroll="scrollOverflow" class="editor-panel-scroll min-h-0 flex-1 overflow-auto">
+    <div noriScrollOverflow #scroll="scrollOverflow" class="editor-panel-scroll min-h-0 flex-1 overflow-auto">
       @for (group of groups(); track group.record.modelId) {
         <sui-accordion
           class="node-accordion"
@@ -48,7 +48,7 @@
                       size="xs"
                       shape="circle"
                       [attr.aria-label]="t('editor.refineNamedNode', { name: node.name })"
-                      [appTooltip]="t('editor.refineNode')"
+                      [noriTooltip]="t('editor.refineNode')"
                       placement="bottom"
                       [showDelay]="600"
                       [disabled]="pending() || nodeEditing.creating()"
@@ -63,7 +63,7 @@
                       size="xs"
                       shape="circle"
                       [attr.aria-label]="t(visible().has(node.ref) ? 'editor.hideBaseNode' : 'editor.showBaseNode', { name: node.name })"
-                      [appTooltip]="t(visible().has(node.ref) ? 'editor.removeFromCanvas' : 'editor.showOnCanvas')"
+                      [noriTooltip]="t(visible().has(node.ref) ? 'editor.removeFromCanvas' : 'editor.showOnCanvas')"
                       placement="bottom"
                       [showDelay]="600"
                       [disabled]="pending()"
@@ -86,7 +86,7 @@
         <p class="text-base-content/60 px-3 py-2 text-sm">{{ t('editor.noBaseNodes') }}</p>
       }
     </div>
-    <app-scroll-hints [up]="scroll.canScrollUp()" [down]="scroll.canScrollDown()" />
+    <nori-scroll-hints [up]="scroll.canScrollUp()" [down]="scroll.canScrollDown()" />
   </div>
   <div class="p-3">
     <input

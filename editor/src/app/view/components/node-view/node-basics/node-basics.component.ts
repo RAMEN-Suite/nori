@@ -23,7 +23,7 @@ import { WorkspaceService } from '../../../../services/workspace/workspace.servi
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'app-node-basics',
+  selector: 'nori-node-basics',
   imports: [TranslocoDirective, Button, Input, TooltipDirective, FormsModule, AutoselectDirective, LucidePencil],
   templateUrl: './node-basics.component.html',
 })

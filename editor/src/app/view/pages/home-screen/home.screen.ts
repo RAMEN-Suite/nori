@@ -14,7 +14,7 @@ import { SettingsButtonComponent } from '../../components/settings-button/settin
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'app-home',
+  selector: 'nori-home',
   imports: [
     RouterLink,
     TranslocoDirective,

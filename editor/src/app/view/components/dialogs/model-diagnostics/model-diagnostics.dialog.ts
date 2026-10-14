@@ -6,7 +6,7 @@ import { DialogService } from '../../../../services/dialog.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 
 @Component({
-  selector: 'app-model-diagnostics',
+  selector: 'nori-model-diagnostics-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LucideX, TranslocoDirective, Button, List, ListItemTemplate, Message],
   templateUrl: './model-diagnostics.dialog.html',

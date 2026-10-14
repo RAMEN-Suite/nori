@@ -3,11 +3,11 @@ import { Tooltip } from '@sushi-kit/angular';
 import { DialogService } from '../services/dialog.service';
 
 @Directive({
-  selector: '[appTooltip]',
+  selector: '[noriTooltip]',
   hostDirectives: [
     {
       directive: Tooltip,
-      inputs: ['suiTooltip: appTooltip', 'placement', 'offset', 'disabled', 'showDelay', 'hideDelay'],
+      inputs: ['suiTooltip: noriTooltip', 'placement', 'offset', 'disabled', 'showDelay', 'hideDelay'],
     },
   ],
   host: { '(focusin)': 'handleFocus()' },

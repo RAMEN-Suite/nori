@@ -39,7 +39,7 @@ interface BaseNodeGroup {
 }
 
 @Component({
-  selector: 'app-base-nodes',
+  selector: 'nori-base-nodes',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ScrollOverflowDirective,

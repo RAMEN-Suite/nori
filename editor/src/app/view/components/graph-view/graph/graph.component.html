@@ -3,7 +3,7 @@
   <input
     *transloco="let t"
     suiInput
-    appAutoselect
+    noriAutoselect
     [focusOnCreate]="true"
     class="graph-node-name-editor"
     size="sm"
@@ -31,6 +31,6 @@
 }
 @if (nodeActionsPosition(); as position) {
   @if (workspace.store.currentNodeId(); as nodeId) {
-    <app-node-actions class="graph-node-actions" [nodeId]="nodeId" [style.left.px]="position.x" [style.top.px]="position.y" />
+    <nori-node-actions class="graph-node-actions" [nodeId]="nodeId" [style.left.px]="position.x" [style.top.px]="position.y" />
   }
 }

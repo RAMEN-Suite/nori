@@ -10,7 +10,7 @@ interface BrandNode {
 
 /** Decorative brand graph. It does not read or mutate a project model. */
 @Component({
-  selector: 'app-brand-illustration',
+  selector: 'nori-brand-illustration',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [Avatar, Card],
   host: { 'aria-hidden': 'true' },

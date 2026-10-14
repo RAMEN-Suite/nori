@@ -14,7 +14,7 @@ import { ScrollHintsComponent } from '../../scroll-hints/scroll-hints.component'
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'app-set-colors',
+  selector: 'nori-node-colours-dialog',
   providers: [{ provide: CDK_CONNECTED_OVERLAY_DEFAULT_CONFIG, useValue: { usePopover: 'inline' } }],
   imports: [
     ScrollOverflowDirective,

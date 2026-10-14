@@ -1,10 +1,10 @@
 <main *transloco="let t" class="entry-screen relative isolate flex min-h-full flex-col overflow-y-auto">
-  <app-entry-backdrop />
+  <nori-entry-backdrop />
   <header class="entry-chrome flex items-center justify-between px-5 py-5 sm:px-6">
     <button suiButton severity="neutral" variant="text" size="sm" routerLink="/" [disabled]="busy()">
       <svg lucideArrowLeft class="size-4" aria-hidden="true"></svg>{{ t('create.back') }}
     </button>
-    <app-settings-button />
+    <nori-settings-button />
   </header>
 
   <section
@@ -18,7 +18,7 @@
       <ng-container [ngTemplateOutlet]="initial === 'create' ? openCard : createCard" />
     }
     <ng-template #createCard>
-      <app-project-create
+      <nori-project-create
         [alternativeVisible]="!expanded()"
         [disabled]="busy()"
         (showAlternative)="handleShowAlternative()"
@@ -26,7 +26,7 @@
       />
     </ng-template>
     <ng-template #openCard>
-      <app-project-open
+      <nori-project-open
         [alternativeVisible]="!expanded()"
         [disabled]="busy()"
         (showAlternative)="handleShowAlternative()"

@@ -57,7 +57,7 @@ interface MutableNodeGroup extends Omit<NodeGroup, 'items'> {
 }
 
 @Component({
-  selector: 'app-side-menu',
+  selector: 'nori-side-menu',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ScrollOverflowDirective,

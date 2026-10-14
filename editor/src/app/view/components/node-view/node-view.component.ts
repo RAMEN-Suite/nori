@@ -5,7 +5,7 @@ import { NodeBasicsComponent } from './node-basics/node-basics.component';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'app-node-editor',
+  selector: 'nori-node-view',
   imports: [TranslocoDirective, NodeBasicsComponent, NodeAttributesComponent],
   templateUrl: './node-view.component.html',
   styleUrl: './node-view.component.scss',

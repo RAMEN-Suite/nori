@@ -2,7 +2,7 @@ import { Directive, input, type InputSignal } from '@angular/core';
 
 /** Keep native browser links while opening desktop links in the system browser. */
 @Directive({
-  selector: 'a[appExternalLink]',
+  selector: 'a[noriExternalLink]',
   host: {
     '[href]': 'url()',
     target: '_blank',
@@ -11,7 +11,7 @@ import { Directive, input, type InputSignal } from '@angular/core';
   },
 })
 export class ExternalLinkDirective {
-  public readonly url: InputSignal<string> = input.required<string>({ alias: 'appExternalLink' });
+  public readonly url: InputSignal<string> = input.required<string>({ alias: 'noriExternalLink' });
 
   protected handleClick(event: MouseEvent): void {
     if (event.defaultPrevented || !window.electron) return;

@@ -7,7 +7,7 @@ import { DialogService } from '../../../../services/dialog.service';
 import { StorageService } from '../../../../services/storage.service';
 
 @Component({
-  selector: 'app-choose-relation',
+  selector: 'nori-choose-relation-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LucideX, TranslocoDirective, Button, List, ListItemTemplate, LucideArrowRight, LucideLink2],
   templateUrl: './choose-relation.dialog.html',

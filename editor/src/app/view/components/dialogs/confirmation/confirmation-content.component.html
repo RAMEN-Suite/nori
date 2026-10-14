@@ -67,7 +67,7 @@
       </header>
       <div class="impact-scroll-frame">
         <div
-          appScrollOverflow
+          noriScrollOverflow
           #detailScroll="scrollOverflow"
           #detailViewport
           class="impact-detail-scroll"
@@ -139,7 +139,7 @@
             </ng-template>
           </sui-list>
         </div>
-        <app-scroll-hints [up]="detailScroll.canScrollUp()" [down]="detailScroll.canScrollDown()" />
+        <nori-scroll-hints [up]="detailScroll.canScrollUp()" [down]="detailScroll.canScrollDown()" />
       </div>
     </aside>
   }

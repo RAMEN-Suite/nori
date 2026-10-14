@@ -11,7 +11,11 @@
     <ng-template suiTab value="appearance" [label]="t('settings.appearance')">
       <div class="settings-page">
         <div class="settings-scroll-frame">
-          <div appScrollOverflow #appearanceScroll="scrollOverflow" class="settings-scroll editor-panel-scroll flex min-w-0 flex-col gap-7">
+          <div
+            noriScrollOverflow
+            #appearanceScroll="scrollOverflow"
+            class="settings-scroll editor-panel-scroll flex min-w-0 flex-col gap-7"
+          >
             <section class="flex min-w-0 flex-col gap-3" aria-labelledby="settings-language">
               <h3 id="settings-language" class="flex items-center gap-2 text-sm font-medium">
                 <svg lucideLanguages class="size-4 opacity-60" aria-hidden="true"></svg>{{ t('settings.language') }}
@@ -99,14 +103,14 @@
               </sui-card>
             </section>
           </div>
-          <app-scroll-hints [up]="appearanceScroll.canScrollUp()" [down]="appearanceScroll.canScrollDown()" />
+          <nori-scroll-hints [up]="appearanceScroll.canScrollUp()" [down]="appearanceScroll.canScrollDown()" />
         </div>
       </div>
     </ng-template>
     <ng-template suiTab value="shortcuts" [label]="t('settings.shortcuts')">
       <div class="settings-page">
         <div class="settings-scroll-frame">
-          <div appScrollOverflow #shortcutScroll="scrollOverflow" class="settings-scroll editor-panel-scroll flex min-w-0 flex-col gap-7">
+          <div noriScrollOverflow #shortcutScroll="scrollOverflow" class="settings-scroll editor-panel-scroll flex min-w-0 flex-col gap-7">
             <p class="text-base-content/65 mb-1 text-xs leading-relaxed">{{ t('settings.shortcutsDescription') }}</p>
             @if (shortcutError(); as error) {
               <p class="text-error text-xs" role="alert">{{ error }}</p>
@@ -154,7 +158,7 @@
               </section>
             }
           </div>
-          <app-scroll-hints [up]="shortcutScroll.canScrollUp()" [down]="shortcutScroll.canScrollDown()" />
+          <nori-scroll-hints [up]="shortcutScroll.canScrollUp()" [down]="shortcutScroll.canScrollDown()" />
         </div>
         <footer class="settings-actions">
           <button suiButton severity="neutral" variant="soft" size="sm" (click)="handleResetShortcuts()">

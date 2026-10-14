@@ -28,7 +28,7 @@ interface InspectorPropertyGroup {
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'app-node-attributes',
+  selector: 'nori-node-attributes',
   imports: [
     ScrollOverflowDirective,
     ScrollHintsComponent,

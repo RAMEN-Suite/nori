@@ -30,7 +30,7 @@ import { CreateModelDialog } from '../dialogs/create-model/create-model.dialog';
 import { ScrollHintsComponent } from '../scroll-hints/scroll-hints.component';
 
 @Component({
-  selector: 'app-model-levels',
+  selector: 'nori-model-levels',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     ScrollOverflowDirective,

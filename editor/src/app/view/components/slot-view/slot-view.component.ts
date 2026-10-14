@@ -3,7 +3,7 @@ import { TranslocoDirective } from '@jsverse/transloco';
 import { LucideMousePointer2 } from '@lucide/angular';
 
 @Component({
-  selector: 'app-slot-view',
+  selector: 'nori-slot-view',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TranslocoDirective, LucideMousePointer2],
   templateUrl: './slot-view.component.html',
