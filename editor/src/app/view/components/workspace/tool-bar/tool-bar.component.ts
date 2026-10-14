@@ -30,12 +30,12 @@ import { Button, Card, Divider } from '@sushi-kit/angular';
 import { toCamelName } from '../../../../utils/model-names';
 import { TooltipDirective } from '../../../../directives/tooltip.directive';
 import { type Manifest } from '../../../../models/Manifest';
-import { type ShortcutAction } from '../../../../utils/shortcuts';
-import { DialogService } from '../../../../services/dialog.service';
-import { ExportService } from '../../../../services/export.service';
-import { ShortcutService } from '../../../../services/shortcut.service';
-import { StorageService } from '../../../../services/storage.service';
-import { GraphToolsService } from '../../../../services/workspace/graph-tools.service';
+import { type ShortcutAction } from '../../../../utils/shortcuts/definitions';
+import { DialogService } from '../../../../services/interaction/dialog.service';
+import { ExportService } from '../../../../services/persistence/export.service';
+import { ShortcutService } from '../../../../services/interaction/shortcut.service';
+import { ProjectService } from '../../../../services/projects/project.service';
+import { GraphToolsService } from '../../../../services/workspace/editing/graph-tools.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { ModelDiagnosticsDialog } from '../../dialogs/model-diagnostics/model-diagnostics.dialog';
 import { ProjectEditDialog } from '../../dialogs/project-edit/project-edit.dialog';
@@ -76,10 +76,11 @@ import { SettingsButtonComponent } from '../../shell/settings-button/settings-bu
 export class ToolBarComponent {
   protected readonly graphTools: GraphToolsService = inject(GraphToolsService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
-  protected readonly storage: StorageService = inject(StorageService);
+  protected readonly projects: ProjectService = inject(ProjectService);
   private readonly dialogs: DialogService = inject(DialogService);
   private readonly router: Router = inject(Router);
   private readonly export: ExportService = inject(ExportService);
+  protected readonly shortcuts: ShortcutService = inject(ShortcutService);
 
   public readonly catalogueOpen: InputSignal<boolean> = input(true);
   public readonly levelsOpen: InputSignal<boolean> = input(false);
@@ -92,8 +93,6 @@ export class ToolBarComponent {
   public readonly resetGraph: OutputEmitterRef<void> = output();
   public readonly fitGraph: OutputEmitterRef<void> = output();
   public readonly configureColours: OutputEmitterRef<void> = output();
-
-  protected readonly shortcuts: ShortcutService = inject(ShortcutService);
 
   private readonly actions: Readonly<Record<ShortcutAction, () => void>> = {
     connect: (): void => this.graphTools.toggle('connect'),
@@ -122,7 +121,7 @@ export class ToolBarComponent {
     redo: (): void => this.handleRedo(),
     redoAlternative: (): void => this.handleRedo(),
     back: (): void => {
-      void this.router.navigate(['/']).catch((error: unknown): void => this.storage.reportError(error));
+      void this.router.navigate(['/']).catch((error: unknown): void => this.projects.reportError(error));
     },
     settings: (): void => {
       this.dialogs.open(SettingsDialog, { closeOnBackdrop: true, headerKey: 'common.settings', width: '42rem' });
@@ -130,7 +129,7 @@ export class ToolBarComponent {
   };
 
   protected readonly canExport: Signal<boolean> = computed((): boolean =>
-    this.storage.records().some((record): boolean => record.slot !== 0),
+    this.projects.records().some((record): boolean => record.levelIndex !== 0),
   );
 
   protected handleShortcut(event: KeyboardEvent): void {
@@ -149,18 +148,18 @@ export class ToolBarComponent {
   }
 
   protected handleEditProject(): void {
-    const project: Manifest | null = this.storage.selectedManifest();
+    const project: Manifest | null = this.projects.selectedManifest();
     if (project)
       this.dialogs.open(ProjectEditDialog, { headerKey: 'editor.editProject', width: '30rem', inputValues: { project } });
   }
 
   protected async handleExportModel(): Promise<void> {
-    const name: string = this.storage.selectedManifest()?.name ?? 'model';
+    const name: string = this.projects.selectedManifest()?.name ?? 'model';
     const fileName: string = `${toCamelName(name)}.json`;
     try {
       await this.export.exportJSON(this.workspace.store.exportModel(), fileName);
     } catch (error: unknown) {
-      this.storage.reportError(error);
+      this.projects.reportError(error);
     }
   }
 
@@ -171,13 +170,13 @@ export class ToolBarComponent {
   protected handleUndo(): void {
     if (this.graphTools.pending()) return;
     this.graphTools.cancel();
-    void this.workspace.actions.undoRelation().catch((error: unknown): void => this.storage.reportError(error));
+    void this.workspace.actions.undoRelation().catch((error: unknown): void => this.projects.reportError(error));
   }
 
   protected handleRedo(): void {
     if (this.graphTools.pending()) return;
     this.graphTools.cancel();
-    void this.workspace.actions.redoRelation().catch((error: unknown): void => this.storage.reportError(error));
+    void this.workspace.actions.redoRelation().catch((error: unknown): void => this.projects.reportError(error));
   }
 
   private isShortcutBlocked(event: KeyboardEvent): boolean {

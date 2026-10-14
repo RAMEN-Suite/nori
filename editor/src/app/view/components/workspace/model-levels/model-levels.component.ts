@@ -21,9 +21,9 @@ import { AutoselectDirective } from '../../../../directives/autoselect.directive
 import { ScrollOverflowDirective } from '../../../../directives/scroll-overflow.directive';
 import { TooltipDirective } from '../../../../directives/tooltip.directive';
 import { type ModelRecord } from '../../../../models/ModelRecord';
-import { DialogService } from '../../../../services/dialog.service';
-import { NavigationService } from '../../../../services/navigation.service';
-import { StorageService } from '../../../../services/storage.service';
+import { DialogService } from '../../../../services/interaction/dialog.service';
+import { NavigationService } from '../../../../services/interaction/navigation.service';
+import { ProjectService } from '../../../../services/projects/project.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { ConfirmationDialog, type ConfirmationOptions } from '../../dialogs/confirmation/confirmation.dialog';
 import { CreateModelDialog } from '../../dialogs/create-model/create-model.dialog';
@@ -51,7 +51,7 @@ import { ScrollHintsComponent } from '../../shared/scroll-hints/scroll-hints.com
   styleUrl: './model-levels.component.scss',
 })
 export class ModelLevelsComponent {
-  protected readonly storage: StorageService = inject(StorageService);
+  protected readonly projects: ProjectService = inject(ProjectService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   private readonly element: ElementRef<HTMLElement> = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector: Injector = inject(Injector);
@@ -65,19 +65,19 @@ export class ModelLevelsComponent {
   protected readonly savingName: WritableSignal<boolean> = signal(false);
 
   protected readonly levels: Signal<readonly ModelRecord[]> = computed((): readonly ModelRecord[] =>
-    [...this.storage.records()].sort((left: ModelRecord, right: ModelRecord): number => right.slot - left.slot),
+    [...this.projects.records()].sort((left: ModelRecord, right: ModelRecord): number => right.levelIndex - left.levelIndex),
   );
 
   public constructor() {
     effect((): void => {
-      if (!this.storage.records().some((record: ModelRecord): boolean => record.modelId === this.editingId())) {
+      if (!this.projects.records().some((record: ModelRecord): boolean => record.modelId === this.editingId())) {
         this.editingId.set(null);
       }
     });
   }
 
   protected handleRename(record: ModelRecord): void {
-    if (record.slot === 0 || this.savingName()) return;
+    if (record.levelIndex === 0 || this.savingName()) return;
 
     this.draftName.set(record.name);
     this.editingId.set(record.modelId);
@@ -87,7 +87,7 @@ export class ModelLevelsComponent {
     const id: string | null = this.editingId();
     if (!id || this.savingName()) return;
 
-    const record: ModelRecord | undefined = this.storage.records().find((item: ModelRecord): boolean => item.modelId === id);
+    const record: ModelRecord | undefined = this.projects.records().find((item: ModelRecord): boolean => item.modelId === id);
     const name: string = this.draftName().trim();
     if (!record || !name) {
       this.handleCancelRename(restoreFocus);
@@ -96,10 +96,14 @@ export class ModelLevelsComponent {
 
     this.savingName.set(true);
     try {
-      await this.workspace.actions.updateSlot(record.slot, { name, uri: record.gmodel.$id, version: record.gmodel.version });
+      await this.workspace.actions.updateLevel(record.levelIndex, {
+        name,
+        uri: record.gmodel.$id,
+        version: record.gmodel.version,
+      });
       this.handleCancelRename(restoreFocus);
     } catch (error: unknown) {
-      this.storage.reportError(error);
+      this.projects.reportError(error);
     } finally {
       this.savingName.set(false);
     }
@@ -121,18 +125,18 @@ export class ModelLevelsComponent {
 
   protected levelSource(record: ModelRecord): string {
     const names: string[] = record.gmodel.imports.map(
-      (reference): string => this.storage.modelsById().get(reference.modelId)?.name ?? reference.modelId,
+      (reference): string => this.projects.modelsById().get(reference.modelId)?.name ?? reference.modelId,
     );
     return names.length
       ? this.translations.translate('editor.levelBasedOn', { name: names.join(', ') })
       : this.translations.translate('editor.independentModel');
   }
 
-  protected async handleSelect(slot: number): Promise<void> {
+  protected async handleSelect(levelIndex: number): Promise<void> {
     try {
-      await this.navigation.navigateToSlot(slot);
+      await this.navigation.navigateToLevel(levelIndex);
     } catch (error: unknown) {
-      this.storage.reportError(error);
+      this.projects.reportError(error);
     }
   }
 
@@ -141,19 +145,22 @@ export class ModelLevelsComponent {
   }
 
   protected handleEdit(record: ModelRecord): void {
-    this.dialogs.open(CreateModelDialog, { headerKey: 'editor.editLevel', inputValues: { currentSlot: record.slot } });
+    this.dialogs.open(CreateModelDialog, {
+      headerKey: 'editor.editLevel',
+      inputValues: { currentLevelIndex: record.levelIndex },
+    });
   }
 
   protected handleRemove(record: ModelRecord): void {
     try {
       this.confirmRemoval(record);
     } catch (error: unknown) {
-      this.storage.reportError(error);
+      this.projects.reportError(error);
     }
   }
 
   private confirmRemoval(record: ModelRecord): void {
-    const preview: ModelRemovalPreview = this.workspace.actions.previewSlotRemoval(record.slot);
+    const preview: ModelRemovalPreview = this.workspace.actions.previewLevelRemoval(record.levelIndex);
     const options: ConfirmationOptions = {
       title: this.translations.translate('editor.removeLevelTitle'),
       message: {
@@ -162,7 +169,7 @@ export class ModelLevelsComponent {
           name: record.name,
         },
       },
-      ...getRemovedModelImpact(this.workspace.store.getModels(), preview.models, this.storage.records(), record.gmodel.id),
+      ...getRemovedModelImpact(this.workspace.store.getModels(), preview.models, this.projects.records(), record.gmodel.id),
       buttons: [
         [{ label: this.translations.translate('common.cancel'), severity: 'neutral' }],
         [
@@ -178,12 +185,12 @@ export class ModelLevelsComponent {
   }
 
   private async removeLevel(record: ModelRecord): Promise<void> {
-    if (this.storage.recordsBySlot().get(record.slot)?.modelId !== record.modelId) {
+    if (this.projects.recordsByLevelIndex().get(record.levelIndex)?.modelId !== record.modelId) {
       throw new Error(this.translations.translate('editor.modelChanged'));
     }
 
-    await this.workspace.actions.removeSlot(record.slot, true);
-    const next: ModelRecord | undefined = this.storage.records().find((item: ModelRecord): boolean => item.slot !== 0);
-    await this.navigation.navigateToSlot(next?.slot ?? 0);
+    await this.workspace.actions.removeLevel(record.levelIndex, true);
+    const next: ModelRecord | undefined = this.projects.records().find((item: ModelRecord): boolean => item.levelIndex !== 0);
+    await this.navigation.navigateToLevel(next?.levelIndex ?? 0);
   }
 }

@@ -28,17 +28,18 @@ import { toPascalName } from '../../../../../utils/model-names';
 import type { GraphData } from './model-graph';
 import { AutoselectDirective } from '../../../../../directives/autoselect.directive';
 import { type GraphView, type ModelRecord } from '../../../../../models/ModelRecord';
-import { NavigationService } from '../../../../../services/navigation.service';
-import { StorageService } from '../../../../../services/storage.service';
-import { type GraphTool, GraphToolsService } from '../../../../../services/workspace/graph-tools.service';
-import { NodeEditingService } from '../../../../../services/workspace/node-editing.service';
+import { NavigationService } from '../../../../../services/interaction/navigation.service';
+import { ProjectService } from '../../../../../services/projects/project.service';
+import { type GraphTool, GraphToolsService } from '../../../../../services/workspace/editing/graph-tools.service';
+import { NodeEditingService } from '../../../../../services/workspace/editing/node-editing.service';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
 import { ApplicationState } from '../../../../../states/application.state';
 import { NodeActionsComponent } from '../node-actions/node-actions.component';
 import { GraphAutoLayout, type NodePosition } from './graph.auto-layout';
 import { getLinkPath } from './graph.geometry';
 import { positionLinkLabels } from './graph.labels';
-import { buildRenderModel, getFitViewport, getViewportSize, placeNodes, setNodePosition } from './graph.layout';
+import { buildRenderModel, getViewportSize, placeNodes, setNodePosition } from './graph.layout';
+import { GraphViewport } from './graph.viewport';
 import { GraphRenderer } from './graph.renderer';
 import {
   DEFAULT_GRAPH_LAYOUT_SETTINGS,
@@ -55,10 +56,9 @@ import {
   type RootSelection,
   type SVGSelection,
   type ViewportSize,
-  type ZoomBehaviour,
-  type ZoomEvent,
 } from './graph.types';
 
+/** Coordinates graph rendering, editing gestures and saved model views. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'nori-graph',
@@ -72,7 +72,7 @@ export class GraphComponent implements AfterViewInit {
   private readonly nodeEditing: NodeEditingService = inject(NodeEditingService);
   private readonly appearance: ApplicationState = inject(ApplicationState);
   private readonly translations: TranslocoService = inject(TranslocoService);
-  private readonly storage: StorageService = inject(StorageService);
+  private readonly projects: ProjectService = inject(ProjectService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
   private readonly navigation: NavigationService = inject(NavigationService);
@@ -84,6 +84,8 @@ export class GraphComponent implements AfterViewInit {
   });
   public readonly nodeSelected: OutputEmitterRef<void> = output();
 
+  private readonly host: Signal<ElementRef<HTMLDivElement> | undefined> = viewChild('host');
+
   protected readonly nodeActionsPosition: WritableSignal<{ x: number; y: number } | null> = signal(null);
   protected readonly nameEditorPosition: WritableSignal<{ x: number; y: number; width: number } | null> = signal(null);
   protected readonly renamingNode: WritableSignal<{ id: string; modelId: string } | null> = signal(null);
@@ -92,27 +94,25 @@ export class GraphComponent implements AfterViewInit {
 
   private readonly autoLayout: GraphAutoLayout = new GraphAutoLayout();
   private layoutRequest: number = 0;
-
   private readonly renderer: GraphRenderer = new GraphRenderer(this.translations);
 
   private connectionTimer: number | null = null;
   private eraseTargetId: string | null = null;
   private dragStart: { x: number; y: number } | null = null;
   private dragMoved: boolean = false;
+
   private svgSelection?: SVGSelection;
   private rootGroupSelection?: RootSelection;
-  private zoomBehavior?: ZoomBehaviour;
+  private viewport?: GraphViewport;
   private nodeSelection?: NodeSelection;
   private linkSelection?: LinkSelection;
   private renderModel?: RenderModel;
-  private resizeObserver?: ResizeObserver;
-  private isResizeRenderPending: boolean = false;
-  private readonly host: Signal<ElementRef<HTMLDivElement> | undefined> = viewChild('host');
+
   private readonly frames: Set<number> = new Set();
+
   private previousGraphData?: GraphData;
   private previousSettings?: GraphLayoutSettings;
   private recordId: string | null = null;
-  private currentTransform: ZoomTransform = d3.zoomIdentity;
 
   public constructor() {
     this.translations.langChanges$.pipe(takeUntilDestroyed()).subscribe((): void => {
@@ -122,7 +122,7 @@ export class GraphComponent implements AfterViewInit {
 
     effect((): void => {
       const tool: GraphTool = this.graphTools.tool();
-      this.clearConnectionTimer();
+      this.cancelScheduledConnection();
       const selected: string | null = untracked((): string | null => this.workspace.store.currentNodeId());
       if (tool === 'connect' && selected) this.graphTools.selectSource(selected);
       this.rootGroupSelection?.selectAll('.connection-preview').remove();
@@ -134,7 +134,7 @@ export class GraphComponent implements AfterViewInit {
     effect((): void => {
       if (this.graphTools.source()) return;
       this.rootGroupSelection?.selectAll('.connection-preview').remove();
-      this.clearConnectionTimer();
+      this.cancelScheduledConnection();
     });
 
     effect((): void => {
@@ -152,12 +152,12 @@ export class GraphComponent implements AfterViewInit {
   }
 
   public fitView(): void {
-    this.fitToLayoutAnimated(this.appearance.state().animations ? 400 : 0);
+    this.fitViewport(this.appearance.state().animations ? 400 : 0);
     if (!this.appearance.state().animations) this.saveView();
   }
 
   public resetView(): void {
-    void this.resetLayout().catch((error: unknown): void => this.storage.reportError(error));
+    void this.resetLayout().catch((error: unknown): void => this.projects.reportError(error));
   }
 
   private async resetLayout(): Promise<void> {
@@ -201,7 +201,7 @@ export class GraphComponent implements AfterViewInit {
   private registerColorChangesEffect(): void {
     effect((): void => {
       this.workspace.store.currentNodeColors();
-      untracked((): void => this.updateNodeColorsOnly());
+      untracked((): void => this.updateNodeColors());
     });
   }
 
@@ -241,35 +241,14 @@ export class GraphComponent implements AfterViewInit {
     this.rootGroupSelection = this.svgSelection.append('g');
     this.renderer.drawArrowMarker(this.svgSelection);
 
-    this.zoomBehavior = d3
-      .zoom<SVGSVGElement, unknown>()
-      .scaleExtent([0.2, 4])
-      .filter(
-        (event: MouseEvent): boolean => (!event.ctrlKey || event.type === 'wheel') && !event.button && event.type !== 'dblclick',
-      )
-      .on('zoom', (event: ZoomEvent): void => {
-        this.currentTransform = event.transform;
-        this.rootGroupSelection?.attr('transform', event.transform.toString());
-        this.updateNodeOverlaysPosition();
-      })
-      .on('end', (event: ZoomEvent): void => {
-        if (event.sourceEvent) this.saveView();
-      });
-
-    this.svgSelection.call(this.zoomBehavior).on('dblclick.zoom', null);
-
-    this.resizeObserver = new ResizeObserver((): void => {
-      if (this.isResizeRenderPending) return;
-      this.isResizeRenderPending = true;
-
-      this.scheduleFrame((): void => {
-        this.isResizeRenderPending = false;
-        this.updateViewBox();
-      });
+    this.viewport = new GraphViewport(hostElement, this.svgSelection, this.rootGroupSelection, {
+      onTransformChange: (): void => this.updateNodeOverlaysPosition(),
+      onTransformEnd: (): void => this.saveView(),
     });
+  }
 
-    this.resizeObserver.observe(hostElement);
-    this.updateViewBox();
+  private get viewTransform(): ZoomTransform {
+    return this.viewport?.transform ?? d3.zoomIdentity;
   }
 
   private render(data: GraphData): void {
@@ -297,7 +276,7 @@ export class GraphComponent implements AfterViewInit {
     this.bindGraphEvents();
     this.updateLinkPositions();
     this.updateNodePositions();
-    this.updateNodeColorsOnly();
+    this.updateNodeColors();
     this.refreshHover();
 
     this.restoreViewport(saved, !previous?.nodes.length, needsFit);
@@ -325,17 +304,17 @@ export class GraphComponent implements AfterViewInit {
 
     const transform: ZoomTransform = saved
       ? d3.zoomIdentity.translate(saved.viewport.x, saved.viewport.y).scale(saved.viewport.scale)
-      : this.currentTransform;
+      : this.viewTransform;
     return placeNodes(added, retained, getViewportSize(this.getHostElement()), this.getCanvasPadding(), transform);
   }
 
   private restoreViewport(saved: GraphView | undefined, fit: boolean, needsFit: boolean): void {
     if (needsFit) {
-      this.fitToLayoutAnimated(0);
+      this.fitViewport(0);
     } else if (saved) {
-      this.applyViewTransform(d3.zoomIdentity.translate(saved.viewport.x, saved.viewport.y).scale(saved.viewport.scale), 0);
+      this.viewport?.applyTransform(d3.zoomIdentity.translate(saved.viewport.x, saved.viewport.y).scale(saved.viewport.scale), 0);
     } else if (fit) {
-      this.fitToLayoutAnimated(0);
+      this.fitViewport(0);
     }
   }
 
@@ -368,7 +347,7 @@ export class GraphComponent implements AfterViewInit {
     this.updateLinkAccessibility();
   }
 
-  private updateNodeColorsOnly(): void {
+  private updateNodeColors(): void {
     this.nodeSelection?.style('--g-node-fill', (node: PositionedNode): string => this.getNodeColor(node));
   }
 
@@ -391,8 +370,8 @@ export class GraphComponent implements AfterViewInit {
     }
 
     this.nodeActionsPosition.set({
-      x: this.currentTransform.applyX(node.x),
-      y: this.currentTransform.applyY(node.y - GRAPH_NODE_HEIGHT / 2) - 14,
+      x: this.viewTransform.applyX(node.x),
+      y: this.viewTransform.applyY(node.y - GRAPH_NODE_HEIGHT / 2) - 14,
     });
   }
 
@@ -406,9 +385,9 @@ export class GraphComponent implements AfterViewInit {
       this.graphTools.tool() === 'select'
     ) {
       this.nameEditorPosition.set({
-        x: this.currentTransform.applyX(editingNode.x),
-        y: this.currentTransform.applyY(editingNode.y - 10),
-        width: Math.max(140, (GRAPH_NODE_WIDTH - 16) * this.currentTransform.k),
+        x: this.viewTransform.applyX(editingNode.x),
+        y: this.viewTransform.applyY(editingNode.y - 10),
+        width: Math.max(140, (GRAPH_NODE_WIDTH - 16) * this.viewTransform.k),
       });
     } else {
       this.renamingNode.set(null);
@@ -506,7 +485,7 @@ export class GraphComponent implements AfterViewInit {
         this.layoutRequest++;
         this.rootGroupSelection?.interrupt('layout');
         if (this.graphTools.tool() === 'connect') {
-          this.clearConnectionTimer();
+          this.cancelScheduledConnection();
         }
         const [x, y]: [number, number] = d3.pointer(event.sourceEvent, this.rootGroupSelection?.node());
         this.dragStart = { x, y };
@@ -534,7 +513,7 @@ export class GraphComponent implements AfterViewInit {
     if (!root || !this.rootGroupSelection || !this.dragStart) return;
     const [x, y]: [number, number] = d3.pointer(event.sourceEvent, root);
     if (!this.dragMoved) {
-      if (Math.hypot(x - this.dragStart.x, y - this.dragStart.y) * this.currentTransform.k < 6) return;
+      if (Math.hypot(x - this.dragStart.x, y - this.dragStart.y) * this.viewTransform.k < 6) return;
       this.dragMoved = true;
       this.graphTools.selectSource(node.id);
     }
@@ -598,9 +577,9 @@ export class GraphComponent implements AfterViewInit {
     if (this.graphTools.tool() === 'connect' && this.handleConnectionClick(event, node)) return;
 
     void this.navigation
-      .navigateToNode(this.workspace.store.currentSlot(), node.id)
+      .navigateToNode(this.workspace.store.currentLevelIndex(), node.id)
       .then((): void => this.nodeSelected.emit())
-      .catch((error: unknown): void => this.storage.reportError(error));
+      .catch((error: unknown): void => this.projects.reportError(error));
   }
 
   private handleConnectionClick(event: MouseEvent | KeyboardEvent, node: PositionedNode): boolean {
@@ -611,7 +590,7 @@ export class GraphComponent implements AfterViewInit {
     }
     if (source === node.id && event instanceof MouseEvent) return false;
 
-    if (event instanceof MouseEvent) this.scheduleConnection(source, node.id);
+    if (event instanceof MouseEvent) this.scheduleSingleClickConnection(source, node.id);
     else {
       this.graphTools.cancel();
       void this.graphTools.connect(source, node.id);
@@ -634,7 +613,7 @@ export class GraphComponent implements AfterViewInit {
     if (this.graphTools.tool() !== 'connect') return;
     event.preventDefault();
     event.stopPropagation();
-    this.clearConnectionTimer();
+    this.cancelScheduledConnection();
     this.graphTools.cancel();
     void this.graphTools.connect(node.id, node.id);
   }
@@ -676,7 +655,7 @@ export class GraphComponent implements AfterViewInit {
       await this.workspace.actions.updateNode(editing.id, { name });
       if (this.renamingNode() === editing) this.handleCancelRename(restoreFocus);
     } catch (error: unknown) {
-      this.storage.reportError(error);
+      this.projects.reportError(error);
     } finally {
       this.savingName.set(false);
     }
@@ -687,9 +666,9 @@ export class GraphComponent implements AfterViewInit {
     if (this.graphTools.tool() === 'erase') this.graphTools.remove(link.id);
     else if (this.graphTools.tool() === 'select') {
       void this.navigation
-        .navigateToRelation(this.workspace.store.currentSlot(), link.id)
+        .navigateToRelation(this.workspace.store.currentLevelIndex(), link.id)
         .then((): void => this.nodeSelected.emit())
-        .catch((error: unknown): void => this.storage.reportError(error));
+        .catch((error: unknown): void => this.projects.reportError(error));
     }
   }
 
@@ -703,8 +682,8 @@ export class GraphComponent implements AfterViewInit {
 
     this.graphTools.cancel();
     void this.navigation
-      .navigateToSlot(this.workspace.store.currentSlot())
-      .catch((error: unknown): void => this.storage.reportError(error));
+      .navigateToLevel(this.workspace.store.currentLevelIndex())
+      .catch((error: unknown): void => this.projects.reportError(error));
   }
 
   private focusSelectedNode(): void {
@@ -712,12 +691,6 @@ export class GraphComponent implements AfterViewInit {
     const target: SVGGElement | null | undefined =
       this.nodeSelection?.filter((node: PositionedNode): boolean => node.id === selectedId).node() ?? this.nodeSelection?.node();
     target?.querySelector<SVGRectElement>('rect.node-body')?.focus();
-  }
-
-  private updateViewBox(): void {
-    if (!this.svgSelection) return;
-    const viewport: ViewportSize = getViewportSize(this.getHostElement());
-    this.svgSelection.attr('viewBox', `0 0 ${viewport.width} ${viewport.height}`);
   }
 
   private getCanvasPadding(): GraphPadding {
@@ -732,33 +705,8 @@ export class GraphComponent implements AfterViewInit {
     };
   }
 
-  private fitToLayoutAnimated(durationMilliseconds: number = 180): void {
-    if (!this.svgSelection || !this.zoomBehavior || !this.rootGroupSelection) return;
-
-    const rootGroupElement: SVGGElement | null = this.rootGroupSelection.node();
-    if (!rootGroupElement) return;
-
-    const viewport: ViewportSize = getViewportSize(this.getHostElement());
-    const target: GraphView['viewport'] | null = getFitViewport(viewport, this.getCanvasPadding(), rootGroupElement.getBBox());
-    if (!target) return;
-
-    this.applyViewTransform(d3.zoomIdentity.translate(target.x, target.y).scale(target.scale), durationMilliseconds);
-  }
-
-  private applyViewTransform(transform: ZoomTransform, duration: number): void {
-    if (!this.svgSelection || !this.zoomBehavior) return;
-    this.svgSelection.interrupt();
-    if (duration === 0) {
-      this.svgSelection.call(this.zoomBehavior.transform, transform);
-      return;
-    }
-
-    this.svgSelection
-      .transition()
-      .duration(duration)
-      .ease(d3.easeCubicInOut)
-      .call(this.zoomBehavior.transform, transform)
-      .on('end', (): void => this.saveView());
+  private fitViewport(duration: number = 180): void {
+    this.viewport?.fit(this.getCanvasPadding(), duration);
   }
 
   private saveView(): void {
@@ -771,11 +719,11 @@ export class GraphComponent implements AfterViewInit {
     );
     const graph: GraphView = {
       positions,
-      viewport: { x: this.currentTransform.x, y: this.currentTransform.y, scale: this.currentTransform.k },
+      viewport: { x: this.viewTransform.x, y: this.viewTransform.y, scale: this.viewTransform.k },
     };
     void this.workspace.actions
       .updateGraphView(this.recordId, graph)
-      .catch((error: unknown): void => this.storage.reportError(error));
+      .catch((error: unknown): void => this.projects.reportError(error));
   }
 
   private getHostElement(): HTMLDivElement {
@@ -784,9 +732,8 @@ export class GraphComponent implements AfterViewInit {
     return element;
   }
 
-  // Defer the target click briefly so a double-click can choose a self-relationship.
-  private scheduleConnection(source: string, target: string): void {
-    this.clearConnectionTimer();
+  private scheduleSingleClickConnection(source: string, target: string): void {
+    this.cancelScheduledConnection();
     this.connectionTimer = window.setTimeout((): void => {
       this.connectionTimer = null;
       this.graphTools.cancel();
@@ -794,7 +741,7 @@ export class GraphComponent implements AfterViewInit {
     }, 350);
   }
 
-  private clearConnectionTimer(): void {
+  private cancelScheduledConnection(): void {
     if (this.connectionTimer !== null) window.clearTimeout(this.connectionTimer);
     this.connectionTimer = null;
   }
@@ -810,17 +757,15 @@ export class GraphComponent implements AfterViewInit {
   private cleanup(): void {
     this.layoutRequest++;
     this.rootGroupSelection?.interrupt('layout');
-    this.clearConnectionTimer();
+    this.cancelScheduledConnection();
     for (const id of this.frames) window.cancelAnimationFrame(id);
     this.frames.clear();
-    this.svgSelection?.interrupt();
-    this.resizeObserver?.disconnect();
-    this.resizeObserver = undefined;
+    this.viewport?.destroy();
+    this.viewport = undefined;
 
     this.svgSelection?.remove();
     this.svgSelection = undefined;
     this.rootGroupSelection = undefined;
-    this.zoomBehavior = undefined;
 
     this.nodeSelection = undefined;
     this.linkSelection = undefined;

@@ -5,7 +5,7 @@
 - Prefer the simplest explicit solution. Avoid speculative abstractions, hidden state, tightly coupled components and duplicated rules (KISS; avoid STUPID design).
 - Group code by responsibility: imports, types, component metadata, dependencies, inputs/outputs, state, lifecycle, user actions, private helpers. Use clear names instead of section comments.
 - Keep Angular imports first, external libraries next, project imports last. Keep all imports above declarations. Remove unused and duplicate dependencies.
-- Components own presentation and interaction. Workspace store/view/actions own model state, derived data and mutations. Persistence belongs to StorageService; RAMEN Core owns schema rules.
+- Components own presentation and interaction. Workspace store/queries/actions own model state, derived data and mutations. Project state belongs to ProjectService and database operations to ProjectRepositoryService; RAMEN Core owns schema rules.
 - Extract a component or class when it owns a coherent behaviour, not merely to shorten a file. Prefer small typed APIs over generic components with many modes.
 
 ## Folder responsibilities
@@ -22,11 +22,26 @@ Keep the separation between `view`, `services`, `models`, `states`, `directives`
 
 `view/screens` contains the complete application views: `home`, `project-entry` and `workspace`. Each screen, component and dialog has its own directory containing its TypeScript, template and component styles. Keep private child components in their own directories beneath their owner, such as `property-editor/property-form` and `confirmation/confirmation-content`.
 
-Workspace services stay grouped under `services/workspace`; `WorkspaceStore` belongs in `states`. Keep view-specific helpers with their owner, such as graph data preparation with the graph. Put pure model helpers in `utils`, including import ordering, names, colours and removal summaries. Reserve `services` for application services; keep state containers in `states`. Do not add a `core` wrapper without a distinct responsibility.
+Services are grouped by the behaviour they own:
 
-`models` contains data contracts for projects, model records, appearance and confirmation messages. Translation registration and language matching belong in `i18n/languages.ts`; shortcut definitions and keyboard helpers belong in `utils/shortcuts.ts`.
+| Service directory      | Responsibility                                             |
+| ---------------------- | ---------------------------------------------------------- |
+| `projects/`            | Project state and atomic project/model database operations |
+| `persistence/`         | JSON preferences and file export                           |
+| `interaction/`         | Dialog lifecycle, navigation and keyboard shortcuts        |
+| `workspace/model/`     | Model mutations, derived queries and relation history      |
+| `workspace/editing/`   | Graph tools, node, relationship and property editing       |
+| `workspace/workflows/` | Pausing and resuming actions, including removal inspection |
+
+Keep these boundaries explicit: workspace actions change and save models; editing services coordinate UI workflows; relation history owns undo/redo snapshots. `WorkspaceService` is the common entry point to state, queries and actions. Each service has a short responsibility comment above `@Injectable`; describe what it owns rather than repeating its name. Avoid extra folders for individual services or merging services merely because they share callers.
+
+Workspace services stay grouped under `services/workspace`; `WorkspaceStore` belongs in `states`. Keep view-specific helpers with their owner, such as graph data preparation with the graph. Put pure model helpers in `utils`, including import ordering, model queries, names, colours and removal summaries. Reserve `services` for application services; keep state containers in `states`. Do not add a `core` wrapper without a distinct responsibility.
+
+`models` contains data contracts for projects, model records, appearance and confirmation messages. Translation registration and language matching belong in `i18n/languages.ts`; shortcut definitions and keyboard helpers belong in `utils/shortcuts/definitions.ts` and `utils/shortcuts/bindings.ts`.
 
 To add a language, extend `TranslationLanguage` in `i18n/languages.ts`, import its bundled JSON and register it in `Languages.translations`. TypeScript requires a translation entry for each supported language. Add its `settings.languageOptions` label to the translation files; loader selection, Transloco configuration and the settings options follow the registry.
+
+Use `levelIndex` for NORI’s ordered model position and model IDs for Core identities. Core’s `openLevel(modelId)` selects a model by identity; a level index is not its inheritance depth. Keep legacy storage names confined to database migrations.
 
 ## Angular naming
 
@@ -40,6 +55,7 @@ To add a language, extend `TranslationLanguage` in `i18n/languages.ts`, import i
 ## Angular and types
 
 - Use standalone OnPush components, signal inputs/outputs/state, computed derived state, inject and host metadata.
+- Separate class dependencies, mutable state, public signals and derived queries with blank lines. Keep related fields together without section comments.
 - TypeScript rejects unused locals and parameters. Check template bindings, framework callbacks and dynamic translation keys before removing declarations.
 - Follow ESLint: explicit member visibility, variable/parameter types and function return types; readonly references where appropriate. Avoid any, unchecked casts and non-null assertions.
 - Use effects for external synchronisation, not a second copy of derived state. Clean up observers, listeners, timers and subscriptions.
@@ -50,7 +66,7 @@ To add a language, extend `TranslationLanguage` in `i18n/languages.ts`, import i
 
 - Build on public Sushi components, APIs and tokens. Share panel/dialog frames, list spacing and tooltips. Avoid private DOM selectors and one-off behaviour in consumers.
 - Keep forms, lists and actions together by task. Show validation next to its field or form. Never nest editing dialogs.
-- Comments explain a necessary constraint or surprising behaviour only. Do not narrate what the code already says.
+- Prefer a short class or directive responsibility comment. Express method intent through names; put extension guidance and non-obvious workflow constraints in this documentation rather than inline narration.
 - See [Editor components](editor-components.md) for extension points and [Dialog design](dialog-design.md) for presentation rules.
 
 ## Verification and commits

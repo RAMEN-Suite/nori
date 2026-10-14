@@ -13,8 +13,8 @@ import { WindowState } from '../../../../states/window.state';
   styleUrl: './title-bar.component.scss',
 })
 export class TitleBarComponent {
-  protected readonly electron: Electron | undefined = window.electron;
   protected readonly windowState: WindowState = inject(WindowState);
 
+  protected readonly electron: Electron | undefined = window.electron;
   protected readonly hasControls: boolean = window.platform !== 'darwin';
 }

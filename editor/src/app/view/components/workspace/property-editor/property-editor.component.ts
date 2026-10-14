@@ -14,8 +14,8 @@ import { LucideChevronDown, LucideEraser, LucidePencil, LucidePlus, LucideTrash,
 import type { Attribute } from '@ramen-suite/core/model';
 import { Badge, Button } from '@sushi-kit/angular';
 import { TooltipDirective } from '../../../../directives/tooltip.directive';
-import { DialogService } from '../../../../services/dialog.service';
-import { PropertyEditingService } from '../../../../services/workspace/property-editing.service';
+import { DialogService } from '../../../../services/interaction/dialog.service';
+import { PropertyEditingService } from '../../../../services/workspace/editing/property-editing.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { ConfirmationContentComponent } from '../../dialogs/confirmation/confirmation-content/confirmation-content.component';
 import { PropertyFormComponent } from './property-form/property-form.component';
@@ -44,12 +44,15 @@ import { PropertyFormComponent } from './property-form/property-form.component';
 export class PropertyEditorComponent {
   protected readonly editing: PropertyEditingService = inject(PropertyEditingService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
+  private readonly dialogs: DialogService = inject(DialogService);
+
+  private readonly form: Signal<PropertyFormComponent | undefined> = viewChild(PropertyFormComponent);
+
   protected readonly properties: Signal<readonly Attribute[]> = computed(
     () => this.workspace.queries.currentNode()?.attributes ?? [],
   );
-  private readonly dialogs: DialogService = inject(DialogService);
-  private readonly form: Signal<PropertyFormComponent | undefined> = viewChild(PropertyFormComponent);
   protected readonly formPending: Signal<boolean> = computed(() => this.dialogs.pending());
+
   protected readonly collapsed: WritableSignal<boolean> = signal(false);
   protected readonly discarding: WritableSignal<boolean> = signal(false);
   protected readonly removing: WritableSignal<Attribute | null> = signal(null);

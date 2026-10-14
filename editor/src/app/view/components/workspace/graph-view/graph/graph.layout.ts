@@ -37,7 +37,6 @@ export function buildRenderModel(input: GraphInputModel): RenderModel {
   return { nodes: visible.nodes, links: visible.links, nodesById };
 }
 
-/** The reference model starts in the same arrangement; saved positions still take precedence. */
 export function placeRamenNodes(nodes: readonly PositionedNode[]): boolean {
   const positions: Readonly<Record<string, Point>> = {
     [RAMEN_ELEMENT.COLLECTION]: { x: 0, y: -260 },
@@ -117,7 +116,6 @@ function applyVisibility(nodes: PositionedNode[], links: ResolvedLink[], setting
 type PlacementBounds = Readonly<{ left: number; right: number; top: number; bottom: number }>;
 type Point = Readonly<{ x: number; y: number }>;
 
-/** Returns whether the view needs fitting because its free area was full. */
 export function placeNodes(
   nodes: readonly PositionedNode[],
   retained: readonly PositionedNode[],
@@ -159,7 +157,6 @@ function findFreePosition(occupied: readonly PositionedNode[], bounds: Placement
   return findSpaceAroundCentre(occupied, centre);
 }
 
-/** Expand around the cluster only when no visible position is free; the caller then fits the view. */
 function findSpaceAroundCentre(occupied: readonly PositionedNode[], centre: Point): Point {
   for (let ring: number = 1; ; ring++) {
     for (let step: number = -ring; step <= ring; step++) {
@@ -181,7 +178,6 @@ function overlaps(node: PositionedNode, x: number, y: number): boolean {
   return Math.abs(node.x - x) < 192 && Math.abs(node.y - y) < 104;
 }
 
-/** Fits graph bounds into the canvas area left free by the editor panels. */
 export function getFitViewport(
   viewport: ViewportSize,
   padding: GraphPadding,

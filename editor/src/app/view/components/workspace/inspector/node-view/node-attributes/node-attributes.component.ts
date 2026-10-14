@@ -5,23 +5,23 @@ import type { Attribute, Node } from '@ramen-suite/core/model';
 import { RAMEN_ELEMENT } from '@ramen-suite/core/ramen';
 import { Button, Divider, List, ListItemTemplate } from '@sushi-kit/angular';
 import { ScrollOverflowDirective } from '../../../../../../directives/scroll-overflow.directive';
-import { DialogService, type DialogRef } from '../../../../../../services/dialog.service';
-import { StorageService } from '../../../../../../services/storage.service';
-import { PropertyEditingService } from '../../../../../../services/workspace/property-editing.service';
+import { DialogService, type DialogRef } from '../../../../../../services/interaction/dialog.service';
+import { ProjectService } from '../../../../../../services/projects/project.service';
+import { PropertyEditingService } from '../../../../../../services/workspace/editing/property-editing.service';
 import { WorkspaceService } from '../../../../../../services/workspace/workspace.service';
-import type { NodeLevel } from '../../../../../../services/workspace/workspace-queries.service';
+import type { NodeDefinition } from '../../../../../../models/WorkspaceDetails';
 import { EditAnnotationsDialog } from '../../../../dialogs/edit-annotations/edit-annotations.dialog';
 import { ScrollHintsComponent } from '../../../../shared/scroll-hints/scroll-hints.component';
 import { NodeAttributeComponent } from './node-attribute/node-attribute.component';
 
 interface InspectorProperty {
   readonly attribute: Attribute;
-  readonly slot: number;
+  readonly levelIndex: number;
   readonly nodeId: string;
 }
 
 interface InspectorPropertyGroup {
-  readonly slot: number;
+  readonly levelIndex: number;
   readonly modelName: string | null;
   readonly properties: readonly InspectorProperty[];
 }
@@ -47,7 +47,7 @@ export class NodeAttributesComponent {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
   private readonly dialogs: DialogService = inject(DialogService);
-  private readonly storage: StorageService = inject(StorageService);
+  private readonly projects: ProjectService = inject(ProjectService);
   protected readonly propertyEditing: PropertyEditingService = inject(PropertyEditingService);
 
   private dialogRef: DialogRef | null = null;
@@ -55,35 +55,36 @@ export class NodeAttributesComponent {
   protected readonly isAnnotation: Signal<boolean> = computed(
     (): boolean =>
       this.workspace.queries.currentNode()?.id === RAMEN_ELEMENT.ANNOTATION ||
-      this.workspace.queries.currentNodeChain().some((base: NodeLevel): boolean => base.node.id === RAMEN_ELEMENT.ANNOTATION),
+      this.workspace.queries
+        .currentNodeChain()
+        .some((base: NodeDefinition): boolean => base.node.id === RAMEN_ELEMENT.ANNOTATION),
   );
-
   protected readonly propertyGroups: Signal<readonly InspectorPropertyGroup[]> = computed(
     (): readonly InspectorPropertyGroup[] => {
       const node: Node | null = this.workspace.queries.currentNode();
       if (!node) return [];
 
-      const slot: number = this.workspace.queries.nodeOwner()?.slot ?? 0;
+      const levelIndex: number = this.workspace.queries.nodeOwner()?.levelIndex ?? 0;
       const inherited: readonly InspectorProperty[] = [...this.workspace.queries.inheritedAttributes().values()].flat();
       const own: InspectorProperty[] = node.attributes.map(
         (attribute: Attribute): InspectorProperty => ({
           attribute,
-          slot,
+          levelIndex,
           nodeId: node.id,
         }),
       );
       const groups: Map<number, InspectorProperty[]> = new Map();
       for (const property of [...inherited, ...own]) {
-        const items: InspectorProperty[] = groups.get(property.slot) ?? [];
+        const items: InspectorProperty[] = groups.get(property.levelIndex) ?? [];
         items.push(property);
-        groups.set(property.slot, items);
+        groups.set(property.levelIndex, items);
       }
       return [...groups]
         .sort(([left], [right]): number => left - right)
         .map(
-          ([slot, properties]): InspectorPropertyGroup => ({
-            slot,
-            modelName: this.storage.recordsBySlot().get(slot)?.name ?? null,
+          ([levelIndex, properties]): InspectorPropertyGroup => ({
+            levelIndex,
+            modelName: this.projects.recordsByLevelIndex().get(levelIndex)?.name ?? null,
             properties,
           }),
         );

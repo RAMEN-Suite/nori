@@ -34,7 +34,6 @@ function captionCandidates(path: SVGPathElement, link: ResolvedLink): Point[] {
   });
 }
 
-/** Keep each caption near its own edge and clear of nodes and earlier captions. */
 export function positionLinkLabels(root: RootSelection, paths: LinkSelection, nodes: readonly PositionedNode[]): void {
   const occupied: Box[] = nodes.map(
     (node: PositionedNode): Box => ({

@@ -33,11 +33,11 @@
     }
     @if (loading()) {
       <p class="text-base-content/60 py-8 text-center" role="status">{{ t('open.loading') }}</p>
-    } @else if (projects().length) {
+    } @else if (projectList().length) {
       <sui-list
         class="project-list min-h-0 flex-1 overflow-y-auto"
         size="xs"
-        [items]="projects()"
+        [items]="projectList()"
         [trackBy]="trackProject"
         [ariaLabel]="t('open.projects')"
         [dividers]="false"

@@ -19,10 +19,7 @@ interface BrandNode {
 })
 export class BrandIllustrationComponent {
   private static nextMaskId: number = 0;
-
-  // SVG mask references must remain unique when several instances are rendered.
   protected readonly maskId: string = `nori-brand-mask-${BrandIllustrationComponent.nextMaskId++}`;
-
   protected readonly graphNodes: readonly BrandNode[] = [
     { x: 70, y: 90, radius: 15, floatDelay: '0s' },
     { x: 165, y: 50, radius: 11, floatDelay: '-3s' },

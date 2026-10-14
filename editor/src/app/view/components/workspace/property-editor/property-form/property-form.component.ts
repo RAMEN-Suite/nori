@@ -17,7 +17,7 @@ import { TranslocoDirective } from '@jsverse/transloco';
 import { LucideSave, LucideX } from '@lucide/angular';
 import { type Attribute, type AttributeInput, DataTypes, type DataTypeSuggestion } from '@ramen-suite/core/model';
 import { Button, Input, Select, Toggle, type SelectOption } from '@sushi-kit/angular';
-import { DialogService } from '../../../../../services/dialog.service';
+import { DialogService } from '../../../../../services/interaction/dialog.service';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
 
 @Component({
@@ -30,18 +30,17 @@ import { WorkspaceService } from '../../../../../services/workspace/workspace.se
 export class PropertyFormComponent {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   private readonly dialogs: DialogService = inject(DialogService);
-  public readonly pending: WritableSignal<boolean> = this.dialogs.pending;
-  protected readonly error: WritableSignal<string | null> = signal<string | null>(null);
-  public readonly modelSlot: InputSignal<number | null> = input<number | null>(null);
+
+  public readonly modelLevelIndex: InputSignal<number | null> = input<number | null>(null);
   public readonly editable: InputSignal<boolean> = input(true);
   public readonly saved: OutputEmitterRef<string> = output();
   public readonly completed: OutputEmitterRef<void> = output();
   public readonly currentAttribute: InputSignal<Attribute | undefined> = input();
 
+  public readonly pending: WritableSignal<boolean> = this.dialogs.pending;
+  protected readonly error: WritableSignal<string | null> = signal<string | null>(null);
   private initialValue: string = '';
-
   protected advanced: boolean = false;
-
   protected name: string = '';
   protected typeId: string = DataTypes.String;
   protected lowerBound: number = 0;
@@ -50,6 +49,7 @@ export class PropertyFormComponent {
   protected isReadOnly: boolean = false;
   protected isUnique: boolean = true;
   protected isOrdered: boolean = false;
+
   protected readonly typeOptions: Signal<readonly SelectOption[]> = computed((): readonly SelectOption[] => {
     const options: SelectOption[] = this.workspace.queries
       .dataTypeSuggestions()
@@ -58,12 +58,14 @@ export class PropertyFormComponent {
     if (attribute && !options.some((option: SelectOption): boolean => option.value === attribute.typeId)) {
       options.unshift({
         value: attribute.typeId,
-        label: this.workspace.queries.resolveTypeLabel(attribute.typeId, this.modelSlot() ?? this.workspace.store.currentSlot()),
+        label: this.workspace.queries.resolveTypeLabel(
+          attribute.typeId,
+          this.modelLevelIndex() ?? this.workspace.store.currentLevelIndex(),
+        ),
       });
     }
     return options;
   });
-
   protected readonly hasOtherKey: Signal<boolean> = computed((): boolean => {
     const own: readonly Attribute[] = this.workspace.queries.currentNode()?.attributes ?? [];
     const inherited: readonly Attribute[] = [...this.workspace.queries.inheritedAttributes().values()]
@@ -77,6 +79,7 @@ export class PropertyFormComponent {
   protected get required(): boolean {
     return this.lowerBound > 0;
   }
+
   protected get multiple(): boolean {
     return this.upperBound === -1 || this.upperBound > 1;
   }

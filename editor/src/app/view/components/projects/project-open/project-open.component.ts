@@ -20,9 +20,9 @@ import { LucideCopy, LucideFolderOpen, LucideSearch, LucideTrash } from '@lucide
 import { Button, Card, Input, List, ListItemTemplate, Message } from '@sushi-kit/angular';
 import { TooltipDirective } from '../../../../directives/tooltip.directive';
 import { type Manifest } from '../../../../models/Manifest';
-import { DialogService, type DialogRef } from '../../../../services/dialog.service';
-import { NavigationService } from '../../../../services/navigation.service';
-import { StorageService } from '../../../../services/storage.service';
+import { DialogService, type DialogRef } from '../../../../services/interaction/dialog.service';
+import { NavigationService } from '../../../../services/interaction/navigation.service';
+import { ProjectService } from '../../../../services/projects/project.service';
 import { ConfirmationDialog, type ConfirmationOptions } from '../../dialogs/confirmation/confirmation.dialog';
 import { ProjectAlternativeComponent } from '../project-alternative/project-alternative.component';
 
@@ -51,7 +51,7 @@ import { ProjectAlternativeComponent } from '../project-alternative/project-alte
 })
 export class ProjectOpenComponent implements OnInit {
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
-  private readonly storage: StorageService = inject(StorageService);
+  private readonly projects: ProjectService = inject(ProjectService);
   private readonly navigation: NavigationService = inject(NavigationService);
   private readonly dialogs: DialogService = inject(DialogService);
   private readonly translations: TranslocoService = inject(TranslocoService);
@@ -66,13 +66,15 @@ export class ProjectOpenComponent implements OnInit {
   protected readonly loading: WritableSignal<boolean> = signal(true);
   protected readonly busy: WritableSignal<boolean> = signal(false);
   protected readonly error: WritableSignal<string | null> = signal(null);
-  protected readonly hasSavedProjects: Signal<boolean> = computed((): boolean => this.storage.manifests().length > 0);
-  protected readonly projects: Signal<readonly Manifest[]> = computed((): readonly Manifest[] => {
+
+  protected readonly hasSavedProjects: Signal<boolean> = computed((): boolean => this.projects.manifests().length > 0);
+  protected readonly projectList: Signal<readonly Manifest[]> = computed((): readonly Manifest[] => {
     const query: string = this.query().trim().toLocaleLowerCase();
-    return this.storage
+    return this.projects
       .manifests()
       .filter((project: Manifest): boolean => `${project.name} ${project.description}`.toLocaleLowerCase().includes(query));
   });
+
   protected readonly trackProject: (index: number, project: Manifest) => string = (_index: number, project: Manifest): string =>
     project.projectId;
 
@@ -89,7 +91,7 @@ export class ProjectOpenComponent implements OnInit {
   }
 
   protected async handleDuplicateProject(projectId: string): Promise<void> {
-    await this.runProjectAction((): Promise<void> => this.storage.duplicateProject(projectId), 'open.duplicateError');
+    await this.runProjectAction((): Promise<void> => this.projects.duplicateProject(projectId), 'open.duplicateError');
   }
 
   protected handleRemoveProject(project: Manifest): void {
@@ -106,7 +108,7 @@ export class ProjectOpenComponent implements OnInit {
             severity: 'error',
             click: async (): Promise<void> => {
               try {
-                await this.storage.removeProject(project.projectId);
+                await this.projects.removeProject(project.projectId);
               } catch {
                 throw new Error(this.translations.translate('open.removeError'));
               }
@@ -124,7 +126,7 @@ export class ProjectOpenComponent implements OnInit {
 
   private async loadProjects(): Promise<void> {
     try {
-      await this.storage.refreshManifests();
+      await this.projects.refreshManifests();
     } catch {
       this.error.set(this.translations.translate('open.loadError'));
     } finally {

@@ -11,7 +11,7 @@
         [rowHover]="false"
       >
         <ng-template suiListItem let-record>
-          <div class="editor-list-row" [class.selected]="workspace.store.currentSlot() === record.slot" data-nori-motion>
+          <div class="editor-list-row" [class.selected]="workspace.store.currentLevelIndex() === record.levelIndex" data-nori-motion>
             @if (editingId() === record.modelId) {
               <div class="editor-name-editor">
                 <input
@@ -34,19 +34,19 @@
                 severity="neutral"
                 variant="text"
                 class="editor-list-entry"
-                [attr.aria-current]="workspace.store.currentSlot() === record.slot ? 'page' : null"
-                (click)="handleSelect(record.slot)"
+                [attr.aria-current]="workspace.store.currentLevelIndex() === record.levelIndex ? 'page' : null"
+                (click)="handleSelect(record.levelIndex)"
                 (dblclick)="handleRename(record)"
                 [attr.data-level-id]="record.modelId"
               >
                 <span class="level-number" [noriTooltip]="levelSource(record)" placement="bottom" [showDelay]="600" aria-hidden="true">{{
-                  record.slot
+                  record.levelIndex
                 }}</span>
                 <span class="truncate text-xs font-medium">{{ record.name }}</span>
               </button>
             }
             <div class="editor-list-actions flex gap-0.5">
-              @if (record.slot !== 0) {
+              @if (record.levelIndex !== 0) {
                 <button
                   suiButton
                   severity="neutral"

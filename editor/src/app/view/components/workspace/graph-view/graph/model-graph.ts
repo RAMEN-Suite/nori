@@ -22,7 +22,6 @@ export interface GraphData {
   readonly links: GraphLink[];
 }
 
-/** Projects local nodes and referenced imported nodes for display. Core owns their semantics. */
 export function buildModelGraph(
   model: Model | null,
   models: readonly Model[] = [],
@@ -87,7 +86,6 @@ function projectNode(node: Node, id: string, ownerId: string, models: ReadonlyMa
   };
 }
 
-/** Keeps graph rendering stable when unrelated model properties change. */
 export function areGraphsEqual(previous: GraphData, current: GraphData): boolean {
   return (
     previous.nodes.length === current.nodes.length &&

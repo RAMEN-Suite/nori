@@ -4,8 +4,8 @@ import { LucideArrowUpRight } from '@lucide/angular';
 import { type Bounds, type Constraint, type Relation } from '@ramen-suite/core/model';
 import { Badge, Button, Divider } from '@sushi-kit/angular';
 import { ScrollOverflowDirective } from '../../../../../directives/scroll-overflow.directive';
-import { NavigationService } from '../../../../../services/navigation.service';
-import { StorageService } from '../../../../../services/storage.service';
+import { NavigationService } from '../../../../../services/interaction/navigation.service';
+import { ProjectService } from '../../../../../services/projects/project.service';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
 import { ScrollHintsComponent } from '../../../shared/scroll-hints/scroll-hints.component';
 
@@ -28,7 +28,8 @@ interface RelationEndpoint {
 export class RelationViewComponent {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   private readonly navigation: NavigationService = inject(NavigationService);
-  private readonly storage: StorageService = inject(StorageService);
+  private readonly projects: ProjectService = inject(ProjectService);
+
   protected readonly endpoints: Signal<readonly RelationEndpoint[]> = computed((): readonly RelationEndpoint[] => {
     const relation: Relation | null = this.workspace.queries.currentRelation();
     return relation
@@ -47,9 +48,9 @@ export class RelationViewComponent {
 
   protected async inspectNode(reference: string): Promise<void> {
     try {
-      await this.navigation.navigateToNode(this.workspace.store.currentSlot(), reference);
+      await this.navigation.navigateToNode(this.workspace.store.currentLevelIndex(), reference);
     } catch (error: unknown) {
-      this.storage.reportError(error);
+      this.projects.reportError(error);
     }
   }
 

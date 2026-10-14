@@ -3,8 +3,8 @@ import { TranslocoDirective } from '@jsverse/transloco';
 import { LucideSettings } from '@lucide/angular';
 import { Button } from '@sushi-kit/angular';
 import { TooltipDirective } from '../../../../directives/tooltip.directive';
-import { DialogService } from '../../../../services/dialog.service';
-import { ShortcutService } from '../../../../services/shortcut.service';
+import { DialogService } from '../../../../services/interaction/dialog.service';
+import { ShortcutService } from '../../../../services/interaction/shortcut.service';
 import { SettingsDialog } from '../../dialogs/settings/settings.dialog';
 
 @Component({

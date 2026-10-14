@@ -16,8 +16,8 @@ import { LucideMousePointer2, LucidePlus } from '@lucide/angular';
 import { ModelRef, type Model, type NodeSuggestion } from '@ramen-suite/core/model';
 import { Button } from '@sushi-kit/angular';
 import { areGraphsEqual, buildModelGraph, type GraphData } from './graph/model-graph';
-import { DialogService, type DialogRef } from '../../../../services/dialog.service';
-import { NodeEditingService } from '../../../../services/workspace/node-editing.service';
+import { DialogService, type DialogRef } from '../../../../services/interaction/dialog.service';
+import { NodeEditingService } from '../../../../services/workspace/editing/node-editing.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { NodeColorsDialog } from '../../dialogs/node-colors/node-colors.dialog';
 import { GraphComponent } from './graph/graph.component';
@@ -43,8 +43,9 @@ export class GraphViewComponent {
   public readonly canvasPadding: InputSignal<GraphPadding> = input<GraphPadding>(DEFAULT_GRAPH_PADDING);
   public readonly nodeSelected: OutputEmitterRef<void> = output();
 
-  private dialogRef: DialogRef | null = null;
   private readonly graph: Signal<GraphComponent | undefined> = viewChild(GraphComponent);
+
+  private dialogRef: DialogRef | null = null;
 
   protected readonly settings: Signal<GraphLayoutSettings> = computed(
     (): GraphLayoutSettings => ({

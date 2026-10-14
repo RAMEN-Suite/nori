@@ -1,6 +1,6 @@
-export const PARAMETERS: Readonly<{ PROJECT: string; SLOT: string; NODE: string; RELATION: string }> = {
+export const PARAMETERS: Readonly<{ PROJECT: string; LEVEL: string; NODE: string; RELATION: string }> = {
   PROJECT: 'projectId',
-  SLOT: 'slotId',
+  LEVEL: 'levelIndex',
   NODE: 'nodeId',
   RELATION: 'relationId',
 };

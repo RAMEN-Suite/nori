@@ -15,7 +15,7 @@ import { ModelRef } from '@ramen-suite/core/model';
 import type { RamenAnnotation } from '@ramen-suite/core/ramen';
 import { Button, Input, List, ListItemTemplate } from '@sushi-kit/angular';
 import { TooltipDirective } from '../../../../directives/tooltip.directive';
-import { DialogService } from '../../../../services/dialog.service';
+import { DialogService } from '../../../../services/interaction/dialog.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { ConfirmationContentComponent } from '../confirmation/confirmation-content/confirmation-content.component';
 
@@ -33,7 +33,6 @@ import { ConfirmationContentComponent } from '../confirmation/confirmation-conte
     List,
     ListItemTemplate,
     TooltipDirective,
-    LucideEraser,
     LucidePencil,
     LucidePlus,
     LucideTrash,
@@ -44,12 +43,13 @@ import { ConfirmationContentComponent } from '../confirmation/confirmation-conte
 export class EditAnnotationsDialog {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   protected readonly dialogs: DialogService = inject(DialogService);
+
   private readonly nodeId: string | null = this.workspace.store.currentNodeId();
   private readonly modelId: string | undefined = this.workspace.store.currentModel()?.id;
-
   protected readonly mode: WritableSignal<'list' | 'edit' | 'remove'> = signal('list');
   protected readonly selected: WritableSignal<RamenAnnotation | undefined> = signal(undefined);
   protected readonly type: WritableSignal<string> = signal('');
+
   protected readonly annotations: Signal<readonly RamenAnnotation[]> = computed((): readonly RamenAnnotation[] => {
     this.workspace.store.currentModel();
     const modelId: string | undefined = this.modelId;

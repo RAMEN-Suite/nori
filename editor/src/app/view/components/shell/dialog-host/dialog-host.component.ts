@@ -19,7 +19,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LucideCircleAlert } from '@lucide/angular';
 import { Dialog, DialogHeader, DialogBody, Message, type DialogPosition, type DialogCoordinates } from '@sushi-kit/angular';
-import { DialogService, type OpenDialog } from '../../../../services/dialog.service';
+import { DialogService, type OpenDialog } from '../../../../services/interaction/dialog.service';
 import { ApplicationState } from '../../../../states/application.state';
 import { NodeColorsDialog } from '../../dialogs/node-colors/node-colors.dialog';
 import { ConfirmationDialog } from '../../dialogs/confirmation/confirmation.dialog';
@@ -71,6 +71,11 @@ import { ConfirmationDialog } from '../../dialogs/confirmation/confirmation.dial
 export class DialogHostComponent {
   protected readonly dialogs: DialogService = inject(DialogService);
   protected readonly appearance: ApplicationState = inject(ApplicationState);
+  private readonly injector: Injector = inject(Injector);
+
+  private readonly dialogBody: Signal<ElementRef<HTMLDivElement> | undefined> =
+    viewChild<ElementRef<HTMLDivElement>>('dialogBody');
+
   protected readonly content: WritableSignal<OpenDialog | null> = signal(null);
 
   protected readonly frames: Signal<readonly OpenDialog[]> = computed((): readonly OpenDialog[] => {
@@ -79,10 +84,9 @@ export class DialogHostComponent {
   });
   protected readonly isConfirmation: Signal<boolean> = computed((): boolean => this.content()?.component === ConfirmationDialog);
 
-  private readonly dialogBody: Signal<ElementRef<HTMLDivElement> | undefined> =
-    viewChild<ElementRef<HTMLDivElement>>('dialogBody');
   private readonly colourPosition: WritableSignal<DialogPosition> = signal('center');
   private sizeObserver: ResizeObserver | null = null;
+
   private readonly narrowViewport: Signal<BreakpointState | undefined> = toSignal(
     inject(BreakpointObserver).observe('(max-width: 832px)'),
   );
@@ -95,7 +99,6 @@ export class DialogHostComponent {
           : 'center',
   );
 
-  private readonly injector: Injector = inject(Injector);
   protected readonly contentReady: WritableSignal<boolean> = signal(false);
 
   public constructor() {

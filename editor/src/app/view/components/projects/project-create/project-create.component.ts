@@ -16,9 +16,9 @@ import { type Model } from '@ramen-suite/core/model';
 import { RAMEN_MODEL } from '@ramen-suite/core/ramen';
 import { Button, Card, Checkbox, Input, Message, Textarea } from '@sushi-kit/angular';
 import { createCorrespondenceModel } from '../../../../../data/correspondence';
-import { type Manifest } from '../../../../models/Manifest';
-import { NavigationService } from '../../../../services/navigation.service';
-import { StorageService, type CreateManifest } from '../../../../services/storage.service';
+import { type Manifest, type CreateManifest } from '../../../../models/Manifest';
+import { NavigationService } from '../../../../services/interaction/navigation.service';
+import { ProjectService } from '../../../../services/projects/project.service';
 import { ProjectAlternativeComponent } from '../project-alternative/project-alternative.component';
 
 @Component({
@@ -41,7 +41,7 @@ import { ProjectAlternativeComponent } from '../project-alternative/project-alte
 })
 export class ProjectCreateComponent {
   private readonly translations: TranslocoService = inject(TranslocoService);
-  private readonly storage: StorageService = inject(StorageService);
+  private readonly projects: ProjectService = inject(ProjectService);
   private readonly navigation: NavigationService = inject(NavigationService);
 
   public readonly alternativeVisible: InputSignal<boolean> = input(true);
@@ -75,7 +75,7 @@ export class ProjectCreateComponent {
     this.error.set(null);
 
     try {
-      const manifest: Manifest = await this.storage.createProject(input, example);
+      const manifest: Manifest = await this.projects.createProject(input, example);
       await this.navigation.navigateToProject(manifest.projectId);
     } catch {
       this.error.set(this.translations.translate('create.error'));

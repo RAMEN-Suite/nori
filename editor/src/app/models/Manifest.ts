@@ -13,3 +13,6 @@ export interface Manifest {
   manifestVersion: string;
   appVersion: string;
 }
+
+export type CreateManifest = Pick<Manifest, 'name' | 'description' | 'metamodelName' | 'metamodelId' | 'metamodelVersion'>;
+export type UpdateManifest = Pick<Manifest, 'name' | 'description'>;

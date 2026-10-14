@@ -7,11 +7,11 @@ import { afterNextRender, DestroyRef, Directive, ElementRef, inject, signal, typ
   host: { '(scroll)': 'measure()' },
 })
 export class ScrollOverflowDirective {
-  public readonly canScrollUp: WritableSignal<boolean> = signal(false);
-  public readonly canScrollDown: WritableSignal<boolean> = signal(false);
-
   private readonly element: ElementRef<HTMLElement> = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
+
+  public readonly canScrollUp: WritableSignal<boolean> = signal(false);
+  public readonly canScrollDown: WritableSignal<boolean> = signal(false);
 
   public constructor() {
     afterNextRender((): void => {

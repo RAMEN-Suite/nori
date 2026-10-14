@@ -1,6 +1,6 @@
 import { Directive, ElementRef, inject } from '@angular/core';
 import { Tooltip } from '@sushi-kit/angular';
-import { DialogService } from '../services/dialog.service';
+import { DialogService } from '../services/interaction/dialog.service';
 
 /** Use Sushi tooltips without reopening them when a dialog restores focus. */
 @Directive({
@@ -20,7 +20,7 @@ export class TooltipDirective {
 
   protected handleFocus(): void {
     if (!this.dialogs.consumeRestoredFocus(this.element.nativeElement)) return;
-    // Cancel Sushi's focus-triggered timer after its host listener has run.
+
     queueMicrotask((): void => this.tooltip.hide());
   }
 }

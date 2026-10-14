@@ -1,7 +1,7 @@
 import { computed, effect, inject, Injectable, signal, type Signal, WritableSignal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { TranslocoService } from '@jsverse/transloco';
 import { Title } from '@angular/platform-browser';
+import { TranslocoService } from '@jsverse/transloco';
 
 export type WindowIcon = 'network' | 'pencil' | 'folder-plus' | 'folder-open';
 
@@ -17,15 +17,18 @@ const defaultState: State = {
   icon: 'network',
 };
 
+/** Keeps the application title and window icon in sync with the current view. */
 @Injectable({
   providedIn: 'root',
 })
 export class WindowState {
   private readonly titleService: Title = inject(Title);
   private readonly translations: TranslocoService = inject(TranslocoService);
+
   private readonly homeTitle: Signal<string> = toSignal(this.translations.selectTranslate<string>('home.windowTitle'), {
     initialValue: 'Nori',
   });
+
   public readonly state: WritableSignal<State> = signal({ ...defaultState });
 
   public readonly fullTitle: Signal<string> = computed((): string => {

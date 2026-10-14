@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { LucideX } from '@lucide/angular';
 import { Button, List, ListItemTemplate, Message } from '@sushi-kit/angular';
-import { DialogService } from '../../../../services/dialog.service';
+import { DialogService } from '../../../../services/interaction/dialog.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 
 @Component({

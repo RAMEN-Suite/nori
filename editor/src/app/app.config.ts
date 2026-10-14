@@ -15,8 +15,8 @@ import {
   type ViewTransitionInfo,
 } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { ApplicationState } from './states/application.state';
 import { provideTransloco, TranslocoService } from '@jsverse/transloco';
+import { ApplicationState } from './states/application.state';
 import { TranslationLoader } from './i18n/translation-loader';
 import { routes } from './app.routes';
 import { PARAMETERS } from './app-route-parameters';

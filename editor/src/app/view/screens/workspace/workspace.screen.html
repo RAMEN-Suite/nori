@@ -26,7 +26,7 @@
       <nori-editor-panel
         class="workspace-catalogue"
         [open]="catalogueOpen()"
-        [title]="t(workspace.store.currentSlot() > 0 ? 'editor.refinements' : 'editor.baseNodes')"
+        [title]="t(workspace.store.currentLevelIndex() > 0 ? 'editor.refinements' : 'editor.baseNodes')"
         [closeLabel]="t('editor.closeNodes')"
         (closePanel)="catalogueOpen.set(false)"
       >

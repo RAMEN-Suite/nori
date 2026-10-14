@@ -18,7 +18,7 @@ import { Button, Input } from '@sushi-kit/angular';
 import { toPascalName } from '../../../../../../utils/model-names';
 import { AutoselectDirective } from '../../../../../../directives/autoselect.directive';
 import { TooltipDirective } from '../../../../../../directives/tooltip.directive';
-import { StorageService } from '../../../../../../services/storage.service';
+import { ProjectService } from '../../../../../../services/projects/project.service';
 import { WorkspaceService } from '../../../../../../services/workspace/workspace.service';
 
 @Component({
@@ -28,7 +28,7 @@ import { WorkspaceService } from '../../../../../../services/workspace/workspace
   templateUrl: './node-basics.component.html',
 })
 export class NodeBasicsComponent {
-  private readonly storage: StorageService = inject(StorageService);
+  private readonly projects: ProjectService = inject(ProjectService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   private readonly injector: Injector = inject(Injector);
 
@@ -74,7 +74,7 @@ export class NodeBasicsComponent {
       await this.workspace.actions.updateNode(selectedId, { name: transformedName });
       if (this.workspace.store.currentNodeId() === selectedId) this.handleCancelRename(restoreFocus);
     } catch (error: unknown) {
-      this.storage.reportError(error);
+      this.projects.reportError(error);
     } finally {
       this.savingName.set(false);
     }

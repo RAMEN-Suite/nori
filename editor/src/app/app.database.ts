@@ -1,6 +1,8 @@
-import Dexie, { Table } from 'dexie';
+import Dexie, { type Table, type Transaction } from 'dexie';
 import { Manifest } from './models/Manifest';
 import { ModelRecord } from './models/ModelRecord';
+
+type LegacyModelRecord = Omit<ModelRecord, 'levelIndex'> & { slot?: number; levelIndex?: number };
 
 export class AppDatabase extends Dexie {
   public readonly manifests!: Table<Manifest, string>;
@@ -12,6 +14,17 @@ export class AppDatabase extends Dexie {
       manifests: 'projectId, updatedAt, metamodelId',
       models: 'modelId, projectId, &[projectId+slot], updatedAt',
     });
+    this.version(2)
+      .stores({ models: 'modelId, projectId, &[projectId+levelIndex], updatedAt' })
+      .upgrade(async (transaction: Transaction): Promise<void> => {
+        await transaction
+          .table<LegacyModelRecord, string>('models')
+          .toCollection()
+          .modify((record): void => {
+            record.levelIndex = record.slot;
+            delete record.slot;
+          });
+      });
   }
 }
 

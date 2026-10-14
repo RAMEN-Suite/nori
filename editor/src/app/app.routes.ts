@@ -22,15 +22,15 @@ export const routes: Routes = [
         component: InspectorEmptyComponent,
       },
       {
-        path: `:${PARAMETERS.SLOT}`,
+        path: `:${PARAMETERS.LEVEL}`,
         component: InspectorEmptyComponent,
       },
       {
-        path: `:${PARAMETERS.SLOT}/relation/:${PARAMETERS.RELATION}`,
+        path: `:${PARAMETERS.LEVEL}/relation/:${PARAMETERS.RELATION}`,
         component: RelationViewComponent,
       },
       {
-        path: `:${PARAMETERS.SLOT}/:${PARAMETERS.NODE}`,
+        path: `:${PARAMETERS.LEVEL}/:${PARAMETERS.NODE}`,
         component: NodeViewComponent,
       },
     ],

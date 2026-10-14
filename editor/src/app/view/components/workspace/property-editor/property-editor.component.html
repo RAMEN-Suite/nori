@@ -19,7 +19,7 @@
               }
             </span>
             <span suiBadge severity="neutral" variant="soft" size="xs" class="shrink-0">
-              {{ workspace.queries.resolveTypeLabel(property.typeId, workspace.store.currentSlot())
+              {{ workspace.queries.resolveTypeLabel(property.typeId, workspace.store.currentLevelIndex())
               }}{{ property.bounds.upperBound === -1 || property.bounds.upperBound > 1 ? ' [ ]' : '' }}
             </span>
           </button>

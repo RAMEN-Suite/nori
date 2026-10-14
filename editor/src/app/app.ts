@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, DOCUMENT, effect, inject, untracked
 import { RouterOutlet } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { Toast, ToastService } from '@sushi-kit/angular';
-import { StorageService } from './services/storage.service';
+import { ProjectService } from './services/projects/project.service';
 import { ApplicationState } from './states/application.state';
 import { DialogHostComponent } from './view/components/shell/dialog-host/dialog-host.component';
 import { RunningActionNotificationComponent } from './view/components/shell/running-action-notification/running-action-notification.component';
@@ -24,7 +24,7 @@ import { TitleBarComponent } from './view/components/shell/title-bar/title-bar.c
   templateUrl: './app.html',
 })
 export class App {
-  private readonly storage: StorageService = inject(StorageService);
+  private readonly projects: ProjectService = inject(ProjectService);
   private readonly toasts: ToastService = inject(ToastService);
   private readonly translations: TranslocoService = inject(TranslocoService);
   protected readonly editorState: ApplicationState = inject(ApplicationState);
@@ -38,7 +38,7 @@ export class App {
     this.document.documentElement.style.setProperty('--title-bar-height', titleBarHeight);
 
     effect((): void => {
-      const error: string | null = this.storage.error();
+      const error: string | null = this.projects.error();
       if (!error) return;
 
       untracked((): void => {
@@ -49,7 +49,7 @@ export class App {
           severity: 'error',
           variant: 'soft',
         });
-        this.storage.error.set(null);
+        this.projects.error.set(null);
       });
     });
 

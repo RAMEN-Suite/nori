@@ -18,14 +18,13 @@ import { Languages, type AppLanguage } from '../../../../i18n/languages';
 import {
   EDITOR_SHORTCUTS,
   SHORTCUT_CATEGORIES,
-  isShortcutBinding,
-  shortcutFromEvent,
   type ShortcutAction,
   type ShortcutCategory,
   type ShortcutDefinition,
   type ShortcutGroup,
-} from '../../../../utils/shortcuts';
-import { ShortcutService } from '../../../../services/shortcut.service';
+} from '../../../../utils/shortcuts/definitions';
+import { ShortcutBindings } from '../../../../utils/shortcuts/bindings';
+import { ShortcutService } from '../../../../services/interaction/shortcut.service';
 import { ScrollHintsComponent } from '../../shared/scroll-hints/scroll-hints.component';
 import { ApplicationState } from '../../../../states/application.state';
 
@@ -61,6 +60,8 @@ import { ApplicationState } from '../../../../states/application.state';
 })
 export class SettingsDialog {
   protected readonly appState: ApplicationState = inject(ApplicationState);
+  protected readonly shortcutService: ShortcutService = inject(ShortcutService);
+  private readonly translations: TranslocoService = inject(TranslocoService);
 
   protected readonly languageOptions: Signal<readonly { value: AppLanguage; label: string }[]> = computed(() => {
     this.appState.language();
@@ -72,8 +73,6 @@ export class SettingsDialog {
 
   protected readonly themes: readonly AppTheme[] = APP_THEMES;
   protected readonly animationSettings: readonly string[] = ['animations'];
-
-  protected readonly shortcutService: ShortcutService = inject(ShortcutService);
   protected readonly shortcutGroups: readonly ShortcutGroup[] = SHORTCUT_CATEGORIES.map(
     (category: ShortcutCategory): ShortcutGroup => ({
       category,
@@ -82,7 +81,6 @@ export class SettingsDialog {
   );
   protected readonly recording: WritableSignal<ShortcutAction | null> = signal(null);
   protected readonly shortcutError: WritableSignal<string | null> = signal(null);
-  private readonly translations: TranslocoService = inject(TranslocoService);
 
   protected handleShortcut(event: KeyboardEvent, action: ShortcutAction): void {
     if (event.key === 'Tab') return;
@@ -95,9 +93,9 @@ export class SettingsDialog {
       return;
     }
     if (event.repeat || event.isComposing) return;
-    const binding: string | null = shortcutFromEvent(event);
+    const binding: string | null = ShortcutBindings.fromEvent(event);
     if (!binding) return;
-    if (!isShortcutBinding(binding)) {
+    if (!ShortcutBindings.isValid(binding)) {
       this.shortcutError.set(this.translations.translate('settings.unsupportedShortcut'));
       return;
     }

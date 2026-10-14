@@ -16,10 +16,10 @@ import { LucidePlus, LucideSave, LucideX } from '@lucide/angular';
 import { RAMEN_MODEL } from '@ramen-suite/core/ramen';
 import { Button, Input, Message } from '@sushi-kit/angular';
 import { type ModelRecord } from '../../../../models/ModelRecord';
-import { DialogService } from '../../../../services/dialog.service';
-import { NavigationService } from '../../../../services/navigation.service';
-import { StorageService } from '../../../../services/storage.service';
-import { type CreateSlotInput } from '../../../../services/workspace/workspace-actions.service';
+import { DialogService } from '../../../../services/interaction/dialog.service';
+import { NavigationService } from '../../../../services/interaction/navigation.service';
+import { ProjectService } from '../../../../services/projects/project.service';
+import { type CreateLevelInput } from '../../../../services/workspace/model/workspace-actions.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 
 @Component({
@@ -30,14 +30,14 @@ import { WorkspaceService } from '../../../../services/workspace/workspace.servi
 })
 export class CreateModelDialog {
   private readonly workspace: WorkspaceService = inject(WorkspaceService);
-  private readonly storage: StorageService = inject(StorageService);
+  private readonly projects: ProjectService = inject(ProjectService);
   protected readonly dialogs: DialogService = inject(DialogService);
   private readonly navigation: NavigationService = inject(NavigationService);
 
-  public readonly currentSlot: ModelSignal<number | undefined> = model();
+  public readonly currentLevelIndex: ModelSignal<number | undefined> = model();
 
   protected isSubmitted: boolean = false;
-  protected readonly draftModel: WritableSignal<CreateSlotInput> = signal({
+  protected readonly draftModel: WritableSignal<CreateLevelInput> = signal({
     name: '',
     version: '1.0.0',
     uri: 'https://example.com/',
@@ -49,13 +49,13 @@ export class CreateModelDialog {
 
   public constructor() {
     effect((): void => {
-      const currentSlot: number | undefined = this.currentSlot();
-      if (!currentSlot) return;
+      const currentLevelIndex: number | undefined = this.currentLevelIndex();
+      if (!currentLevelIndex) return;
 
-      const existing: ModelRecord | undefined = this.storage.recordsBySlot().get(currentSlot);
-      if (!existing) return this.currentSlot.set(undefined);
+      const existing: ModelRecord | undefined = this.projects.recordsByLevelIndex().get(currentLevelIndex);
+      if (!existing) return this.currentLevelIndex.set(undefined);
 
-      const input: CreateSlotInput = {
+      const input: CreateLevelInput = {
         name: existing.name,
         uri: existing.gmodel.$id,
         version: existing.gmodel.version,
@@ -83,7 +83,7 @@ export class CreateModelDialog {
     return this.isModelNameValid() && this.isVersionValid() && this.isUriValid();
   }
 
-  protected handleCloseModal(): void {
+  protected handleClose(): void {
     this.dialogs.close();
   }
 
@@ -92,8 +92,8 @@ export class CreateModelDialog {
     if (!this.isFormValid()) return;
 
     await this.dialogs.run(async (): Promise<void> => {
-      const createdSlot: number = await this.workspace.actions.createSlot(this.draftModel());
-      await this.navigation.navigateToSlot(createdSlot);
+      const createdLevelIndex: number = await this.workspace.actions.createLevel(this.draftModel());
+      await this.navigation.navigateToLevel(createdLevelIndex);
     });
   }
 
@@ -101,11 +101,11 @@ export class CreateModelDialog {
     this.isSubmitted = true;
     if (!this.isFormValid()) return;
 
-    const currentSlot: number | undefined = this.currentSlot();
-    if (!currentSlot) return;
+    const currentLevelIndex: number | undefined = this.currentLevelIndex();
+    if (!currentLevelIndex) return;
 
     await this.dialogs.run(async (): Promise<void> => {
-      await this.workspace.actions.updateSlot(currentSlot, this.draftModel());
+      await this.workspace.actions.updateLevel(currentLevelIndex, this.draftModel());
     });
   }
 }

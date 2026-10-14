@@ -7,25 +7,19 @@ import {
   type Relation,
 } from '@ramen-suite/core/model';
 import { type ModelRecord } from '../models/ModelRecord';
+import { type WorkspaceLocation } from '../models/WorkspaceLocation';
 
-type ModelLevel = Pick<ModelRecord, 'gmodel' | 'slot' | 'projectId'>;
+type ModelLevel = Pick<ModelRecord, 'gmodel' | 'levelIndex' | 'projectId'>;
 
 export interface AffectedLevel {
   readonly modelName: string;
-  readonly modelSlot: number | null;
-  readonly location?: RemovalLocation;
+  readonly modelLevelIndex: number | null;
+  readonly location?: WorkspaceLocation;
 }
 
 export interface AffectedModelLevel extends AffectedLevel {
   readonly nodeCount: number;
   readonly relationCount: number;
-}
-
-export interface RemovalLocation {
-  readonly projectId: string;
-  readonly slot: number;
-  readonly nodeId?: string;
-  readonly relationId?: string;
 }
 
 export interface AffectedNode extends AffectedLevel {
@@ -57,7 +51,7 @@ export function getAffectedNodes(
       constraintCount: countNodeConstraints(node),
       location: removalLocation(affected.modelId, affected.elementId, levels),
       modelName: byId.get(affected.modelId)?.name ?? '',
-      modelSlot: modelSlot(affected.modelId, levels),
+      modelLevelIndex: modelLevelIndex(affected.modelId, levels),
     };
   });
 }
@@ -78,7 +72,7 @@ export function getAffectedRelations(
       from: relation ? resolveNodeName(byId, affected.modelId, relation.from.nodeId) : '',
       to: relation ? resolveNodeName(byId, affected.modelId, relation.to.nodeId) : '',
       modelName: model?.name ?? '',
-      modelSlot: modelSlot(affected.modelId, levels),
+      modelLevelIndex: modelLevelIndex(affected.modelId, levels),
     };
   });
 }
@@ -130,7 +124,7 @@ function getAffectedModelLevels(
     .map(
       (model: Model): AffectedModelLevel => ({
         modelName: model.name,
-        modelSlot: modelSlot(model.id, levels),
+        modelLevelIndex: modelLevelIndex(model.id, levels),
         location: removalLocation(model.id, undefined, levels),
         nodeCount: model.classifiers.filter((item): boolean => item.kind === 'Node').length,
         relationCount: model.relations.length,
@@ -138,8 +132,8 @@ function getAffectedModelLevels(
     );
 }
 
-function modelSlot(modelId: string, levels: readonly ModelLevel[]): number | null {
-  return levels.find((level): boolean => level.gmodel.id === modelId)?.slot ?? null;
+function modelLevelIndex(modelId: string, levels: readonly ModelLevel[]): number | null {
+  return levels.find((level): boolean => level.gmodel.id === modelId)?.levelIndex ?? null;
 }
 
 function resolveNode(models: ReadonlyMap<string, Model>, ownerId: string, reference: string): Node | undefined {
@@ -157,9 +151,9 @@ function removalLocation(
   nodeId: string | undefined,
   levels: readonly ModelLevel[],
   relationId?: string,
-): RemovalLocation | undefined {
+): WorkspaceLocation | undefined {
   const level: ModelLevel | undefined = levels.find((item): boolean => item.gmodel.id === modelId);
-  return level ? { projectId: level.projectId, slot: level.slot, nodeId, relationId } : undefined;
+  return level ? { projectId: level.projectId, levelIndex: level.levelIndex, nodeId, relationId } : undefined;
 }
 
 function countNodeRelationships(models: ReadonlyMap<string, Model>, modelId: string, nodeId: string): number {

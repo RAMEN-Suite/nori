@@ -1,6 +1,7 @@
 import { app, BrowserWindow, screen } from 'electron';
 import { DEVELOPMENT_PATH, PRELOAD_PATH, STATIC_PATH } from '../static/PATHS';
 
+/** Owns the desktop window and the Electron application lifecycle. */
 export class Application {
   private readonly title: string;
   private readonly isProduction: boolean;

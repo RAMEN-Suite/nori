@@ -1,9 +1,11 @@
 <div *transloco="let t" class="flex h-full min-h-0 flex-col gap-3">
   <div class="nori-scroll-frame flex-1">
     <div noriScrollOverflow #scroll="scrollOverflow" class="editor-panel-scroll -mx-2 min-h-0 flex-1 overflow-y-auto">
-      @for (group of propertyGroups(); track group.slot) {
+      @for (group of propertyGroups(); track group.levelIndex) {
         <div suiDivider placement="start" class="text-base-content/60 text-xs" style="--sui-divider-margin: 0.75rem">
-          {{ group.modelName ? t('editor.propertySource', { name: group.modelName }) : t('editor.propertyLevel', { level: group.slot }) }}
+          {{
+            group.modelName ? t('editor.propertySource', { name: group.modelName }) : t('editor.propertyLevel', { level: group.levelIndex })
+          }}
         </div>
         <div class="px-4">
           <sui-list
@@ -19,7 +21,7 @@
                 class="col-span-full block w-full py-1"
                 [attribute]="item.attribute"
                 [inlineRename]="true"
-                [modelSlot]="item.slot"
+                [modelLevelIndex]="item.levelIndex"
                 [nodeId]="item.nodeId"
               />
             </ng-template>

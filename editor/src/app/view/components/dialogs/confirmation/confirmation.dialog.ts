@@ -3,8 +3,8 @@ import { LucideCheck, LucideEraser, LucideX } from '@lucide/angular';
 import { Button, type ButtonSeverity } from '@sushi-kit/angular';
 import { type AffectedModelLevel, type AffectedRelation } from '../../../../utils/removal-summary';
 import { type ConfirmationMessage } from '../../../../models/ConfirmationMessage';
-import { type RemovalReviewPosition } from '../../../../services/removal-review.service';
-import { DialogService } from '../../../../services/dialog.service';
+import { type RemovalReviewPosition } from '../../../../services/workspace/workflows/removal-review.service';
+import { DialogService } from '../../../../services/interaction/dialog.service';
 import { ConfirmationContentComponent, type AffectedNode } from './confirmation-content/confirmation-content.component';
 
 export interface ConfirmationOptions {
@@ -33,6 +33,7 @@ export interface ConfirmationButton {
 })
 export class ConfirmationDialog {
   protected readonly dialogs: DialogService = inject(DialogService);
+
   public readonly options: InputSignal<ConfirmationOptions> = input.required();
 
   protected async handleAction(button: ConfirmationButton): Promise<void> {

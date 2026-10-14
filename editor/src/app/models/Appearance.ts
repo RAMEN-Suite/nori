@@ -16,7 +16,6 @@ export const DEFAULT_THEME: AppTheme = {
   colourScheme: 'system',
 };
 
-/** Register additional themes here after their Sushi styles are available. */
 export const APP_THEMES: readonly AppTheme[] = [
   DEFAULT_THEME,
   {

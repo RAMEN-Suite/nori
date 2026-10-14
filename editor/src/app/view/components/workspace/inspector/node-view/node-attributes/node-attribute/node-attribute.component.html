@@ -42,7 +42,7 @@
             }
           </div>
           <span suiBadge size="xs" severity="neutral" variant="soft" class="shrink-0">
-            {{ workspace.queries.resolveTypeLabel(property.typeId, modelSlot()) }}{{ isMultiValue(property.bounds) ? ' [ ]' : '' }}
+            {{ workspace.queries.resolveTypeLabel(property.typeId, modelLevelIndex()) }}{{ isMultiValue(property.bounds) ? ' [ ]' : '' }}
           </span>
         </div>
         @if (property.isKey || property.isReadOnly || isMultiValue(property.bounds)) {

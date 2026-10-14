@@ -18,7 +18,7 @@ export interface ModelRecord {
   modelId: string;
 
   name: string;
-  slot: number;
+  levelIndex: number;
   gmodel: Model;
 
   view?: ViewSettings;

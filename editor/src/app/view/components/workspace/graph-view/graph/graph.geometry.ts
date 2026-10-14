@@ -5,7 +5,6 @@ const HALF_NODE_HEIGHT: number = GRAPH_NODE_HEIGHT / 2;
 
 type Point = Readonly<{ x: number; y: number }>;
 
-/** Clip a connection at the node's rectangle, towards the curve's control point. */
 function nodeBoundary(node: PositionedNode, towards: Point, padding: number = 0): Point {
   const dx: number = towards.x - node.x;
   const dy: number = towards.y - node.y;
@@ -71,7 +70,6 @@ export function getLinkLabelPosition(link: ResolvedLink): Point {
   };
 }
 
-/** Rotate reference-model loops towards the outside of the diamond. */
 function loopPoint(link: ResolvedLink, x: number, y: number): Point {
   const angle: number = { right: 0, bottom: Math.PI / 2, left: Math.PI, top: -Math.PI / 2 }[link.loopSide ?? 'right'];
   const radial: number = link.loopSide === 'top' || link.loopSide === 'bottom' ? x - (HALF_NODE_WIDTH - HALF_NODE_HEIGHT) : x;

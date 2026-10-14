@@ -17,7 +17,7 @@ import { type Attribute, type Bounds } from '@ramen-suite/core/model';
 import { Badge, Input } from '@sushi-kit/angular';
 import { AutoselectDirective } from '../../../../../../../directives/autoselect.directive';
 import { TooltipDirective } from '../../../../../../../directives/tooltip.directive';
-import { StorageService } from '../../../../../../../services/storage.service';
+import { ProjectService } from '../../../../../../../services/projects/project.service';
 import { WorkspaceService } from '../../../../../../../services/workspace/workspace.service';
 
 @Component({
@@ -39,22 +39,24 @@ import { WorkspaceService } from '../../../../../../../services/workspace/worksp
   templateUrl: './node-attribute.component.html',
 })
 export class NodeAttributeComponent {
-  private readonly storage: StorageService = inject(StorageService);
+  private readonly projects: ProjectService = inject(ProjectService);
   private readonly translations: TranslocoService = inject(TranslocoService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
 
   public readonly inlineRename: InputSignal<boolean> = input(false);
-
   public readonly nodeId: InputSignal<string | undefined> = input();
-  public readonly modelSlot: InputSignal<number> = input(0);
+  public readonly modelLevelIndex: InputSignal<number> = input(0);
   public readonly attribute: InputSignal<Attribute | undefined> = input();
 
   protected readonly editingName: WritableSignal<boolean> = signal(false);
   protected readonly draftName: WritableSignal<string> = signal('');
   protected readonly savingName: WritableSignal<boolean> = signal(false);
+
   protected readonly canRename: Signal<boolean> = computed(
     (): boolean =>
-      this.inlineRename() && this.workspace.queries.nodeEditable() && this.workspace.store.currentSlot() === this.modelSlot(),
+      this.inlineRename() &&
+      this.workspace.queries.nodeEditable() &&
+      this.workspace.store.currentLevelIndex() === this.modelLevelIndex(),
   );
 
   public constructor() {
@@ -92,7 +94,7 @@ export class NodeAttributeComponent {
       await this.workspace.actions.updateAttribute(nodeId, property.id, { name });
       this.handleCancelRename();
     } catch (error: unknown) {
-      this.storage.reportError(error);
+      this.projects.reportError(error);
     } finally {
       this.savingName.set(false);
     }

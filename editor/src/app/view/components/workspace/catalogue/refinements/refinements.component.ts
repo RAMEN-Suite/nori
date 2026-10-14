@@ -33,11 +33,11 @@ import { toPascalName } from '../../../../../utils/model-names';
 import { AutoselectDirective } from '../../../../../directives/autoselect.directive';
 import { ScrollOverflowDirective } from '../../../../../directives/scroll-overflow.directive';
 import { TooltipDirective } from '../../../../../directives/tooltip.directive';
-import { NavigationService } from '../../../../../services/navigation.service';
-import { StorageService } from '../../../../../services/storage.service';
-import { NodeEditingService } from '../../../../../services/workspace/node-editing.service';
+import { NavigationService } from '../../../../../services/interaction/navigation.service';
+import { ProjectService } from '../../../../../services/projects/project.service';
+import { NodeEditingService } from '../../../../../services/workspace/editing/node-editing.service';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
-import { type NodeLevel } from '../../../../../services/workspace/workspace-queries.service';
+import { type NodeDefinition } from '../../../../../models/WorkspaceDetails';
 import { ApplicationState } from '../../../../../states/application.state';
 import { ScrollHintsComponent } from '../../../shared/scroll-hints/scroll-hints.component';
 
@@ -88,7 +88,7 @@ export class RefinementsComponent {
   private readonly appearance: ApplicationState = inject(ApplicationState);
   private readonly element: ElementRef<HTMLElement> = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector: Injector = inject(Injector);
-  private readonly storage: StorageService = inject(StorageService);
+  private readonly projects: ProjectService = inject(ProjectService);
   private readonly navigation: NavigationService = inject(NavigationService);
 
   public readonly nodeSelected: OutputEmitterRef<void> = output();
@@ -102,7 +102,7 @@ export class RefinementsComponent {
   private pendingRevealId: string | null = null;
   protected readonly search: WritableSignal<string> = signal('');
 
-  protected readonly isRefinementLevel: Signal<boolean> = computed((): boolean => this.workspace.store.currentSlot() > 0);
+  protected readonly isRefinementLevel: Signal<boolean> = computed((): boolean => this.workspace.store.currentLevelIndex() > 0);
   protected readonly groups: Signal<readonly NodeGroup[]> = computed((): readonly NodeGroup[] =>
     this.groupLocalNodes(this.search().trim().toLowerCase()),
   );
@@ -180,7 +180,7 @@ export class RefinementsComponent {
         this.handleCancelRename(restoreFocus);
       }
     } catch (error: unknown) {
-      this.storage.reportError(error);
+      this.projects.reportError(error);
     } finally {
       this.savingName.set(false);
     }
@@ -202,10 +202,10 @@ export class RefinementsComponent {
 
   protected async handleSelect(id: string): Promise<void> {
     try {
-      await this.navigation.navigateToNode(this.workspace.store.currentSlot(), id);
+      await this.navigation.navigateToNode(this.workspace.store.currentLevelIndex(), id);
       this.nodeSelected.emit();
     } catch (error: unknown) {
-      this.storage.reportError(error);
+      this.projects.reportError(error);
     }
   }
 
@@ -219,7 +219,7 @@ export class RefinementsComponent {
 
     const entries: NodeListOf<HTMLElement> = this.element.nativeElement.querySelectorAll('[data-node-id]');
     const button: HTMLElement | undefined = [...entries].find((item: HTMLElement): boolean => item.dataset['nodeId'] === id);
-    if (!button) return; // Sushi instantiates collapsed content after its next render.
+    if (!button) return;
     const catalogue: HTMLElement | null = this.element.nativeElement.querySelector('.node-catalogue');
     const bounds: DOMRect | undefined = catalogue?.getBoundingClientRect();
     const item: DOMRect = button.getBoundingClientRect();
@@ -246,7 +246,7 @@ export class RefinementsComponent {
     }
 
     for (const node of this.workspace.queries.currentNodes()) {
-      const base: NodeLevel | null = this.workspace.queries.resolveNodeBase(node);
+      const base: NodeDefinition | null = this.workspace.queries.resolveNodeBase(node);
       const label: string = base?.node.name ?? this.workspace.store.currentModel()?.name ?? '';
 
       const key: string = base ? ModelRef.qualify(base.modelId, base.node.id) : '';

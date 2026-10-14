@@ -3,8 +3,8 @@ import { TranslocoDirective } from '@jsverse/transloco';
 import { LucideArrowRight, LucideLink2, LucideX } from '@lucide/angular';
 import { type RelationSuggestion } from '@ramen-suite/core/model';
 import { Button, List, ListItemTemplate } from '@sushi-kit/angular';
-import { DialogService } from '../../../../services/dialog.service';
-import { StorageService } from '../../../../services/storage.service';
+import { DialogService } from '../../../../services/interaction/dialog.service';
+import { ProjectService } from '../../../../services/projects/project.service';
 
 @Component({
   selector: 'nori-choose-relation-dialog',
@@ -13,8 +13,9 @@ import { StorageService } from '../../../../services/storage.service';
   templateUrl: './choose-relation.dialog.html',
 })
 export class ChooseRelationDialog {
-  protected readonly storage: StorageService = inject(StorageService);
+  protected readonly projects: ProjectService = inject(ProjectService);
   protected readonly dialogs: DialogService = inject(DialogService);
+
   public readonly fromName: InputSignal<string> = input('');
   public readonly toName: InputSignal<string> = input('');
   public readonly choices: InputSignal<readonly RelationSuggestion[]> = input.required();

@@ -19,27 +19,28 @@ import {
   type WorkspaceElement,
 } from '@ramen-suite/core/model';
 import { RamenModel, RamenModelFormat, type AnnotationInput, type AnnotationUpdate } from '@ramen-suite/core/ramen';
-import { type GraphView, type ModelRecord, type NodeColors, type ViewSettings } from '../../models/ModelRecord';
-import { StorageService } from '../storage.service';
+import { type GraphView, type ModelRecord, type NodeColors, type ViewSettings } from '../../../models/ModelRecord';
+import { ProjectService } from '../../projects/project.service';
 import { RelationHistoryService } from './relation-history.service';
-import { WorkspaceStore } from '../../states/workspace.store';
+import { WorkspaceStore } from '../../../states/workspace.store';
 
-export type CreateSlotInput = Required<Pick<ModelInput, 'name' | 'uri' | 'version'>>;
-export type UpdateSlotInput = CreateSlotInput;
+export type CreateLevelInput = Required<Pick<ModelInput, 'name' | 'uri' | 'version'>>;
+export type UpdateLevelInput = CreateLevelInput;
 
+/** Applies model changes through RAMEN Core and persists the resulting workspace. */
 @Injectable({ providedIn: 'root' })
 export class WorkspaceActionsService {
-  private readonly storage: StorageService = inject(StorageService);
+  private readonly projects: ProjectService = inject(ProjectService);
   private readonly store: WorkspaceStore = inject(WorkspaceStore);
   private readonly translations: TranslocoService = inject(TranslocoService);
-
   private readonly relationHistory: RelationHistoryService = inject(RelationHistoryService);
+
   private pendingSave: Promise<void> = Promise.resolve();
 
   public async createNode(input: CreateNodeInput): Promise<Node> {
     this.requireAvailableNodeName(input.name);
     const change: ModelChange<Node> = this.store.getDraft().createNode({ name: input.name, refines: input.baseNodeId });
-    await this.saveCurrentModel();
+    await this.saveWorkspace();
 
     return change.element;
   }
@@ -47,10 +48,9 @@ export class WorkspaceActionsService {
   public async updateNode(nodeId: string, patch: UpdateNodeInput): Promise<void> {
     if (patch.name !== undefined) this.requireAvailableNodeName(patch.name, nodeId);
     this.store.getDraft().updateNode(nodeId, patch);
-    await this.saveCurrentModel();
+    await this.saveWorkspace();
   }
 
-  /** Finds a name not occupied by a local node, a visible base node or a node used through relations or annotations. */
   public getAvailableNodeName(preferred: string): string {
     const names: ReadonlySet<string> = this.usedNodeNames();
     let name: string = preferred.slice(0, 40);
@@ -68,7 +68,7 @@ export class WorkspaceActionsService {
 
   public async removeNode(nodeId: string, cascade: boolean = false): Promise<void> {
     this.store.getDraft().removeNode(nodeId, { cascade });
-    await this.saveCurrentModel();
+    await this.saveWorkspace();
   }
 
   public async duplicateNode(nodeId: string): Promise<Node> {
@@ -85,7 +85,7 @@ export class WorkspaceActionsService {
       draft.createAttribute(copy, input);
     }
     this.duplicateRelations(draft, node, copy);
-    await this.saveCurrentModel();
+    await this.saveWorkspace();
 
     return copy;
   }
@@ -93,7 +93,7 @@ export class WorkspaceActionsService {
   public async createAttribute(nodeId: string, input: AttributeInput): Promise<void> {
     this.requireValidAttributeChange((draft: RamenModel): ModelChange<Attribute> => draft.createAttribute(nodeId, input));
     this.store.getDraft().createAttribute(nodeId, input);
-    await this.saveCurrentModel();
+    await this.saveWorkspace();
   }
 
   public async updateAttribute(nodeId: string, attributeId: string, patch: UpdateAttributeInput): Promise<void> {
@@ -101,27 +101,27 @@ export class WorkspaceActionsService {
       (draft: RamenModel): ModelChange<Attribute> => draft.updateAttribute(nodeId, attributeId, patch),
     );
     this.store.getDraft().updateAttribute(nodeId, attributeId, patch);
-    await this.saveCurrentModel();
+    await this.saveWorkspace();
   }
 
   public async removeAttribute(nodeId: string, attributeId: string): Promise<void> {
     this.store.getDraft().removeAttribute(nodeId, attributeId);
-    await this.saveCurrentModel();
+    await this.saveWorkspace();
   }
 
   public async createAnnotation(input: AnnotationInput): Promise<void> {
     this.store.getDraft().createAnnotation(input);
-    await this.saveCurrentModel();
+    await this.saveWorkspace();
   }
 
   public async updateAnnotation(annotationId: string, input: AnnotationUpdate): Promise<void> {
     this.store.getDraft().updateAnnotation(annotationId, input);
-    await this.saveCurrentModel();
+    await this.saveWorkspace();
   }
 
   public async removeAnnotation(annotationId: string): Promise<void> {
     this.store.getDraft().removeAnnotation(annotationId);
-    await this.saveCurrentModel();
+    await this.saveWorkspace();
   }
 
   public async createRelation(input: RelationInput): Promise<Relation> {
@@ -129,17 +129,17 @@ export class WorkspaceActionsService {
     const draft: RamenModel = this.store.getDraft();
     const relation: Relation = draft.createRelation(input).element;
     this.relationHistory.record(draft.getModel().id, before);
-    await this.saveCurrentModel();
+    await this.saveWorkspace();
 
     return relation;
   }
 
   public async undoRelation(): Promise<void> {
-    await this.relationHistory.undo((): Promise<void> => this.saveCurrentModel());
+    await this.relationHistory.undo((): Promise<void> => this.saveWorkspace());
   }
 
   public async redoRelation(): Promise<void> {
-    await this.relationHistory.redo((): Promise<void> => this.saveCurrentModel());
+    await this.relationHistory.redo((): Promise<void> => this.saveWorkspace());
   }
 
   public previewRelationRemoval(id: string): RelationRemovalPreview {
@@ -151,39 +151,36 @@ export class WorkspaceActionsService {
     const draft: RamenModel = this.store.getDraft();
     draft.removeRelation(id, { cascade });
     this.relationHistory.record(draft.getModel().id, before);
-    await this.saveCurrentModel();
+    await this.saveWorkspace();
   }
 
-  public async createSlot(input: CreateSlotInput): Promise<number> {
+  public async createLevel(input: CreateLevelInput): Promise<number> {
     const parent: RamenModel | null = this.store.getCreationParent();
     const next: RamenModel = parent ? parent.createNextLevel(input) : RamenModel.create(input);
     this.store.addLevel(next);
-    await this.saveCurrentModel();
+    await this.saveWorkspace();
 
-    return this.storage.records().find((record: ModelRecord): boolean => record.gmodel.id === next.getModel().id)?.slot ?? 1;
+    return this.projects.recordsByModelId().get(next.getModel().id)?.levelIndex ?? 1;
   }
 
-  public async updateSlot(slot: number, input: UpdateSlotInput): Promise<void> {
-    const record: ModelRecord | undefined = this.storage.recordsBySlot().get(slot);
-    if (!record) throw new Error('The selected model no longer exists.');
+  public async updateLevel(levelIndex: number, input: UpdateLevelInput): Promise<void> {
+    const record: ModelRecord = this.requireModelRecord(levelIndex);
     this.store.getWorkspace().openLevel(record.gmodel.id).updateModel(input);
-    await this.saveCurrentModel();
+    await this.saveWorkspace();
   }
 
-  public previewSlotRemoval(slot: number): ModelRemovalPreview {
-    const record: ModelRecord | undefined = this.storage.recordsBySlot().get(slot);
-    if (!record) throw new Error('The selected model no longer exists.');
+  public previewLevelRemoval(levelIndex: number): ModelRemovalPreview {
+    const record: ModelRecord = this.requireModelRecord(levelIndex);
     return this.store.getParentLevel(record.gmodel.id).previewNextLevelRemoval(record.gmodel.id);
   }
 
-  public async removeSlot(slot: number, cascade: boolean = false): Promise<void> {
-    const record: ModelRecord | undefined = this.storage.recordsBySlot().get(slot);
-    if (!record) throw new Error('The selected model no longer exists.');
+  public async removeLevel(levelIndex: number, cascade: boolean = false): Promise<void> {
+    const record: ModelRecord = this.requireModelRecord(levelIndex);
     const removed: ModelRemovalPreview = this.store
       .getParentLevel(record.gmodel.id)
       .removeNextLevel(record.gmodel.id, { cascade });
     this.store.removeLevels(removed.models.map((model): string => model.id));
-    await this.saveCurrentModel();
+    await this.saveWorkspace();
   }
 
   public async updateNodeColors(recordId: string, colours: NodeColors): Promise<void> {
@@ -226,7 +223,7 @@ export class WorkspaceActionsService {
         draft.removeRelation(relation.id, { cascade: true });
       }
     }
-    if (connected.length) await this.saveCurrentModel();
+    if (connected.length) await this.saveWorkspace();
     await this.saveView(record.modelId, {
       visibleNodeRefs: (record.view?.visibleNodeRefs ?? []).filter((ref: string): boolean => ref !== reference),
     });
@@ -236,30 +233,34 @@ export class WorkspaceActionsService {
     await this.saveView(recordId, { graph });
   }
 
-  public async saveCurrentModel(): Promise<void> {
+  public async saveWorkspace(): Promise<void> {
     this.store.notifyChange();
-    const projectId: string | null = this.storage.selectedProjectId();
+    const projectId: string | null = this.projects.selectedProjectId();
     if (!projectId) throw new Error('No project is selected.');
     const models: readonly Model[] = this.store.getModels();
-    await this.enqueueSave((): Promise<void> => this.storage.saveModels(projectId, models));
+    await this.enqueueSave((): Promise<void> => this.projects.saveModels(projectId, models));
+  }
+
+  private requireModelRecord(levelIndex: number): ModelRecord {
+    const record: ModelRecord | undefined = this.projects.recordsByLevelIndex().get(levelIndex);
+    if (!record) throw new Error('The selected model no longer exists.');
+    return record;
   }
 
   private async saveView(recordId: string, patch: Partial<ViewSettings>): Promise<void> {
-    const record: ModelRecord | undefined = this.storage
+    const record: ModelRecord | undefined = this.projects
       .records()
       .find((item: ModelRecord): boolean => item.modelId === recordId);
     if (!record) return;
 
     await this.enqueueSave(async (): Promise<void> => {
-      // A queued graph update can outlive its level or the open project.
-      const exists: boolean = this.storage
+      const exists: boolean = this.projects
         .records()
         .some((item: ModelRecord): boolean => item.modelId === recordId && item.projectId === record.projectId);
-      if (exists) await this.storage.updateView(recordId, patch);
+      if (exists) await this.projects.updateView(recordId, patch);
     });
   }
 
-  /** Preserve write order while letting a later save recover from an earlier failure. */
   private async enqueueSave(action: () => Promise<void>): Promise<void> {
     const save: Promise<void> = this.pendingSave.then(action);
     this.pendingSave = save.catch((): void => undefined);

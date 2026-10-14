@@ -1,6 +1,6 @@
 <div *transloco="let t" class="nori-dialog-content">
   <div class="nori-dialog-scroll flex min-w-0 flex-col gap-5">
-    @if (currentSlot() === undefined) {
+    @if (currentLevelIndex() === undefined) {
       <p class="text-base-content/65 text-sm">{{ t('editor.levelParent', { name: parentName() }) }}</p>
     }
     <div class="flex flex-col gap-2">
@@ -60,11 +60,11 @@
     </div>
   </div>
   <footer class="nori-dialog-actions">
-    <button suiButton size="sm" severity="neutral" variant="text" [disabled]="dialogs.pending()" (click)="handleCloseModal()">
+    <button suiButton size="sm" severity="neutral" variant="text" [disabled]="dialogs.pending()" (click)="handleClose()">
       <svg lucideX class="size-4 shrink-0" aria-hidden="true"></svg>
       {{ t('common.cancel') }}
     </button>
-    @if (currentSlot() === undefined) {
+    @if (currentLevelIndex() === undefined) {
       <button
         suiButton
         size="sm"

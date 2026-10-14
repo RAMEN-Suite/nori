@@ -14,6 +14,5 @@ export class EditorPanelComponent {
   public readonly closeLabel: InputSignal<string> = input.required<string>();
   public readonly open: InputSignal<boolean> = input(true);
   public readonly side: InputSignal<'left' | 'right'> = input<'left' | 'right'>('left');
-
   public readonly closePanel: OutputEmitterRef<void> = output();
 }

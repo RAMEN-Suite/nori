@@ -8,7 +8,7 @@ import iwanthue from 'iwanthue';
 import { getDefaultNodeColours } from '../../../../utils/node-colours';
 import { ScrollOverflowDirective } from '../../../../directives/scroll-overflow.directive';
 import { type NodeColors } from '../../../../models/ModelRecord';
-import { DialogService } from '../../../../services/dialog.service';
+import { DialogService } from '../../../../services/interaction/dialog.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { ScrollHintsComponent } from '../../shared/scroll-hints/scroll-hints.component';
 
@@ -48,7 +48,6 @@ export class NodeColorsDialog {
     '#C8BAA3',
     '#A5B9CA',
   ];
-
   private readonly recordId: string | null = this.workspace.store.currentModelRecord()?.modelId ?? null;
   private pendingColours: NodeColors | null = null;
   protected readonly colours: WritableSignal<NodeColors> = signal(structuredClone(this.workspace.store.currentNodeColors()));

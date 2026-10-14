@@ -24,7 +24,7 @@ Components use `WorkspaceService.store` for state, `.queries` for derived inform
 
 ## Adding a hotkey
 
-1. Add its definition to `EDITOR_SHORTCUTS` in `editor/src/app/utils/shortcuts.ts`; `ShortcutAction` is derived from these entries.
+1. Add its ID to `ShortcutAction` and its definition to `SHORTCUT_DEFINITIONS` in `editor/src/app/utils/shortcuts/definitions.ts`. The typed registry requires a definition for every action. Keyboard encoding, validation and formatting live in `ShortcutBindings`.
 2. Give the entry its ID, category, default key and translation key. Use an existing category unless the action really needs another group.
 3. Add the operation to the typed `actions` record in `ToolBarComponent`. TypeScript requires an implementation for every action ID. Route changes through existing workspace actions or component outputs.
 4. Add the visible action where appropriate. Use `ShortcutService.display(id)` in its tooltip and `.aria(id)` for `aria-keyshortcuts`; never repeat a default key in the template.
@@ -46,21 +46,19 @@ Bindings use lowercase keys joined with `+`, for example `shift+r` or `mod+z`. `
 
 ## Component scan: recommended next boundaries
 
-### 1. Graph viewport controller — first priority
+### Graph viewport and interaction
 
-`GraphComponent` still combines several responsibilities. Drawing and automatic layout are already separate, but mounting/zooming, transforms, viewport restore/fit and resize observation remain mixed with drag/link interactions.
+`GraphViewport` owns D3 zoom, view-box resizing, fitting, transform animation and observer cleanup. It receives the SVG and root group plus callbacks for transform changes and completed gestures. It does not access project state.
 
-The next useful extraction is a plain `GraphViewport` class with a small API for mount, restore, fit, transform and destroy. It should report transform changes to the component. Keep workspace persistence in the component or workspace actions; do not make the viewport controller depend on storage. Preserve saved positions, no fit on inspector changes, and disabled double-click zoom.
+`GraphComponent` owns node/link interactions, layout animation, selection overlays and persistence through workspace actions. Add drawing behaviour to `GraphRenderer`, geometry to `graph.geometry.ts`, and placement rules to `graph.layout.ts`. Keep editing rules in Core and the editing services.
 
-Avoid moving the entire graph into one large service: that would move the coupling rather than reduce it. A second extraction for pointer/link interaction can follow when that behaviour changes.
-
-### 2. Settings pages — before adding another settings section
+### Settings pages — before adding another settings section
 
 The dialog currently has two manageable pages, but both pages share one template, import list and stylesheet. Extract `AppearanceSettingsComponent` and `ShortcutSettingsComponent` when the menu grows. Let the dialog own only Sushi tabs and page placement. Each page should own its content, scrolling and contextual footer; the shortcut page should keep capture state, while `ShortcutService` remains shared.
 
 There is no benefit in separate components for every shortcut row or theme label at this stage. Definitions already generate those repeated elements.
 
-### 3. Catalogue grouping — a smaller, independent extraction
+### Catalogue grouping — a smaller, independent extraction
 
 `RefinementsComponent.groupLocalNodes` can become a pure grouping function if more filtering or category rules are added. This separates model grouping from DOM focus/reveal behaviour and gives the grouping rules a clear test boundary.
 
@@ -74,23 +72,24 @@ Keep Base Nodes and Refinements as separate components: their source data and ac
 
 Run `npm run lint`, `npm run format`, `npm run typecheck` and `npx ngc -p editor/tsconfig.app.json --noEmit`. For UI changes, also check keyboard navigation and focus at the edges of scrolling content. For graph changes, check saved viewport restoration and fit with panels both open and closed.
 
-## Review checkpoint (2026-10-13)
-
-Reviewed the view components against the shared conventions: presentation versus model actions, typed inputs/outputs, lifecycle cleanup, focus/keyboard behaviour, repeated UI patterns and extension points.
-
-- Kept small presentational components together; they do not benefit from per-row services or extra wrapper components.
-- Normalised imports and removed duplicate dependencies. Workspace navigation now has one subscription for selection synchronisation and editor cleanup.
-- Confirmation summaries resolve nodes and relationships from all project models, with separate compact scroll areas. Their presentation is independent of removal actions.
-- Property validation runs on a Core snapshot before changes reach the live workspace. The form preserves existing constraints and validates inherited names and keys.
-- The graph viewport remains the next meaningful extraction if graph interactions change. Its existing renderer, geometry and automatic layout boundaries are preserved.
-- The current property dialog is the baseline for the next node-editor experiment; replace its presentation without duplicating schema rules or persistence.
-
 ## Shared dialog list spacing
 
 Use `styles/_surface-list.scss` for bordered action lists and comparable setting rows. `frame` defines the outer border and inset, `inset` spaces the Sushi List, `row` defines content padding and minimum height, and `action` adds soft neutral hover and expanded states. Colors and removal consequences use the same Sushi List size and these shared mixins.
 
-`RunningActionService` owns one resumable action, its project and a model-revision snapshot. `StorageService.modelChanges$` invalidates actions for changed projects; view preferences are excluded. Resume checks persisted revisions again. `RunningActionNotificationComponent` renders the task icon and Resume/Cancel controls. `RemovalReviewService` supplies the deletion-specific dialog snapshot and restoration callback. Confirmation content restores its selected list and scroll position through `reviewPosition`; graph components stay independent of this flow.
+`RunningActionService` owns one resumable action, its project and a model-revision snapshot. `ProjectService.modelChanges$` invalidates actions for changed projects; view preferences are excluded. Resume checks persisted revisions again. `RunningActionNotificationComponent` renders the task icon and Resume/Cancel controls. `RemovalReviewService` supplies the deletion-specific dialog snapshot and restoration callback. Confirmation content restores its selected list and scroll position through `reviewPosition`; graph components stay independent of this flow.
 
-To add a resumable workflow, extend `RunningActionOptions.kind`, add the corresponding notification icon and translated title/hint, then call `start` with its project ID and an async `resume` callback. Honor the callback's abort signal before opening restored UI. Starting another action replaces the previous one. Model writes must use StorageService so invalidation remains consistent.
+To add a resumable workflow, choose a Lucide icon and translated title/hint, then call `start` with its project ID and an async `resume` callback. Honor the callback's abort signal before opening restored UI. Starting another action replaces the previous one. Model writes must use ProjectService so invalidation remains consistent.
 
-`RelationViewComponent` renders the selected relation in the Inspector: endpoints, cardinalities and constraints. The workspace stores node and relation selection separately and clears the other kind on selection. Relations use `/ws/:projectId/:slotId/relation/:relationId`; use `NavigationService.navigateToRelation` rather than writing selection signals from graph components. Graph hit paths support mouse and keyboard selection in Select mode, while Erase keeps its removal behaviour.
+`RelationViewComponent` renders the selected relation in the Inspector: endpoints, cardinalities and constraints. The workspace stores node and relation selection separately and clears the other kind on selection. Relations use `/ws/:projectId/:levelIndex/relation/:relationId`; use `NavigationService.navigateToRelation` rather than writing selection signals from graph components. Graph hit paths support mouse and keyboard selection in Select mode, while Erase keeps its removal behaviour.
+
+## Following a change through the code
+
+For a model edit, start at the component handler, follow it into an editing service if a dialog or selection workflow is involved, then into `WorkspaceActionsService`. Actions call Core and `saveWorkspace`; `ProjectService` updates reactive project state and `ProjectRepositoryService` persists records. Views read `WorkspaceQueriesService` and `WorkspaceStore`.
+
+- Add a model operation to the actions service using the appropriate Core API. Use `requireModelRecord` for level-index lookup and `saveWorkspace` after model changes.
+- Add derived UI state to the queries service. Put state-independent evaluation in `ModelQueries`; keep returned UI contracts in `models/WorkspaceDetails.ts`.
+- Add a dialog in its own folder under `view/components/dialogs` and open it through `DialogService`. Use its pending/error handling rather than adding a second mechanism.
+- Add a shortcut to `ShortcutAction` and `SHORTCUT_DEFINITIONS`, then connect it to the relevant handler in `ToolBarComponent`. Labels belong in every translation file.
+- Add a database change as a new version in `AppDatabase`, with a migration for existing records. `levelIndex` is NORI’s display position; Core model identities are stored in `record.gmodel.id`. The existing IndexedDB key `record.modelId` identifies the persisted record.
+
+When changing asynchronous editing code, capture the workspace context before opening or awaiting a workflow and verify it before applying the result. `WorkspaceService.isCurrent` checks project and model together.

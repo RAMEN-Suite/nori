@@ -3,6 +3,7 @@ import { type Translation, type TranslocoLoader } from '@jsverse/transloco';
 import { type Observable, of } from 'rxjs';
 import { Languages } from './languages';
 
+/** Loads bundled translations for supported application languages. */
 @Injectable({ providedIn: 'root' })
 export class TranslationLoader implements TranslocoLoader {
   public getTranslation(language: string): Observable<Translation> {

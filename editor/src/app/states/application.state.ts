@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { Languages, type AppLanguage, type TranslationLanguage } from '../i18n/languages';
-import { LocalStorageService } from '../services/local-storage.service';
+import { LocalStorageService } from '../services/persistence/local-storage.service';
 import { APP_THEME, APP_THEMES, DEFAULT_THEME, type AppTheme } from '../models/Appearance';
 
 interface State {
@@ -26,20 +26,20 @@ const defaultState: State = {
   animations: !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
 };
 
+/** Restores and applies appearance, language and animation preferences. */
 @Injectable({ providedIn: 'root' })
 export class ApplicationState {
-  private static readonly STORAGE_KEY: string = 'application';
-
   private readonly storageService: LocalStorageService = inject(LocalStorageService);
   private readonly translations: TranslocoService = inject(TranslocoService);
   private readonly document: Document = inject(DOCUMENT);
+
+  private static readonly STORAGE_KEY: string = 'application';
   private readonly systemLanguage: WritableSignal<TranslationLanguage> = signal(Languages.resolve(navigator.languages));
   private readonly preferences: WritableSignal<State> = signal(defaultState);
-
   private readonly colourPreference: MediaQueryList = window.matchMedia('(prefers-color-scheme: dark)');
   private readonly systemDark: WritableSignal<boolean> = signal(this.colourPreference.matches);
-
   public readonly state: Signal<State> = this.preferences.asReadonly();
+
   public readonly language: Signal<TranslationLanguage> = computed((): TranslationLanguage => {
     const language: AppLanguage = this.state().language;
     return language === 'system' ? this.systemLanguage() : language;

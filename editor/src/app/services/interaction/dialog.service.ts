@@ -4,6 +4,7 @@ export type DialogSize = 'compact' | 'form';
 
 export interface DialogOptions {
   readonly size?: DialogSize;
+  readonly detailsOpen?: boolean;
   readonly closeOnBackdrop?: boolean;
   readonly header?: string;
   readonly headerKey?: string;
@@ -24,15 +25,16 @@ export interface OpenDialog {
   readonly inputs: Record<string, unknown>;
 }
 
+/** Owns the active dialog, its pending/error state and focus restoration for tooltips. */
 @Injectable({ providedIn: 'root' })
 export class DialogService {
+  private readonly document: Document = inject(DOCUMENT);
+
+  private tooltipRestoreTarget: Element | null = null;
   public readonly current: WritableSignal<OpenDialog | null> = signal(null);
   public readonly detailsOpen: WritableSignal<boolean> = signal(false);
   public readonly error: WritableSignal<string | null> = signal(null);
   public readonly pending: WritableSignal<boolean> = signal(false);
-
-  private readonly document: Document = inject(DOCUMENT);
-  private tooltipRestoreTarget: Element | null = null;
 
   public consumeRestoredFocus(target: Element): boolean {
     if (target !== this.tooltipRestoreTarget) return false;
@@ -43,7 +45,8 @@ export class DialogService {
   public open(component: Type<unknown>, options: DialogOptions = {}): DialogRef {
     this.tooltipRestoreTarget = this.document.activeElement;
     this.error.set(null);
-    this.detailsOpen.set(false);
+    this.detailsOpen.set(options.detailsOpen ?? false);
+
     const dialog: OpenDialog = {
       component,
       closeOnBackdrop: options.closeOnBackdrop ?? false,
@@ -52,6 +55,7 @@ export class DialogService {
       width: options.width ?? (options.size === 'compact' ? 'var(--nori-dialog-width-compact)' : null),
       inputs: options.inputValues ?? {},
     };
+
     this.current.set(dialog);
     return {
       close: (): void => {
@@ -68,6 +72,7 @@ export class DialogService {
     if (this.pending()) return;
     this.pending.set(true);
     this.error.set(null);
+
     try {
       await action();
       if (options.closeOnSuccess !== false) this.current.set(null);

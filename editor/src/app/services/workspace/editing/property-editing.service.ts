@@ -1,8 +1,8 @@
 import { computed, inject, Injectable, signal, type Signal, type WritableSignal } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
-import { DialogService, type DialogRef } from '../dialog.service';
-import { PropertyEditorComponent } from '../../view/components/workspace/property-editor/property-editor.component';
-import { WorkspaceService } from './workspace.service';
+import { DialogService, type DialogRef } from '../../interaction/dialog.service';
+import { PropertyEditorComponent } from '../../../view/components/workspace/property-editor/property-editor.component';
+import { WorkspaceService } from '../workspace.service';
 
 interface PropertySelection {
   readonly modelId: string;
@@ -10,12 +10,15 @@ interface PropertySelection {
   readonly attributeId: string | null;
 }
 
+/** Owns the property-editing dialog and its current node/property selection. */
 @Injectable({ providedIn: 'root' })
 export class PropertyEditingService {
   private readonly workspace: WorkspaceService = inject(WorkspaceService);
   private readonly dialogs: DialogService = inject(DialogService);
   private readonly translations: TranslocoService = inject(TranslocoService);
+
   private dialogRef: DialogRef | null = null;
+
   private readonly selection: WritableSignal<PropertySelection | null> = signal<PropertySelection | null>(null);
 
   public readonly current: Signal<PropertySelection | null> = computed((): PropertySelection | null => {

@@ -1,6 +1,5 @@
 import { type Model } from '@ramen-suite/core/model';
 
-/** Orders display slots so that imported bases precede the levels that use them. */
 export function orderModelsByImports(models: readonly Model[]): Model[] {
   const byId: ReadonlyMap<string, Model> = new Map(models.map((model: Model): [string, Model] => [model.id, model]));
   const ordered: Model[] = [];

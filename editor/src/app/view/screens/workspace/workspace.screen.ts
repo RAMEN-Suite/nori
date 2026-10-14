@@ -17,10 +17,10 @@ import { filter } from 'rxjs';
 import { PARAMETERS } from '../../../app-route-parameters';
 import { type Manifest } from '../../../models/Manifest';
 import { type ModelRecord } from '../../../models/ModelRecord';
-import { NavigationService } from '../../../services/navigation.service';
-import { StorageService } from '../../../services/storage.service';
-import { NodeEditingService } from '../../../services/workspace/node-editing.service';
-import { PropertyEditingService } from '../../../services/workspace/property-editing.service';
+import { NavigationService } from '../../../services/interaction/navigation.service';
+import { ProjectService } from '../../../services/projects/project.service';
+import { NodeEditingService } from '../../../services/workspace/editing/node-editing.service';
+import { PropertyEditingService } from '../../../services/workspace/editing/property-editing.service';
 import { WorkspaceService } from '../../../services/workspace/workspace.service';
 import { WindowState } from '../../../states/window.state';
 import { BaseNodesComponent } from '../../components/workspace/catalogue/base-nodes/base-nodes.component';
@@ -55,12 +55,10 @@ export class WorkspaceScreen implements OnInit {
   private readonly windowState: WindowState = inject(WindowState);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   private readonly navigation: NavigationService = inject(NavigationService);
-  private readonly storage: StorageService = inject(StorageService);
+  private readonly projects: ProjectService = inject(ProjectService);
   private readonly router: Router = inject(Router);
   private readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
-
   protected readonly propertyEditing: PropertyEditingService = inject(PropertyEditingService);
-
   private readonly nodeEditing: NodeEditingService = inject(NodeEditingService);
 
   protected readonly levelsOpen: WritableSignal<boolean> = signal(true);
@@ -69,9 +67,8 @@ export class WorkspaceScreen implements OnInit {
   protected readonly inspectorOpen: WritableSignal<boolean> = signal(true);
 
   protected readonly levelsHeight: Signal<string> = computed(
-    (): string => `calc(8.5rem + ${Math.min(6, Math.max(2, this.storage.records().length))} * 2.25rem)`,
+    (): string => `calc(8.5rem + ${Math.min(6, Math.max(2, this.projects.records().length))} * 2.25rem)`,
   );
-
   protected readonly graphPadding: Signal<GraphPadding> = computed(
     (): GraphPadding => ({
       top: 100,
@@ -91,7 +88,7 @@ export class WorkspaceScreen implements OnInit {
         takeUntilDestroyed(),
       )
       .subscribe((): void => {
-        this.syncRouteSelection();
+        this.syncSelectionFromRoute();
         this.propertyEditing.close();
       });
 
@@ -100,8 +97,8 @@ export class WorkspaceScreen implements OnInit {
       if (!this.workspace.store.currentRelationId() || !this.workspace.store.currentModel()) return;
       if (!this.workspace.queries.currentRelation()) {
         void this.navigation
-          .navigateToSlot(this.workspace.store.currentSlot())
-          .catch((error: unknown): void => this.storage.reportError(error));
+          .navigateToLevel(this.workspace.store.currentLevelIndex())
+          .catch((error: unknown): void => this.projects.reportError(error));
       }
     });
 
@@ -110,14 +107,14 @@ export class WorkspaceScreen implements OnInit {
     });
 
     effect((): void => {
-      const manifest: Manifest | null = this.storage.selectedManifest();
+      const manifest: Manifest | null = this.projects.selectedManifest();
       this.windowState.setTitle(manifest?.name ?? '', 'pencil');
     });
   }
 
   public ngOnInit(): void {
-    this.syncRouteSelection();
-    void this.storage.refreshManifests().catch((error: unknown): void => this.storage.reportError(error));
+    this.syncSelectionFromRoute();
+    void this.projects.refreshManifests().catch((error: unknown): void => this.projects.reportError(error));
   }
 
   protected handleToggleCatalogue(): void {
@@ -129,28 +126,28 @@ export class WorkspaceScreen implements OnInit {
   }
 
   private ensureSelectedLevel(): void {
-    const projectId: string | null = this.storage.loadedProjectId();
+    const projectId: string | null = this.projects.loadedProjectId();
     if (!projectId || projectId !== this.activatedRoute.snapshot.paramMap.get(PARAMETERS.PROJECT)) return;
-    if (this.storage.recordsBySlot().has(this.workspace.store.currentSlot())) return;
+    if (this.projects.recordsByLevelIndex().has(this.workspace.store.currentLevelIndex())) return;
 
-    const next: ModelRecord | undefined = this.storage.records().find((record: ModelRecord): boolean => record.slot !== 0);
+    const next: ModelRecord | undefined = this.projects.records().find((record: ModelRecord): boolean => record.levelIndex !== 0);
     void this.router
-      .navigate(['/ws', projectId, next?.slot ?? 0])
-      .catch((error: unknown): void => this.storage.reportError(error));
+      .navigate(['/ws', projectId, next?.levelIndex ?? 0])
+      .catch((error: unknown): void => this.projects.reportError(error));
   }
 
-  private syncRouteSelection(): void {
+  private syncSelectionFromRoute(): void {
     const projectId: string | null = this.activatedRoute.snapshot.paramMap.get(PARAMETERS.PROJECT);
-    if (projectId) this.storage.selectProject(projectId);
+    if (projectId) this.projects.selectProject(projectId);
 
     let route: ActivatedRoute | null = this.activatedRoute;
     while (route.firstChild) route = route.firstChild;
 
     const paramMap: ParamMap = route.snapshot.paramMap;
-    const slot: string | null = paramMap.get(PARAMETERS.SLOT);
+    const levelIndex: string | null = paramMap.get(PARAMETERS.LEVEL);
     const nodeId: string | null = paramMap.get(PARAMETERS.NODE);
 
-    this.workspace.store.setCurrentSlot(slot ? Number(slot) : null);
+    this.workspace.store.selectLevel(levelIndex ? Number(levelIndex) : null);
     this.workspace.store.setCurrentNodeId(nodeId);
     const relationId: string | null = paramMap.get(PARAMETERS.RELATION);
     if (relationId) this.workspace.store.setCurrentRelationId(relationId);

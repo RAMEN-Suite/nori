@@ -12,7 +12,6 @@ export class Languages {
     en: english,
     it: italian,
   };
-
   public static readonly defaultLanguage: TranslationLanguage = 'en';
   public static readonly supported: readonly TranslationLanguage[] = Object.keys(Languages.translations).filter(
     Languages.isSupported,

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 
+/** Saves JSON through the browser’s file picker or a download fallback. */
 @Injectable({
   providedIn: 'root',
 })

@@ -4,7 +4,7 @@ import { LucideCopy, LucideGitBranch, LucideTrash } from '@lucide/angular';
 import { ModelRef, type NodeSuggestion } from '@ramen-suite/core/model';
 import { Button, Card } from '@sushi-kit/angular';
 import { TooltipDirective } from '../../../../../directives/tooltip.directive';
-import { NodeEditingService } from '../../../../../services/workspace/node-editing.service';
+import { NodeEditingService } from '../../../../../services/workspace/editing/node-editing.service';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
 
 @Component({

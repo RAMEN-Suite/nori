@@ -3,22 +3,24 @@ import { Modeller, type Id, type Model } from '@ramen-suite/core/model';
 import { RamenModel, RamenModelFormat, type RamenFile } from '@ramen-suite/core/ramen';
 import { getDefaultNodeColours } from '../utils/node-colours';
 import { type ModelRecord, type NodeColors } from '../models/ModelRecord';
-import { StorageService } from '../services/storage.service';
+import { ProjectService } from '../services/projects/project.service';
 
+/** Owns the loaded Core workspace, selected elements and model change notifications. */
 @Injectable({ providedIn: 'root' })
 export class WorkspaceStore {
-  private readonly storage: StorageService = inject(StorageService);
+  private readonly projects: ProjectService = inject(ProjectService);
+
   private readonly workspace: WritableSignal<RamenModel | null> = signal(null);
   private readonly levels: Map<string, RamenModel> = new Map();
   private referenceModels: readonly Model[] = [];
   private readonly change: WritableSignal<number> = signal(0);
-
-  public readonly currentSlot: WritableSignal<number> = signal(1);
+  public readonly currentLevelIndex: WritableSignal<number> = signal(1);
   public readonly currentRelationId: WritableSignal<Id | null> = signal(null);
   public readonly currentNodeId: WritableSignal<Id | null> = signal(null);
   public readonly currentNodeColors: WritableSignal<NodeColors> = signal({});
+
   public readonly currentModelRecord: Signal<ModelRecord | null> = computed(
-    (): ModelRecord | null => this.storage.recordsBySlot().get(this.currentSlot()) ?? null,
+    (): ModelRecord | null => this.projects.recordsByLevelIndex().get(this.currentLevelIndex()) ?? null,
   );
   public readonly currentModel: Signal<Model | null> = computed((): Model | null => {
     this.change();
@@ -33,8 +35,8 @@ export class WorkspaceStore {
 
   public constructor() {
     effect((): void => {
-      const projectId: string | null = this.storage.loadedProjectId();
-      const records: ModelRecord[] = untracked((): ModelRecord[] => this.storage.records());
+      const projectId: string | null = this.projects.loadedProjectId();
+      const records: ModelRecord[] = untracked((): ModelRecord[] => this.projects.records());
       this.restoreWorkspace(projectId ? records.map((record: ModelRecord): Model => record.gmodel) : []);
     });
     effect((): void => {
@@ -59,7 +61,6 @@ export class WorkspaceStore {
     return workspace;
   }
 
-  /** Exports every project level and rejects an exchange that would omit a branch. */
   public exportModel(): RamenFile {
     const workspace: RamenModel = this.getWorkspace();
     const level: RamenModel | undefined = [...this.levels.values()].at(-1);
@@ -118,8 +119,8 @@ export class WorkspaceStore {
     this.change.update((value: number): number => value + 1);
   }
 
-  public setCurrentSlot(slot: number | null): void {
-    this.currentSlot.set(slot === null ? 1 : Math.max(0, slot));
+  public selectLevel(levelIndex: number | null): void {
+    this.currentLevelIndex.set(levelIndex === null ? 1 : Math.max(0, levelIndex));
   }
 
   public setCurrentNodeId(nodeId: Id | null): void {

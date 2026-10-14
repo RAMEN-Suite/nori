@@ -27,9 +27,9 @@ import {
 import { ScrollOverflowDirective } from '../../../../../directives/scroll-overflow.directive';
 import { TooltipDirective } from '../../../../../directives/tooltip.directive';
 import { type ModelRecord } from '../../../../../models/ModelRecord';
-import { NavigationService } from '../../../../../services/navigation.service';
-import { StorageService } from '../../../../../services/storage.service';
-import { NodeEditingService } from '../../../../../services/workspace/node-editing.service';
+import { NavigationService } from '../../../../../services/interaction/navigation.service';
+import { ProjectService } from '../../../../../services/projects/project.service';
+import { NodeEditingService } from '../../../../../services/workspace/editing/node-editing.service';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
 import { ScrollHintsComponent } from '../../../shared/scroll-hints/scroll-hints.component';
 
@@ -66,7 +66,7 @@ interface BaseNodeGroup {
 export class BaseNodesComponent {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   protected readonly nodeEditing: NodeEditingService = inject(NodeEditingService);
-  private readonly storage: StorageService = inject(StorageService);
+  private readonly projects: ProjectService = inject(ProjectService);
   private readonly navigation: NavigationService = inject(NavigationService);
 
   public readonly nodeSelected: OutputEmitterRef<void> = output();
@@ -75,6 +75,7 @@ export class BaseNodesComponent {
   protected readonly collapsedGroups: WritableSignal<ReadonlySet<string>> = signal(new Set<string>());
   protected readonly pending: WritableSignal<boolean> = signal(false);
   protected readonly trackNode: ListTrackBy<NodeSuggestion> = (_index: number, node: NodeSuggestion): string => node.ref;
+
   protected readonly visible: Signal<ReadonlySet<string>> = computed(
     (): ReadonlySet<string> =>
       new Set([
@@ -87,8 +88,8 @@ export class BaseNodesComponent {
   protected readonly groups: Signal<readonly BaseNodeGroup[]> = computed((): readonly BaseNodeGroup[] => {
     const query: string = this.search().trim().toLowerCase();
     const suggestions: readonly NodeSuggestion[] = this.workspace.queries.nodeSuggestions();
-    return [...this.storage.records()]
-      .sort((left: ModelRecord, right: ModelRecord): number => right.slot - left.slot)
+    return [...this.projects.records()]
+      .sort((left: ModelRecord, right: ModelRecord): number => right.levelIndex - left.levelIndex)
       .filter((record: ModelRecord): boolean => record.gmodel.id !== this.workspace.store.currentModel()?.id)
       .map(
         (record: ModelRecord): BaseNodeGroup => ({
@@ -113,10 +114,10 @@ export class BaseNodesComponent {
 
   protected async handleSelect(reference: string): Promise<void> {
     try {
-      await this.navigation.navigateToNode(this.workspace.store.currentSlot(), reference);
+      await this.navigation.navigateToNode(this.workspace.store.currentLevelIndex(), reference);
       this.nodeSelected.emit();
     } catch (error: unknown) {
-      this.storage.reportError(error);
+      this.projects.reportError(error);
     }
   }
 
@@ -136,7 +137,7 @@ export class BaseNodesComponent {
 
       await this.handleSelect(reference);
     } catch (error: unknown) {
-      this.storage.reportError(error);
+      this.projects.reportError(error);
     } finally {
       this.pending.set(false);
     }

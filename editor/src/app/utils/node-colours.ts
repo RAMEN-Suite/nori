@@ -11,7 +11,6 @@ const RAMEN_COLOURS: NodeColors = {
   [RAMEN_ELEMENT.COLLECTION]: pastelColour(245, 265),
 };
 
-/** Stable type colours are shared by their refinements, independently of names and model levels. */
 export function getDefaultNodeColours(models: readonly Model[]): NodeColors {
   const nodes: Map<string, Node> = new Map();
   for (const model of models) {

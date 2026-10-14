@@ -4,8 +4,8 @@ import { LucideShieldCheck } from '@lucide/angular';
 import { type Diagnostic } from '@ramen-suite/core/model';
 import { Button, ToastService } from '@sushi-kit/angular';
 import { TooltipDirective } from '../../../../directives/tooltip.directive';
-import { DialogService } from '../../../../services/dialog.service';
-import { ShortcutService } from '../../../../services/shortcut.service';
+import { DialogService } from '../../../../services/interaction/dialog.service';
+import { ShortcutService } from '../../../../services/interaction/shortcut.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { ModelDiagnosticsDialog } from '../../dialogs/model-diagnostics/model-diagnostics.dialog';
 
@@ -17,12 +17,10 @@ import { ModelDiagnosticsDialog } from '../../dialogs/model-diagnostics/model-di
 })
 export class ModelValidationComponent {
   protected readonly shortcuts: ShortcutService = inject(ShortcutService);
-
   private readonly workspace: WorkspaceService = inject(WorkspaceService);
   private readonly dialogs: DialogService = inject(DialogService);
   private readonly toasts: ToastService = inject(ToastService);
   private readonly translations: TranslocoService = inject(TranslocoService);
-
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
 
   private toastId: string | null = null;

@@ -3,9 +3,9 @@ import { FormsModule, type NgForm } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { LucideSave, LucideX } from '@lucide/angular';
 import { Button, Input, Textarea } from '@sushi-kit/angular';
-import { type Manifest } from '../../../../models/Manifest';
-import { DialogService } from '../../../../services/dialog.service';
-import { StorageService, type UpdateManifest } from '../../../../services/storage.service';
+import { type Manifest, type UpdateManifest } from '../../../../models/Manifest';
+import { DialogService } from '../../../../services/interaction/dialog.service';
+import { ProjectService } from '../../../../services/projects/project.service';
 
 @Component({
   selector: 'nori-project-edit-dialog',
@@ -15,9 +15,11 @@ import { StorageService, type UpdateManifest } from '../../../../services/storag
   styleUrl: './project-edit.dialog.scss',
 })
 export class ProjectEditDialog implements OnInit {
-  private readonly storage: StorageService = inject(StorageService);
+  private readonly projects: ProjectService = inject(ProjectService);
   protected readonly dialogs: DialogService = inject(DialogService);
+
   public readonly project: InputSignal<Manifest> = input.required();
+
   protected draft: UpdateManifest = { name: '', description: '' };
 
   public ngOnInit(): void {
@@ -34,7 +36,7 @@ export class ProjectEditDialog implements OnInit {
     if (form.invalid || draft.name.trim().length < 3 || !this.hasChanges()) return;
     await this.dialogs.run(
       (): Promise<void> =>
-        this.storage.updateProject(this.project().projectId, {
+        this.projects.updateProject(this.project().projectId, {
           name: draft.name.trim(),
           description: draft.description.trim(),
         }),
