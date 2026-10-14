@@ -24,35 +24,17 @@
               (click)="showDetails(action.kind, $event)"
             >
               <span class="impact-inspect-icon" aria-hidden="true"><svg lucideSearch class="size-4 opacity-60"></svg></span>
-              <span class="min-w-0 flex-1 text-left">{{
-                t(
-                  action.kind === 'nodes'
-                    ? action.count === 1
-                      ? 'editor.affectedNodeRemoval'
-                      : 'editor.affectedNodesRemoval'
-                    : action.count === 1
-                      ? 'editor.affectedRelationRemoval'
-                      : 'editor.affectedRelationsRemoval',
-                  { count: action.count }
-                )
-              }}</span>
+              <span class="min-w-0 flex-1 text-left">{{ t(impactLabel(action), { count: action.count }) }}</span>
             </button>
           </ng-template>
         </sui-list>
       </div>
     </div>
   }
-  @if (affectedLevels().length) {
-    <p class="text-base-content/60 text-xs leading-relaxed">{{ t('editor.levelsWillBeRemoved', { count: affectedLevels().length }) }}</p>
-  }
   @if (selection(); as selected) {
-    <aside
-      id="confirmation-impact-details"
-      class="confirmation-details"
-      [attr.aria-label]="t(selected === 'nodes' ? 'editor.affectedNodesLabel' : 'editor.affectedRelationsLabel')"
-    >
+    <aside id="confirmation-impact-details" class="confirmation-details" [attr.aria-label]="t(impactLabels[selected].title)">
       <header class="impact-detail-header">
-        <h3 class="text-sm font-medium">{{ t(selected === 'nodes' ? 'editor.affectedNodesLabel' : 'editor.affectedRelationsLabel') }}</h3>
+        <h3 class="text-sm font-medium">{{ t(impactLabels[selected].title) }}</h3>
         <button
           suiButton
           severity="neutral"
@@ -66,80 +48,100 @@
         </button>
       </header>
       <div class="impact-scroll-frame">
-        <div
-          noriScrollOverflow
-          #detailScroll="scrollOverflow"
-          #detailViewport
-          class="impact-detail-scroll"
-          tabindex="0"
-          [attr.aria-label]="t(selected === 'nodes' ? 'editor.affectedNodesLabel' : 'editor.affectedRelationsLabel')"
-        >
-          <sui-list size="xs" [items]="entries()" [dividers]="false" [rowHover]="false">
-            <ng-template suiListItem let-entry>
-              @if (entry.kind === 'group') {
-                <h4 class="impact-group col-span-full" [class.impact-group-subsequent]="entry.subsequent">
-                  {{ t('editor.removalLevelGroup', { name: entry.level.modelName }) }}
-                </h4>
-              } @else {
-                @let item = entry.item;
-                <button
-                  suiButton
-                  size="sm"
-                  severity="neutral"
-                  variant="text"
-                  class="impact-detail-entry col-span-full"
-                  [attr.aria-label]="t('editor.inspectRemovalItem', { name: item.name })"
-                  [disabled]="dialogs.pending() || !item.location"
-                  (click)="item.location && inspect(item.location)"
-                >
-                  <span class="impact-inspect-icon" aria-hidden="true"><svg lucideSearch class="size-4 opacity-60"></svg></span>
-                  <span class="min-w-0 flex-1 text-left">
-                    @if (selected === 'nodes') {
-                      <span class="text-sm font-medium break-words">{{ item.name }}</span>
-                      <span class="impact-node-meta mt-1 flex flex-wrap gap-x-1 gap-y-0.5 text-xs font-normal">
-                        <span
-                          >{{
-                            t(item.relationshipCount === 1 ? 'editor.nodeRelationshipSingle' : 'editor.nodeRelationshipCount', {
-                              count: item.relationshipCount,
+        <div class="nori-scroll-frame flex-1">
+          <div
+            noriScrollOverflow
+            #detailScroll="scrollOverflow"
+            #detailViewport
+            class="impact-detail-scroll"
+            tabindex="0"
+            [attr.aria-label]="t(impactLabels[selected].title)"
+          >
+            <sui-list size="xs" [items]="entries()" [dividers]="false" [rowHover]="false">
+              <ng-template suiListItem let-entry>
+                @if (entry.kind === 'group') {
+                  <h4 class="impact-group col-span-full" [class.impact-group-subsequent]="entry.subsequent">
+                    {{ t('editor.removalLevelGroup', { name: entry.level.modelName }) }}
+                  </h4>
+                } @else {
+                  @let item = entry.item;
+                  <button
+                    suiButton
+                    size="sm"
+                    severity="neutral"
+                    variant="text"
+                    class="impact-detail-entry col-span-full"
+                    [attr.aria-label]="
+                      t(selected === 'levels' ? 'editor.inspectRemovalLevel' : 'editor.inspectRemovalItem', {
+                        name: selected === 'levels' ? item.modelName : item.name,
+                      })
+                    "
+                    [disabled]="dialogs.pending() || !item.location"
+                    (click)="item.location && inspect(item.location)"
+                  >
+                    <span class="impact-inspect-icon" aria-hidden="true"><svg lucideSearch class="size-4 opacity-60"></svg></span>
+                    <span class="min-w-0 flex-1 text-left">
+                      @if (selected === 'levels') {
+                        <span class="text-sm font-medium break-words">{{ item.modelName }}</span>
+                        <span class="impact-node-meta mt-1 flex flex-wrap gap-x-1 gap-y-0.5 text-xs font-normal">
+                          <span
+                            >{{
+                              t(item.nodeCount === 1 ? 'editor.modelNodeSingle' : 'editor.modelNodeCount', { count: item.nodeCount })
+                            }},</span
+                          >
+                          <span>{{
+                            t(item.relationCount === 1 ? 'editor.nodeRelationshipSingle' : 'editor.nodeRelationshipCount', {
+                              count: item.relationCount,
                             })
-                          }},</span
-                        >
-                        <span
-                          >{{
-                            t(item.propertyCount === 1 ? 'editor.nodePropertySingle' : 'editor.nodePropertyCount', {
-                              count: item.propertyCount,
+                          }}</span>
+                        </span>
+                      } @else if (selected === 'nodes') {
+                        <span class="text-sm font-medium break-words">{{ item.name }}</span>
+                        <span class="impact-node-meta mt-1 flex flex-wrap gap-x-1 gap-y-0.5 text-xs font-normal">
+                          <span
+                            >{{
+                              t(item.relationshipCount === 1 ? 'editor.nodeRelationshipSingle' : 'editor.nodeRelationshipCount', {
+                                count: item.relationshipCount,
+                              })
+                            }},</span
+                          >
+                          <span
+                            >{{
+                              t(item.propertyCount === 1 ? 'editor.nodePropertySingle' : 'editor.nodePropertyCount', {
+                                count: item.propertyCount,
+                              })
+                            }},</span
+                          >
+                          <span>{{
+                            t(item.constraintCount === 1 ? 'editor.nodeConstraintSingle' : 'editor.nodeConstraintCount', {
+                              count: item.constraintCount,
                             })
-                          }},</span
+                          }}</span>
+                        </span>
+                      } @else {
+                        <span class="flex flex-wrap items-center gap-1.5 text-sm font-medium break-words">
+                          <span>{{ item.from }}</span>
+                          <svg lucideArrowRight class="text-base-content/45 size-3.5 shrink-0" aria-hidden="true"></svg>
+                          <span class="sr-only">{{ t('editor.relationTarget') }}</span>
+                          <span>{{ item.to }}</span>
+                        </span>
+                        <span class="impact-node-meta mt-1 block text-xs font-normal break-words"
+                          >{{ item.name }},
+                          {{
+                            t(item.constraintCount === 1 ? 'editor.nodeConstraintSingle' : 'editor.nodeConstraintCount', {
+                              count: item.constraintCount,
+                            })
+                          }}</span
                         >
-                        <span>{{
-                          t(item.constraintCount === 1 ? 'editor.nodeConstraintSingle' : 'editor.nodeConstraintCount', {
-                            count: item.constraintCount,
-                          })
-                        }}</span>
-                      </span>
-                    } @else {
-                      <span class="flex flex-wrap items-center gap-1.5 text-sm font-medium break-words">
-                        <span>{{ item.from }}</span>
-                        <svg lucideArrowRight class="text-base-content/45 size-3.5 shrink-0" aria-hidden="true"></svg>
-                        <span class="sr-only">{{ t('editor.relationTarget') }}</span>
-                        <span>{{ item.to }}</span>
-                      </span>
-                      <span class="impact-node-meta mt-1 block text-xs font-normal break-words"
-                        >{{ item.name }},
-                        {{
-                          t(item.constraintCount === 1 ? 'editor.nodeConstraintSingle' : 'editor.nodeConstraintCount', {
-                            count: item.constraintCount,
-                          })
-                        }}</span
-                      >
-                    }
-                  </span>
-                </button>
-              }
-            </ng-template>
-          </sui-list>
+                      }
+                    </span>
+                  </button>
+                }
+              </ng-template>
+            </sui-list>
+          </div>
+          <nori-scroll-hints [up]="detailScroll.canScrollUp()" [down]="detailScroll.canScrollDown()" />
         </div>
-        <nori-scroll-hints [up]="detailScroll.canScrollUp()" [down]="detailScroll.canScrollDown()" />
       </div>
     </aside>
   }

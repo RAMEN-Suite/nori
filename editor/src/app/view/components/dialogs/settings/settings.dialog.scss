@@ -100,18 +100,3 @@
     grid-template-columns: minmax(0, 1fr) 8rem;
   }
 }
-
-.settings-scroll-frame {
-  position: relative;
-  display: flex;
-  flex: 1;
-  min-height: 0;
-  flex-direction: column;
-  &:hover,
-  &:focus-within {
-    --nori-scroll-hint-play-state: running;
-  }
-  nori-scroll-hints {
-    inset: 0.25rem 1rem 0.25rem 0.25rem;
-  }
-}

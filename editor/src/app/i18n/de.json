@@ -145,7 +145,7 @@
     "editNamedLevel": "{{name}} bearbeiten",
     "removeNamedLevel": "{{name}} entfernen",
     "levelParent": "Die neue Ebene baut auf {{name}} auf.",
-    "confirmRemoveLevels": "Wenn Du {{name}} entfernst, werden auch alle davon abhängigen Modellebenen entfernt. Folgende Ebenen sind betroffen:",
+    "confirmRemoveLevels": "Wenn du {{name}} löschst, werden diese Modellebene, ihre Inhalte und alle davon abhängigen Modellebenen dauerhaft entfernt.",
     "coloursHint": "Farben gelten für jeden Grundtyp und seine Verfeinerungen.\nÄnderungen werden sofort im Graph angezeigt.",
     "colourForNode": "Farbe für {{name}}",
     "resetColours": "Farben zurücksetzen",
@@ -259,7 +259,6 @@
     "customColour": "Eigene Farbe",
     "invalidHexColour": "Gib einen gültigen Hex-Farbwert ein, z. B. #6EBEF5.",
     "suggestedColours": "Farbvorschläge",
-    "levelsWillBeRemoved": "{{count}} Modellebenen werden ebenfalls entfernt.",
     "closeRemovalDetails": "Details schließen",
     "inspectRemovalItem": "{{name}} im Graph ansehen",
     "nodeRelationshipCount": "{{count}} Beziehungen",
@@ -283,6 +282,12 @@
     "relationCardinality": "Kardinalität: {{value}}",
     "constraints": "Constraints",
     "relationUnavailable": "Diese Beziehung ist nicht mehr verfügbar.",
-    "selectNamedRelation": "{{name}} von {{from}} nach {{to}} auswählen"
+    "selectNamedRelation": "{{name}} von {{from}} nach {{to}} auswählen",
+    "affectedLevelRemoval": "1 Modellebene wird entfernt",
+    "affectedLevelsRemoval": "{{count}} Modellebenen werden entfernt",
+    "affectedLevelsLabel": "Abhängige Modellebenen",
+    "inspectRemovalLevel": "{{name}} im Arbeitsbereich ansehen",
+    "modelNodeSingle": "{{count}} Knoten",
+    "modelNodeCount": "{{count}} Knoten"
   }
 }

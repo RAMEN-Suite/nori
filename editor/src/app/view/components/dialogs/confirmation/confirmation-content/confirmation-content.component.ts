@@ -20,6 +20,7 @@ import { LucideArrowRight, LucideSearch, LucideX } from '@lucide/angular';
 import { Button, List, ListItemTemplate } from '@sushi-kit/angular';
 import {
   type AffectedLevel,
+  type AffectedModelLevel,
   type AffectedNode,
   type AffectedRelation,
   type RemovalLocation,
@@ -37,12 +38,12 @@ interface MessagePart {
   readonly emphasized: boolean;
 }
 
-type AffectedItem = AffectedNode | AffectedRelation;
+type AffectedItem = AffectedNode | AffectedRelation | AffectedModelLevel;
 type ImpactEntry =
   | { readonly kind: 'group'; readonly level: AffectedLevel; readonly subsequent: boolean }
   | { readonly kind: 'item'; readonly item: AffectedItem };
 
-type ImpactKind = 'nodes' | 'relations';
+type ImpactKind = RemovalReviewPosition['selection'];
 interface ImpactAction {
   readonly kind: ImpactKind;
   readonly count: number;
@@ -82,15 +83,35 @@ export class ConfirmationContentComponent {
   public readonly details: InputSignal<readonly string[]> = input<readonly string[]>([]);
   public readonly affectedNodes: InputSignal<readonly AffectedNode[]> = input<readonly AffectedNode[]>([]);
   public readonly affectedRelations: InputSignal<readonly AffectedRelation[]> = input<readonly AffectedRelation[]>([]);
-  public readonly affectedLevels: InputSignal<readonly AffectedLevel[]> = input<readonly AffectedLevel[]>([]);
+  public readonly affectedLevels: InputSignal<readonly AffectedModelLevel[]> = input<readonly AffectedModelLevel[]>([]);
+
+  protected readonly impactLabels: Readonly<Record<ImpactKind, { singular: string; plural: string; title: string }>> = {
+    nodes: { singular: 'editor.affectedNodeRemoval', plural: 'editor.affectedNodesRemoval', title: 'editor.affectedNodesLabel' },
+    relations: {
+      singular: 'editor.affectedRelationRemoval',
+      plural: 'editor.affectedRelationsRemoval',
+      title: 'editor.affectedRelationsLabel',
+    },
+    levels: {
+      singular: 'editor.affectedLevelRemoval',
+      plural: 'editor.affectedLevelsRemoval',
+      title: 'editor.affectedLevelsLabel',
+    },
+  };
 
   protected readonly impactActions: Signal<readonly ImpactAction[]> = computed((): readonly ImpactAction[] =>
     [
+      { kind: 'levels' as const, count: this.affectedLevels().length },
       { kind: 'nodes' as const, count: this.affectedNodes().length },
       { kind: 'relations' as const, count: this.affectedRelations().length },
     ].filter((action: ImpactAction): boolean => action.count > 0),
   );
   protected readonly entries: Signal<readonly ImpactEntry[]> = computed((): readonly ImpactEntry[] => {
+    if (this.selection() === 'levels') {
+      return [...this.affectedLevels()]
+        .sort((left, right): number => (left.modelSlot ?? Infinity) - (right.modelSlot ?? Infinity))
+        .map((item: AffectedModelLevel): ImpactEntry => ({ kind: 'item', item }));
+    }
     const items: readonly AffectedItem[] = this.selection() === 'nodes' ? this.affectedNodes() : this.affectedRelations();
     const groups: Map<string, { level: AffectedLevel; items: AffectedItem[] }> = new Map();
     for (const item of items) {
@@ -134,6 +155,11 @@ export class ConfirmationContentComponent {
     const selection: ImpactKind | null = this.selection();
     if (!selection) return;
     await this.review.inspect(location, { selection, scrollTop: this.detailViewport()?.nativeElement.scrollTop ?? 0 });
+  }
+
+  protected impactLabel(action: ImpactAction): string {
+    const labels: { singular: string; plural: string; title: string } = this.impactLabels[action.kind];
+    return action.count === 1 ? labels.singular : labels.plural;
   }
 
   protected showDetails(kind: ImpactKind, event: Event): void {

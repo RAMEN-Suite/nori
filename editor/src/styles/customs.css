@@ -69,6 +69,16 @@ html[data-motion="off"] [data-nori-motion] {
   transition: none;
 }
 
+.nori-scroll-frame {
+  display: grid;
+  grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+}
+.nori-scroll-frame > [noriScrollOverflow] {
+  grid-area: 1 / 1;
+}
+
 [noriScrollOverflow]:is(:hover, :focus-within) ~ nori-scroll-hints {
   --nori-scroll-hint-play-state: running;
 }

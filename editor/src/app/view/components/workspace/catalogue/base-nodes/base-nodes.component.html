@@ -1,5 +1,5 @@
 <section *transloco="let t" class="flex h-full min-h-0 flex-col">
-  <div class="relative flex min-h-0 flex-1 flex-col">
+  <div class="nori-scroll-frame flex-1">
     <div noriScrollOverflow #scroll="scrollOverflow" class="editor-panel-scroll min-h-0 flex-1 overflow-auto">
       @for (group of groups(); track group.record.modelId) {
         <sui-accordion

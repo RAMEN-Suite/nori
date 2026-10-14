@@ -10,7 +10,7 @@
   >
     <ng-template suiTab value="appearance" [label]="t('settings.appearance')">
       <div class="settings-page">
-        <div class="settings-scroll-frame">
+        <div class="nori-scroll-frame flex-1">
           <div
             noriScrollOverflow
             #appearanceScroll="scrollOverflow"
@@ -105,7 +105,7 @@
     </ng-template>
     <ng-template suiTab value="shortcuts" [label]="t('settings.shortcuts')">
       <div class="settings-page">
-        <div class="settings-scroll-frame">
+        <div class="nori-scroll-frame flex-1">
           <div noriScrollOverflow #shortcutScroll="scrollOverflow" class="settings-scroll editor-panel-scroll flex min-w-0 flex-col gap-7">
             <p class="text-base-content/65 mb-1 text-xs leading-relaxed">{{ t('settings.shortcutsDescription') }}</p>
             @if (shortcutError(); as error) {

@@ -162,7 +162,7 @@ export class ModelLevelsComponent {
           name: record.name,
         },
       },
-      ...getRemovedModelImpact(this.workspace.store.getModels(), preview.models, this.storage.records()),
+      ...getRemovedModelImpact(this.workspace.store.getModels(), preview.models, this.storage.records(), record.gmodel.id),
       buttons: [
         [{ label: this.translations.translate('common.cancel'), severity: 'neutral' }],
         [

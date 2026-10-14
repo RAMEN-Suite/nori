@@ -145,7 +145,7 @@
     "editNamedLevel": "Edit {{name}}",
     "removeNamedLevel": "Remove {{name}}",
     "levelParent": "The new level builds on {{name}}.",
-    "confirmRemoveLevels": "Removing {{name}} also removes every model level that depends on it. The following levels are affected:",
+    "confirmRemoveLevels": "Deleting {{name}} permanently removes this model level, its contents and any dependent model levels.",
     "coloursHint": "Colours apply to each base type and its refinements.\nChanges appear immediately.",
     "colourForNode": "Colour for {{name}}",
     "resetColours": "Reset colours",
@@ -259,7 +259,6 @@
     "customColour": "Custom colour",
     "invalidHexColour": "Enter a valid hex colour, such as #6EBEF5.",
     "suggestedColours": "Suggested colours",
-    "levelsWillBeRemoved": "{{count}} model levels will also be removed.",
     "closeRemovalDetails": "Close details",
     "inspectRemovalItem": "View {{name}} in the graph",
     "nodeRelationshipCount": "{{count}} Relations",
@@ -283,6 +282,12 @@
     "relationCardinality": "Cardinality: {{value}}",
     "constraints": "Constraints",
     "relationUnavailable": "This relation is no longer available.",
-    "selectNamedRelation": "Select {{name}} from {{from}} to {{to}}"
+    "selectNamedRelation": "Select {{name}} from {{from}} to {{to}}",
+    "affectedLevelRemoval": "1 Model level will be removed",
+    "affectedLevelsRemoval": "{{count}} Model levels will be removed",
+    "affectedLevelsLabel": "Dependent model levels",
+    "inspectRemovalLevel": "View {{name}} in the workspace",
+    "modelNodeSingle": "{{count}} Node",
+    "modelNodeCount": "{{count}} Nodes"
   }
 }

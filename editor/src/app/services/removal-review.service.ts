@@ -7,7 +7,7 @@ import { StorageService } from './storage.service';
 import { GraphToolsService } from './workspace/graph-tools.service';
 
 export interface RemovalReviewPosition {
-  readonly selection: 'nodes' | 'relations';
+  readonly selection: 'nodes' | 'relations' | 'levels';
   readonly scrollTop: number;
 }
 
@@ -46,7 +46,9 @@ export class RemovalReviewService {
         this.router.createUrlTree(
           location.relationId
             ? ['/ws', location.projectId, location.slot, 'relation', location.relationId]
-            : ['/ws', location.projectId, location.slot, location.nodeId],
+            : location.nodeId
+              ? ['/ws', location.projectId, location.slot, location.nodeId]
+              : ['/ws', location.projectId, location.slot],
         ),
       );
       if (this.router.url !== url && !(await this.router.navigateByUrl(url))) await this.actions.resume();

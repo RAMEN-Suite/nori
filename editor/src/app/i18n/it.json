@@ -145,7 +145,7 @@
     "editNamedLevel": "Modifica {{name}}",
     "removeNamedLevel": "Elimina {{name}}",
     "levelParent": "Il nuovo livello si basa su {{name}}.",
-    "confirmRemoveLevels": "Eliminando {{name}}, vengono eliminati anche tutti i livelli del modello che ne dipendono. Sono interessati i seguenti livelli:",
+    "confirmRemoveLevels": "L’eliminazione di {{name}} rimuove definitivamente questo livello del modello, i suoi contenuti e tutti i livelli che ne dipendono.",
     "coloursHint": "I colori si applicano a ogni tipo di base e ai suoi raffinamenti.\nLe modifiche sono visibili immediatamente.",
     "colourForNode": "Colore di {{name}}",
     "resetColours": "Ripristina colori",
@@ -259,7 +259,6 @@
     "customColour": "Colore personalizzato",
     "invalidHexColour": "Inserisci un colore esadecimale valido, ad esempio #6EBEF5.",
     "suggestedColours": "Colori suggeriti",
-    "levelsWillBeRemoved": "Verranno eliminati anche {{count}} livelli del modello.",
     "closeRemovalDetails": "Chiudi dettagli",
     "inspectRemovalItem": "Visualizza {{name}} nel grafo",
     "nodeRelationshipCount": "{{count}} relazioni",
@@ -283,6 +282,12 @@
     "relationCardinality": "Cardinalità: {{value}}",
     "constraints": "Vincoli",
     "relationUnavailable": "Questa relazione non è più disponibile.",
-    "selectNamedRelation": "Seleziona {{name}} da {{from}} a {{to}}"
+    "selectNamedRelation": "Seleziona {{name}} da {{from}} a {{to}}",
+    "affectedLevelRemoval": "Verrà eliminato 1 livello del modello",
+    "affectedLevelsRemoval": "Verranno eliminati {{count}} livelli del modello",
+    "affectedLevelsLabel": "Livelli del modello dipendenti",
+    "inspectRemovalLevel": "Visualizza {{name}} nell’area di lavoro",
+    "modelNodeSingle": "{{count}} nodo",
+    "modelNodeCount": "{{count}} nodi"
   }
 }

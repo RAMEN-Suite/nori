@@ -8,9 +8,6 @@
   @include surface-list.frame;
   position: relative;
 }
-.colour-frame nori-scroll-hints {
-  inset: 0.625rem 0.75rem;
-}
 .colour-list {
   min-height: 0;
   overflow-y: auto;

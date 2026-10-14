@@ -13,12 +13,18 @@ type ModelLevel = Pick<ModelRecord, 'gmodel' | 'slot' | 'projectId'>;
 export interface AffectedLevel {
   readonly modelName: string;
   readonly modelSlot: number | null;
+  readonly location?: RemovalLocation;
+}
+
+export interface AffectedModelLevel extends AffectedLevel {
+  readonly nodeCount: number;
+  readonly relationCount: number;
 }
 
 export interface RemovalLocation {
   readonly projectId: string;
   readonly slot: number;
-  readonly nodeId: string;
+  readonly nodeId?: string;
   readonly relationId?: string;
 }
 
@@ -27,13 +33,11 @@ export interface AffectedNode extends AffectedLevel {
   readonly propertyCount: number;
   readonly constraintCount: number;
   readonly name: string;
-  readonly location?: RemovalLocation;
 }
 
 export interface AffectedRelation extends AffectedLevel {
   readonly constraintCount: number;
   readonly name: string;
-  readonly location?: RemovalLocation;
   readonly from: string;
   readonly to: string;
 }
@@ -79,21 +83,22 @@ export function getAffectedRelations(
   });
 }
 
+export interface ModelRemovalImpact {
+  readonly affectedLevels: readonly AffectedModelLevel[];
+  readonly affectedNodes: readonly AffectedNode[];
+  readonly affectedRelations: readonly AffectedRelation[];
+}
+
 export function getRemovedModelImpact(
   models: readonly Model[],
   removedModels: readonly Pick<Model, 'id' | 'name'>[],
   levels: readonly ModelLevel[],
-): {
-  affectedLevels: readonly AffectedLevel[];
-  affectedNodes: readonly AffectedNode[];
-  affectedRelations: readonly AffectedRelation[];
-} {
+  selectedModelId: string,
+): ModelRemovalImpact {
   const removedIds: ReadonlySet<string> = new Set(removedModels.map((model): string => model.id));
   const removed: readonly Model[] = models.filter((model: Model): boolean => removedIds.has(model.id));
   return {
-    affectedLevels: removedModels.map(
-      (model: Pick<Model, 'id' | 'name'>): AffectedLevel => ({ modelName: model.name, modelSlot: modelSlot(model.id, levels) }),
-    ),
+    affectedLevels: getAffectedModelLevels(removed, levels, selectedModelId),
     affectedNodes: getAffectedNodes(
       models,
       {
@@ -115,6 +120,24 @@ export function getRemovedModelImpact(
   };
 }
 
+function getAffectedModelLevels(
+  models: readonly Model[],
+  levels: readonly ModelLevel[],
+  selectedModelId: string,
+): readonly AffectedModelLevel[] {
+  return models
+    .filter((model: Model): boolean => model.id !== selectedModelId)
+    .map(
+      (model: Model): AffectedModelLevel => ({
+        modelName: model.name,
+        modelSlot: modelSlot(model.id, levels),
+        location: removalLocation(model.id, undefined, levels),
+        nodeCount: model.classifiers.filter((item): boolean => item.kind === 'Node').length,
+        relationCount: model.relations.length,
+      }),
+    );
+}
+
 function modelSlot(modelId: string, levels: readonly ModelLevel[]): number | null {
   return levels.find((level): boolean => level.gmodel.id === modelId)?.slot ?? null;
 }
@@ -131,7 +154,7 @@ function resolveNodeName(models: ReadonlyMap<string, Model>, ownerId: string, re
 
 function removalLocation(
   modelId: string,
-  nodeId: string,
+  nodeId: string | undefined,
   levels: readonly ModelLevel[],
   relationId?: string,
 ): RemovalLocation | undefined {

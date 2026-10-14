@@ -1,6 +1,8 @@
 :host {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  grid-area: 1 / 1;
+  min-width: 0;
+  min-height: 0;
   z-index: 3;
   pointer-events: none;
 }

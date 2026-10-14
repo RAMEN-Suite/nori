@@ -1,5 +1,5 @@
 <div *transloco="let t" class="flex h-full min-h-0 flex-col gap-3">
-  <div class="relative flex min-h-0 flex-1 flex-col">
+  <div class="nori-scroll-frame flex-1">
     <div noriScrollOverflow #scroll="scrollOverflow" class="editor-panel-scroll -mx-2 min-h-0 flex-1 overflow-y-auto">
       @for (group of propertyGroups(); track group.slot) {
         <div suiDivider placement="start" class="text-base-content/60 text-xs" style="--sui-divider-margin: 0.75rem">
