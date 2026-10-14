@@ -36,9 +36,6 @@
   "references": [
     {
       "path": "./editor/tsconfig.app.json"
-    },
-    {
-      "path": "./editor/tsconfig.spec.json"
     }
   ]
 }

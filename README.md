@@ -21,7 +21,10 @@ Install dependencies and run `npm run build` in `../ramen-core` first. Then inst
 
 ```
 npm install
+npm run setup:electron
 ```
+
+Install scripts are disabled in `.npmrc`. `setup:electron` explicitly downloads the Electron executable; the desktop start command also checks it automatically.
 
 ---
 

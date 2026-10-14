@@ -65,7 +65,7 @@ export default defineConfig(
     extends: [angular.configs.templateRecommended, angular.configs.templateAccessibility],
   },
   {
-    files: ['electron/src/**/*.ts', 'forge.config.ts', 'tools/**/*.ts'],
+    files: ['electron/src/**/*.ts', 'forge.config.ts', 'tools/**/*.{ts,mts}'],
     extends: [js.configs.recommended, tseslint.configs.strictTypeChecked, tseslint.configs.stylisticTypeChecked],
     languageOptions: {
       globals: globals.node,

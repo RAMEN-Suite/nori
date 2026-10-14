@@ -66,11 +66,6 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
-          "options": {
-            "prebundle": {
-              "exclude": ["@ramen-suite/core"]
-            }
-          },
           "configurations": {
             "production": {
               "buildTarget": "editor:build:production"
@@ -83,20 +78,6 @@
         },
         "extract-i18n": {
           "builder": "@angular/build:extract-i18n"
-        },
-        "test": {
-          "builder": "@angular/build:karma",
-          "options": {
-            "tsConfig": "editor/tsconfig.spec.json",
-            "inlineStyleLanguage": "scss",
-            "assets": [
-              {
-                "glob": "**/*",
-                "input": "editor/public"
-              }
-            ],
-            "styles": ["editor/src/styles/tailwind.css", "editor/src/styles/fonts.css", "editor/src/styles/customs.css"]
-          }
         }
       }
     }

@@ -5,5 +5,5 @@
     "module": "preserve",
     "moduleResolution": "bundler"
   },
-  "include": ["forge.config.ts", "tools/**/*.ts"]
+  "include": ["forge.config.ts", "tools/**/*.ts", "tools/**/*.mts"]
 }
