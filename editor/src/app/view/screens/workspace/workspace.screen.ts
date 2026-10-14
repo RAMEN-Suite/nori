@@ -14,7 +14,7 @@ import { ActivatedRoute, NavigationEnd, type ParamMap, Router, RouterOutlet } fr
 import { TranslocoDirective } from '@jsverse/transloco';
 import { LucideBoxes, LucideGitBranch, LucideLayers, LucideScanEye } from '@lucide/angular';
 import { filter } from 'rxjs';
-import { PARAMETERS } from '../../../app.routes';
+import { PARAMETERS } from '../../../app-route-parameters';
 import { type Manifest } from '../../../models/Manifest';
 import { type ModelRecord } from '../../../models/ModelRecord';
 import { NavigationService } from '../../../services/navigation.service';

@@ -18,7 +18,8 @@ import { firstValueFrom } from 'rxjs';
 import { ApplicationState } from './states/application.state';
 import { provideTransloco, TranslocoService } from '@jsverse/transloco';
 import { TranslationLoader } from './i18n/translation-loader';
-import { routes, PARAMETERS } from './app.routes';
+import { routes } from './app.routes';
+import { PARAMETERS } from './app-route-parameters';
 
 export const appConfig: ApplicationConfig = {
   providers: [

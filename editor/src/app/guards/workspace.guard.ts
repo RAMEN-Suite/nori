@@ -1,17 +1,20 @@
-import { ActivatedRouteSnapshot, CanActivateFn, Router, UrlTree } from '@angular/router';
 import { inject } from '@angular/core';
+import { type ActivatedRouteSnapshot, type CanActivateFn, Router, type UrlTree } from '@angular/router';
+import { PARAMETERS } from '../app-route-parameters';
 import { StorageService } from '../services/storage.service';
-import { PARAMETERS } from '../app.routes';
 
 export const hasWorkspace: CanActivateFn = async (route: ActivatedRouteSnapshot): Promise<boolean | UrlTree> => {
   const router: Router = inject(Router);
   const storage: StorageService = inject(StorageService);
 
+  const home: UrlTree = router.createUrlTree(['/']);
   const projectId: string | null = route.paramMap.get(PARAMETERS.PROJECT);
-  if (!projectId) return router.createUrlTree(['/']);
+  if (!projectId) return home;
 
-  const isProjectExisting: boolean = await storage.isProjectExisting(projectId);
-  if (!isProjectExisting) return router.createUrlTree(['/']);
-
-  return true;
+  try {
+    return (await storage.isProjectExisting(projectId)) || home;
+  } catch (error: unknown) {
+    storage.reportError(error);
+    return home;
+  }
 };
