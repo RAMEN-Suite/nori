@@ -25,6 +25,11 @@ export class NavigationService {
     await this.navigateTo(commands, extras);
   }
 
+  public async navigateToRelation(slot: number, relationId: string): Promise<void> {
+    const projectId: string | null = this.getRouteParameter(PARAMETERS.PROJECT);
+    if (projectId) await this.navigateTo(['/ws', projectId, String(slot), 'relation', relationId]);
+  }
+
   private async navigateTo(route: string[], extras?: NavigationExtras): Promise<void> {
     const currentUrl: string = this.router.url;
     const urlTree: UrlTree = this.router.createUrlTree(route, extras);

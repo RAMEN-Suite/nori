@@ -2,6 +2,7 @@ import { computed, effect, Injectable, type Signal, signal, type WritableSignal 
 import { type Model } from '@ramen-suite/core/model';
 import { RamenModel, RAMEN_MODEL } from '@ramen-suite/core/ramen';
 import ShortUniqueId from 'short-unique-id';
+import { Subject, type Observable } from 'rxjs';
 import { type Manifest } from '../models/Manifest';
 import { type ModelRecord, type ViewSettings } from '../models/ModelRecord';
 import { database } from '../app.database';
@@ -14,6 +15,8 @@ export type UpdateRecordInput = Partial<Pick<ModelRecord, 'gmodel' | 'name' | 'v
 
 @Injectable({ providedIn: 'root' })
 export class StorageService {
+  private readonly modelChanges: Subject<string> = new Subject<string>();
+  public readonly modelChanges$: Observable<string> = this.modelChanges.asObservable();
   public readonly manifests: WritableSignal<Manifest[]> = signal([]);
   public readonly records: WritableSignal<ModelRecord[]> = signal([]);
   public readonly selectedProjectId: WritableSignal<string | null> = signal(null);
@@ -109,11 +112,16 @@ export class StorageService {
     await this.refreshManifests();
   }
 
+  public async getProjectRecords(id: string): Promise<readonly ModelRecord[]> {
+    return database.models.where('projectId').equals(id).sortBy('slot');
+  }
+
   public async removeProject(id: string): Promise<void> {
     await database.transaction('rw', database.manifests, database.models, async (): Promise<void> => {
       await database.models.where('projectId').equals(id).delete();
       await database.manifests.delete(id);
     });
+    this.modelChanges.next(id);
     if (this.selectedProjectId() === id) this.selectProject(null);
     await this.refreshManifests();
   }
@@ -128,6 +136,7 @@ export class StorageService {
       revision: record.revision + (patch.gmodel ? 1 : 0),
     };
     await database.models.put(updated);
+    if (patch.gmodel) this.modelChanges.next(record.projectId);
     if (this.selectedProjectId() === record.projectId)
       this.records.update((records: ModelRecord[]): ModelRecord[] =>
         records.map((item: ModelRecord): ModelRecord => (item.modelId === id ? updated : item)),
@@ -164,6 +173,7 @@ export class StorageService {
       await database.models.bulkPut(records);
       await database.manifests.update(projectId, { updatedAt: new Date().toISOString() });
     });
+    this.modelChanges.next(projectId);
     if (projectId === this.selectedProjectId()) this.records.set(records);
     await this.refreshManifests();
   }

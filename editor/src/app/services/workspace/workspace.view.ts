@@ -58,6 +58,10 @@ export class WorkspaceView {
   public readonly currentNodesById: Signal<ReadonlyMap<string, Node>> = computed(
     (): ReadonlyMap<string, Node> => new Map(this.currentNodes().map((node: Node): [string, Node] => [node.id, node])),
   );
+  public readonly currentRelation: Signal<Relation | null> = computed(
+    (): Relation | null =>
+      this.currentRelations().find((relation: Relation): boolean => relation.id === this.store.currentRelationId()) ?? null,
+  );
   public readonly currentRelations: Signal<readonly Relation[]> = computed(
     (): readonly Relation[] => this.store.currentModel()?.relations ?? [],
   );
@@ -103,6 +107,17 @@ export class WorkspaceView {
   public readonly currentBaseNode: Signal<Node | null> = computed(
     (): Node | null => this.currentNodeChain().at(-1)?.node ?? null,
   );
+
+  public resolveNodeLabel(reference: string): string {
+    const modelId: string | undefined = ModelRef.isQualified(reference)
+      ? ModelRef.splitQualified(reference).modelId
+      : this.store.currentModel()?.id;
+    const model: Model | undefined = this.store.getModels().find((item: Model): boolean => item.id === modelId);
+    return (
+      model?.classifiers.find((item): boolean => item.kind === 'Node' && item.id === ModelRef.localId(reference))?.name ??
+      reference
+    );
+  }
 
   public resolveNodeBase(node: Node, ownerId: string | undefined = this.store.currentModel()?.id): NodeLevel | null {
     const reference: string | undefined = node.superTypes[0];

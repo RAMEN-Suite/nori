@@ -10,7 +10,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { LucidePencil, LucidePlus, LucideSave, LucideTrash, LucideX } from '@lucide/angular';
+import { LucideEraser, LucidePencil, LucidePlus, LucideSave, LucideTrash, LucideX } from '@lucide/angular';
 import { ModelRef } from '@ramen-suite/core/model';
 import type { RamenAnnotation } from '@ramen-suite/core/ramen';
 import { Button, Input, List, ListItemTemplate } from '@sushi-kit/angular';
@@ -33,9 +33,11 @@ import { ConfirmationContentComponent } from '../confirmation/confirmation-conte
     List,
     ListItemTemplate,
     TooltipDirective,
+    LucideEraser,
     LucidePencil,
     LucidePlus,
     LucideTrash,
+    LucideEraser,
   ],
   templateUrl: './edit-annotations.dialog.html',
 })

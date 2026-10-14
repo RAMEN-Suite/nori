@@ -69,14 +69,14 @@
   <footer class="property-editor-footer">
     @if (removing(); as property) {
       <section class="flex w-full flex-col gap-4">
-        <app-confirmation-content [message]="t('editor.confirmRemoveProperty', { name: property.name })" />
+        <app-confirmation-content [message]="{ key: 'editor.confirmRemoveProperty', params: { name: property.name } }" />
         <div class="nori-dialog-actions">
-          <button suiButton severity="neutral" variant="text" [disabled]="formPending()" (click)="cancelRemoval()">
+          <button suiButton size="sm" severity="neutral" variant="text" [disabled]="formPending()" (click)="cancelRemoval()">
             <svg lucideX class="size-4 shrink-0" aria-hidden="true"></svg>
             {{ t('common.cancel') }}
           </button>
-          <button suiButton severity="error" [loading]="formPending()" [disabled]="formPending()" (click)="confirmRemoval()">
-            <svg lucideTrash class="size-4 shrink-0" aria-hidden="true"></svg>
+          <button suiButton size="sm" severity="error" [loading]="formPending()" [disabled]="formPending()" (click)="confirmRemoval()">
+            <svg lucideEraser class="size-4 shrink-0" aria-hidden="true"></svg>
             {{ t('editor.removeProperty') }}
           </button>
         </div>

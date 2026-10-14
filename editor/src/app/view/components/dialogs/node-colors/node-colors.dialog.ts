@@ -36,7 +36,18 @@ export class NodeColorsDialog {
   protected readonly dialogs: DialogService = inject(DialogService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
 
-  protected readonly presetColours: readonly string[] = ['#6EBEF5', '#FC9C99', '#97B887', '#E4A175', '#D8B8D1', '#E6CE85'];
+  protected readonly presetColours: readonly string[] = [
+    '#6EBEF5',
+    '#FC9C99',
+    '#97B887',
+    '#E4A175',
+    '#F4A2D1',
+    '#E6CE85',
+    '#64C5BB',
+    '#C8B9EF',
+    '#C8BAA3',
+    '#A5B9CA',
+  ];
 
   private readonly recordId: string | null = this.workspace.store.currentModelRecord()?.modelId ?? null;
   private pendingColours: NodeColors | null = null;
@@ -50,7 +61,7 @@ export class NodeColorsDialog {
     const nodes: readonly Node[] = this.nodes();
     if (!nodes.length) return;
 
-    const palette: string[] = iwanthue(nodes.length, { colorSpace: 'pastel' });
+    const palette: string[] = iwanthue(nodes.length, { colorSpace: [0, 360, 25, 40, 68, 78] });
     await this.applyColours({
       ...this.colours(),
       ...Object.fromEntries(nodes.map((node: Node, index: number): [string, string] => [node.id, palette[index] ?? '#789cc2'])),

@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, signal, type WritableSignal } from '@angular/core';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import {
-  LucideChevronsDown,
   LucideFolder,
   LucideLanguages,
   LucideNavigation,
@@ -27,6 +26,7 @@ import {
   type ShortcutGroup,
 } from '../../../../models/Shortcut';
 import { ShortcutService } from '../../../../services/shortcut.service';
+import { ScrollHintsComponent } from '../../scroll-hints/scroll-hints.component';
 import { ApplicationState } from '../../../../states/application.state';
 
 @Component({
@@ -36,6 +36,7 @@ import { ApplicationState } from '../../../../states/application.state';
     LucideRotateCcw,
     TranslocoDirective,
     ScrollOverflowDirective,
+    ScrollHintsComponent,
     Card,
     Radio,
     Toggle,
@@ -54,7 +55,6 @@ import { ApplicationState } from '../../../../states/application.state';
     LucideNetwork,
     LucideFolder,
     LucideNavigation,
-    LucideChevronsDown,
   ],
   templateUrl: './settings.dialog.html',
   styleUrl: './settings.dialog.scss',

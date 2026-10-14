@@ -104,7 +104,7 @@ export class GraphRenderer {
       .data([0])
       .join('path')
       .attr('d', 'M 0 0 L 10 5 L 0 10 z')
-      .attr('fill', 'var(--color-base-content)');
+      .attr('fill', 'context-stroke');
   }
 
   public updateNodeLabels(merged: NodeSelection): void {

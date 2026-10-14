@@ -91,33 +91,56 @@ export class GraphToolsService {
 
       const preview: RelationRemovalPreview = this.workspace.actions.previewRelationRemoval(id);
       const modelId: string | undefined = this.workspace.store.currentModel()?.id;
-      const options: ConfirmationOptions = {
-        title: this.translations.translate('editor.removeConnectionTitle'),
-        message: this.translations.translate('editor.confirmRemoveConnection', {
-          name: relation.name,
-          from: draft.getNode(relation.from.nodeId)?.name,
-          to: draft.getNode(relation.to.nodeId)?.name,
-        }),
-        affectedRelations: getAffectedRelations(this.workspace.store.getModels(), preview, this.storage.records()),
-        buttons: [
-          [{ label: this.translations.translate('common.cancel'), severity: 'neutral' }],
-          [
-            {
-              label: this.translations.translate('editor.removeConnection'),
-              severity: 'error',
-              click: async (): Promise<void> => {
-                this.ensureModel(modelId);
-                await this.workspace.actions.removeRelation(id, true);
-              },
-            },
-          ],
-        ],
-      };
-
-      this.dialogs.open(ConfirmationDialog, { size: 'compact', header: options.title, inputValues: { options } });
+      this.confirmRelationRemoval(id, relation, draft, modelId, preview);
     } catch (error: unknown) {
       this.storage.reportError(error);
     }
+  }
+
+  private confirmRelationRemoval(
+    id: string,
+    relation: Relation,
+    draft: RamenModel,
+    modelId: string | undefined,
+    preview: RelationRemovalPreview,
+  ): void {
+    const options: ConfirmationOptions = {
+      title: this.translations.translate('editor.removeConnectionTitle'),
+      message: {
+        key: 'editor.confirmRemoveConnection',
+        params: {
+          name: relation.name,
+          from: draft.getNode(relation.from.nodeId)?.name,
+          to: draft.getNode(relation.to.nodeId)?.name,
+        },
+      },
+      affectedRelations: getAffectedRelations(
+        this.workspace.store.getModels(),
+        {
+          relations: preview.relations.filter(
+            (affected): boolean => affected.modelId !== modelId || affected.elementId !== relation.id,
+          ),
+        },
+        this.storage.records(),
+      ),
+      buttons: [
+        [
+          { label: this.translations.translate('common.cancel'), severity: 'neutral' },
+          {
+            label: this.translations.translate('editor.removeConnection'),
+            severity: 'error',
+            click: (): Promise<void> => this.removeConfirmedRelation(id, modelId),
+          },
+        ],
+      ],
+    };
+
+    this.dialogs.open(ConfirmationDialog, { size: 'compact', header: options.title, inputValues: { options } });
+  }
+
+  private async removeConfirmedRelation(id: string, modelId: string | undefined): Promise<void> {
+    this.ensureModel(modelId);
+    await this.workspace.actions.removeRelation(id, true);
   }
 
   private async create(from: string, to: string, ref: string, modelId: string | undefined): Promise<void> {

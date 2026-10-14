@@ -1,5 +1,5 @@
 <div *transloco="let t" class="nori-dialog-content">
-  <p class="text-base-content/65 shrink-0 text-sm leading-relaxed">{{ t('editor.coloursHint') }}</p>
+  <p class="text-base-content/65 shrink-0 text-sm leading-relaxed whitespace-pre-line">{{ t('editor.coloursHint') }}</p>
   <div class="colour-frame">
     <div appScrollOverflow #colourScroll="scrollOverflow" class="colour-list min-w-0">
       <sui-list size="xs" [items]="nodes()" [dividers]="false" [rowHover]="false">
@@ -7,6 +7,7 @@
           @let colour = colours()[option.id] ?? '#789cc2';
           <button
             suiButton
+            size="sm"
             severity="neutral"
             variant="text"
             class="colour-row col-span-full"
@@ -18,16 +19,33 @@
             <span class="text-base-content/55 shrink-0 font-mono text-xs font-normal uppercase">{{ colour }}</span>
           </button>
           <sui-popover #picker="suiPopover" placement="right" [offset]="10" [ariaLabel]="t('editor.colourForNode', { name: option.name })">
-            <div class="flex w-52 flex-col gap-3">
+            <div class="colour-picker-content" [class.is-open]="picker.open()">
               <p class="text-sm font-medium">{{ option.name }}</p>
               <sui-color-picker
                 fluid
                 size="sm"
-                [ariaLabel]="t('editor.colourForNode', { name: option.name })"
+                [ariaLabel]="t('editor.customColour')"
+                [invalidMessage]="t('editor.invalidHexColour')"
                 [value]="colour"
-                [presets]="presetColours"
                 (valueChange)="handleColourChange(option.id, $event)"
               />
+              <div class="colour-presets" role="group" [attr.aria-label]="t('editor.suggestedColours')">
+                @for (preset of presetColours; track preset) {
+                  <button
+                    suiButton
+                    type="button"
+                    severity="neutral"
+                    variant="outlined"
+                    size="sm"
+                    class="colour-preset"
+                    [attr.aria-label]="preset"
+                    [attr.aria-pressed]="colour.toLowerCase() === preset.toLowerCase()"
+                    (click)="handleColourChange(option.id, preset)"
+                  >
+                    <span class="colour-preset-swatch" [style.background-color]="preset" aria-hidden="true"></span>
+                  </button>
+                }
+              </div>
             </div>
           </sui-popover>
         </ng-template>

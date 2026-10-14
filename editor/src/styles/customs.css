@@ -252,3 +252,32 @@ sui-toast.nori-notifications {
   outline-offset: -3px;
   border-radius: var(--nori-radius-input);
 }
+
+.nori-confirmation-host dialog {
+  overflow: visible;
+}
+.nori-confirmation-host.nori-dialog-motion dialog[open] {
+  transition:
+    translate 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (min-width: 833px) {
+  .nori-confirmation-expanded dialog[open] {
+    transform: translateX(-12rem);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nori-confirmation-host.nori-dialog-motion dialog[open] {
+    transition: none;
+  }
+}
+
+.nori-confirmation-host header {
+  border-start-start-radius: var(--nori-radius);
+  border-start-end-radius: var(--nori-radius);
+}
+@media (max-width: 832px) {
+  .nori-confirmation-host dialog {
+    overflow: auto;
+  }
+}

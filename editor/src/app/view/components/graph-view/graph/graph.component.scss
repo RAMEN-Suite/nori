@@ -64,11 +64,33 @@ app-graph {
     --nori-eraser-cursor: url("./eraser-cursor.svg") 7 17, crosshair;
     cursor: var(--nori-eraser-cursor);
   }
+  .host > svg:not(.is-connecting, .is-erasing) .link-hit,
+  .host > svg:not(.is-connecting, .is-erasing) .link-label {
+    pointer-events: stroke;
+    cursor: pointer;
+  }
+  .link.is-selected {
+    stroke: var(--color-primary);
+    stroke-opacity: 1;
+    stroke-width: 2.5;
+  }
+  .link-label.is-selected {
+    fill: var(--color-primary);
+    opacity: 1;
+  }
+  .is-relation-selection .link-feedback-stroke {
+    stroke: var(--color-primary);
+  }
+  .is-erasing .link-label {
+    pointer-events: all;
+    cursor: var(--nori-eraser-cursor);
+  }
   .is-erasing .link-hit {
     pointer-events: stroke;
     cursor: var(--nori-eraser-cursor);
   }
-  .link-hit:focus {
+  .link-hit:focus,
+  .link-label:focus {
     outline: none;
   }
   .is-erasing .link.is-erase-target {

@@ -17,6 +17,7 @@ import { filter } from 'rxjs';
 import { PARAMETERS } from '../../../app.routes';
 import { type Manifest } from '../../../models/Manifest';
 import { type ModelRecord } from '../../../models/ModelRecord';
+import { NavigationService } from '../../../services/navigation.service';
 import { StorageService } from '../../../services/storage.service';
 import { NodeEditingService } from '../../../services/workspace/node-editing.service';
 import { PropertyEditingService } from '../../../services/workspace/property-editing.service';
@@ -53,6 +54,7 @@ import { ToolBarComponent } from '../../components/tool-bar/tool-bar.component';
 export class WorkspaceScreen implements OnInit {
   private readonly windowState: WindowState = inject(WindowState);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
+  private readonly navigation: NavigationService = inject(NavigationService);
   private readonly storage: StorageService = inject(StorageService);
   private readonly router: Router = inject(Router);
   private readonly activatedRoute: ActivatedRoute = inject(ActivatedRoute);
@@ -94,9 +96,17 @@ export class WorkspaceScreen implements OnInit {
       });
 
     effect((): void => this.ensureSelectedLevel());
+    effect((): void => {
+      if (!this.workspace.store.currentRelationId() || !this.workspace.store.currentModel()) return;
+      if (!this.workspace.view.currentRelation()) {
+        void this.navigation
+          .navigateToSlot(this.workspace.store.currentSlot())
+          .catch((error: unknown): void => this.storage.reportError(error));
+      }
+    });
 
     effect((): void => {
-      if (this.workspace.store.currentNodeId()) this.inspectorOpen.set(true);
+      if (this.workspace.store.currentNodeId() || this.workspace.store.currentRelationId()) this.inspectorOpen.set(true);
     });
 
     effect((): void => {
@@ -142,5 +152,7 @@ export class WorkspaceScreen implements OnInit {
 
     this.workspace.store.setCurrentSlot(slot ? Number(slot) : null);
     this.workspace.store.setCurrentNodeId(nodeId);
+    const relationId: string | null = paramMap.get(PARAMETERS.RELATION);
+    if (relationId) this.workspace.store.setCurrentRelationId(relationId);
   }
 }

@@ -350,7 +350,7 @@ export class GraphComponent implements AfterViewInit {
 
     this.linkSelection?.on('click', this.handleLinkClick.bind(this));
     this.rootGroupSelection
-      ?.selectAll<SVGPathElement, ResolvedLink>('path.link-hit')
+      ?.selectAll<SVGElement, ResolvedLink>('path.link-hit, text.link-label')
       .on('click', this.handleLinkClick.bind(this))
       .on('mouseenter focus', (_: Event, link: ResolvedLink): void => this.highlightEraseLink(link.id))
       .on('mouseleave blur', (): void => {
@@ -441,16 +441,20 @@ export class GraphComponent implements AfterViewInit {
       );
     });
     const active: Element | null = document.activeElement;
-    if (!removing && active?.classList.contains('link-hit')) {
+    if (this.graphTools.tool() === 'connect' && active?.classList.contains('link-hit')) {
       this.focusSelectedNode();
     }
     this.rootGroupSelection
       ?.selectAll<SVGPathElement, ResolvedLink>('path.link-hit')
-      .attr('role', removing ? 'button' : null)
-      .attr('tabindex', removing ? 0 : -1)
-      .attr('aria-hidden', removing ? null : 'true')
+      .attr('role', this.graphTools.tool() !== 'connect' ? 'button' : null)
+      .attr('tabindex', this.graphTools.tool() !== 'connect' ? 0 : -1)
+      .attr('aria-hidden', this.graphTools.tool() !== 'connect' ? null : 'true')
       .attr('aria-label', (link: ResolvedLink): string | null =>
-        removing ? this.translations.translate('editor.removeNamedConnection', { name: link.label }) : null,
+        this.translations.translate(removing ? 'editor.removeNamedConnection' : 'editor.selectNamedRelation', {
+          name: link.label,
+          from: link.source.label,
+          to: link.target.label,
+        }),
       );
   }
 
@@ -460,22 +464,22 @@ export class GraphComponent implements AfterViewInit {
       ?.selectAll<SVGElement, ResolvedLink>('path.link, text.link-label')
       .classed('is-erase-target', (link: ResolvedLink): boolean => link.id === this.eraseTargetId);
     if (!this.rootGroupSelection || !this.renderModel) return;
-    const target: ResolvedLink | undefined = this.renderModel.links.find(
-      (link: ResolvedLink): boolean => link.id === this.eraseTargetId,
-    );
+    const targetId: string | null =
+      this.graphTools.tool() === 'select' ? (id ?? this.workspace.store.currentRelationId()) : this.eraseTargetId;
+    const target: ResolvedLink | undefined = this.renderModel.links.find((link: ResolvedLink): boolean => link.id === targetId);
     const feedback: d3.Selection<SVGGElement, ResolvedLink, SVGGElement, unknown> = this.rootGroupSelection
       .selectAll<SVGGElement, ResolvedLink>('g.link-feedback')
       .data(target ? [target] : [])
-      .join('g')
-      .attr('class', 'link-feedback')
-      .attr('aria-hidden', 'true')
-      .raise();
+      .join((enter) => enter.insert('g', 'text.link-label'))
+      .attr('class', this.graphTools.tool() === 'select' ? 'link-feedback is-relation-selection' : 'link-feedback')
+      .attr('aria-hidden', 'true');
     feedback
       .selectAll<SVGPathElement, string>('path')
       .data(['halo', 'stroke'])
       .join('path')
       .attr('class', (kind: string): string => `link-feedback-${kind}`)
       .attr('fill', 'none')
+      .attr('marker-end', (kind: string): string | null => (kind === 'stroke' ? 'url(#g-arrow)' : null))
       .attr('d', target ? getLinkPath(target, this.renderModel.nodes) : '');
   }
 
@@ -484,6 +488,14 @@ export class GraphComponent implements AfterViewInit {
     if (selectedId && this.renderModel?.nodesById.has(selectedId)) this.applyHoverHighlight(selectedId);
     else this.clearHoverHighlight();
     this.applySelectedHighlight(selectedId);
+    const relationId: string | null = this.workspace.store.currentRelationId();
+    this.rootGroupSelection
+      ?.selectAll<SVGElement, ResolvedLink>('path.link, text.link-label')
+      .classed('is-selected', (link: ResolvedLink): boolean => link.id === relationId);
+    this.rootGroupSelection
+      ?.selectAll<SVGPathElement, ResolvedLink>('path.link-hit')
+      .attr('aria-pressed', (link: ResolvedLink): string => String(link.id === relationId));
+    this.highlightEraseLink(null);
   }
 
   private applySelectedHighlight(nodeId: string | null): void {
@@ -687,6 +699,12 @@ export class GraphComponent implements AfterViewInit {
   private handleLinkClick(event: MouseEvent | KeyboardEvent, link: ResolvedLink): void {
     event.stopPropagation();
     if (this.graphTools.tool() === 'erase') this.graphTools.remove(link.id);
+    else if (this.graphTools.tool() === 'select') {
+      void this.navigation
+        .navigateToRelation(this.workspace.store.currentSlot(), link.id)
+        .then((): void => this.nodeSelected.emit())
+        .catch((error: unknown): void => this.storage.reportError(error));
+    }
   }
 
   private handleBackgroundClick(event: MouseEvent): void {
@@ -694,7 +712,7 @@ export class GraphComponent implements AfterViewInit {
     if (!(target instanceof Element)) return;
 
     const isOnNode: boolean = !!target.closest('g.node');
-    const isOnLink: boolean = !!target.closest('path.link, path.link-hit');
+    const isOnLink: boolean = !!target.closest('path.link, path.link-hit, text.link-label');
     if (isOnNode || isOnLink) return;
 
     this.graphTools.cancel();

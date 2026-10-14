@@ -81,3 +81,13 @@ Reviewed the view components against the shared conventions: presentation versus
 - Property validation runs on a Core snapshot before changes reach the live workspace. The form preserves existing constraints and validates inherited names and keys.
 - The graph viewport remains the next meaningful extraction if graph interactions change. Its existing renderer, geometry and automatic layout boundaries are preserved.
 - The current property dialog is the baseline for the next node-editor experiment; replace its presentation without duplicating schema rules or persistence.
+
+## Shared dialog list spacing
+
+Use `styles/_surface-list.scss` for bordered action lists and comparable setting rows. `frame` defines the outer border and inset, `inset` spaces the Sushi List, `row` defines content padding and minimum height, and `action` adds soft neutral hover and expanded states. Colors and removal consequences use the same Sushi List size and these shared mixins.
+
+`RunningActionService` owns one resumable action, its project and a model-revision snapshot. `StorageService.modelChanges$` invalidates actions for changed projects; view preferences are excluded. Resume checks persisted revisions again. `RunningActionNotificationComponent` renders the task icon and Resume/Cancel controls. `RemovalReviewService` supplies the deletion-specific dialog snapshot and restoration callback. Confirmation content restores its selected list and scroll position through `reviewPosition`; graph components stay independent of this flow.
+
+To add a resumable workflow, extend `RunningActionOptions.kind`, add the corresponding notification icon and translated title/hint, then call `start` with its project ID and an async `resume` callback. Honor the callback's abort signal before opening restored UI. Starting another action replaces the previous one. Model writes must use StorageService so invalidation remains consistent.
+
+`RelationViewComponent` renders the selected relation in the Inspector: endpoints, cardinalities and constraints. The workspace stores node and relation selection separately and clears the other kind on selection. Relations use `/ws/:projectId/:slotId/relation/:relationId`; use `NavigationService.navigateToRelation` rather than writing selection signals from graph components. Graph hit paths support mouse and keyboard selection in Select mode, while Erase keeps its removal behaviour.

@@ -14,6 +14,7 @@ export class WorkspaceStore {
   private readonly change: WritableSignal<number> = signal(0);
 
   public readonly currentSlot: WritableSignal<number> = signal(1);
+  public readonly currentRelationId: WritableSignal<Id | null> = signal(null);
   public readonly currentNodeId: WritableSignal<Id | null> = signal(null);
   public readonly currentNodeColors: WritableSignal<NodeColors> = signal({});
   public readonly currentModelRecord: Signal<ModelRecord | null> = computed(
@@ -122,7 +123,13 @@ export class WorkspaceStore {
   }
 
   public setCurrentNodeId(nodeId: Id | null): void {
+    this.currentRelationId.set(null);
     this.currentNodeId.set(nodeId);
+  }
+
+  public setCurrentRelationId(relationId: Id | null): void {
+    this.currentNodeId.set(null);
+    this.currentRelationId.set(relationId);
   }
 
   public setCurrentNodeColors(colors: NodeColors): void {

@@ -16,6 +16,7 @@ import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { LucidePencil, LucidePlus, LucideTrash } from '@lucide/angular';
 import { type ModelRemovalPreview } from '@ramen-suite/core/model';
 import { Button, Input, List, ListItemTemplate, type ListTrackBy } from '@sushi-kit/angular';
+import { getRemovedModelImpact } from '../../../core/utils/RemovalSummary';
 import { AutoselectDirective } from '../../../directives/autoselect.directive';
 import { ScrollOverflowDirective } from '../../../directives/scroll-overflow.directive';
 import { TooltipDirective } from '../../../directives/tooltip.directive';
@@ -155,13 +156,13 @@ export class ModelLevelsComponent {
     const preview: ModelRemovalPreview = this.workspace.actions.previewSlotRemoval(record.slot);
     const options: ConfirmationOptions = {
       title: this.translations.translate('editor.removeLevelTitle'),
-      message: this.translations.translate('editor.confirmRemoveLevels', {
-        name: record.name,
-      }),
-      affectedLevels: preview.models.map((model) => ({
-        modelName: model.name,
-        modelSlot: this.storage.records().find((item): boolean => item.gmodel.id === model.id)?.slot ?? null,
-      })),
+      message: {
+        key: 'editor.confirmRemoveLevels',
+        params: {
+          name: record.name,
+        },
+      },
+      ...getRemovedModelImpact(this.workspace.store.getModels(), preview.models, this.storage.records()),
       buttons: [
         [{ label: this.translations.translate('common.cancel'), severity: 'neutral' }],
         [

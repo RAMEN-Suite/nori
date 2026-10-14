@@ -61,8 +61,12 @@ export class NodeEditingService {
       const modelId: string | undefined = this.workspace.store.currentModel()?.id;
       const options: ConfirmationOptions = {
         title: this.translations.translate('editor.removeNodeTitle'),
-        message: this.translations.translate('editor.confirmRemoveNode', { name: node.name }),
-        affectedNodes: getAffectedNodes(this.workspace.store.getModels(), preview, this.storage.records()),
+        message: { key: 'editor.confirmRemoveNode', params: { name: node.name } },
+        affectedNodes: getAffectedNodes(
+          this.workspace.store.getModels(),
+          { nodes: preview.nodes.filter((affected): boolean => affected.modelId !== modelId || affected.elementId !== node.id) },
+          this.storage.records(),
+        ),
         affectedRelations: getAffectedRelations(this.workspace.store.getModels(), preview, this.storage.records()),
         buttons: [
           [{ label: this.translations.translate('common.cancel'), severity: 'neutral' }],
@@ -89,7 +93,7 @@ export class NodeEditingService {
       const modelId: string | undefined = this.workspace.store.currentModel()?.id;
       const options: ConfirmationOptions = {
         title: this.translations.translate('editor.removeBaseNodeTitle'),
-        message: this.translations.translate('editor.confirmRemoveBaseNode', { name: node.name }),
+        message: { key: 'editor.confirmRemoveBaseNode', params: { name: node.name } },
         affectedRelations: getAffectedRelations(this.workspace.store.getModels(), preview, this.storage.records()),
         buttons: [
           [{ label: this.translations.translate('common.cancel'), severity: 'neutral' }],

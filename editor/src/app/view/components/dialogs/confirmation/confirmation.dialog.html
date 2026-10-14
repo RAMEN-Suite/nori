@@ -2,6 +2,7 @@
   <div class="nori-dialog-scroll">
     <app-confirmation-content
       [message]="options().message"
+      [reviewPosition]="options().reviewPosition ?? null"
       [details]="options().details ?? []"
       [affectedNodes]="options().affectedNodes ?? []"
       [affectedRelations]="options().affectedRelations ?? []"
@@ -13,6 +14,7 @@
       @for (button of group; track button.label) {
         <button
           suiButton
+          size="sm"
           [severity]="button.severity ?? 'neutral'"
           [variant]="button.variant ?? (button.severity === 'error' ? null : 'text')"
           [disabled]="dialogs.pending()"
@@ -22,7 +24,7 @@
           @if (!button.click) {
             <svg lucideX class="size-4 shrink-0" aria-hidden="true"></svg>
           } @else if (button.severity === 'error') {
-            <svg lucideTrash class="size-4 shrink-0" aria-hidden="true"></svg>
+            <svg lucideEraser class="size-4 shrink-0" aria-hidden="true"></svg>
           } @else {
             <svg lucideCheck class="size-4 shrink-0" aria-hidden="true"></svg>
           }

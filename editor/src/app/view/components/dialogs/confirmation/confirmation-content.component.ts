@@ -1,62 +1,167 @@
-import { ChangeDetectionStrategy, Component, computed, input, type InputSignal, type Signal } from '@angular/core';
-import { TranslocoPipe } from '@jsverse/transloco';
-import { LucideArrowRight } from '@lucide/angular';
-import { Badge } from '@sushi-kit/angular';
-import { type AffectedLevel, type AffectedNode, type AffectedRelation } from '../../../../core/utils/RemovalSummary';
+import {
+  afterNextRender,
+  ElementRef,
+  Injector,
+  viewChild,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  signal,
+  effect,
+  type InputSignal,
+  type Signal,
+  type WritableSignal,
+} from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
+import { LucideArrowRight, LucideSearch, LucideX } from '@lucide/angular';
+import { Button, List, ListItemTemplate } from '@sushi-kit/angular';
+import {
+  type AffectedLevel,
+  type AffectedNode,
+  type AffectedRelation,
+  type RemovalLocation,
+} from '../../../../core/utils/RemovalSummary';
+import { ScrollOverflowDirective } from '../../../../directives/scroll-overflow.directive';
+import { type ConfirmationMessage } from '../../../../models/ConfirmationMessage';
+import { DialogService } from '../../../../services/dialog.service';
+import { RemovalReviewService, type RemovalReviewPosition } from '../../../../services/removal-review.service';
+import { ScrollHintsComponent } from '../../scroll-hints/scroll-hints.component';
 
 export type { AffectedNode } from '../../../../core/utils/RemovalSummary';
 
-interface NodeGroup {
-  readonly modelSlot: number | null;
-  readonly modelName: string;
-  readonly names: string[];
+interface MessagePart {
+  readonly text: string;
+  readonly emphasized: boolean;
 }
 
-interface RelationGroup {
-  readonly modelSlot: number | null;
-  readonly name: string;
-  readonly modelName: string;
-  readonly relations: AffectedRelation[];
-}
+type AffectedItem = AffectedNode | AffectedRelation;
+type ImpactEntry =
+  | { readonly kind: 'group'; readonly level: AffectedLevel; readonly subsequent: boolean }
+  | { readonly kind: 'item'; readonly item: AffectedItem };
 
+type ImpactKind = 'nodes' | 'relations';
+interface ImpactAction {
+  readonly kind: ImpactKind;
+  readonly count: number;
+}
 @Component({
   selector: 'app-confirmation-content',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslocoPipe, Badge, LucideArrowRight],
+  imports: [
+    ScrollOverflowDirective,
+    ScrollHintsComponent,
+    TranslocoDirective,
+    List,
+    ListItemTemplate,
+    Button,
+    LucideArrowRight,
+    LucideX,
+    LucideSearch,
+  ],
   templateUrl: './confirmation-content.component.html',
   styleUrl: './confirmation-content.component.scss',
 })
 export class ConfirmationContentComponent {
-  public readonly message: InputSignal<string> = input.required<string>();
+  protected readonly dialogs: DialogService = inject(DialogService);
+  private readonly review: RemovalReviewService = inject(RemovalReviewService);
+  private readonly injector: Injector = inject(Injector);
+  private readonly detailViewport: Signal<ElementRef<HTMLElement> | undefined> =
+    viewChild<ElementRef<HTMLElement>>('detailViewport');
+  public readonly reviewPosition: InputSignal<RemovalReviewPosition | null> = input<RemovalReviewPosition | null>(null);
+  private trigger: HTMLElement | null = null;
+  protected readonly selection: WritableSignal<ImpactKind | null> = signal(null);
+  private readonly translations: TranslocoService = inject(TranslocoService);
+  private readonly language: Signal<string> = toSignal(this.translations.langChanges$, {
+    initialValue: this.translations.getActiveLang(),
+  });
+
+  public readonly message: InputSignal<ConfirmationMessage> = input.required<ConfirmationMessage>();
   public readonly details: InputSignal<readonly string[]> = input<readonly string[]>([]);
   public readonly affectedNodes: InputSignal<readonly AffectedNode[]> = input<readonly AffectedNode[]>([]);
   public readonly affectedRelations: InputSignal<readonly AffectedRelation[]> = input<readonly AffectedRelation[]>([]);
   public readonly affectedLevels: InputSignal<readonly AffectedLevel[]> = input<readonly AffectedLevel[]>([]);
 
-  protected readonly nodeGroups: Signal<readonly NodeGroup[]> = computed((): readonly NodeGroup[] => {
-    const groups: Map<string, NodeGroup> = new Map();
-    for (const node of this.affectedNodes()) {
-      const key: string = JSON.stringify([node.modelSlot, node.modelName]);
-      const group: NodeGroup = groups.get(key) ?? { modelName: node.modelName, modelSlot: node.modelSlot, names: [] };
-      group.names.push(node.name);
+  protected readonly impactActions: Signal<readonly ImpactAction[]> = computed((): readonly ImpactAction[] =>
+    [
+      { kind: 'nodes' as const, count: this.affectedNodes().length },
+      { kind: 'relations' as const, count: this.affectedRelations().length },
+    ].filter((action: ImpactAction): boolean => action.count > 0),
+  );
+  protected readonly entries: Signal<readonly ImpactEntry[]> = computed((): readonly ImpactEntry[] => {
+    const items: readonly AffectedItem[] = this.selection() === 'nodes' ? this.affectedNodes() : this.affectedRelations();
+    const groups: Map<string, { level: AffectedLevel; items: AffectedItem[] }> = new Map();
+    for (const item of items) {
+      const key: string = JSON.stringify([item.modelSlot, item.modelName]);
+      const group: { level: AffectedLevel; items: AffectedItem[] } = groups.get(key) ?? { level: item, items: [] };
+      group.items.push(item);
       groups.set(key, group);
     }
-    return [...groups.values()];
+    return [...groups.values()]
+      .sort((a, b): number => (a.level.modelSlot ?? Infinity) - (b.level.modelSlot ?? Infinity))
+      .flatMap((group, index: number): ImpactEntry[] => [
+        { kind: 'group', level: group.level, subsequent: index > 0 },
+        ...group.items.map((item: AffectedItem): ImpactEntry => ({ kind: 'item', item })),
+      ]);
   });
 
-  protected readonly relationGroups: Signal<readonly RelationGroup[]> = computed((): readonly RelationGroup[] => {
-    const groups: Map<string, RelationGroup> = new Map();
-    for (const relation of this.affectedRelations()) {
-      const key: string = JSON.stringify([relation.modelSlot, relation.modelName, relation.name]);
-      const group: RelationGroup = groups.get(key) ?? {
-        name: relation.name,
-        modelName: relation.modelName,
-        modelSlot: relation.modelSlot,
-        relations: [],
-      };
-      group.relations.push(relation);
-      groups.set(key, group);
+  public constructor() {
+    effect((): void => {
+      if (!this.dialogs.detailsOpen()) {
+        this.selection.set(null);
+        this.trigger?.focus({ preventScroll: true });
+        this.trigger = null;
+      } else if (!this.selection()) {
+        this.selection.set(this.reviewPosition()?.selection ?? null);
+      }
+    });
+    effect((): void => {
+      const viewport: ElementRef<HTMLElement> | undefined = this.detailViewport();
+      const position: RemovalReviewPosition | null = this.reviewPosition();
+      if (!viewport || !position) return;
+      afterNextRender(
+        (): void => {
+          viewport.nativeElement.scrollTop = position.scrollTop;
+        },
+        { injector: this.injector },
+      );
+    });
+  }
+
+  protected async inspect(location: RemovalLocation): Promise<void> {
+    const selection: ImpactKind | null = this.selection();
+    if (!selection) return;
+    await this.review.inspect(location, { selection, scrollTop: this.detailViewport()?.nativeElement.scrollTop ?? 0 });
+  }
+
+  protected showDetails(kind: ImpactKind, event: Event): void {
+    if (this.selection() === kind) {
+      this.dialogs.detailsOpen.set(false);
+      return;
     }
-    return [...groups.values()];
+    this.trigger = event.currentTarget instanceof HTMLElement ? event.currentTarget : null;
+    this.selection.set(kind);
+    this.dialogs.detailsOpen.set(true);
+  }
+
+  protected readonly messageParts: Signal<readonly MessagePart[]> = computed((): readonly MessagePart[] => {
+    this.language();
+    const message: ConfirmationMessage = this.message();
+    if (typeof message === 'string') return [{ text: message, emphasized: false }];
+    const tokens: Record<string, string> = Object.fromEntries(
+      Object.keys(message.params).map((key: string): [string, string] => [key, `\uFFF0${key}\uFFF1`]),
+    );
+    const translated: string = this.translations.translate(message.key, tokens);
+    return translated
+      .split(/(\uFFF0[^\uFFF1]+\uFFF1)/u)
+      .filter(Boolean)
+      .map(
+        (part: string): MessagePart =>
+          part.startsWith('\uFFF0') && part.endsWith('\uFFF1')
+            ? { text: message.params[part.slice(1, -1)] ?? '', emphasized: true }
+            : { text: part, emphasized: false },
+      );
   });
 }

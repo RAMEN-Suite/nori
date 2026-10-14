@@ -1,0 +1,51 @@
+.running-action-notification {
+  position: fixed;
+  z-index: 20;
+  bottom: 3.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: max-content;
+  max-width: calc(100vw - 2rem);
+  padding: 0.75rem;
+  border: 1px solid var(--nori-border);
+  border-radius: var(--nori-radius);
+  background: var(--sui-color-overlay);
+  animation: action-enter 220ms ease-out;
+}
+.action-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--nori-radius-input);
+  color: var(--color-error);
+  background: color-mix(in oklab, var(--color-error) 10%, transparent);
+}
+@keyframes action-enter {
+  from {
+    opacity: 0;
+    translate: 0 4px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@media (max-width: 600px) {
+  .running-action-notification {
+    flex-wrap: wrap;
+  }
+}
+:host-context(html[data-motion="off"]) .running-action-notification {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .running-action-notification {
+    animation: none;
+  }
+}

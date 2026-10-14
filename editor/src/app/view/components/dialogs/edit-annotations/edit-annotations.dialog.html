@@ -7,11 +7,18 @@
           <input suiInput fluid name="type" required [ngModel]="type()" (ngModelChange)="type.set($event)" [readOnly]="dialogs.pending()" />
         </label>
         <footer class="nori-dialog-actions">
-          <button suiButton type="button" severity="neutral" variant="text" [disabled]="dialogs.pending()" (click)="handleBack()">
+          <button suiButton size="sm" type="button" severity="neutral" variant="text" [disabled]="dialogs.pending()" (click)="handleBack()">
             <svg lucideX class="size-4 shrink-0" aria-hidden="true"></svg>
             {{ t('common.cancel') }}
           </button>
-          <button suiButton type="submit" severity="primary" [loading]="dialogs.pending()" [disabled]="!type().trim() || dialogs.pending()">
+          <button
+            suiButton
+            size="sm"
+            type="submit"
+            severity="primary"
+            [loading]="dialogs.pending()"
+            [disabled]="!type().trim() || dialogs.pending()"
+          >
             <svg lucideSave class="size-4 shrink-0" aria-hidden="true"></svg>
             {{ t('common.save') }}
           </button>
@@ -20,14 +27,14 @@
     }
     @case ('remove') {
       <h3 class="text-sm font-semibold">{{ t('editor.removeAnnotationTitle') }}</h3>
-      <app-confirmation-content [message]="t('editor.confirmRemoveAnnotation', { type: selected()?.type })" />
+      <app-confirmation-content [message]="{ key: 'editor.confirmRemoveAnnotation', params: { type: selected()?.type } }" />
       <footer class="nori-dialog-actions">
-        <button suiButton severity="neutral" variant="text" [disabled]="dialogs.pending()" (click)="handleBack()">
+        <button suiButton size="sm" severity="neutral" variant="text" [disabled]="dialogs.pending()" (click)="handleBack()">
           <svg lucideX class="size-4 shrink-0" aria-hidden="true"></svg>
           {{ t('common.cancel') }}
         </button>
-        <button suiButton severity="error" [loading]="dialogs.pending()" [disabled]="dialogs.pending()" (click)="handleRemove()">
-          <svg lucideTrash class="size-4 shrink-0" aria-hidden="true"></svg>
+        <button suiButton size="sm" severity="error" [loading]="dialogs.pending()" [disabled]="dialogs.pending()" (click)="handleRemove()">
+          <svg lucideEraser class="size-4 shrink-0" aria-hidden="true"></svg>
           {{ t('editor.removeAnnotation') }}
         </button>
       </footer>
@@ -78,10 +85,10 @@
         }
       </div>
       <footer class="nori-dialog-actions">
-        <button suiButton severity="neutral" variant="text" (click)="dialogs.close()">
+        <button suiButton size="sm" severity="neutral" variant="text" (click)="dialogs.close()">
           <svg lucideX class="size-4 shrink-0" aria-hidden="true"></svg> {{ t('common.close') }}
         </button>
-        <button suiButton severity="primary" (click)="handleEdit()">
+        <button suiButton size="sm" severity="primary" (click)="handleEdit()">
           <svg lucidePlus class="size-4" aria-hidden="true"></svg>{{ t('editor.addAnnotation') }}
         </button>
       </footer>

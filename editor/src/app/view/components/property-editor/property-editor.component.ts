@@ -10,7 +10,7 @@ import {
   type WritableSignal,
 } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { LucideChevronDown, LucidePencil, LucidePlus, LucideTrash, LucideUndo2, LucideX } from '@lucide/angular';
+import { LucideChevronDown, LucideEraser, LucidePencil, LucidePlus, LucideTrash, LucideUndo2, LucideX } from '@lucide/angular';
 import type { Attribute } from '@ramen-suite/core/model';
 import { Badge, Button } from '@sushi-kit/angular';
 import { TooltipDirective } from '../../../directives/tooltip.directive';
@@ -31,8 +31,10 @@ import { PropertyFormComponent } from './property-form.component';
     Badge,
     Button,
     LucideChevronDown,
+    LucideEraser,
     LucidePlus,
     LucideTrash,
+    LucideEraser,
     PropertyFormComponent,
     TooltipDirective,
     ConfirmationContentComponent,

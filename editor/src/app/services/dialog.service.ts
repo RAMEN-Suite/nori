@@ -27,6 +27,7 @@ export interface OpenDialog {
 @Injectable({ providedIn: 'root' })
 export class DialogService {
   public readonly current: WritableSignal<OpenDialog | null> = signal(null);
+  public readonly detailsOpen: WritableSignal<boolean> = signal(false);
   public readonly error: WritableSignal<string | null> = signal(null);
   public readonly pending: WritableSignal<boolean> = signal(false);
 
@@ -42,6 +43,7 @@ export class DialogService {
   public open(component: Type<unknown>, options: DialogOptions = {}): DialogRef {
     this.tooltipRestoreTarget = this.document.activeElement;
     this.error.set(null);
+    this.detailsOpen.set(false);
     const dialog: OpenDialog = {
       component,
       closeOnBackdrop: options.closeOnBackdrop ?? false,

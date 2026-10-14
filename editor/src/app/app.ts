@@ -5,13 +5,22 @@ import { Toast, ToastService } from '@sushi-kit/angular';
 import { StorageService } from './services/storage.service';
 import { ApplicationState } from './states/application.state';
 import { DialogHostComponent } from './view/components/dialogs/host/dialog-host.component';
+import { RunningActionNotificationComponent } from './view/components/running-action-notification/running-action-notification.component';
 import { VersionFooterComponent } from './view/components/version-footer/version-footer.component';
 import { TitleBarComponent } from './view/components/window/title-bar/title-bar.component';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-root',
-  imports: [DialogHostComponent, TitleBarComponent, RouterOutlet, VersionFooterComponent, Toast, TranslocoPipe],
+  imports: [
+    RunningActionNotificationComponent,
+    DialogHostComponent,
+    TitleBarComponent,
+    RouterOutlet,
+    VersionFooterComponent,
+    Toast,
+    TranslocoPipe,
+  ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
 })

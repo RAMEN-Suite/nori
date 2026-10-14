@@ -50,6 +50,7 @@ import { ProjectAlternativeComponent } from '../project-alternative/project-alte
   styleUrls: ['../../pages/entry-shell.scss', '../../pages/project-entry.scss', './project-open.component.scss'],
 })
 export class ProjectOpenComponent implements OnInit {
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
   private readonly storage: StorageService = inject(StorageService);
   private readonly navigation: NavigationService = inject(NavigationService);
   private readonly dialogs: DialogService = inject(DialogService);
@@ -76,7 +77,7 @@ export class ProjectOpenComponent implements OnInit {
     project.projectId;
 
   public constructor() {
-    inject(DestroyRef).onDestroy((): void => this.dialogRef?.close());
+    this.destroyRef.onDestroy((): void => this.dialogRef?.close());
   }
 
   public ngOnInit(): void {
@@ -93,10 +94,10 @@ export class ProjectOpenComponent implements OnInit {
 
   protected handleRemoveProject(project: Manifest): void {
     if (this.busy() || this.disabled()) return;
-
+    this.error.set(null);
     const options: ConfirmationOptions = {
       title: this.translations.translate('open.removeTitle'),
-      message: this.translations.translate('open.removeMessage', { name: project.name }),
+      message: { key: 'open.removeMessage', params: { name: project.name } },
       buttons: [
         [
           { label: this.translations.translate('open.cancel'), severity: 'neutral' },
