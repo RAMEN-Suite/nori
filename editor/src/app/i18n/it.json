@@ -137,7 +137,10 @@
     "refineNode": "Raffina nodo",
     "properties": "Proprietà",
     "valid": "Il modello è valido",
-    "addProperty": "Aggiungi proprietà",
+    "addProperty": "Crea proprietà",
+    "newProperty": "Creazione di una nuova proprietà",
+    "editingProperty": "Modifica di una proprietà",
+    "duplicateProperty": "Duplica proprietà",
     "selectHint": "Seleziona un nodo o una relazione per visualizzarne i dettagli.",
     "renameNode": "Rinomina nodo",
     "duplicateNode": "Duplica nodo",
@@ -212,14 +215,13 @@
     "removeBaseNodeWithRelations": "Rimuovi con le relazioni",
     "removeFromCanvas": "Rimuovi dall’area di disegno",
     "showOnCanvas": "Mostra nell’area di disegno",
+    "nodeDetails": "Dettagli del nodo",
+    "annotations": "Annotazioni",
+    "inheritedPropertyHint": "Definita su {{name}}. Modifica questa proprietà nel livello del modello originale.",
     "editProperties": "Modifica proprietà",
     "editPropertiesOf": "Modifica proprietà di {{name}}",
     "allowDuplicates": "Consenti duplicati",
     "useAsKey": "Usa come chiave",
-    "morePropertyOptions": "Altre opzioni",
-    "discardPropertyChanges": "Ci sono modifiche non salvate. Vuoi scartarle per continuare?",
-    "keepEditing": "Continua a modificare",
-    "discardChanges": "Scarta modifiche",
     "propertySource": "Da {{name}}",
     "propertyLevel": "Livello {{level}}",
     "propertyCount": {
@@ -233,15 +235,16 @@
       "atMost": "Fino a {{count}} valori",
       "range": "Da {{minimum}} a {{maximum}} valori"
     },
+    "propertyNameTooLong": "I nomi delle proprietà possono contenere al massimo {{maximum}} caratteri.",
     "propertyNameTaken": "Questo nome è già usato su questo nodo, anche tra le proprietà ereditate. Scegli un altro nome.",
     "propertyMultipleKeys": "Un nodo può avere una sola proprietà chiave, comprese quelle ereditate.",
-    "propertyInvalidBounds": "I limiti dei valori non sono validi. Il minimo deve essere almeno 0 e il massimo almeno pari al minimo, oppure −1 per un numero illimitato di valori.",
+    "propertyInvalidBounds": "Il numero minimo deve essere almeno 0. Il massimo non può essere inferiore al minimo; lascialo vuoto per valori illimitati.",
     "propertyKeyBounds": "Una proprietà chiave deve avere esattamente un valore. Imposta sia il minimo sia il massimo su 1.",
     "propertyChangeInvalid": "Questa modifica renderebbe il modello non valido: {{reason}}",
+    "propertyValues": "Valori",
+    "propertyBehavior": "Utilizzo",
     "propertyName": "Nome della proprietà",
     "dataType": "Tipo di dato",
-    "minimumCount": "Numero minimo",
-    "maximumCount": "Numero massimo (−1: illimitato)",
     "editAnnotations": "Modifica annotazioni",
     "annotationType": "Tipo di annotazione",
     "annotationTypesHint": "Definisci i tipi di annotazione usati su questo livello del modello, ad esempio p o note.",
@@ -254,6 +257,9 @@
     "removeAnnotationTitle": "Eliminare il tipo di annotazione?",
     "confirmRemoveAnnotation": "Eliminare il tipo di annotazione {{type}} da questo livello del modello? I dati già registrati con questo tipo non verranno eliminati.",
     "redoRelationAlternative": "Ripeti modifica alla relazione (alternativa)",
+    "levelNameHint": "Il nome mostrato nell’elenco dei livelli del modello. Usa 3–70 caratteri.",
+    "modelVersionHint": "La versione di questo modello, ad esempio 1.0.0.",
+    "modelUriHint": "Un identificatore stabile per questo modello, come un URN o un URL.",
     "modelVersion": "Versione del modello",
     "modelUri": "URI del modello",
     "invalidLevelName": "Usa da 3 a 70 caratteri.",
@@ -271,6 +277,9 @@
     "nodeRelationshipSingle": "{{count}} relazione",
     "nodePropertySingle": "{{count}} proprietà",
     "nodeConstraintSingle": "{{count}} vincolo",
+    "refinesLabel": "Affina",
+    "runningPropertyEditing": "Modifica delle proprietà in pausa",
+    "runningPropertyEditingHint": "Esamina il nodo base, poi torna alla proprietà.",
     "runningDeletion": "Eliminazione preparata",
     "runningDeletionHint": "Esamina il grafo, poi torna per rivedere l’eliminazione.",
     "resumeAction": "Riprendi",
@@ -291,6 +300,43 @@
     "affectedLevelsLabel": "Livelli del modello dipendenti",
     "inspectRemovalLevel": "Visualizza {{name}} nell’area di lavoro",
     "modelNodeSingle": "{{count}} nodo",
-    "modelNodeCount": "{{count}} nodi"
+    "modelNodeCount": "{{count}} nodi",
+    "propertyDefinition": "Definizione",
+    "propertyOptions": {
+      "required": {
+        "label": "Richiedi un valore",
+        "hint": "Deve essere specificato almeno un valore."
+      },
+      "multiple": {
+        "label": "Consenti più valori",
+        "hint": "Questa proprietà può contenere più di un valore."
+      },
+      "ordered": {
+        "label": "Mantieni l’ordine dei valori",
+        "hint": "La posizione di ogni valore è significativa."
+      },
+      "duplicates": {
+        "label": "Consenti valori ripetuti",
+        "hint": "Lo stesso valore può comparire più volte."
+      },
+      "readonly": {
+        "label": "Valori di sola lettura",
+        "hint": "I valori impostati sono destinati a rimanere invariati."
+      },
+      "key": {
+        "label": "Usa come identificatore",
+        "hint": "Identifica un oggetto tramite questo valore singolo obbligatorio."
+      },
+      "minimum": {
+        "label": "Numero minimo",
+        "hint": "Deve essere specificato almeno questo numero di valori."
+      },
+      "maximum": {
+        "label": "Numero massimo",
+        "hint": "Lascia vuoto per consentire un numero illimitato di valori."
+      }
+    },
+    "propertyMultipleValues": "Valori multipli",
+    "unlimitedValues": "Illimitato"
   }
 }

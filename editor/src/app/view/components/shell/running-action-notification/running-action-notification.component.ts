@@ -10,7 +10,12 @@ import { RunningActionService } from '../../../../services/workspace/workflows/r
   imports: [TranslocoDirective, Button, LucideArrowLeft, LucideDynamicIcon, LucideX],
   template: `
     @if (actions.current(); as action) {
-      <aside *transloco="let t" class="running-action-notification" [attr.aria-label]="t(action.titleKey)">
+      <aside
+        *transloco="let t"
+        class="running-action-notification"
+        [attr.data-severity]="action.severity"
+        [attr.aria-label]="t(action.titleKey)"
+      >
         <span class="action-icon" aria-hidden="true"><svg [lucideIcon]="action.icon" class="size-4"></svg></span>
         <span class="min-w-0 flex-1 sm:me-3">
           <span class="block text-sm font-medium" role="status">{{ t(action.titleKey) }}</span>

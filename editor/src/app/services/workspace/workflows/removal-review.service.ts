@@ -40,6 +40,7 @@ export class RemovalReviewService {
     try {
       paused = await this.actions.start({
         icon: LucideEraser.icon,
+        severity: 'error',
         projectId: location.projectId,
         titleKey: 'editor.runningDeletion',
         descriptionKey: 'editor.runningDeletionHint',

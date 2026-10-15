@@ -3,44 +3,63 @@ import {
   Component,
   computed,
   effect,
+  ElementRef,
   inject,
   input,
   output,
   signal,
+  untracked,
   type OutputEmitterRef,
   type InputSignal,
   type Signal,
   type WritableSignal,
 } from '@angular/core';
+import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { LucideSave, LucideX } from '@lucide/angular';
 import { type Attribute, type AttributeInput, DataTypes, type DataTypeSuggestion } from '@ramen-suite/core/model';
-import { Button, Input, Select, Toggle, type SelectOption } from '@sushi-kit/angular';
-import { DialogService } from '../../../../../services/interaction/dialog.service';
+import {
+  Card,
+  Input,
+  InputNumber,
+  List,
+  ListItemTemplate,
+  Select,
+  Toggle,
+  type ListTrackBy,
+  type SelectOption,
+} from '@sushi-kit/angular';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
+import { PROPERTY_NAME_MAX_LENGTH } from '../../../../../utils/model-names';
 
+type PropertyToggleOption = 'required' | 'multiple' | 'ordered' | 'duplicates' | 'readonly' | 'key';
+type PropertyOption = PropertyToggleOption | 'minimum' | 'maximum';
+
+/** Applies property field changes serially while preserving newer edits and inline validation. */
 @Component({
   selector: 'nori-property-form',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [LucideSave, LucideX, TranslocoDirective, FormsModule, Button, Input, Select, Toggle],
+  imports: [NgTemplateOutlet, TranslocoDirective, FormsModule, Card, Input, InputNumber, List, ListItemTemplate, Select, Toggle],
   templateUrl: './property-form.component.html',
   styleUrl: './property-form.component.scss',
 })
 export class PropertyFormComponent {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
-  private readonly dialogs: DialogService = inject(DialogService);
+  private readonly element: ElementRef<HTMLElement> = inject<ElementRef<HTMLElement>>(ElementRef);
 
   public readonly modelLevelIndex: InputSignal<number | null> = input<number | null>(null);
   public readonly editable: InputSignal<boolean> = input(true);
   public readonly saved: OutputEmitterRef<string> = output();
-  public readonly completed: OutputEmitterRef<void> = output();
   public readonly currentAttribute: InputSignal<Attribute | undefined> = input();
 
-  public readonly pending: WritableSignal<boolean> = this.dialogs.pending;
+  protected readonly trackOption: ListTrackBy<PropertyOption> = (_index: number, option: PropertyOption): string => option;
+
+  protected readonly multipleOptions: readonly PropertyOption[] = ['minimum', 'maximum', 'ordered', 'duplicates'];
+  protected readonly valueOptions: readonly PropertyOption[] = ['required', 'multiple'];
+
+  protected readonly nameMaxLength: number = PROPERTY_NAME_MAX_LENGTH;
+
   protected readonly error: WritableSignal<string | null> = signal<string | null>(null);
-  private initialValue: string = '';
-  protected advanced: boolean = false;
   protected name: string = '';
   protected typeId: string = DataTypes.String;
   protected lowerBound: number = 0;
@@ -49,6 +68,16 @@ export class PropertyFormComponent {
   protected isReadOnly: boolean = false;
   protected isUnique: boolean = true;
   protected isOrdered: boolean = false;
+
+  private readonly multipleEnabled: WritableSignal<boolean> = signal(false);
+
+  private initialValue: string = '';
+  private selectedAttributeId: string | undefined;
+  private saveRequested: boolean = false;
+  private saving: Promise<void> | null = null;
+  private readonly attributeSnapshot: Signal<string | undefined> = computed((): string | undefined =>
+    JSON.stringify(this.currentAttribute()),
+  );
 
   protected readonly typeOptions: Signal<readonly SelectOption[]> = computed((): readonly SelectOption[] => {
     const options: SelectOption[] = this.workspace.queries
@@ -76,32 +105,14 @@ export class PropertyFormComponent {
     );
   });
 
-  protected get required(): boolean {
-    return this.lowerBound > 0;
-  }
-
-  protected get multiple(): boolean {
-    return this.upperBound === -1 || this.upperBound > 1;
-  }
-
-  protected handleRequired(required: boolean): void {
-    this.lowerBound = required ? Math.max(1, this.lowerBound) : 0;
-    if (required && this.upperBound === 0) this.upperBound = 1;
-    if (!required) this.isKey = false;
-  }
-
-  protected handleMultiple(multiple: boolean): void {
-    this.upperBound = multiple ? -1 : 1;
-    if (multiple) this.isKey = false;
-    else this.lowerBound = Math.min(1, this.lowerBound);
-  }
-
-  protected handleBounds(): void {
-    if (this.lowerBound !== 1 || this.upperBound !== 1) this.isKey = false;
-  }
-
   public constructor() {
-    effect((): void => this.reset());
+    effect((): void => {
+      this.attributeSnapshot();
+      untracked((): void => {
+        const sameSelection: boolean = this.currentAttribute()?.id === this.selectedAttributeId;
+        if (!sameSelection || !this.hasChanges()) this.reset();
+      });
+    });
   }
 
   public reset(): void {
@@ -114,56 +125,176 @@ export class PropertyFormComponent {
     this.typeId = attribute.typeId;
     this.lowerBound = attribute.bounds?.lowerBound ?? 0;
     this.upperBound = attribute.bounds?.upperBound ?? 1;
+    this.multipleEnabled.set(this.upperBound === -1 || this.upperBound > 1);
     this.isKey = attribute.isKey ?? false;
     this.isReadOnly = attribute.isReadOnly ?? false;
     this.isUnique = attribute.isUnique ?? true;
     this.isOrdered = attribute.isOrdered ?? false;
-    this.advanced = ![0, 1].includes(this.lowerBound) || ![1, -1].includes(this.upperBound);
+    this.selectedAttributeId = this.currentAttribute()?.id;
     this.error.set(null);
-    this.initialValue = JSON.stringify(this.values());
+    this.initialValue = this.snapshot(this.values());
   }
 
   public hasChanges(): boolean {
-    return JSON.stringify(this.values()) !== this.initialValue;
+    return this.snapshot(this.values()) !== this.initialValue;
+  }
+
+  public async commit(): Promise<boolean> {
+    await this.handleSave();
+    return !this.hasChanges();
+  }
+
+  protected get required(): boolean {
+    return this.lowerBound > 0;
+  }
+
+  protected get multiple(): boolean {
+    return this.multipleEnabled();
+  }
+
+  protected get usageOptions(): readonly PropertyOption[] {
+    return this.lowerBound === 1 && this.upperBound === 1 && (!this.hasOtherKey() || this.isKey)
+      ? ['readonly', 'key']
+      : ['readonly'];
+  }
+
+  protected optionValue(option: PropertyToggleOption): boolean {
+    const values: Record<PropertyToggleOption, boolean> = {
+      required: this.required,
+      multiple: this.multiple,
+      ordered: this.isOrdered,
+      duplicates: !this.isUnique,
+      readonly: this.isReadOnly,
+      key: this.isKey,
+    };
+    return values[option];
+  }
+
+  protected handleOption(option: PropertyToggleOption, value: boolean): void {
+    switch (option) {
+      case 'required':
+        return this.handleRequired(value);
+      case 'multiple':
+        return this.handleMultiple(value);
+      case 'ordered':
+        this.isOrdered = value;
+        break;
+      case 'duplicates':
+        this.isUnique = !value;
+        break;
+      case 'readonly':
+        this.isReadOnly = value;
+        break;
+      case 'key':
+        this.isKey = value;
+        break;
+    }
+    void this.handleSave();
+  }
+
+  protected handleMinimum(value: number | null): void {
+    this.lowerBound = value ?? 0;
+    this.handleBounds();
+  }
+
+  protected handleMaximum(value: number | null): void {
+    this.upperBound = value ?? -1;
+    this.handleBounds();
+  }
+
+  protected handleBounds(): void {
+    if (this.lowerBound !== 1 || this.upperBound !== 1) this.isKey = false;
   }
 
   protected handleType(value: unknown): void {
-    if (typeof value === 'string') this.typeId = value;
+    if (typeof value !== 'string' || !this.typeOptions().some((option: SelectOption): boolean => option.value === value)) return;
+    this.typeId = value;
+    void this.handleSave();
   }
 
-  protected async handleSave(): Promise<void> {
+  protected handleSave(): Promise<void> {
+    if (this.saving) {
+      this.saveRequested = true;
+      return this.saving;
+    }
     const nodeId: string | null = this.workspace.store.currentNodeId();
-    if (!nodeId || !this.name.trim() || !this.editable()) return;
+    if (!nodeId || !this.editable() || !this.name.trim()) return Promise.resolve();
+    if (!this.hasChanges()) {
+      this.error.set(null);
+      return Promise.resolve();
+    }
+    this.saving = this.saveCurrent(nodeId);
+    return this.saving;
+  }
 
-    const existing: Attribute | undefined = this.currentAttribute();
+  private handleRequired(required: boolean): void {
+    this.lowerBound = required ? Math.max(1, this.lowerBound) : 0;
+    if (required && this.upperBound === 0) this.upperBound = 1;
+    if (!required) this.isKey = false;
+    void this.handleSave();
+  }
+
+  private handleMultiple(multiple: boolean): void {
+    this.multipleEnabled.set(multiple);
+    this.upperBound = multiple ? -1 : 1;
+    if (multiple) this.isKey = false;
+    else this.lowerBound = Math.min(1, this.lowerBound);
+    void this.handleSave();
+  }
+
+  private async saveCurrent(nodeId: string): Promise<void> {
+    const existing: Attribute | undefined =
+      this.currentAttribute() ??
+      this.workspace.queries
+        .currentNode()
+        ?.attributes.find((attribute: Attribute): boolean => attribute.id === this.selectedAttributeId);
     const input: AttributeInput = this.values();
-
-    if (this.pending()) return;
-    this.pending.set(true);
+    this.saveRequested = false;
     this.error.set(null);
     try {
-      if (existing)
-        await this.workspace.actions.updateAttribute(nodeId, existing.id, {
-          ...input,
-          constraints: input.constraints ? [...input.constraints] : undefined,
-        });
-      else await this.workspace.actions.createAttribute(nodeId, input);
-      const attribute: Attribute | undefined = this.workspace.queries
-        .currentNode()
-        ?.attributes.find((item: Attribute): boolean => item.id === existing?.id || (!existing && item.name === input.name));
-      if (attribute) {
-        this.initialValue = JSON.stringify(this.values());
+      const attribute: Attribute | undefined = await this.persist(nodeId, existing, input);
+      this.initialValue = this.snapshot(input);
+      if (!this.hasChanges()) this.syncMultipleMode();
+      if (attribute && !existing) {
+        this.selectedAttributeId = attribute.id;
         this.saved.emit(attribute.id);
       }
     } catch (error: unknown) {
       this.error.set(error instanceof Error ? error.message : String(error));
     } finally {
-      this.pending.set(false);
+      this.saving = null;
     }
+    await this.flushRequestedSave();
   }
 
-  protected handleCancel(): void {
-    if (!this.pending()) this.completed.emit();
+  private syncMultipleMode(): void {
+    const multiple: boolean = this.upperBound === -1 || this.upperBound > 1;
+    const host: HTMLElement = this.element.nativeElement;
+    if (!multiple && host.ownerDocument.activeElement?.id === 'property-control-maximum') {
+      host.querySelector<HTMLInputElement>('#property-control-multiple')?.focus();
+    }
+    this.multipleEnabled.set(multiple);
+  }
+
+  private async flushRequestedSave(): Promise<void> {
+    if (this.saveRequested) await this.handleSave();
+  }
+
+  private async persist(nodeId: string, existing: Attribute | undefined, input: AttributeInput): Promise<Attribute | undefined> {
+    if (existing) {
+      await this.workspace.actions.updateAttribute(nodeId, existing.id, {
+        ...input,
+        constraints: input.constraints ? [...input.constraints] : undefined,
+      });
+      return this.workspace.queries
+        .currentNode()
+        ?.attributes.find((attribute: Attribute): boolean => attribute.id === existing.id);
+    }
+    return this.workspace.actions.createAttribute(nodeId, input);
+  }
+
+  private snapshot(input: AttributeInput): string {
+    return JSON.stringify({ ...input, constraints: undefined });
   }
 
   private values(): AttributeInput {

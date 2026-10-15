@@ -141,12 +141,13 @@ export class ModelLevelsComponent {
   }
 
   protected handleCreate(): void {
-    this.dialogs.open(CreateModelDialog, { headerKey: 'editor.createLevel' });
+    this.dialogs.open(CreateModelDialog, { headerKey: 'editor.createLevel', width: '30rem' });
   }
 
   protected handleEdit(record: ModelRecord): void {
     this.dialogs.open(CreateModelDialog, {
       headerKey: 'editor.editLevel',
+      width: '30rem',
       inputValues: { currentLevelIndex: record.levelIndex },
     });
   }

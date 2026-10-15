@@ -137,7 +137,10 @@
     "refineNode": "Refine node",
     "properties": "Properties",
     "valid": "Model is valid",
-    "addProperty": "Add property",
+    "addProperty": "Create property",
+    "newProperty": "Creating a new property",
+    "editingProperty": "Editing a property",
+    "duplicateProperty": "Duplicate property",
     "selectHint": "Select a node or relation in the graph to explore its details.",
     "renameNode": "Rename node",
     "duplicateNode": "Duplicate node",
@@ -212,14 +215,13 @@
     "removeBaseNodeWithRelations": "Remove with relationships",
     "removeFromCanvas": "Remove from canvas",
     "showOnCanvas": "Show on canvas",
+    "nodeDetails": "Node details",
+    "annotations": "Annotations",
+    "inheritedPropertyHint": "Defined on {{name}}. Edit this property on its original model level.",
     "editProperties": "Edit properties",
     "editPropertiesOf": "Edit properties of {{name}}",
     "allowDuplicates": "Allow duplicates",
     "useAsKey": "Use as key",
-    "morePropertyOptions": "More options",
-    "discardPropertyChanges": "You have unsaved changes. Discard them to continue?",
-    "keepEditing": "Keep editing",
-    "discardChanges": "Discard changes",
     "propertySource": "From {{name}}",
     "propertyLevel": "Level {{level}}",
     "propertyCount": {
@@ -233,15 +235,16 @@
       "atMost": "Up to {{count}} values",
       "range": "{{minimum}} to {{maximum}} values"
     },
+    "propertyNameTooLong": "Property names can contain at most {{maximum}} characters.",
     "propertyNameTaken": "This name is already used on this node, including inherited properties. Choose another name.",
     "propertyMultipleKeys": "A node can only have one key property, including inherited keys.",
-    "propertyInvalidBounds": "The value limits are invalid. The minimum must be at least 0 and the maximum at least the minimum, or −1 for unlimited values.",
+    "propertyInvalidBounds": "The minimum count must be at least 0. The maximum must be at least the minimum; leave it empty for unlimited values.",
     "propertyKeyBounds": "A key property must have exactly one value. Set both minimum and maximum to 1.",
     "propertyChangeInvalid": "This change would make the model invalid: {{reason}}",
+    "propertyValues": "Values",
+    "propertyBehavior": "Usage",
     "propertyName": "Property name",
     "dataType": "Data type",
-    "minimumCount": "Minimum count",
-    "maximumCount": "Maximum count (−1: unlimited)",
     "editAnnotations": "Edit annotations",
     "annotationType": "Annotation type",
     "annotationTypesHint": "Define the annotation types used on this model level, such as p or note.",
@@ -254,6 +257,9 @@
     "removeAnnotationTitle": "Remove annotation type?",
     "confirmRemoveAnnotation": "Remove the annotation type {{type}} from this model level? Data already recorded with this type will not be deleted.",
     "redoRelationAlternative": "Redo relationship change (alternative)",
+    "levelNameHint": "The name shown in the model level list. Use 3–70 characters.",
+    "modelVersionHint": "The version of this model, for example 1.0.0.",
+    "modelUriHint": "A stable identifier for this model, such as a URN or URL.",
     "modelVersion": "Model version",
     "modelUri": "Model URI",
     "invalidLevelName": "Use between 3 and 70 characters.",
@@ -271,6 +277,9 @@
     "nodeRelationshipSingle": "{{count}} Relation",
     "nodePropertySingle": "{{count}} Property",
     "nodeConstraintSingle": "{{count}} Constraint",
+    "refinesLabel": "Refines",
+    "runningPropertyEditing": "Property editing paused",
+    "runningPropertyEditingHint": "Inspect the base node, then return to your property.",
     "runningDeletion": "Deletion prepared",
     "runningDeletionHint": "Inspect your graph, then return to review the deletion.",
     "resumeAction": "Resume",
@@ -291,6 +300,43 @@
     "affectedLevelsLabel": "Dependent model levels",
     "inspectRemovalLevel": "View {{name}} in the workspace",
     "modelNodeSingle": "{{count}} Node",
-    "modelNodeCount": "{{count}} Nodes"
+    "modelNodeCount": "{{count}} Nodes",
+    "propertyDefinition": "Definition",
+    "propertyOptions": {
+      "required": {
+        "label": "Require a value",
+        "hint": "At least one value must be provided."
+      },
+      "multiple": {
+        "label": "Allow multiple values",
+        "hint": "Store more than one value in this property."
+      },
+      "ordered": {
+        "label": "Preserve value order",
+        "hint": "The position of each value matters."
+      },
+      "duplicates": {
+        "label": "Allow repeated values",
+        "hint": "The same value may appear more than once."
+      },
+      "readonly": {
+        "label": "Read-only values",
+        "hint": "Values are intended to remain unchanged after they are set."
+      },
+      "key": {
+        "label": "Use as an identifier",
+        "hint": "Identify an object by this required, single value."
+      },
+      "minimum": {
+        "label": "Minimum count",
+        "hint": "At least this many values must be provided."
+      },
+      "maximum": {
+        "label": "Maximum count",
+        "hint": "Leave empty to allow any number of values."
+      }
+    },
+    "propertyMultipleValues": "Multiple values",
+    "unlimitedValues": "Unlimited"
   }
 }

@@ -1,4 +1,5 @@
 .running-action-notification {
+  --action-colour: var(--color-error);
   position: fixed;
   z-index: 20;
   bottom: 3.5rem;
@@ -15,6 +16,9 @@
   background: var(--sui-color-overlay);
   animation: action-enter 220ms ease-out;
 }
+.running-action-notification[data-severity="warning"] {
+  --action-colour: var(--color-warning);
+}
 .action-icon {
   display: flex;
   align-items: center;
@@ -23,8 +27,8 @@
   width: 2rem;
   height: 2rem;
   border-radius: var(--nori-radius-input);
-  color: var(--color-error);
-  background: color-mix(in oklab, var(--color-error) 10%, transparent);
+  color: var(--action-colour);
+  background: color-mix(in oklab, var(--action-colour) 10%, transparent);
 }
 @keyframes action-enter {
   from {

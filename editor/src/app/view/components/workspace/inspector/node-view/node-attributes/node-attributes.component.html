@@ -2,28 +2,35 @@
   <div class="nori-scroll-frame flex-1">
     <div noriScrollOverflow #scroll="scrollOverflow" class="editor-panel-scroll -mx-2 min-h-0 flex-1 overflow-y-auto">
       @for (group of propertyGroups(); track group.levelIndex) {
-        <div suiDivider placement="start" class="text-base-content/60 text-xs" style="--sui-divider-margin: 0.75rem">
-          {{
-            group.modelName ? t('editor.propertySource', { name: group.modelName }) : t('editor.propertyLevel', { level: group.levelIndex })
-          }}
+        @let label =
+          group.modelName ? t('editor.propertySource', { name: group.modelName }) : t('editor.propertyLevel', { level: group.levelIndex });
+        <div
+          suiDivider
+          placement="start"
+          class="text-base-content/60 text-xs"
+          style="--sui-divider-margin: 0.75rem; margin-bottom: 0.25rem"
+        >
+          {{ label }}
         </div>
-        <div class="px-4">
+        <div class="px-1">
           <sui-list
             class="editor-list"
             size="xs"
             [items]="group.properties"
+            [trackBy]="trackProperty"
             [dividers]="false"
             [rowHover]="false"
-            [ariaLabel]="t('editor.properties')"
+            [ariaLabel]="label"
           >
             <ng-template suiListItem let-item>
-              <nori-node-attribute
-                class="col-span-full block w-full py-1"
-                [attribute]="item.attribute"
-                [inlineRename]="true"
-                [modelLevelIndex]="item.levelIndex"
-                [nodeId]="item.nodeId"
-              />
+              <button type="button" class="property-entry col-span-full" (click)="propertyEditing.open(item.attribute.id)">
+                <nori-node-attribute
+                  class="block w-full"
+                  [attribute]="item.attribute"
+                  [focusable]="false"
+                  [modelLevelIndex]="item.levelIndex"
+                />
+              </button>
             </ng-template>
           </sui-list>
         </div>

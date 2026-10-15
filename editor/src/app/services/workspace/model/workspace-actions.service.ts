@@ -23,6 +23,7 @@ import { type GraphView, type ModelRecord, type NodeColors, type ViewSettings } 
 import { ProjectService } from '../../projects/project.service';
 import { RelationHistoryService } from './relation-history.service';
 import { WorkspaceStore } from '../../../states/workspace.store';
+import { PROPERTY_NAME_MAX_LENGTH } from '../../../utils/model-names';
 
 export type CreateLevelInput = Required<Pick<ModelInput, 'name' | 'uri' | 'version'>>;
 export type UpdateLevelInput = CreateLevelInput;
@@ -90,18 +91,53 @@ export class WorkspaceActionsService {
     return copy;
   }
 
-  public async createAttribute(nodeId: string, input: AttributeInput): Promise<void> {
+  public async createAttribute(nodeId: string, input: AttributeInput): Promise<Attribute> {
+    this.requirePropertyNameLength(input.name);
     this.requireValidAttributeChange((draft: RamenModel): ModelChange<Attribute> => draft.createAttribute(nodeId, input));
-    this.store.getDraft().createAttribute(nodeId, input);
+    const attribute: Attribute = this.store.getDraft().createAttribute(nodeId, input).element;
     await this.saveWorkspace();
+    return attribute;
   }
 
   public async updateAttribute(nodeId: string, attributeId: string, patch: UpdateAttributeInput): Promise<void> {
+    const currentName: string | undefined = this.store
+      .getDraft()
+      .getNode(nodeId)
+      ?.attributes.find((attribute: Attribute): boolean => attribute.id === attributeId)?.name;
+    if (patch.name !== undefined && patch.name !== currentName) this.requirePropertyNameLength(patch.name);
     this.requireValidAttributeChange(
       (draft: RamenModel): ModelChange<Attribute> => draft.updateAttribute(nodeId, attributeId, patch),
     );
     this.store.getDraft().updateAttribute(nodeId, attributeId, patch);
     await this.saveWorkspace();
+  }
+
+  public async duplicateAttribute(nodeId: string, attributeId: string): Promise<Attribute> {
+    const draft: RamenModel = this.store.getDraft();
+    const attribute: Attribute | undefined = draft
+      .getNode(nodeId)
+      ?.attributes.find((item: Attribute): boolean => item.id === attributeId);
+    if (!attribute) throw new Error('The selected property no longer exists.');
+    const name: string = this.getAvailableAttributeName(nodeId, `${attribute.name.slice(0, PROPERTY_NAME_MAX_LENGTH - 4)}Copy`);
+    const { id: _id, ...values } = attribute;
+    const input: AttributeInput = { ...values, name, isKey: false };
+    return this.createAttribute(nodeId, input);
+  }
+
+  public getAvailableAttributeName(nodeId: string, preferred: string): string {
+    const names: ReadonlySet<string> = new Set(
+      this.store
+        .getDraft()
+        .getAttributes(nodeId)
+        .map((item): string => item.name),
+    );
+    let name: string = preferred.slice(0, PROPERTY_NAME_MAX_LENGTH);
+    let suffix: number = 2;
+    while (names.has(name)) {
+      const ending: string = String(suffix++);
+      name = `${preferred.slice(0, PROPERTY_NAME_MAX_LENGTH - ending.length)}${ending}`;
+    }
+    return name;
   }
 
   public async removeAttribute(nodeId: string, attributeId: string): Promise<void> {
@@ -265,6 +301,11 @@ export class WorkspaceActionsService {
     const save: Promise<void> = this.pendingSave.then(action);
     this.pendingSave = save.catch((): void => undefined);
     await save;
+  }
+
+  private requirePropertyNameLength(name: string): void {
+    if (name.trim().length <= PROPERTY_NAME_MAX_LENGTH) return;
+    throw new Error(this.translations.translate('editor.propertyNameTooLong', { maximum: PROPERTY_NAME_MAX_LENGTH }));
   }
 
   private requireValidAttributeChange(edit: (draft: RamenModel) => ModelChange<Attribute>): void {

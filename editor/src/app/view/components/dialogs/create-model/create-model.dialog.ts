@@ -14,7 +14,7 @@ import { FormsModule } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { LucidePlus, LucideSave, LucideX } from '@lucide/angular';
 import { RAMEN_MODEL } from '@ramen-suite/core/ramen';
-import { Button, Input, Message } from '@sushi-kit/angular';
+import { Button, Input } from '@sushi-kit/angular';
 import { type ModelRecord } from '../../../../models/ModelRecord';
 import { DialogService } from '../../../../services/interaction/dialog.service';
 import { NavigationService } from '../../../../services/interaction/navigation.service';
@@ -25,7 +25,7 @@ import { WorkspaceService } from '../../../../services/workspace/workspace.servi
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'nori-create-model-dialog',
-  imports: [LucidePlus, LucideSave, LucideX, TranslocoDirective, Input, Button, Message, FormsModule],
+  imports: [LucidePlus, LucideSave, LucideX, TranslocoDirective, Input, Button, FormsModule],
   templateUrl: './create-model.dialog.html',
 })
 export class CreateModelDialog {
@@ -87,25 +87,18 @@ export class CreateModelDialog {
     this.dialogs.close();
   }
 
-  protected async handleCreateModel(): Promise<void> {
+  protected async handleSave(): Promise<void> {
     this.isSubmitted = true;
-    if (!this.isFormValid()) return;
+    if (!this.isFormValid() || this.dialogs.pending()) return;
 
+    const levelIndex: number | undefined = this.currentLevelIndex();
     await this.dialogs.run(async (): Promise<void> => {
-      const createdLevelIndex: number = await this.workspace.actions.createLevel(this.draftModel());
-      await this.navigation.navigateToLevel(createdLevelIndex);
-    });
-  }
-
-  protected async handleUpdateModel(): Promise<void> {
-    this.isSubmitted = true;
-    if (!this.isFormValid()) return;
-
-    const currentLevelIndex: number | undefined = this.currentLevelIndex();
-    if (!currentLevelIndex) return;
-
-    await this.dialogs.run(async (): Promise<void> => {
-      await this.workspace.actions.updateLevel(currentLevelIndex, this.draftModel());
+      if (levelIndex !== undefined) {
+        await this.workspace.actions.updateLevel(levelIndex, this.draftModel());
+      } else {
+        const createdLevelIndex: number = await this.workspace.actions.createLevel(this.draftModel());
+        await this.navigation.navigateToLevel(createdLevelIndex);
+      }
     });
   }
 }

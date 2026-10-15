@@ -283,3 +283,15 @@ sui-toast.nori-notifications {
     overflow: auto;
   }
 }
+
+.nori-property-workspace-backdrop {
+  background: rgb(0 0 0 / 40%);
+  backdrop-filter: blur(3px);
+}
+.nori-property-workspace-overlay {
+  color: var(--color-base-content);
+}
+
+.nori-property-workspace-overlay :is([role="dialog"], [role="tabpanel"]):focus {
+  outline: none;
+}

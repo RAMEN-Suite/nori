@@ -1,0 +1,18 @@
+@use "../../../../../../../styles/editor-list";
+
+.property-entry {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--nori-radius-input);
+  text-align: left;
+  cursor: pointer;
+}
+.property-entry:hover {
+  background: color-mix(in oklab, var(--color-base-content) 4%, transparent);
+}
+.property-entry:focus-visible {
+  outline: var(--sui-focus-ring-width) solid var(--sui-focus-ring-color, currentColor);
+  outline-offset: -2px;
+}

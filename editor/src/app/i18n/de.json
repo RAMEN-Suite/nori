@@ -137,7 +137,10 @@
     "refineNode": "Knoten verfeinern",
     "properties": "Eigenschaften",
     "valid": "Modell ist gültig",
-    "addProperty": "Eigenschaft hinzufügen",
+    "addProperty": "Eigenschaft anlegen",
+    "newProperty": "Neue Eigenschaft anlegen",
+    "editingProperty": "Eigenschaft bearbeiten",
+    "duplicateProperty": "Eigenschaft duplizieren",
     "selectHint": "Wähle einen Knoten oder eine Beziehung aus, um Details anzusehen.",
     "renameNode": "Knoten umbenennen",
     "duplicateNode": "Knoten duplizieren",
@@ -212,14 +215,13 @@
     "removeBaseNodeWithRelations": "Mit Beziehungen entfernen",
     "removeFromCanvas": "Von Zeichenfläche entfernen",
     "showOnCanvas": "Auf Zeichenfläche anzeigen",
+    "nodeDetails": "Knotendetails",
+    "annotations": "Annotationen",
+    "inheritedPropertyHint": "Auf {{name}} definiert. Bearbeite diese Eigenschaft auf ihrer ursprünglichen Modellebene.",
     "editProperties": "Eigenschaften bearbeiten",
     "editPropertiesOf": "Eigenschaften von „{{name}}“ bearbeiten",
     "allowDuplicates": "Duplikate erlauben",
     "useAsKey": "Als Schlüssel verwenden",
-    "morePropertyOptions": "Weitere Optionen",
-    "discardPropertyChanges": "Du hast ungespeicherte Änderungen. Möchtest du sie verwerfen und fortfahren?",
-    "keepEditing": "Weiter bearbeiten",
-    "discardChanges": "Änderungen verwerfen",
     "propertySource": "Aus {{name}}",
     "propertyLevel": "Ebene {{level}}",
     "propertyCount": {
@@ -233,15 +235,16 @@
       "atMost": "Bis zu {{count}} Werte",
       "range": "{{minimum}} bis {{maximum}} Werte"
     },
+    "propertyNameTooLong": "Property-Namen dürfen höchstens {{maximum}} Zeichen lang sein.",
     "propertyNameTaken": "Dieser Name ist am Knoten bereits vergeben, auch durch geerbte Eigenschaften. Wähle einen anderen Namen.",
     "propertyMultipleKeys": "Ein Knoten darf nur eine Schlüsseleigenschaft haben. Die geerbte Schlüsseleigenschaft zählt mit.",
-    "propertyInvalidBounds": "Die Mengengrenzen sind ungültig. Das Minimum muss mindestens 0 sein, das Maximum mindestens so groß oder −1 für unbegrenzt.",
+    "propertyInvalidBounds": "Die Mindestanzahl muss mindestens 0 sein. Die Höchstanzahl darf nicht kleiner sein; lass sie für unbegrenzt viele Werte leer.",
     "propertyKeyBounds": "Eine Schlüsseleigenschaft muss genau einen Wert haben. Setze Minimum und Maximum auf 1.",
     "propertyChangeInvalid": "Diese Änderung würde das Modell ungültig machen: {{reason}}",
+    "propertyValues": "Werte",
+    "propertyBehavior": "Verwendung",
     "propertyName": "Name der Eigenschaft",
     "dataType": "Datentyp",
-    "minimumCount": "Mindestanzahl",
-    "maximumCount": "Höchstanzahl (−1: unbegrenzt)",
     "editAnnotations": "Annotationen bearbeiten",
     "annotationType": "Annotationstyp",
     "annotationTypesHint": "Lege fest, welche Annotationstypen auf dieser Modellebene verwendet werden, zum Beispiel p oder note.",
@@ -254,6 +257,9 @@
     "removeAnnotationTitle": "Annotationstyp entfernen?",
     "confirmRemoveAnnotation": "Möchtest Du den Annotationstyp {{type}} aus dieser Modellebene entfernen? Bereits damit erfasste Daten werden nicht gelöscht.",
     "redoRelationAlternative": "Beziehungsänderung wiederholen (alternativ)",
+    "levelNameHint": "Der Name in der Liste der Modellebenen. Verwende 3–70 Zeichen.",
+    "modelVersionHint": "Die Version dieses Modells, zum Beispiel 1.0.0.",
+    "modelUriHint": "Eine dauerhafte Kennung für dieses Modell, etwa eine URN oder URL.",
     "modelVersion": "Modellversion",
     "modelUri": "Modell-URI",
     "invalidLevelName": "Verwende zwischen 3 und 70 Zeichen.",
@@ -271,6 +277,9 @@
     "nodeRelationshipSingle": "{{count}} Beziehung",
     "nodePropertySingle": "{{count}} Property",
     "nodeConstraintSingle": "{{count}} Constraint",
+    "refinesLabel": "Verfeinert",
+    "runningPropertyEditing": "Property-Bearbeitung pausiert",
+    "runningPropertyEditingHint": "Sieh Dir den Basisknoten an und kehre dann zu Deiner Property zurück.",
     "runningDeletion": "Löschung vorbereitet",
     "runningDeletionHint": "Sieh Dir den Graphen an und setze danach die Löschprüfung fort.",
     "resumeAction": "Fortsetzen",
@@ -291,6 +300,43 @@
     "affectedLevelsLabel": "Abhängige Modellebenen",
     "inspectRemovalLevel": "{{name}} im Arbeitsbereich ansehen",
     "modelNodeSingle": "{{count}} Knoten",
-    "modelNodeCount": "{{count}} Knoten"
+    "modelNodeCount": "{{count}} Knoten",
+    "propertyDefinition": "Definition",
+    "propertyOptions": {
+      "required": {
+        "label": "Wert erforderlich",
+        "hint": "Mindestens ein Wert muss angegeben werden."
+      },
+      "multiple": {
+        "label": "Mehrere Werte erlauben",
+        "hint": "Diese Eigenschaft kann mehr als einen Wert enthalten."
+      },
+      "ordered": {
+        "label": "Reihenfolge beibehalten",
+        "hint": "Die Position der einzelnen Werte ist von Bedeutung."
+      },
+      "duplicates": {
+        "label": "Wiederholte Werte erlauben",
+        "hint": "Derselbe Wert darf mehrfach vorkommen."
+      },
+      "readonly": {
+        "label": "Werte schreibschützen",
+        "hint": "Einmal gesetzte Werte sollen unverändert bleiben."
+      },
+      "key": {
+        "label": "Als Kennung verwenden",
+        "hint": "Identifiziere ein Objekt über diesen erforderlichen Einzelwert."
+      },
+      "minimum": {
+        "label": "Mindestanzahl",
+        "hint": "Mindestens so viele Werte müssen angegeben werden."
+      },
+      "maximum": {
+        "label": "Höchstanzahl",
+        "hint": "Lass das Feld leer, um beliebig viele Werte zu erlauben."
+      }
+    },
+    "propertyMultipleValues": "Mehrere Werte",
+    "unlimitedValues": "Unbegrenzt"
   }
 }

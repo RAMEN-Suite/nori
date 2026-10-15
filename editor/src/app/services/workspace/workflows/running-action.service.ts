@@ -5,6 +5,7 @@ import { ProjectService } from '../../projects/project.service';
 
 export interface RunningActionOptions {
   readonly icon: LucideIconData;
+  readonly severity: 'error' | 'warning';
   readonly projectId: string;
   readonly titleKey: string;
   readonly descriptionKey: string;

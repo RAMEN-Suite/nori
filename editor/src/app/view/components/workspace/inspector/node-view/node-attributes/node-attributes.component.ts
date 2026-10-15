@@ -3,7 +3,7 @@ import { TranslocoDirective } from '@jsverse/transloco';
 import { LucidePencil, LucideTags } from '@lucide/angular';
 import type { Attribute, Node } from '@ramen-suite/core/model';
 import { RAMEN_ELEMENT } from '@ramen-suite/core/ramen';
-import { Button, Divider, List, ListItemTemplate } from '@sushi-kit/angular';
+import { Button, Divider, List, ListItemTemplate, type ListTrackBy } from '@sushi-kit/angular';
 import { ScrollOverflowDirective } from '../../../../../../directives/scroll-overflow.directive';
 import { DialogService, type DialogRef } from '../../../../../../services/interaction/dialog.service';
 import { ProjectService } from '../../../../../../services/projects/project.service';
@@ -42,6 +42,7 @@ interface InspectorPropertyGroup {
     LucideTags,
   ],
   templateUrl: './node-attributes.component.html',
+  styleUrl: './node-attributes.component.scss',
 })
 export class NodeAttributesComponent {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
@@ -51,6 +52,9 @@ export class NodeAttributesComponent {
   protected readonly propertyEditing: PropertyEditingService = inject(PropertyEditingService);
 
   private dialogRef: DialogRef | null = null;
+
+  protected readonly trackProperty: ListTrackBy<InspectorProperty> = (_index: number, property: InspectorProperty): string =>
+    `${property.nodeId}:${property.attribute.id}`;
 
   protected readonly isAnnotation: Signal<boolean> = computed(
     (): boolean =>
