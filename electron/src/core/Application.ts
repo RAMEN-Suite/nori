@@ -10,7 +10,13 @@ export class Application {
   public constructor(title: string, isProduction: boolean) {
     this.title = title;
     this.isProduction = isProduction;
-    void app.whenReady().then((): void => this.createWindow());
+    void app
+      .whenReady()
+      .then((): void => this.createWindow())
+      .catch((error: unknown): void => {
+        console.error('Could not start Nori:', error);
+        app.quit();
+      });
     app.on('window-all-closed', (): void => {
       if (process.platform !== 'darwin') app.quit();
     });
