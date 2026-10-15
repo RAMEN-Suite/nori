@@ -66,6 +66,7 @@ jobs:
         run: npm run lint
       - name: Format Check
         run: npm run format
-        continue-on-error: true
+      - name: Type Check
+        run: npm run typecheck
       - name: Build
         run: npm run build
