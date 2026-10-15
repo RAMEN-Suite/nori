@@ -1,0 +1,19 @@
+<sui-card *transloco="let t" size="xs" variant="border">
+  <div class="flex items-center gap-1">
+    <button
+      suiButton
+      severity="error"
+      variant="text"
+      size="xs"
+      shape="circle"
+      [attr.aria-label]="t('editor.removeConnection')"
+      [noriTooltip]="t('editor.removeConnection')"
+      placement="bottom"
+      [showDelay]="600"
+      [disabled]="relationEditing.pending()"
+      (click)="relationEditing.remove(relationId())"
+    >
+      <svg lucideTrash class="size-3.5" aria-hidden="true"></svg>
+    </button>
+  </div>
+</sui-card>

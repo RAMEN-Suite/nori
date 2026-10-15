@@ -19,6 +19,16 @@
     (blur)="handleSaveName()"
   />
 }
+@if (relationActionsPosition(); as position) {
+  @if (workspace.store.currentRelationId(); as relationId) {
+    <nori-relation-actions
+      class="graph-selection-actions"
+      [relationId]="relationId"
+      [style.left.px]="position.x"
+      [style.top.px]="position.y"
+    />
+  }
+}
 @if (graphTools.tool() !== 'select') {
   <p *transloco="let t" class="graph-tool-hint" role="status" data-nori-motion>
     @if (graphTools.tool() === 'connect' && graphTools.source(); as source) {
@@ -30,6 +40,6 @@
 }
 @if (nodeActionsPosition(); as position) {
   @if (workspace.store.currentNodeId(); as nodeId) {
-    <nori-node-actions class="graph-node-actions" [nodeId]="nodeId" [style.left.px]="position.x" [style.top.px]="position.y" />
+    <nori-node-actions class="graph-selection-actions" [nodeId]="nodeId" [style.left.px]="position.x" [style.top.px]="position.y" />
   }
 }

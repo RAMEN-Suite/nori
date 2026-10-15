@@ -35,6 +35,7 @@ import { NodeEditingService } from '../../../../../services/workspace/editing/no
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
 import { ApplicationState } from '../../../../../states/application.state';
 import { NodeActionsComponent } from '../node-actions/node-actions.component';
+import { RelationActionsComponent } from '../relation-actions/relation-actions.component';
 import { GraphAutoLayout, type NodePosition } from './graph.auto-layout';
 import { getLinkPath } from './graph.geometry';
 import { positionLinkLabels } from './graph.labels';
@@ -63,7 +64,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'nori-graph',
   encapsulation: ViewEncapsulation.None,
-  imports: [TranslocoDirective, NodeActionsComponent, FormsModule, Input, AutoselectDirective],
+  imports: [TranslocoDirective, NodeActionsComponent, RelationActionsComponent, FormsModule, Input, AutoselectDirective],
   templateUrl: './graph.component.html',
   styleUrl: './graph.component.scss',
 })
@@ -87,6 +88,7 @@ export class GraphComponent implements AfterViewInit {
   private readonly host: Signal<ElementRef<HTMLDivElement> | undefined> = viewChild('host');
 
   protected readonly nodeActionsPosition: WritableSignal<{ x: number; y: number } | null> = signal(null);
+  protected readonly relationActionsPosition: WritableSignal<{ x: number; y: number } | null> = signal(null);
   protected readonly nameEditorPosition: WritableSignal<{ x: number; y: number; width: number } | null> = signal(null);
   protected readonly renamingNode: WritableSignal<{ id: string; modelId: string } | null> = signal(null);
   protected readonly draftName: WritableSignal<string> = signal('');
@@ -128,7 +130,7 @@ export class GraphComponent implements AfterViewInit {
       this.rootGroupSelection?.selectAll('.connection-preview').remove();
       this.svgSelection?.classed('is-connecting', tool === 'connect').classed('is-erasing', tool === 'erase');
       this.updateLinkAccessibility();
-      this.updateNodeOverlaysPosition();
+      this.updateOverlaysPosition();
     });
 
     effect((): void => {
@@ -139,7 +141,7 @@ export class GraphComponent implements AfterViewInit {
 
     effect((): void => {
       this.refreshHover();
-      this.updateNodeOverlaysPosition();
+      this.updateOverlaysPosition();
     });
     this.registerColorChangesEffect();
     this.registerGraphChangesEffect();
@@ -242,7 +244,7 @@ export class GraphComponent implements AfterViewInit {
     this.renderer.drawArrowMarker(this.svgSelection);
 
     this.viewport = new GraphViewport(hostElement, this.svgSelection, this.rootGroupSelection, {
-      onTransformChange: (): void => this.updateNodeOverlaysPosition(),
+      onTransformChange: (): void => this.updateOverlaysPosition(),
       onTransformEnd: (): void => this.saveView(),
     });
   }
@@ -357,11 +359,12 @@ export class GraphComponent implements AfterViewInit {
 
   private updateNodePositions(): void {
     this.nodeSelection?.attr('transform', (node: PositionedNode): string => `translate(${node.x}, ${node.y})`);
-    this.updateNodeOverlaysPosition();
+    this.updateOverlaysPosition();
   }
 
-  private updateNodeOverlaysPosition(): void {
+  private updateOverlaysPosition(): void {
     this.updateNameEditorPosition();
+    this.updateRelationActionsPosition();
     const selectedId: string | null = this.workspace.store.currentNodeId();
     const node: PositionedNode | undefined = selectedId ? this.renderModel?.nodesById.get(selectedId) : undefined;
     if (!node || this.renamingNode() || !this.workspace.queries.editable() || this.graphTools.tool() !== 'select') {
@@ -372,6 +375,24 @@ export class GraphComponent implements AfterViewInit {
     this.nodeActionsPosition.set({
       x: this.viewTransform.applyX(node.x),
       y: this.viewTransform.applyY(node.y - GRAPH_NODE_HEIGHT / 2) - 14,
+    });
+  }
+
+  private updateRelationActionsPosition(): void {
+    const relationId: string | null = this.workspace.store.currentRelationId();
+    const label: SVGTextElement | null | undefined = this.rootGroupSelection
+      ?.selectAll<SVGTextElement, ResolvedLink>('text.link-label')
+      .filter((link: ResolvedLink): boolean => link.id === relationId)
+      .node();
+    if (!label || this.renamingNode() || !this.workspace.queries.editable() || this.graphTools.tool() !== 'select') {
+      this.relationActionsPosition.set(null);
+      return;
+    }
+
+    const bounds: DOMRect = label.getBBox();
+    this.relationActionsPosition.set({
+      x: this.viewTransform.applyX(bounds.x + bounds.width / 2),
+      y: this.viewTransform.applyY(bounds.y) - 14,
     });
   }
 
@@ -406,6 +427,7 @@ export class GraphComponent implements AfterViewInit {
       .selectAll<SVGPathElement, ResolvedLink>('path.link-hit')
       .attr('d', (link: ResolvedLink): string => paths.get(link.id) ?? '');
     positionLinkLabels(this.rootGroupSelection, this.linkSelection, nodes);
+    this.updateRelationActionsPosition();
     this.highlightRelation(this.eraseTargetId);
   }
 
@@ -607,7 +629,7 @@ export class GraphComponent implements AfterViewInit {
       event.stopPropagation();
       this.draftName.set(local.name);
       this.renamingNode.set({ id: node.id, modelId });
-      this.updateNodeOverlaysPosition();
+      this.updateOverlaysPosition();
       return;
     }
     if (this.graphTools.tool() !== 'connect') return;
