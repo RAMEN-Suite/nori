@@ -238,9 +238,6 @@
               <svg lucideFileImage class="size-4 shrink-0 opacity-60" aria-hidden="true"></svg>
             }
             <span>{{ format.label }}</span>
-            <kbd class="text-base-content/50 ms-auto ps-3 font-sans text-xs whitespace-nowrap">{{
-              shortcuts.display(format.shortcut)
-            }}</kbd>
           </span>
         </ng-template>
       </sui-menu>
@@ -253,6 +250,7 @@
         [attr.aria-keyshortcuts]="shortcuts.aria('export')"
         [attr.aria-label]="t('editor.export')"
         [noriTooltip]="t('editor.export') + ' (' + shortcuts.display('export') + ')'"
+        [noriTooltipSuspended]="exporting()"
         placement="bottom"
         [showDelay]="600"
         [disabled]="!canExport()"

@@ -5,9 +5,11 @@ import {
   inject,
   input,
   output,
+  signal,
   type InputSignal,
   type OutputEmitterRef,
   type Signal,
+  type WritableSignal,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
@@ -38,6 +40,7 @@ import { ExportService } from '../../../../services/persistence/export.service';
 import { ShortcutService } from '../../../../services/interaction/shortcut.service';
 import { ProjectService } from '../../../../services/projects/project.service';
 import { GraphToolsService } from '../../../../services/workspace/editing/graph-tools.service';
+import { PropertyEditingService } from '../../../../services/workspace/editing/property-editing.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { ModelDiagnosticsDialog } from '../../dialogs/model-diagnostics/model-diagnostics.dialog';
 import { ProjectEditDialog } from '../../dialogs/project-edit/project-edit.dialog';
@@ -45,10 +48,6 @@ import { SettingsDialog } from '../../dialogs/settings/settings.dialog';
 import { ModelValidationComponent } from '../model-validation/model-validation.component';
 import { SettingsButtonComponent } from '../../shell/settings-button/settings-button.component';
 import { type GraphImageFormat } from '../graph-view/graph/graph.image-export';
-
-interface ImageExportMenuItem extends MenuItem<GraphImageFormat> {
-  readonly shortcut: ShortcutAction;
-}
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -89,6 +88,7 @@ export class ToolBarComponent {
   protected readonly graphTools: GraphToolsService = inject(GraphToolsService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   protected readonly projects: ProjectService = inject(ProjectService);
+  private readonly propertyEditing: PropertyEditingService = inject(PropertyEditingService);
   private readonly dialogs: DialogService = inject(DialogService);
   private readonly router: Router = inject(Router);
   private readonly export: ExportService = inject(ExportService);
@@ -107,10 +107,12 @@ export class ToolBarComponent {
   public readonly fitGraph: OutputEmitterRef<void> = output();
   public readonly configureColours: OutputEmitterRef<void> = output();
 
-  protected readonly imageFormats: readonly ImageExportMenuItem[] = [
-    { label: 'SVG', value: 'svg', shortcut: 'exportSvg' },
-    { label: 'PNG', value: 'png', shortcut: 'exportPng' },
+  protected readonly imageFormats: readonly MenuItem<GraphImageFormat>[] = [
+    { label: 'SVG', value: 'svg' },
+    { label: 'PNG', value: 'png' },
   ];
+
+  protected readonly exporting: WritableSignal<boolean> = signal(false);
 
   private readonly actions: Readonly<Record<ShortcutAction, () => void>> = {
     connect: (): void => this.graphTools.toggle('connect'),
@@ -174,12 +176,16 @@ export class ToolBarComponent {
   }
 
   protected async handleExportModel(): Promise<void> {
+    if (this.exporting()) return;
+    this.exporting.set(true);
     const name: string = this.projects.selectedManifest()?.name ?? 'model';
     const fileName: string = `${toCamelName(name).toLowerCase()}.json`;
     try {
       await this.export.exportJSON(this.workspace.store.exportModel(), fileName);
     } catch (error: unknown) {
       this.projects.reportError(error);
+    } finally {
+      this.exporting.set(false);
     }
   }
 
@@ -205,7 +211,12 @@ export class ToolBarComponent {
 
   private isShortcutBlocked(event: KeyboardEvent): boolean {
     return (
-      event.defaultPrevented || event.repeat || event.isComposing || !!this.dialogs.current() || this.isTextInput(event.target)
+      event.defaultPrevented ||
+      event.repeat ||
+      event.isComposing ||
+      !!this.dialogs.current() ||
+      !!this.propertyEditing.current() ||
+      this.isTextInput(event.target)
     );
   }
 

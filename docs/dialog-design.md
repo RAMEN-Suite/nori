@@ -24,9 +24,6 @@
 
 Reference: [Material dialog guidelines](https://m1.material.io/components/dialogs.html).
 
-## Open Sushi issue
+## Open Sushi issues
 
-- Dialogs lock their position when opened. Switching from a short property list to a taller editing form grows the dialog downwards rather than keeping it centred. Offer automatic recentering on content resize (while preserving deliberate dragging), or a public reposition method. Reproduce with Edit annotations → Add annotation type. Avoid compensating through private dialog styles or forced reopening.
-
-- Sushi accordion focus outlines extend outside a clipped collapse container; the catalogue currently uses the public focus-offset token to draw them inside. Verify trigger and first/last item focus in expanded and collapsed states. Sushi should provide an inset focus option by default for clipped containers.
-- Sushi tab panels currently rely on browser-default focus outlines without a panel focus token. Nori styles the public tabpanel role within Settings; Sushi should expose consistent panel focus tokens.
+Track library limitations and reproduction details centrally in [Sushi issues](sushi-issues.md).
