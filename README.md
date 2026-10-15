@@ -106,6 +106,8 @@ Both commands automatically build the Angular editor and Electron process before
 
 Start with [code conventions](docs/code-conventions.md) and [dialog design](docs/dialog-design.md). See [the component and extension guide](docs/editor-components.md) for component responsibilities, adding hotkeys and the recommended next refactoring boundaries.
 
+The [reusable TypeScript conventions](docs/typescript-conventions.md) capture the author style and general library practices. The [code-style review](docs/code-style-review.md) records the inspected code, deliberate project choices and remaining verification and CI gaps.
+
 ---
 
 ## License
