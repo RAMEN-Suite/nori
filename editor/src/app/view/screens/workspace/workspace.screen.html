@@ -13,6 +13,7 @@
     (toggleLevels)="handleToggleLevels()"
     (toggleInspector)="inspectorOpen.set(!inspectorOpen())"
     (resetGraph)="graph.handleLayoutReset()"
+    (exportImage)="graph.handleExportImage($event)"
     (fitGraph)="graph.handleFitView()"
     (configureColours)="graph.handleOpenColorsDialog()"
   />

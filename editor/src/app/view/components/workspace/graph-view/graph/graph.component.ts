@@ -24,12 +24,13 @@ import { type Node as ModelNode } from '@ramen-suite/core/model';
 import { Input } from '@sushi-kit/angular';
 import type { ZoomTransform } from 'd3';
 import * as d3 from 'd3';
-import { toPascalName } from '../../../../../utils/model-names';
+import { toCamelName, toPascalName } from '../../../../../utils/model-names';
 import type { GraphData } from './model-graph';
 import { AutoselectDirective } from '../../../../../directives/autoselect.directive';
 import { type GraphView, type ModelRecord } from '../../../../../models/ModelRecord';
 import { NavigationService } from '../../../../../services/interaction/navigation.service';
 import { ProjectService } from '../../../../../services/projects/project.service';
+import { ExportService } from '../../../../../services/persistence/export.service';
 import { type GraphTool, GraphToolsService } from '../../../../../services/workspace/editing/graph-tools.service';
 import { NodeEditingService } from '../../../../../services/workspace/editing/node-editing.service';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
@@ -39,7 +40,8 @@ import { RelationActionsComponent } from '../relation-actions/relation-actions.c
 import { GraphAutoLayout, type NodePosition } from './graph.auto-layout';
 import { getLinkPath } from './graph.geometry';
 import { positionLinkLabels } from './graph.labels';
-import { buildRenderModel, getViewportSize, placeNodes, setNodePosition } from './graph.layout';
+import { buildRenderModel, getViewportSize, placeNodes, placeRamenNodes, setNodePosition } from './graph.layout';
+import { GraphImageExport, type GraphImageFormat } from './graph.image-export';
 import { GraphViewport } from './graph.viewport';
 import { GraphRenderer } from './graph.renderer';
 import {
@@ -74,6 +76,7 @@ export class GraphComponent implements AfterViewInit {
   private readonly appearance: ApplicationState = inject(ApplicationState);
   private readonly translations: TranslocoService = inject(TranslocoService);
   private readonly projects: ProjectService = inject(ProjectService);
+  private readonly export: ExportService = inject(ExportService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
   private readonly navigation: NavigationService = inject(NavigationService);
@@ -162,10 +165,31 @@ export class GraphComponent implements AfterViewInit {
     void this.resetLayout().catch((error: unknown): void => this.projects.reportError(error));
   }
 
+  public async exportImage(format: GraphImageFormat): Promise<void> {
+    const svg: SVGSVGElement | null | undefined = this.svgSelection?.node();
+    const root: SVGGElement | null | undefined = this.rootGroupSelection?.node();
+    if (!svg || !root || !this.renderModel?.nodes.length) return;
+    const name: string = toCamelName(this.workspace.store.currentModelRecord()?.name ?? 'model').toLowerCase();
+    try {
+      const snapshot: Blob = GraphImageExport.svg(svg, root);
+      const image: Blob = format === 'svg' ? snapshot : await GraphImageExport.png(snapshot);
+      await this.export.exportBlob(image, `${name}.${format}`, format.toUpperCase());
+    } catch (error: unknown) {
+      this.projects.reportError(error);
+    }
+  }
+
   private async resetLayout(): Promise<void> {
     const model: RenderModel | undefined = this.renderModel;
     if (!model?.nodes.length) return;
     const request: number = ++this.layoutRequest;
+    if (this.workspace.store.currentLevelIndex() === 0) {
+      const nodes: PositionedNode[] = model.nodes.map((node: PositionedNode): PositionedNode => ({ ...node }));
+      if (placeRamenNodes(nodes)) {
+        this.animateLayout(model, new Map(nodes.map((node: PositionedNode): [string, NodePosition] => [node.id, node])));
+      }
+      return;
+    }
     const positions: ReadonlyMap<string, NodePosition> = await this.autoLayout.arrange(model);
     if (this.destroyRef.destroyed || request !== this.layoutRequest || model !== this.renderModel) return;
 

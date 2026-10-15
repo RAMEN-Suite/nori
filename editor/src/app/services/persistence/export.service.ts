@@ -1,15 +1,18 @@
 import { Injectable } from '@angular/core';
 
-/** Saves JSON through the browser’s file picker or a download fallback. */
+/** Saves exported files through the browser’s file picker or a download fallback. */
 @Injectable({
   providedIn: 'root',
 })
 export class ExportService {
   public async exportJSON(data: unknown, fileName: string): Promise<void> {
-    const contents: string = JSON.stringify(data, null, 4);
+    await this.exportBlob(new Blob([JSON.stringify(data, null, 4)], { type: 'application/json' }), fileName, 'JSON');
+  }
+
+  public async exportBlob(blob: Blob, fileName: string, description: string): Promise<void> {
     if (this.isFileSystemAccessSupported()) {
       try {
-        await this.exportWithFilePicker(contents, fileName);
+        await this.exportWithFilePicker(blob, fileName, description);
         return;
       } catch (error: unknown) {
         if (error instanceof DOMException && error.name === 'AbortError') return;
@@ -17,28 +20,22 @@ export class ExportService {
       }
     }
 
-    this.exportWithBlob(contents, fileName);
+    this.exportWithBlob(blob, fileName);
   }
 
-  private async exportWithFilePicker(content: string, fileName: string): Promise<void> {
+  private async exportWithFilePicker(blob: Blob, fileName: string, description: string): Promise<void> {
+    const extension: string | undefined = /\.[^.]+$/.exec(fileName)?.[0];
     const handle: FileSystemFileHandle = await window.showSaveFilePicker({
       suggestedName: fileName,
-      types: [
-        {
-          description: 'JSON',
-          accept: { 'application/json': ['.json'] },
-        },
-      ],
+      types: extension ? [{ description, accept: { [blob.type]: [extension] } }] : [],
     });
 
     const writable: FileSystemWritableFileStream = await handle.createWritable();
-    await writable.write(content);
+    await writable.write(blob);
     await writable.close();
   }
 
-  private exportWithBlob(content: string, fileName: string): void {
-    const blob: Blob = new Blob([content], { type: 'application/json;charset=utf-8' });
-
+  private exportWithBlob(blob: Blob, fileName: string): void {
     const url: string = URL.createObjectURL(blob);
     try {
       const anchor: HTMLAnchorElement = Object.assign(document.createElement('a'), {
@@ -48,7 +45,7 @@ export class ExportService {
 
       anchor.click();
     } finally {
-      URL.revokeObjectURL(url);
+      window.setTimeout((): void => URL.revokeObjectURL(url), 1000);
     }
   }
 

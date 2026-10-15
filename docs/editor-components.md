@@ -72,6 +72,8 @@ The dialog host opens and positions the native dialog before applying the expand
 
 ## Verification
 
+The image export menu uses the shared Sushi Menu and shortcut registry. Its popup host uses `display: contents` so the menu's fluid width does not consume space in the toolbar. `GraphImageExport` captures the complete graph independently of zoom and panels, writes explicit RGB colours and arrowhead paths for vector editors, and derives transparent PNGs from the same SVG at twice the resolution (maximum edge: 8192 pixels). `ExportService` owns saving both image formats and model JSON. Keep SVG preparation separate from rasterization and file dialogs.
+
 Run `npm run lint`, `npm run format`, `npm run typecheck` and `npx ngc -p editor/tsconfig.app.json --noEmit`. For UI changes, also check keyboard navigation and focus at the edges of scrolling content. For graph changes, check saved viewport restoration and fit with panels both open and closed.
 
 ## Shared dialog list spacing

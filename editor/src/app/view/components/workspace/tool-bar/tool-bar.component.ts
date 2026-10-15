@@ -15,18 +15,20 @@ import {
   LucideMousePointer2,
   LucideArrowLeft,
   LucideDownload,
+  LucideImageDown,
+  LucideFileCode,
+  LucideFileImage,
   LucideLayers,
   LucideBoxes,
   LucideSpline,
   LucideMaximize,
   LucidePalette,
   LucideGitBranch,
-  LucidePencil,
   LucideNetwork,
   LucideEraser,
   LucideScanEye,
 } from '@lucide/angular';
-import { Button, Card, Divider } from '@sushi-kit/angular';
+import { Button, Card, Divider, Menu, MenuTrigger, MenuItemTemplate, type MenuItem } from '@sushi-kit/angular';
 import { toCamelName } from '../../../../utils/model-names';
 import { TooltipDirective } from '../../../../directives/tooltip.directive';
 import { type Manifest } from '../../../../models/Manifest';
@@ -42,6 +44,11 @@ import { ProjectEditDialog } from '../../dialogs/project-edit/project-edit.dialo
 import { SettingsDialog } from '../../dialogs/settings/settings.dialog';
 import { ModelValidationComponent } from '../model-validation/model-validation.component';
 import { SettingsButtonComponent } from '../../shell/settings-button/settings-button.component';
+import { type GraphImageFormat } from '../graph-view/graph/graph.image-export';
+
+interface ImageExportMenuItem extends MenuItem<GraphImageFormat> {
+  readonly shortcut: ShortcutAction;
+}
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -55,9 +62,14 @@ import { SettingsButtonComponent } from '../../shell/settings-button/settings-bu
     SettingsButtonComponent,
     TooltipDirective,
     Divider,
+    Menu,
+    MenuTrigger,
+    MenuItemTemplate,
     RouterLink,
     LucideDownload,
-    LucidePencil,
+    LucideImageDown,
+    LucideFileCode,
+    LucideFileImage,
     LucideGitBranch,
     LucideLayers,
     LucideBoxes,
@@ -91,8 +103,14 @@ export class ToolBarComponent {
   public readonly toggleCatalogue: OutputEmitterRef<void> = output();
   public readonly toggleLevels: OutputEmitterRef<void> = output();
   public readonly resetGraph: OutputEmitterRef<void> = output();
+  public readonly exportImage: OutputEmitterRef<GraphImageFormat> = output();
   public readonly fitGraph: OutputEmitterRef<void> = output();
   public readonly configureColours: OutputEmitterRef<void> = output();
+
+  protected readonly imageFormats: readonly ImageExportMenuItem[] = [
+    { label: 'SVG', value: 'svg', shortcut: 'exportSvg' },
+    { label: 'PNG', value: 'png', shortcut: 'exportPng' },
+  ];
 
   private readonly actions: Readonly<Record<ShortcutAction, () => void>> = {
     connect: (): void => this.graphTools.toggle('connect'),
@@ -123,6 +141,8 @@ export class ToolBarComponent {
     back: (): void => {
       void this.router.navigate(['/']).catch((error: unknown): void => this.projects.reportError(error));
     },
+    exportSvg: (): void => this.handleExportImage('svg'),
+    exportPng: (): void => this.handleExportImage('png'),
     settings: (): void => {
       this.dialogs.open(SettingsDialog, { closeOnBackdrop: true, headerKey: 'common.settings', width: '42rem' });
     },
@@ -155,7 +175,7 @@ export class ToolBarComponent {
 
   protected async handleExportModel(): Promise<void> {
     const name: string = this.projects.selectedManifest()?.name ?? 'model';
-    const fileName: string = `${toCamelName(name)}.json`;
+    const fileName: string = `${toCamelName(name).toLowerCase()}.json`;
     try {
       await this.export.exportJSON(this.workspace.store.exportModel(), fileName);
     } catch (error: unknown) {
@@ -164,7 +184,11 @@ export class ToolBarComponent {
   }
 
   protected handleResetLayout(): void {
-    if (this.workspace.queries.editable()) this.resetGraph.emit();
+    this.resetGraph.emit();
+  }
+
+  protected handleExportImage(format: GraphImageFormat): void {
+    if (this.workspace.store.currentModel()) this.exportImage.emit(format);
   }
 
   protected handleUndo(): void {

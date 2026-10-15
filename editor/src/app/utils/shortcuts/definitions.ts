@@ -12,6 +12,8 @@ export type ShortcutAction =
   | 'project'
   | 'validation'
   | 'export'
+  | 'exportSvg'
+  | 'exportPng'
   | 'settings'
   | 'undo'
   | 'redo'
@@ -50,6 +52,8 @@ export const SHORTCUT_DEFINITIONS: Readonly<Record<ShortcutAction, Omit<Shortcut
   project: { category: 'project', key: 'p', label: 'editor.editProject' },
   validation: { category: 'project', key: 'shift+v', label: 'editor.validationTitle' },
   export: { category: 'project', key: 'mod+shift+e', label: 'editor.export' },
+  exportSvg: { category: 'project', key: 'shift+s', label: 'editor.exportSvg' },
+  exportPng: { category: 'project', key: 'shift+p', label: 'editor.exportPng' },
   settings: { category: 'navigation', key: ',', label: 'common.settings' },
   undo: { category: 'graph', key: 'mod+z', label: 'editor.undoRelation' },
   redo: { category: 'graph', key: 'mod+shift+z', label: 'editor.redoRelation' },

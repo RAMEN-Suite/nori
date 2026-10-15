@@ -21,6 +21,7 @@ import { NodeEditingService } from '../../../../services/workspace/editing/node-
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { NodeColorsDialog } from '../../dialogs/node-colors/node-colors.dialog';
 import { GraphComponent } from './graph/graph.component';
+import { type GraphImageFormat } from './graph/graph.image-export';
 import {
   DEFAULT_GRAPH_LAYOUT_SETTINGS,
   DEFAULT_GRAPH_PADDING,
@@ -97,5 +98,9 @@ export class GraphViewComponent {
 
   public handleFitView(): void {
     this.graph()?.fitView();
+  }
+
+  public handleExportImage(format: GraphImageFormat): void {
+    void this.graph()?.exportImage(format);
   }
 }
