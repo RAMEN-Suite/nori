@@ -4,7 +4,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   DestroyRef,
-  ElementRef,
+  type ElementRef,
   viewChild,
   computed,
   afterNextRender,

@@ -3,7 +3,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   effect,
-  ElementRef,
+  type ElementRef,
   inject,
   Injector,
   signal,

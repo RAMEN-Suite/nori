@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DOCUMENT, inject, OnInit, signal, type WritableSignal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DOCUMENT, inject, type OnInit, signal, type WritableSignal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { LucideArrowLeft } from '@lucide/angular';

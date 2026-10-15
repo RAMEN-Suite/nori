@@ -1,4 +1,4 @@
-import { Routes } from '@angular/router';
+import { type Routes } from '@angular/router';
 import { PARAMETERS } from './app-route-parameters';
 import { HomeScreen } from './view/screens/home/home.screen';
 import { WorkspaceScreen } from './view/screens/workspace/workspace.screen';

@@ -10,6 +10,7 @@ import { ProjectService } from '../../../../../../services/projects/project.serv
 import { PropertyEditingService } from '../../../../../../services/workspace/editing/property-editing.service';
 import { WorkspaceService } from '../../../../../../services/workspace/workspace.service';
 import type { NodeDefinition } from '../../../../../../models/WorkspaceDetails';
+import { groupBy } from '../../../../../../utils/collections';
 import { EditAnnotationsDialog } from '../../../../dialogs/edit-annotations/edit-annotations.dialog';
 import { ScrollHintsComponent } from '../../../../shared/scroll-hints/scroll-hints.component';
 import { NodeAttributeComponent } from './node-attribute/node-attribute.component';
@@ -77,12 +78,11 @@ export class NodeAttributesComponent {
           nodeId: node.id,
         }),
       );
-      const groups: Map<number, InspectorProperty[]> = new Map();
-      for (const property of [...inherited, ...own]) {
-        const items: InspectorProperty[] = groups.get(property.levelIndex) ?? [];
-        items.push(property);
-        groups.set(property.levelIndex, items);
-      }
+      const groups: ReadonlyMap<number, readonly InspectorProperty[]> = groupBy(
+        [...inherited, ...own],
+        (property: InspectorProperty): number => property.levelIndex,
+      );
+
       return [...groups]
         .sort(([left], [right]): number => left - right)
         .map(

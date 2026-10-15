@@ -73,9 +73,11 @@ export class ProjectRepositoryService {
     await database.transaction('rw', database.manifests, database.models, async (): Promise<void> => {
       const source: Manifest | undefined = await this.find(id);
       if (!source) throw new Error('Project not found.');
+
       const projectId: string = this.ids.randomUUID();
       const timestamp: string = new Date().toISOString();
       const records: ModelRecord[] = await database.models.where('projectId').equals(id).toArray();
+
       await database.manifests.add({
         ...source,
         projectId,
@@ -108,6 +110,7 @@ export class ProjectRepositoryService {
   public async saveModels(projectId: string, models: readonly Model[]): Promise<ModelRecord[]> {
     return database.transaction('rw', database.manifests, database.models, async (): Promise<ModelRecord[]> => {
       if (!(await this.find(projectId))) throw new Error('Project not found.');
+
       const previous: ModelRecord[] = await database.models.where('projectId').equals(projectId).toArray();
       const byId: ReadonlyMap<string, ModelRecord> = indexBy(previous, (record: ModelRecord): string => record.gmodel.id);
       const timestamp: string = new Date().toISOString();
@@ -117,6 +120,7 @@ export class ProjectRepositoryService {
           ? { ...old, levelIndex, gmodel: model, name: model.name, revision: old.revision + 1, updatedAt: timestamp }
           : this.createRecord(projectId, model, levelIndex, timestamp);
       });
+
       await this.replaceRecords(projectId, records);
       await database.manifests.update(projectId, { updatedAt: timestamp });
       return records;
@@ -127,6 +131,7 @@ export class ProjectRepositoryService {
     return database.transaction('rw', database.models, async (): Promise<ViewSettings> => {
       const record: ModelRecord | undefined = await database.models.get(id);
       if (!record) throw new Error('Model record not found.');
+
       const view: ViewSettings = { nodeColors: {}, ...record.view, ...patch };
       await database.models.update(id, { view });
       return view;

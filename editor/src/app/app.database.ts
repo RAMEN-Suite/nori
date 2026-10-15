@@ -1,6 +1,6 @@
 import Dexie, { type Table, type Transaction } from 'dexie';
-import { Manifest } from './models/Manifest';
-import { ModelRecord } from './models/ModelRecord';
+import { type Manifest } from './models/Manifest';
+import { type ModelRecord } from './models/ModelRecord';
 
 type LegacyModelRecord = Omit<ModelRecord, 'levelIndex'> & { slot?: number; levelIndex?: number };
 

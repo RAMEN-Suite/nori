@@ -54,6 +54,7 @@ export class PropertyEditingService {
     const nodeId: string | null = this.workspace.store.currentNodeId();
     if (!modelId || !nodeId || !this.workspace.queries.currentNode()) return;
     if (this.dialogRef) return;
+
     this.select(attributeId);
     this.dialogs.error.set(null);
     const ref: DialogRef<undefined, PropertyEditorComponent> = this.overlays.open<undefined, unknown, PropertyEditorComponent>(
@@ -71,6 +72,7 @@ export class PropertyEditingService {
         restoreFocus: true,
       },
     );
+
     this.dialogRef = ref;
     this.observeDialog(ref);
   }
@@ -93,6 +95,7 @@ export class PropertyEditingService {
   public async inspect(location: WorkspaceLocation): Promise<void> {
     const selection: PropertySelection | null = this.current();
     if (!selection || this.dialogs.pending() || this.inspecting || this.actions.pending()) return;
+
     const returnUrl: string = this.router.url;
     this.inspecting = true;
     let paused: boolean = false;
@@ -113,6 +116,7 @@ export class PropertyEditingService {
         this.actions.cancel();
         return;
       }
+
       this.close();
       if (!(await this.navigation.navigateToLocation(location))) await this.actions.resume();
     } catch (error: unknown) {

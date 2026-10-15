@@ -1,4 +1,4 @@
-import { computed, effect, inject, Injectable, signal, type Signal, WritableSignal } from '@angular/core';
+import { computed, effect, inject, Injectable, signal, type Signal, type WritableSignal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Title } from '@angular/platform-browser';
 import { TranslocoService } from '@jsverse/transloco';

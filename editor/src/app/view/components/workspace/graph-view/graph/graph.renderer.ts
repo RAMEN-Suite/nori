@@ -1,4 +1,4 @@
-import { TranslocoService } from '@jsverse/transloco';
+import { type TranslocoService } from '@jsverse/transloco';
 import { ModelRef } from '@ramen-suite/core/model';
 import type { Selection } from 'd3';
 import { getLinkPath } from './graph.geometry';

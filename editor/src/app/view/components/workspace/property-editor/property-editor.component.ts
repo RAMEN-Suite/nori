@@ -40,6 +40,7 @@ import { PropertyEditingService } from '../../../../services/workspace/editing/p
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import type { WorkspaceLocation } from '../../../../models/WorkspaceLocation';
 import { ApplicationState } from '../../../../states/application.state';
+import { groupBy } from '../../../../utils/collections';
 import { ConfirmationContentComponent } from '../../dialogs/confirmation/confirmation-content/confirmation-content.component';
 import { NodeAttributeComponent } from '../inspector/node-view/node-attributes/node-attribute/node-attribute.component';
 import { NodeBasicsComponent } from '../inspector/node-view/node-basics/node-basics.component';
@@ -117,12 +118,12 @@ export class PropertyEditorComponent {
   protected readonly actionPending: Signal<boolean> = this.dialogs.pending;
 
   protected readonly inheritedGroups: Signal<readonly InheritedPropertyGroup[]> = computed(() => {
-    const groups: Map<number, InheritedAttribute[]> = new Map();
-    for (const property of [...this.workspace.queries.inheritedAttributes().values()].flat()) {
-      const properties: InheritedAttribute[] = groups.get(property.levelIndex) ?? [];
-      properties.push(property);
-      groups.set(property.levelIndex, properties);
-    }
+    const inherited: readonly InheritedAttribute[] = [...this.workspace.queries.inheritedAttributes().values()].flat();
+    const groups: ReadonlyMap<number, readonly InheritedAttribute[]> = groupBy(
+      inherited,
+      (property: InheritedAttribute): number => property.levelIndex,
+    );
+
     return [...groups]
       .sort(([left], [right]): number => left - right)
       .map(
@@ -190,6 +191,7 @@ export class PropertyEditorComponent {
       ? this.projects.recordsByModelId().get(refinement.modelId)?.levelIndex
       : undefined;
     if (!refinement || !projectId || levelIndex === undefined) return;
+
     const location: WorkspaceLocation = { projectId, levelIndex, nodeId: refinement.node.id };
     void this.commitAndRun((): Promise<void> => this.editing.inspect(location));
   }
@@ -230,9 +232,11 @@ export class PropertyEditorComponent {
     const property: Attribute | null = this.removing();
     const nodeId: string | null = this.workspace.store.currentNodeId();
     if (!property || !nodeId) return;
+
     await this.dialogs.run((): Promise<void> => this.workspace.actions.removeAttribute(nodeId, property.id), {
       closeOnSuccess: false,
     });
+
     if (!this.dialogs.error()) {
       this.removing.set(null);
       this.editing.select();
@@ -243,6 +247,7 @@ export class PropertyEditorComponent {
   private async createProperty(): Promise<void> {
     const nodeId: string | null = this.workspace.store.currentNodeId();
     if (!nodeId) return;
+
     await this.dialogs.run(
       async (): Promise<void> => {
         const attribute: Attribute = await this.workspace.actions.createAttribute(nodeId, {
@@ -259,6 +264,7 @@ export class PropertyEditorComponent {
   private async duplicateProperty(property: Attribute): Promise<void> {
     const nodeId: string | null = this.workspace.store.currentNodeId();
     if (!nodeId) return;
+
     await this.dialogs.run(
       async (): Promise<void> => {
         const copy: Attribute = await this.workspace.actions.duplicateAttribute(nodeId, property.id);
@@ -277,6 +283,7 @@ export class PropertyEditorComponent {
     if (this.actionPending()) return;
     const committed: boolean = this.inheritedSelection() ? true : (await this.form()?.commit()) !== false;
     if (this.destroyRef.destroyed || this.actionPending()) return;
+
     if (!committed) this.form()?.reset();
     await action();
     this.focusDetail(selectName);

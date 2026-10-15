@@ -121,6 +121,7 @@ export class PropertyFormComponent {
       typeId: DataTypes.String,
       bounds: { lowerBound: 0, upperBound: 1 },
     };
+
     this.name = attribute.name;
     this.typeId = attribute.typeId;
     this.lowerBound = attribute.bounds?.lowerBound ?? 0;
@@ -217,12 +218,14 @@ export class PropertyFormComponent {
       this.saveRequested = true;
       return this.saving;
     }
+
     const nodeId: string | null = this.workspace.store.currentNodeId();
     if (!nodeId || !this.editable() || !this.name.trim()) return Promise.resolve();
     if (!this.hasChanges()) {
       this.error.set(null);
       return Promise.resolve();
     }
+
     this.saving = this.saveCurrent(nodeId);
     return this.saving;
   }
@@ -251,6 +254,7 @@ export class PropertyFormComponent {
     const input: AttributeInput = this.values();
     this.saveRequested = false;
     this.error.set(null);
+
     try {
       const attribute: Attribute | undefined = await this.persist(nodeId, existing, input);
       this.initialValue = this.snapshot(input);
@@ -264,6 +268,7 @@ export class PropertyFormComponent {
     } finally {
       this.saving = null;
     }
+
     await this.flushRequestedSave();
   }
 

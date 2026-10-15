@@ -1,6 +1,6 @@
 import {
   afterNextRender,
-  ElementRef,
+  type ElementRef,
   Injector,
   viewChild,
   ChangeDetectionStrategy,

@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { ActivatedRoute, NavigationExtras, Router, UrlTree } from '@angular/router';
+import { type ActivatedRoute, type NavigationExtras, Router, type UrlTree } from '@angular/router';
 import { type WorkspaceLocation } from '../../models/WorkspaceLocation';
 import { PARAMETERS } from '../../app-route-parameters';
 

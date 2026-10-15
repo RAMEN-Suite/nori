@@ -36,9 +36,11 @@ export class RunningActionService {
 
   public async start(options: RunningActionOptions): Promise<boolean> {
     if (this.pending()) return false;
+
     const request: number = ++this.request;
     const revision: string = await this.projects.getProjectRevision(options.projectId);
     if (request !== this.request) return false;
+
     this.discard();
     this.active.set({ ...options, revision, controller: new AbortController() });
     return true;
@@ -47,6 +49,7 @@ export class RunningActionService {
   public async resume(): Promise<void> {
     const action: RunningAction | null = this.active();
     if (!action || this.pending()) return;
+
     this.working.set(true);
     try {
       const revision: string = await this.projects.getProjectRevision(action.projectId);
@@ -55,6 +58,7 @@ export class RunningActionService {
         this.discard();
         return;
       }
+
       await action.resume(action.controller.signal);
       if (this.active() === action) this.discard();
     } catch (error: unknown) {
