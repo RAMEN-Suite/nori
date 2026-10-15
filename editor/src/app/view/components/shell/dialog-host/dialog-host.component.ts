@@ -24,6 +24,7 @@ import { ApplicationState } from '../../../../states/application.state';
 import { NodeColorsDialog } from '../../dialogs/node-colors/node-colors.dialog';
 import { ConfirmationDialog } from '../../dialogs/confirmation/confirmation.dialog';
 
+/** Opens shared dialogs before expanding their dependent removal details. */
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'nori-dialog-host',
@@ -33,7 +34,7 @@ import { ConfirmationDialog } from '../../dialogs/confirmation/confirmation.dial
       <sui-dialog
         #dialog="suiDialog"
         [class.nori-confirmation-host]="isConfirmation()"
-        [class.nori-confirmation-expanded]="isConfirmation() && dialogs.detailsOpen()"
+        [class.nori-confirmation-expanded]="isConfirmation() && positionReady() && dialogs.detailsOpen()"
         [draggable]="!isConfirmation()"
         [position]="contentReady() ? dialogPosition() : 'top'"
         (keydown.escape)="handleEscape($event)"
@@ -49,7 +50,7 @@ import { ConfirmationDialog } from '../../dialogs/confirmation/confirmation.dial
         (closed)="handleClosed(dialog)"
       >
         @if (content(); as current) {
-          <header suiDialogHeader class="min-h-14">
+          <header suiDialogHeader class="min-h-14" data-nori-dialog-entry>
             {{ current.titleKey ? (current.titleKey | transloco) : current.title }}
           </header>
         }
@@ -100,12 +101,14 @@ export class DialogHostComponent {
   );
 
   protected readonly contentReady: WritableSignal<boolean> = signal(false);
+  protected readonly positionReady: WritableSignal<boolean> = signal(false);
 
   public constructor() {
     inject(DestroyRef).onDestroy((): void => this.sizeObserver?.disconnect());
     effect((): void => {
       const current: OpenDialog | null = this.dialogs.current();
       this.contentReady.set(false);
+      this.positionReady.set(false);
       this.sizeObserver?.disconnect();
       this.colourPosition.set('center');
       if (!current) return;
@@ -115,6 +118,12 @@ export class DialogHostComponent {
           if (this.dialogs.current() !== current) return;
           this.contentReady.set(true);
           this.observeColourSize(current);
+          afterNextRender(
+            (): void => {
+              if (this.dialogs.current() === current) this.positionReady.set(true);
+            },
+            { injector: this.injector },
+          );
         },
         { injector: this.injector },
       );

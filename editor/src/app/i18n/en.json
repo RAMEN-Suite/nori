@@ -135,7 +135,7 @@
     "properties": "Properties",
     "valid": "Model is valid",
     "addProperty": "Add property",
-    "selectHint": "Select a node or relation to inspect it.",
+    "selectHint": "Select a node or relation in the graph to explore its details.",
     "renameNode": "Rename node",
     "duplicateNode": "Duplicate node",
     "removeNode": "Remove node",

@@ -16,7 +16,7 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
-import { LucideArrowRight, LucideSearch, LucideX } from '@lucide/angular';
+import { LucideArrowRight, LucideSearch, LucideX, LucideBox, LucideSpline, LucideLayers } from '@lucide/angular';
 import { Button, List, ListItemTemplate } from '@sushi-kit/angular';
 import {
   type AffectedLevel,
@@ -64,6 +64,9 @@ interface ImpactAction {
     LucideArrowRight,
     LucideX,
     LucideSearch,
+    LucideBox,
+    LucideSpline,
+    LucideLayers,
   ],
   templateUrl: './confirmation-content.component.html',
   styleUrl: './confirmation-content.component.scss',

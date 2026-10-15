@@ -68,6 +68,8 @@ Keep Base Nodes and Refinements as separate components: their source data and ac
 
 `EditorPanelComponent`, the dialog host, the workspace store/view/actions split, `NodeEditingService` and the shared list styles already provide useful reuse. The small form dialogs do not need further splitting. New helper classes should own one coherent behaviour and have a clear caller, rather than simply reducing file length.
 
+The dialog host opens and positions the native dialog before applying the expanded removal layout. Preserve that render order when restoring a review with details already open: Sushi locks the measured position, so applying the horizontal expansion before opening would count its offset twice. Confirmation entry movement belongs to the marked header, message, impact actions and footer. Keep the outer frame and body untransformed: the frame must measure consistently, and the body must not become a positioning container for the adjacent detail surface.
+
 ## Verification
 
 Run `npm run lint`, `npm run format`, `npm run typecheck` and `npx ngc -p editor/tsconfig.app.json --noEmit`. For UI changes, also check keyboard navigation and focus at the edges of scrolling content. For graph changes, check saved viewport restoration and fit with panels both open and closed.

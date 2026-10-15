@@ -1,5 +1,5 @@
 <div *transloco="let t" class="flex min-w-0 flex-col gap-4">
-  <p class="text-base-content/75 text-sm leading-relaxed break-words">
+  <p data-nori-dialog-entry class="text-base-content/75 text-sm leading-relaxed break-words">
     @for (part of messageParts(); track $index) {
       @if (part.emphasized) {
         <strong class="text-base-content font-semibold">{{ part.text }}</strong>
@@ -9,7 +9,7 @@
     }
   </p>
   @if (impactActions().length) {
-    <div class="impact-actions">
+    <div class="impact-actions" data-nori-dialog-entry>
       <div class="impact-list">
         <sui-list size="xs" [items]="impactActions()" [dividers]="false" [rowHover]="false">
           <ng-template suiListItem let-action>
@@ -79,7 +79,19 @@
                     [disabled]="dialogs.pending() || !item.location"
                     (click)="item.location && inspect(item.location)"
                   >
-                    <span class="impact-inspect-icon" aria-hidden="true"><svg lucideSearch class="size-4 opacity-60"></svg></span>
+                    <span class="impact-inspect-icon" aria-hidden="true">
+                      @switch (selected) {
+                        @case ('nodes') {
+                          <svg lucideBox class="size-4 opacity-60"></svg>
+                        }
+                        @case ('relations') {
+                          <svg lucideSpline class="size-4 opacity-60"></svg>
+                        }
+                        @case ('levels') {
+                          <svg lucideLayers class="size-4 opacity-60"></svg>
+                        }
+                      }
+                    </span>
                     <span class="min-w-0 flex-1 text-left">
                       @if (selected === 'levels') {
                         <span class="text-sm font-medium break-words">{{ item.modelName }}</span>

@@ -12,7 +12,7 @@ import { RunningActionService } from '../../../../services/workspace/workflows/r
     @if (actions.current(); as action) {
       <aside *transloco="let t" class="running-action-notification" [attr.aria-label]="t(action.titleKey)">
         <span class="action-icon" aria-hidden="true"><svg [lucideIcon]="action.icon" class="size-4"></svg></span>
-        <span class="min-w-0 flex-1">
+        <span class="min-w-0 flex-1 sm:me-3">
           <span class="block text-sm font-medium" role="status">{{ t(action.titleKey) }}</span>
           <span class="text-base-content/60 mt-0.5 block text-xs">{{ t(action.descriptionKey) }}</span>
         </span>
