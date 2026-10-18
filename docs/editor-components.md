@@ -55,6 +55,10 @@ For a language, extend `TranslationLanguage` and `Languages.translations` in `i1
 - Use `NavigationService` for node/relation navigation; do not write selection signals directly from graph elements. Node and relation selection clear each other.
 - `GraphImageExport` prepares SVG/PNG independently of zoom and panels; `ExportService` owns saving images and JSON. Keep rasterisation and file dialogs separate from SVG preparation.
 
+## Brand assets
+
+`editor/public/images/nori-logo.svg` is the supplied logo source. `BrandIllustrationComponent` uses it as a monochrome mask so it follows the theme. Keep its shape and texture intact. The padded light tile in `icons/icon.svg` supplies the desktop PNG, ICO and ICNS variants and the browser favicons. Update these derivatives together when replacing the logo; Electron and Forge use `icons/icon.*`.
+
 ## Property workspace and resumable workflows
 
 The property workspace uses a CDK overlay with one backdrop and focus scope. The service owns opening/selection; the editor coordinates the property list, detail view and navigation; the form owns fields, serialised saves and validation.

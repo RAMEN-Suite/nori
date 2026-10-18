@@ -1,6 +1,7 @@
 import path from 'path';
 
 export const ROOT_PATH: string = path.join(__dirname, '..');
+export const ICON_PATH: string = path.join(ROOT_PATH, '..', '..', 'icons', 'icon.png');
 export const PRELOAD_PATH: string = path.join(ROOT_PATH, 'preload.js');
 export const STATIC_PATH: string = path.join(ROOT_PATH, '..', 'editor', 'browser', 'index.html');
 

@@ -12,7 +12,12 @@ const config: ForgeConfig = {
     executableName: 'nori',
   },
   rebuildConfig: {},
-  makers: [new MakerSquirrel({}), new MakerZIP({}, ['darwin']), new MakerRpm({}), new MakerDeb({})],
+  makers: [
+    new MakerSquirrel({}),
+    new MakerZIP({}, ['darwin']),
+    new MakerRpm({ options: { icon: './icons/icon.png' } }),
+    new MakerDeb({ options: { icon: './icons/icon.png' } }),
+  ],
   plugins: [new AutoUnpackNativesPlugin({})],
   publishers: [
     {

@@ -1,5 +1,5 @@
 import { app, BrowserWindow, screen } from 'electron';
-import { DEVELOPMENT_PATH, PRELOAD_PATH, STATIC_PATH } from '../static/PATHS';
+import { DEVELOPMENT_PATH, ICON_PATH, PRELOAD_PATH, STATIC_PATH } from '../static/PATHS';
 
 /** Owns the desktop window and the Electron application lifecycle. */
 export class Application {
@@ -30,6 +30,7 @@ export class Application {
   }
 
   private createWindow(): void {
+    app.dock?.setIcon(ICON_PATH);
     const { width, height } = screen.getPrimaryDisplay().workAreaSize;
     const window: BrowserWindow = new BrowserWindow({
       width: Math.floor(width * 0.9),
@@ -37,6 +38,7 @@ export class Application {
       minWidth: Math.min(1280, width),
       minHeight: Math.min(720, height),
       title: this.title,
+      icon: ICON_PATH,
       center: true,
       autoHideMenuBar: true,
       titleBarStyle: 'hiddenInset',

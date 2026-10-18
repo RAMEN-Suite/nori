@@ -125,24 +125,20 @@
   animation-name: branch-node-create;
 }
 
-.brand-frame {
-  stroke: var(--nori-focus);
-  stroke-width: 1;
-  animation: content-arrive 800ms 100ms ease-out backwards;
+.brand-identity {
+  width: 100%;
+  gap: 0.75rem;
+  animation: content-arrive 900ms ease-out backwards;
 }
 
-.brand-kana {
-  top: calc(6.43% + 1rem);
-  right: calc(5.625% + 1rem);
-  color: var(--nori-focus);
-  font-size: 1rem;
-  letter-spacing: 0.2em;
-  line-height: 1;
-  writing-mode: vertical-rl;
-  cursor: default;
-  user-select: none;
-  pointer-events: none;
-  animation: content-arrive 650ms 220ms ease-out both;
+.brand-logo {
+  display: block;
+  width: 44%;
+  aspect-ratio: 1;
+  background: var(--color-base-content);
+  mask-position: center;
+  mask-size: contain;
+  mask-repeat: no-repeat;
 }
 
 .brand-title {
@@ -151,7 +147,6 @@
   font-weight: 400;
   letter-spacing: -0.035em;
   line-height: 1;
-  animation: content-arrive 900ms ease-out backwards;
 }
 
 @keyframes node-float {
@@ -273,11 +268,5 @@
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@media (max-width: 767px) {
-  .brand-kana {
-    display: none;
   }
 }
