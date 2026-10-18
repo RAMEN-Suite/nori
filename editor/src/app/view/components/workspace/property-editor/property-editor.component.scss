@@ -1,58 +1,11 @@
-@use "../../../../../styles/panel-heading";
-
 :host {
   display: block;
   width: 100%;
   height: 100%;
   min-width: 0;
 }
-.property-workspace {
-  display: flex;
-  height: 100%;
-  min-height: 0;
-  flex-direction: column;
-  gap: 1rem;
-}
-.property-surface {
-  min-width: 0;
-  overflow: clip;
-  border: 1px solid var(--nori-border);
-  border-radius: var(--nori-radius);
-  background: color-mix(in oklab, var(--color-base-100) 96%, transparent);
-  backdrop-filter: blur(16px);
-}
-.property-toolbar {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
-  gap: 1rem;
-  flex-shrink: 0;
-  padding: 0.625rem 0.875rem;
-  background: var(--color-base-200);
-}
-.property-node-back {
-  justify-self: start;
-  min-width: 0;
-  max-width: 100%;
-}
 .property-toolbar > .property-workspace-close {
   justify-self: end;
-}
-.property-workspace-title {
-  min-width: 0;
-}
-.property-node-info {
-  padding: 1.25rem;
-}
-.property-workspace-close {
-  display: inline-grid;
-  width: 2rem;
-  height: 2rem;
-  flex-shrink: 0;
-  place-items: center;
-  border-radius: var(--radius-field);
-  color: color-mix(in oklab, var(--color-base-content) 65%, transparent);
-  cursor: pointer;
 }
 .property-workspace-close:hover:not(:disabled) {
   background: color-mix(in oklab, currentColor 12%, transparent);
@@ -61,54 +14,8 @@
   outline: var(--sui-focus-ring-width) solid var(--sui-focus-ring-color, currentColor);
   outline-offset: var(--sui-focus-ring-offset);
 }
-.property-refinement {
-  display: flex;
-  min-width: 0;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.25rem;
-  color: color-mix(in oklab, var(--color-base-content) 55%, transparent);
-  font-size: 0.75rem;
-}
-.property-refinement-chip {
-  font-size: 0.75rem;
-  display: inline-flex;
-  min-width: 0;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.125rem 0.625rem;
-  border: 1px solid color-mix(in oklab, var(--refinement-colour) 40%, transparent);
-  border-radius: 999px;
-  background: color-mix(in oklab, var(--refinement-colour) 10%, transparent);
-  color: var(--color-base-content);
-  cursor: pointer;
-}
 .property-refinement-chip:hover:not(:disabled) {
   background: color-mix(in oklab, var(--refinement-colour) 20%, transparent);
-}
-.property-refinement-dot {
-  width: 0.375rem;
-  height: 0.375rem;
-  flex-shrink: 0;
-  border-radius: 50%;
-  background: var(--refinement-colour);
-}
-.property-workspace-tabs {
-  display: flex;
-  flex-shrink: 0;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 1.25rem;
-}
-.property-workspace-tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.375rem;
-  padding: 0.5rem 0.125rem;
-  border-bottom: 2px solid transparent;
-  color: color-mix(in oklab, var(--color-base-content) 60%, transparent);
-  font-size: 0.75rem;
-  cursor: pointer;
 }
 .property-workspace-tab[aria-selected="true"] {
   border-bottom-color: var(--color-primary);
@@ -124,49 +31,14 @@
   outline: var(--sui-focus-ring-width) solid var(--sui-focus-ring-color, currentColor);
   outline-offset: var(--sui-focus-ring-offset);
 }
-.property-workspace-panels {
-  display: grid;
-  min-height: 0;
-  grid-template-columns: minmax(12rem, 0.8fr) minmax(0, 1.7fr);
-  align-items: stretch;
-  flex: 1;
-  gap: 1rem;
-}
-.property-panel-content {
-  display: flex;
-  flex: 1;
-  min-height: 0;
-  flex-direction: column;
-}
 .property-list-scroll,
 .property-detail-scroll {
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
 }
-.property-list-scroll {
-  padding: 0 0.5rem 0.5rem;
-}
 .property-list-scroll .editor-list {
   padding-inline: 0.25rem;
-}
-.property-secondary-actions {
-  display: flex;
-  flex-shrink: 0;
-  align-items: center;
-  gap: 0.125rem;
-}
-.property-list-item,
-.property-select-button {
-  display: flex;
-  width: 100%;
-  min-width: 0;
-  flex: 1;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.375rem 0.75rem;
-  border-radius: var(--nori-radius-input);
-  cursor: pointer;
 }
 .property-list-item:hover:not(:disabled),
 .property-sortable-row:has(button:not(:disabled)):hover {
@@ -181,24 +53,6 @@
 .property-drag-handle:focus-visible {
   outline: var(--sui-focus-ring-width) solid var(--sui-focus-ring-color, currentColor);
   outline-offset: -2px;
-}
-.property-list-footer {
-  padding: 0.75rem;
-}
-.property-panel-heading {
-  @include panel-heading.layout;
-  min-height: 3.5rem;
-  flex-shrink: 0;
-  padding: 1rem 0.875rem 0.875rem 1.375rem;
-}
-.property-panel-heading h3 {
-  @include panel-heading.title;
-}
-.property-detail-scroll {
-  padding: 1.25rem 1.5rem 1.5rem;
-}
-.property-mobile-back {
-  display: none;
 }
 .motion-enabled .property-toolbar {
   animation: property-heading-arrive 360ms var(--nori-editor-ease, cubic-bezier(0.22, 1, 0.36, 1)) backwards;
@@ -237,46 +91,12 @@
   }
 }
 
-.property-left-column,
-.property-right-column {
-  display: flex;
-  min-width: 0;
-  min-height: 0;
-  flex-direction: column;
-  gap: 1rem;
-}
 .property-node-info,
 .property-save-panel {
   flex-shrink: 0;
 }
-.property-list,
-.property-detail {
-  display: flex;
-  min-height: 0;
-  flex: 1;
-  flex-direction: column;
-}
-.property-save-panel,
-.property-inherited-notice {
-  display: flex;
-  min-height: calc(4rem + 2px);
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  padding: 1rem 1.25rem;
-}
-.property-removal-summary {
-  width: 100%;
-}
 .property-save-panel.needs-decision {
   border-color: var(--color-primary);
-}
-.property-save-actions {
-  display: flex;
-  margin-left: auto;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  gap: 0.5rem;
 }
 @media (max-width: 640px) {
   .property-workspace {
@@ -319,11 +139,6 @@
   }
 }
 
-.property-detail-heading {
-  display: none;
-  min-height: 0;
-  padding: 0.5rem 0.875rem 0;
-}
 .property-detail:focus {
   outline: none;
 }
@@ -335,13 +150,6 @@
 
 .property-right-column {
   gap: 0;
-}
-.property-footer-dock {
-  flex-shrink: 0;
-}
-.property-footer-content {
-  position: relative;
-  display: flow-root;
 }
 .property-footer-content > * {
   margin-top: 1rem;
@@ -378,41 +186,10 @@
   animation: none;
 }
 
-.property-sortable-row {
-  border-radius: var(--nori-radius-input);
-  display: flex;
-  min-width: 0;
-  align-items: center;
-}
-.property-drag-handle {
-  display: grid;
-  width: 2rem;
-  align-self: stretch;
-  place-items: center;
-  flex-shrink: 0;
-  cursor: grab;
-  touch-action: none;
-}
 .property-drag-handle:active {
   cursor: grabbing;
 }
-.property-order-actions {
-  display: flex;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
 
-.property-drag-preview {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.375rem 0.75rem;
-  border: 1px solid var(--nori-border);
-  border-radius: var(--nori-radius-input);
-  background: color-mix(in oklab, var(--color-primary) 10%, var(--color-base-100));
-  color: var(--color-base-content);
-}
 .property-order-actions > button {
   flex: 1 1 auto;
 }

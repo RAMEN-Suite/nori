@@ -4,7 +4,6 @@ import { TranslocoDirective } from '@jsverse/transloco';
 import { LucideRotateCcw, LucideShuffle } from '@lucide/angular';
 import { type Node } from '@ramen-suite/core/model';
 import { Button, ColorPicker, List, ListItemTemplate, Popover, PopoverTrigger } from '@sushi-kit/angular';
-import iwanthue from 'iwanthue';
 import { getDefaultNodeColours } from '../../../../utils/node-colours';
 import { ScrollOverflowDirective } from '../../../../directives/scroll-overflow.directive';
 import { type NodeColors } from '../../../../models/ModelRecord';
@@ -60,6 +59,7 @@ export class NodeColorsDialog {
     const nodes: readonly Node[] = this.nodes();
     if (!nodes.length) return;
 
+    const { default: iwanthue } = await import('iwanthue');
     const palette: string[] = iwanthue(nodes.length, { colorSpace: [0, 360, 25, 40, 68, 78] });
     await this.applyColours({
       ...this.colours(),

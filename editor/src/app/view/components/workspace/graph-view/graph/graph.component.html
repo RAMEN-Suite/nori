@@ -4,7 +4,7 @@
     *transloco="let t"
     suiInput
     noriAutoselect
-    class="graph-node-name-editor"
+    class="graph-node-name-editor absolute -translate-1/2 text-center font-semibold"
     size="sm"
     maxlength="40"
     [style.left.px]="position.x"
@@ -22,7 +22,7 @@
 @if (relationActionsPosition(); as position) {
   @if (workspace.store.currentRelationId(); as relationId) {
     <nori-relation-actions
-      class="graph-selection-actions"
+      class="graph-selection-actions absolute -translate-x-1/2 -translate-y-full"
       [relationId]="relationId"
       [style.left.px]="position.x"
       [style.top.px]="position.y"
@@ -30,7 +30,12 @@
   }
 }
 @if (graphTools.tool() !== 'select') {
-  <p *transloco="let t" class="graph-tool-hint" role="status" data-nori-motion>
+  <p
+    *transloco="let t"
+    class="graph-tool-hint bg-base-100 absolute bottom-12 left-1/2 flex max-w-[min(24rem,80vw)] -translate-x-1/2 items-center gap-3 rounded-[var(--nori-radius-input)] border border-[var(--nori-border)] px-3 py-2 text-center text-sm wrap-anywhere whitespace-pre-line"
+    role="status"
+    data-nori-motion
+  >
     @if (graphTools.tool() === 'connect' && graphTools.source(); as source) {
       <span>{{ t('editor.connectionSourceHint', { name: workspace.store.getDraft().getNode(source)?.name }) }}</span>
     } @else {
@@ -40,6 +45,11 @@
 }
 @if (nodeActionsPosition(); as position) {
   @if (workspace.store.currentNodeId(); as nodeId) {
-    <nori-node-actions class="graph-selection-actions" [nodeId]="nodeId" [style.left.px]="position.x" [style.top.px]="position.y" />
+    <nori-node-actions
+      class="graph-selection-actions absolute -translate-x-1/2 -translate-y-full"
+      [nodeId]="nodeId"
+      [style.left.px]="position.x"
+      [style.top.px]="position.y"
+    />
   }
 }

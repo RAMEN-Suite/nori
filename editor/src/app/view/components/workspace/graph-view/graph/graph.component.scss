@@ -4,16 +4,6 @@ nori-graph {
   height: 100%;
   min-height: 18rem;
 
-  .graph-selection-actions {
-    position: absolute;
-    transform: translate(-50%, -100%);
-  }
-  .graph-node-name-editor {
-    position: absolute;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    font-weight: 600;
-  }
   .host {
     height: 100%;
   }
@@ -83,11 +73,9 @@ nori-graph {
   }
   .is-erasing .link-label {
     pointer-events: all;
-    cursor: var(--nori-eraser-cursor);
   }
   .is-erasing .link-hit {
     pointer-events: stroke;
-    cursor: var(--nori-eraser-cursor);
   }
   .link-hit:focus,
   .link-label:focus {
@@ -150,26 +138,10 @@ nori-graph {
     stroke-width: 2;
   }
   .graph-tool-hint {
-    position: absolute;
-    bottom: 3rem;
-    left: 50%;
-    transform: translateX(-50%);
-    max-width: min(24rem, 80vw);
-    border: 1px solid var(--nori-border);
-    border-radius: var(--nori-radius-input);
-    padding: 0.5rem 0.75rem;
-    background: var(--color-base-100);
-    font-size: 0.875rem;
-    white-space: pre-line;
-    text-align: center;
-    overflow-wrap: anywhere;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
     animation: graph-hint-unfold 550ms var(--nori-editor-ease) backwards;
   }
   .link-label {
-    animation: graph-label-arrive 280ms var(--graph-arrival-delay, 380ms) ease-out backwards;
+    animation: graph-edge-arrive 280ms var(--graph-arrival-delay, 380ms) ease-out backwards;
     fill: var(--color-base-content);
     font-size: 12px;
     paint-order: stroke;
@@ -201,14 +173,6 @@ nori-graph {
 }
 // SVG opacity includes the marker, so the edge and arrowhead appear together.
 @keyframes graph-edge-arrive {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-@keyframes graph-label-arrive {
   from {
     opacity: 0;
   }

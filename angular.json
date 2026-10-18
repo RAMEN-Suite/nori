@@ -25,10 +25,16 @@
             "browser": "editor/src/main.ts",
             "tsConfig": "editor/tsconfig.app.json",
             "inlineStyleLanguage": "scss",
+            "allowedCommonJsDependencies": ["short-unique-id", "iwanthue", "elkjs", "uri-js", "valid-url", "fast-deep-equal"],
             "assets": [
               {
                 "glob": "**/*",
                 "input": "editor/public"
+              },
+              {
+                "glob": "elk-worker.min.js",
+                "input": "node_modules/elkjs/lib",
+                "output": "workers"
               }
             ],
             "styles": ["editor/src/styles/tailwind.css", "editor/src/styles/fonts.css", "editor/src/styles/customs.css"]

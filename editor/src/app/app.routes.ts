@@ -1,21 +1,24 @@
 import { type Routes } from '@angular/router';
 import { PARAMETERS } from './app-route-parameters';
-import { HomeScreen } from './view/screens/home/home.screen';
-import { WorkspaceScreen } from './view/screens/workspace/workspace.screen';
-import { ProjectEntryScreen } from './view/screens/project-entry/project-entry.screen';
 import { hasWorkspace } from './guards/workspace.guard';
 import { RelationViewComponent } from './view/components/workspace/inspector/relation-view/relation-view.component';
 import { NodeViewComponent } from './view/components/workspace/inspector/node-view/node-view.component';
 import { InspectorEmptyComponent } from './view/components/workspace/inspector/empty/inspector-empty.component';
 
 export const routes: Routes = [
-  { path: '', component: HomeScreen },
-  { path: 'start', component: ProjectEntryScreen },
-  { path: 'open', component: ProjectEntryScreen },
+  { path: '', loadComponent: () => import('./view/screens/home/home.screen').then((module) => module.HomeScreen) },
+  {
+    path: 'start',
+    loadComponent: () => import('./view/screens/project-entry/project-entry.screen').then((module) => module.ProjectEntryScreen),
+  },
+  {
+    path: 'open',
+    loadComponent: () => import('./view/screens/project-entry/project-entry.screen').then((module) => module.ProjectEntryScreen),
+  },
   {
     path: `ws/:${PARAMETERS.PROJECT}`,
     canActivate: [hasWorkspace],
-    component: WorkspaceScreen,
+    loadComponent: () => import('./view/screens/workspace/workspace.screen').then((module) => module.WorkspaceScreen),
     children: [
       {
         path: '',

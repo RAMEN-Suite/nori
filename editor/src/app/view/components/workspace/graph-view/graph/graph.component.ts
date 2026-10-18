@@ -801,6 +801,7 @@ export class GraphComponent implements AfterViewInit {
   }
 
   private cleanup(): void {
+    this.autoLayout.destroy();
     this.layoutRequest++;
     this.rootGroupSelection?.interrupt('layout');
     this.cancelScheduledConnection();

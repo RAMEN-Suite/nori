@@ -8,6 +8,14 @@ type NodeSpace = NodePosition & Readonly<{ right: number }>;
 
 export class GraphAutoLayout {
   private engine?: Promise<ELK>;
+  private worker: Worker | null = null;
+  private destroyed: boolean = false;
+
+  public destroy(): void {
+    this.destroyed = true;
+    this.worker?.terminate();
+    this.worker = null;
+  }
 
   public async arrange(model: RenderModel): Promise<ReadonlyMap<string, NodePosition>> {
     const nodes: PositionedNode[] = model.nodes.map((node: PositionedNode): PositionedNode => ({ ...node }));
@@ -28,9 +36,15 @@ export class GraphAutoLayout {
 
   private async loadEngine(): Promise<ELK> {
     try {
-      const { default: Elk } = await import('elkjs/lib/elk.bundled.js');
-      return new Elk({ algorithms: ['stress'] });
+      const { default: Elk } = await import('elkjs/lib/elk-api.js');
+      if (this.destroyed) throw new Error('The graph layout has been disposed.');
+
+      const worker: Worker = new Worker(new URL('workers/elk-worker.min.js', document.baseURI));
+      this.worker = worker;
+      return new Elk({ algorithms: ['stress'], workerFactory: (): Worker => worker });
     } catch (error: unknown) {
+      this.worker?.terminate();
+      this.worker = null;
       this.engine = undefined;
       throw error;
     }
