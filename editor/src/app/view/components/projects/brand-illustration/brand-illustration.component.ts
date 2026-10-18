@@ -22,16 +22,16 @@ export class BrandIllustrationComponent {
   protected readonly maskId: string = `nori-brand-mask-${BrandIllustrationComponent.nextMaskId++}`;
   protected readonly graphNodes: readonly BrandNode[] = [
     { x: 70, y: 90, radius: 15, floatDelay: '0s' },
-    { x: 165, y: 50, radius: 11, floatDelay: '-3s' },
-    { x: 245, y: 85, radius: 18, floatDelay: '-6s' },
-    { x: 95, y: 180, radius: 10, floatDelay: '-9s' },
-    { x: 535, y: 155, radius: 22, floatDelay: '-12s' },
-    { x: 600, y: 240, radius: 13, floatDelay: '-15s' },
-    { x: 545, y: 340, radius: 18, floatDelay: '-18s' },
-    { x: 610, y: 380, radius: 10, floatDelay: '-21s' },
-    { x: 60, y: 345, radius: 18, floatDelay: '-24s' },
-    { x: 85, y: 455, radius: 22, floatDelay: '-27s' },
-    { x: 170, y: 470, radius: 12, floatDelay: '-30s' },
-    { x: 28, y: 445, radius: 9, floatDelay: '-33s' },
+    { x: 190, y: 150, radius: 11, floatDelay: '-3s' },
+    { x: 320, y: 280, radius: 23, floatDelay: '-6s' },
+    { x: 70, y: 255, radius: 10, floatDelay: '-9s' },
+    { x: 470, y: 120, radius: 22, floatDelay: '-12s' },
+    { x: 590, y: 210, radius: 13, floatDelay: '-15s' },
+    { x: 465, y: 390, radius: 18, floatDelay: '-18s' },
+    { x: 600, y: 440, radius: 10, floatDelay: '-21s' },
+    { x: 135, y: 390, radius: 18, floatDelay: '-24s' },
+    { x: 55, y: 495, radius: 22, floatDelay: '-27s' },
+    { x: 280, y: 490, radius: 12, floatDelay: '-30s' },
+    { x: 350, y: 80, radius: 9, floatDelay: '-33s' },
   ];
 }

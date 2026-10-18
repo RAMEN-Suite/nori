@@ -57,7 +57,7 @@ For a language, extend `TranslationLanguage` and `Languages.translations` in `i1
 
 ## Brand assets
 
-`editor/public/images/nori-logo.svg` is the supplied logo source. `BrandIllustrationComponent` uses it as a monochrome mask so it follows the theme. Keep its shape and texture intact. The padded light tile in `icons/icon.svg` supplies the desktop PNG, ICO and ICNS variants and the browser favicons. Update these derivatives together when replacing the logo; Electron and Forge use `icons/icon.*`.
+`editor/public/images/nori-logo.svg` is the supplied logo source. `HomeScreen` displays it in the header as a monochrome mask so it follows the theme; `BrandIllustrationComponent` owns the separate decorative network. Keep its shape and texture intact. The padded light tile in `icons/icon.svg` supplies the desktop PNG, ICO and ICNS variants and the browser favicons. Update these derivatives together when replacing the logo; Electron and Forge use `icons/icon.*`.
 
 ## Property workspace and resumable workflows
 

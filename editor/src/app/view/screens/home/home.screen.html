@@ -1,6 +1,10 @@
 <main *transloco="let t" class="entry-screen relative isolate flex min-h-full flex-col overflow-y-auto">
   <nori-entry-backdrop class="home-backdrop" />
-  <header class="entry-chrome flex justify-end px-5 py-5 sm:px-6" data-nori-motion>
+  <header class="entry-chrome flex items-center justify-between px-5 py-5 sm:px-6" data-nori-motion>
+    <div class="home-wordmark" aria-hidden="true">
+      <span class="home-logo" style="mask-image: url('images/nori-logo.svg')"></span>
+      <span class="home-wordmark-name">Nori</span>
+    </div>
     <nori-settings-button />
   </header>
 

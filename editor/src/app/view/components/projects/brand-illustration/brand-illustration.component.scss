@@ -125,30 +125,6 @@
   animation-name: branch-node-create;
 }
 
-.brand-identity {
-  width: 100%;
-  gap: 0.75rem;
-  animation: content-arrive 900ms ease-out backwards;
-}
-
-.brand-logo {
-  display: block;
-  width: 44%;
-  aspect-ratio: 1;
-  background: var(--color-base-content);
-  mask-position: center;
-  mask-size: contain;
-  mask-repeat: no-repeat;
-}
-
-.brand-title {
-  font-family: var(--font-display);
-  font-size: clamp(4rem, 8vw, 6rem);
-  font-weight: 400;
-  letter-spacing: -0.035em;
-  line-height: 1;
-}
-
 @keyframes node-float {
   from {
     transform: translateY(-4px);

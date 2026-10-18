@@ -4,8 +4,6 @@
     <defs>
       <mask [id]="maskId" maskUnits="userSpaceOnUse" x="0" y="0" width="640" height="560">
         <rect width="640" height="560" fill="white" />
-        <rect x="153" y="136" width="334" height="288" fill="black" />
-        <rect x="136" y="369" width="17" height="55" fill="black" />
         @for (node of graphNodes; track $index) {
           <g [attr.transform]="'translate(' + node.x + ' ' + node.y + ')'" [style.--float-delay]="node.floatDelay">
             <circle class="brand-graph-node" data-nori-motion [attr.r]="node.radius + 1" fill="black" />
@@ -15,7 +13,7 @@
     </defs>
     <g class="brand-graph-lines" [attr.mask]="'url(#' + maskId + ')'">
       <path
-        d="M70 90L165 50L245 85L95 180L70 90 M165 50L165 136 M245 85L190 136 M95 180L153 180 M245 85Q380 30 535 155 M535 155L600 240L545 340L535 155 M545 340L610 380L600 240 M535 155L487 155 M545 340L487 390 M95 180L60 345L85 455L170 470 M60 345L28 445L85 455 M85 455L136 405 M170 470L200 424 M70 90L10 80 M245 85L290 70 M535 155L520 80 M600 240L598 102 M600 240L632 82 M28 445L4 500 M170 470L97 535 M85 455L97 535"
+        d="M320 280L190 150L70 90 M190 150L350 80 M320 280L470 120L590 210 M320 280L465 390L600 440 M320 280L135 390L55 495 M320 280L280 490 M190 150L70 255L135 390 M70 90L5 55 M190 150L173 92 M470 120L350 80 M590 210L592 70 M470 120L529 40 M55 495L109 550 M280 490L365 532 M465 390L422 500"
       />
     </g>
     @for (node of graphNodes; track $index) {
@@ -35,20 +33,20 @@
       </g>
     }
     <g class="brand-graph-edit brand-edit-float" data-nori-motion style="--edit-delay: 0s; --float-delay: 0s">
-      <path class="brand-edit-edge" data-nori-motion pathLength="1" d="M64.2 103.8L15.6 219.9" />
-      <circle class="brand-edit-node" data-nori-motion cx="11" cy="231" r="12" />
-      <path class="brand-edit-edge brand-edit-extension" data-nori-motion pathLength="1" d="M3 240L-29 277 M17 241L42 290" />
+      <path class="brand-edit-edge" data-nori-motion pathLength="1" d="M64.2 103.8L-20.4 219.9" />
+      <circle class="brand-edit-node" data-nori-motion cx="-25" cy="231" r="12" />
+      <path class="brand-edit-edge brand-edit-extension" data-nori-motion pathLength="1" d="M-33 240L-65 277 M-19 241L6 290" />
       <g class="brand-edit-node brand-edit-extension-nodes" data-nori-motion>
-        <circle cx="-36" cy="284" r="10" />
-        <circle cx="47" cy="300" r="11" />
+        <circle cx="-72" cy="284" r="10" />
+        <circle cx="11" cy="300" r="11" />
       </g>
     </g>
     <g class="brand-graph-edit brand-edit-float" data-nori-motion style="--edit-delay: 24s; --float-delay: -12s">
-      <path class="brand-edit-edge" data-nori-motion pathLength="1" d="M556 162L630 187" />
-      <circle class="brand-edit-node" data-nori-motion cx="643" cy="191" r="14" />
+      <path class="brand-edit-edge" data-nori-motion pathLength="1" d="M490 126L575 150" />
+      <circle class="brand-edit-node" data-nori-motion cx="588" cy="154" r="14" />
     </g>
     <g class="brand-graph-edit brand-edit-float" data-nori-motion style="--edit-delay: 48s; --float-delay: -24s">
-      <path class="brand-edit-edge" data-nori-motion pathLength="1" d="M42 341L-10 329" />
+      <path class="brand-edit-edge" data-nori-motion pathLength="1" d="M117 386L-10 329" />
       <circle class="brand-edit-node" data-nori-motion cx="-22" cy="326" r="12" />
       <path class="brand-edit-edge brand-edit-extension" data-nori-motion pathLength="1" d="M-29 336L-49 366 M-32 320L-62 300" />
       <g class="brand-edit-node brand-edit-extension-nodes" data-nori-motion>
@@ -57,7 +55,7 @@
       </g>
     </g>
     <g class="brand-graph-objects">
-      <foreignObject x="-65" y="35" width="75" height="100">
+      <foreignObject x="-70" y="-10" width="75" height="100">
         <sui-card class="brand-preview" size="xs" variant="border">
           <div class="brand-text-preview flex flex-col gap-[5px] px-px py-[3px]">
             <span class="brand-text-title mb-[3px] w-[55%]"></span>
@@ -66,7 +64,7 @@
           </div>
         </sui-card>
       </foreignObject>
-      <foreignObject x="290" y="15" width="76" height="100">
+      <foreignObject x="135" y="20" width="76" height="100">
         <sui-card class="brand-preview" size="xs" variant="border">
           <div class="brand-text-preview flex flex-col gap-[5px] px-px py-[3px]">
             <span class="brand-text-title mb-[3px] w-[55%]"></span>
@@ -75,7 +73,7 @@
           </div>
         </sui-card>
       </foreignObject>
-      <foreignObject x="520" y="0" width="144" height="112">
+      <foreignObject x="520" y="-25" width="144" height="112">
         <sui-card class="brand-preview" size="xs" variant="border">
           <div class="brand-picture relative overflow-hidden rounded">
             <img class="block h-[86px] w-full object-cover" src="images/home/pine-landscape.jpg" width="128" height="86" alt="" />
@@ -84,7 +82,7 @@
           </div>
         </sui-card>
       </foreignObject>
-      <foreignObject x="-50" y="500" width="108" height="64">
+      <foreignObject x="55" y="550" width="108" height="64">
         <sui-card class="brand-preview" size="xs" variant="border">
           <div class="flex items-center gap-2">
             <sui-avatar size="xs" shape="circle"><img src="images/home/portrait-a.jpg" width="32" height="32" alt="" /></sui-avatar>
@@ -92,7 +90,7 @@
           </div>
         </sui-card>
       </foreignObject>
-      <foreignObject x="40" y="535" width="114" height="64">
+      <foreignObject x="365" y="500" width="114" height="64">
         <sui-card class="brand-preview" size="xs" variant="border">
           <div class="flex items-center gap-2">
             <sui-avatar size="xs" shape="circle"><img src="images/home/portrait-b.jpg" width="32" height="32" alt="" /></sui-avatar>
@@ -102,8 +100,4 @@
       </foreignObject>
     </g>
   </svg>
-  <div class="brand-identity relative flex flex-col items-center" data-nori-motion>
-    <span class="brand-logo" style="mask-image: url('images/nori-logo.svg')" aria-hidden="true"></span>
-    <span class="brand-title">Nori</span>
-  </div>
 </div>
