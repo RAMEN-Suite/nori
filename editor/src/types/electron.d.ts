@@ -7,6 +7,7 @@ declare global {
 
 /** The desktop bridge exposes only actions used by the editor. */
 export interface Electron {
+  ready(): void;
   minimise(): void;
   maximise(): void;
   close(): void;

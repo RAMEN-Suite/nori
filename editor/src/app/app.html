@@ -1,7 +1,7 @@
 @if (isElectronRuntime) {
   <nori-title-bar />
 }
-<router-outlet />
+<router-outlet (activate)="handleViewReady()" />
 
 <nori-dialog-host />
 <nori-running-action-notification />

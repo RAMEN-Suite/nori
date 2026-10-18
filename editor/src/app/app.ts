@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, DOCUMENT, effect, inject, untracked } from '@angular/core';
+import {
+  afterNextRender,
+  ChangeDetectionStrategy,
+  Component,
+  DOCUMENT,
+  effect,
+  inject,
+  Injector,
+  untracked,
+} from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
 import { Toast, ToastService } from '@sushi-kit/angular';
@@ -20,6 +29,7 @@ export class App {
   private readonly translations: TranslocoService = inject(TranslocoService);
   protected readonly editorState: ApplicationState = inject(ApplicationState);
   private readonly document: Document = inject(DOCUMENT);
+  private readonly injector: Injector = inject(Injector);
 
   private errorToastId: string | null = null;
   protected readonly isElectronRuntime: boolean = !!window.electron;
@@ -50,5 +60,9 @@ export class App {
       html.dataset['theme'] = this.editorState.theme().sushiTheme;
       html.dataset['motion'] = this.editorState.state().animations ? 'on' : 'off';
     });
+  }
+
+  protected handleViewReady(): void {
+    afterNextRender((): void => window.electron?.ready(), { injector: this.injector });
   }
 }

@@ -56,11 +56,11 @@
 }
 
 :where(.play-brand-intro) .entry-chrome {
-  animation-delay: calc(var(--home-intro-delay) + 180ms);
+  animation-delay: var(--home-intro-delay);
 }
 
 :where(.play-brand-intro) .home-wordmark {
-  animation: home-fade-in 650ms calc(var(--home-intro-delay) + 1100ms) ease-out both;
+  animation: home-fade-in 300ms var(--home-intro-delay) ease-out both;
 }
 
 :where(.play-brand-intro) .home-backdrop {

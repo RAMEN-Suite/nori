@@ -1,3 +1,4 @@
+import { LocationStrategy } from '@angular/common';
 import {
   type ApplicationConfig,
   provideBrowserGlobalErrorListeners,
@@ -21,6 +22,7 @@ import { TranslationLoader } from './i18n/translation-loader';
 import { routes } from './app.routes';
 import { PARAMETERS } from './app-route-parameters';
 import { Languages } from './i18n/languages';
+import { DesktopLocationStrategy } from './desktop-location-strategy';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -57,6 +59,7 @@ export const appConfig: ApplicationConfig = {
       }),
       ...(window.electron ? [withHashLocation()] : []),
     ),
+    ...(window.location.protocol === 'file:' ? [{ provide: LocationStrategy, useClass: DesktopLocationStrategy }] : []),
   ],
 };
 

@@ -11,6 +11,9 @@ export class ApplicationListener {
   }
 
   public listen(): void {
+    ipcMain.on(APPLICATION_IPC.APPLICATION_READY, (event: IpcMainEvent): void => {
+      if (this.isEditorSender(event)) this.application.showWindow();
+    });
     ipcMain.on(APPLICATION_IPC.APPLICATION_CLOSE, (event: IpcMainEvent): void => {
       if (this.isEditorSender(event)) app.quit();
     });

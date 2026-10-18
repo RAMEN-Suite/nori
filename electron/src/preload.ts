@@ -3,6 +3,7 @@ import { APPLICATION_IPC } from './static/IPC_EVENTS';
 
 contextBridge.exposeInMainWorld('platform', process.platform);
 contextBridge.exposeInMainWorld('electron', {
+  ready: (): void => ipcRenderer.send(APPLICATION_IPC.APPLICATION_READY),
   minimise: (): void => ipcRenderer.send(APPLICATION_IPC.APPLICATION_MINIMIZE),
   maximise: (): void => ipcRenderer.send(APPLICATION_IPC.APPLICATION_MAXIMIZE),
   close: (): void => ipcRenderer.send(APPLICATION_IPC.APPLICATION_CLOSE),

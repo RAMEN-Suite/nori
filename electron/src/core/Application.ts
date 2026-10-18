@@ -1,4 +1,4 @@
-import { app, BrowserWindow, screen } from 'electron';
+import { app, BrowserWindow, nativeTheme, screen } from 'electron';
 import { DEVELOPMENT_PATH, ICON_PATH, PRELOAD_PATH, STATIC_PATH } from '../static/PATHS';
 
 /** Owns the desktop window and the Electron application lifecycle. */
@@ -6,6 +6,7 @@ export class Application {
   private readonly title: string;
   private readonly isProduction: boolean;
   private window: BrowserWindow | null = null;
+  private rendererReady: boolean = false;
 
   public constructor(title: string, isProduction: boolean) {
     this.title = title;
@@ -29,6 +30,12 @@ export class Application {
     return this.window;
   }
 
+  public showWindow(): void {
+    if (!this.window || this.rendererReady) return;
+    this.rendererReady = true;
+    this.window.show();
+  }
+
   private createWindow(): void {
     app.dock?.setIcon(ICON_PATH);
     const { width, height } = screen.getPrimaryDisplay().workAreaSize;
@@ -38,6 +45,8 @@ export class Application {
       minWidth: Math.min(1280, width),
       minHeight: Math.min(720, height),
       title: this.title,
+      show: false,
+      backgroundColor: nativeTheme.shouldUseDarkColors ? '#272833' : '#ffffff',
       icon: ICON_PATH,
       center: true,
       autoHideMenuBar: true,
@@ -45,6 +54,7 @@ export class Application {
       webPreferences: { preload: PRELOAD_PATH, contextIsolation: true, nodeIntegration: false, sandbox: true },
     });
     this.window = window;
+    this.rendererReady = false;
     window.on('closed', (): void => {
       this.window = null;
     });
