@@ -1,4 +1,4 @@
-import { afterNextRender, DestroyRef, Directive, ElementRef, inject, input, type InputSignal } from '@angular/core';
+import { afterNextRender, effect, DestroyRef, Directive, ElementRef, inject, input, type InputSignal } from '@angular/core';
 
 /** Smoothly resizes a surface to its first child's natural height without stretching its contents. */
 @Directive({ selector: '[noriAnimateHeight]' })
@@ -12,6 +12,9 @@ export class AnimateHeightDirective {
   private animation: Animation | null = null;
 
   public constructor() {
+    effect((): void => {
+      if (!this.enabled()) this.animation?.cancel();
+    });
     afterNextRender((): void => {
       const content: Element | null = this.element.nativeElement.firstElementChild;
       if (!content) return;
@@ -27,9 +30,14 @@ export class AnimateHeightDirective {
   private resize(content: Element): void {
     const host: HTMLElement = this.element.nativeElement;
     const contentHeight: number = content.getBoundingClientRect().height;
-    if (!contentHeight) return;
     const style: CSSStyleDeclaration = getComputedStyle(host);
-    const height: number = contentHeight + parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
+    if (style.display === 'none') return;
+    const height: number =
+      contentHeight +
+      parseFloat(style.borderTopWidth) +
+      parseFloat(style.borderBottomWidth) +
+      parseFloat(style.paddingTop) +
+      parseFloat(style.paddingBottom);
     if (height === this.height) return;
 
     const previous: number = host.getBoundingClientRect().height;

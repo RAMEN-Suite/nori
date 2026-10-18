@@ -1,6 +1,7 @@
 @use "../../../../../../styles/surface-list";
 
 :host {
+  display: block;
   min-width: 0;
 }
 .property-form,
@@ -36,7 +37,9 @@
   @include surface-list.row;
   display: flex;
   justify-content: space-between;
+  border-radius: var(--nori-radius-input);
   cursor: pointer;
+  transition: background-color 180ms ease-out;
 }
 .property-option-text {
   display: flex;
@@ -44,6 +47,16 @@
   flex: 1;
   flex-direction: column;
   gap: 0.125rem;
+  transition: opacity 180ms ease-out;
+}
+.property-option-row[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+.property-option-row:not([aria-disabled="true"]):hover {
+  background: var(--sui-color-hover);
+}
+.property-option-row[aria-disabled="true"] .property-option-text {
+  opacity: var(--sui-disabled-opacity);
 }
 .property-option-label {
   font-size: 0.8125rem;
@@ -65,4 +78,49 @@
   .property-basics {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+.property-reveal {
+  position: relative;
+  min-width: 0;
+  overflow: clip;
+  margin-top: -1.25rem;
+}
+.property-reveal-content {
+  padding-top: 1.25rem;
+}
+.property-form-enter {
+  animation: property-form-arrive 260ms ease-out both;
+}
+.property-form-leave {
+  position: absolute;
+  pointer-events: none;
+  inset-inline: 0;
+  top: 0;
+  animation: property-form-arrive 180ms ease-in reverse both;
+}
+@keyframes property-form-arrive {
+  from {
+    opacity: 0;
+    translate: 0 4px;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .property-form-enter,
+  .property-form-leave {
+    animation: none;
+  }
+  .property-option-row,
+  .property-option-text {
+    transition: none;
+  }
+}
+
+:host(.motion-disabled) .property-form-enter,
+:host(.motion-disabled) .property-form-leave {
+  animation: none;
 }

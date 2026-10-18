@@ -1,21 +1,26 @@
-<form *transloco="let t" class="property-form" (ngSubmit)="handleSave()">
+<form *transloco="let t" class="property-form" [inert]="saving()" (ngSubmit)="$event.preventDefault()">
+  <div class="property-reveal" [noriAnimateHeight]="motion()">
+    <div>
+      @if (error(); as message) {
+        <p
+          class="property-reveal-content text-error text-sm"
+          role="alert"
+          data-nori-motion
+          [animate.enter]="motion() ? 'property-form-enter' : ''"
+          [animate.leave]="motion() ? 'property-form-leave' : ''"
+        >
+          {{ message }}
+        </p>
+      }
+    </div>
+  </div>
   <fieldset class="property-fields" [disabled]="!editable()">
     <legend class="sr-only">{{ t('editor.properties') }}</legend>
     <fieldset class="property-basics">
       <legend class="property-group-title">{{ t('editor.propertyDefinition') }}</legend>
       <label class="property-field"
         >{{ t('editor.propertyName') }}
-        <input
-          suiInput
-          fluid
-          size="sm"
-          name="name"
-          [maxlength]="nameMaxLength"
-          (keydown.enter)="$event.preventDefault(); handleSave()"
-          [(ngModel)]="name"
-          (blur)="handleSave()"
-          required
-        />
+        <input suiInput fluid size="sm" name="name" [maxlength]="nameMaxLength" [(ngModel)]="name" required />
       </label>
       <div class="property-field">
         <span>{{ t('editor.dataType') }}</span>
@@ -38,15 +43,26 @@
         [ngTemplateOutletContext]="{ $implicit: valueOptions, label: t('editor.propertyValues') }"
       />
     </fieldset>
-    @if (multiple) {
-      <fieldset class="property-option-group">
-        <legend class="property-group-title">{{ t('editor.propertyMultipleValues') }}</legend>
-        <ng-container
-          [ngTemplateOutlet]="optionList"
-          [ngTemplateOutletContext]="{ $implicit: multipleOptions, label: t('editor.propertyMultipleValues') }"
-        />
-      </fieldset>
-    }
+    <div class="property-reveal" [noriAnimateHeight]="motion()">
+      <div>
+        @if (multiple) {
+          <div
+            class="property-reveal-content"
+            data-nori-motion
+            [animate.enter]="motion() ? 'property-form-enter' : ''"
+            [animate.leave]="motion() ? 'property-form-leave' : ''"
+          >
+            <fieldset class="property-option-group">
+              <legend class="property-group-title">{{ t('editor.propertyMultipleValues') }}</legend>
+              <ng-container
+                [ngTemplateOutlet]="optionList"
+                [ngTemplateOutletContext]="{ $implicit: multipleOptions, label: t('editor.propertyMultipleValues') }"
+              />
+            </fieldset>
+          </div>
+        }
+      </div>
+    </div>
     <fieldset class="property-option-group">
       <legend class="property-group-title">{{ t('editor.propertyBehavior') }}</legend>
       <ng-container
@@ -57,12 +73,25 @@
   </fieldset>
   <ng-template #optionList let-options let-label="label">
     <sui-card size="xs" variant="border">
-      <sui-list size="xs" [items]="options" [trackBy]="trackOption" [ariaLabel]="label" [dividers]="true" [rowHover]="editable()">
+      <sui-list size="xs" [items]="options" [trackBy]="trackOption" [ariaLabel]="label" [dividers]="true" [rowHover]="false">
         <ng-template suiListItem let-option>
-          <label class="property-option-row col-span-full" [attr.for]="'property-control-' + option">
-            <span class="property-option-text">
+          <label
+            class="property-option-row col-span-full"
+            data-nori-motion
+            [attr.for]="'property-control-' + option"
+            [attr.aria-disabled]="!editable() || (option === 'key' && keyUnavailable) ? 'true' : null"
+          >
+            <span class="property-option-text" data-nori-motion>
               <span class="property-option-label">{{ t('editor.propertyOptions.' + option + '.label') }}</span>
-              <span class="property-hint" [id]="'property-option-' + option">{{ t('editor.propertyOptions.' + option + '.hint') }}</span>
+              <span class="property-hint" [id]="'property-option-' + option">
+                @if (option === 'key' && otherKey(); as key) {
+                  {{ t('editor.propertyKeyAlreadyUsed', { name: key.name }) }}
+                } @else if (option === 'key' && keyUnavailable) {
+                  {{ t('editor.propertyKeyRequiresSingleValue') }}
+                } @else {
+                  {{ t('editor.propertyOptions.' + option + '.hint') }}
+                }
+              </span>
             </span>
             @switch (option) {
               @case ('minimum') {
@@ -80,8 +109,6 @@
                   ariaDescribedby="property-option-minimum"
                   [value]="lowerBound"
                   (valueChange)="handleMinimum($event)"
-                  (touch)="handleSave()"
-                  (keydown.enter)="$event.preventDefault(); handleSave()"
                 />
               }
               @case ('maximum') {
@@ -99,8 +126,6 @@
                   [placeholder]="t('editor.unlimitedValues')"
                   [value]="upperBound === -1 ? null : upperBound"
                   (valueChange)="handleMaximum($event)"
-                  (touch)="handleSave()"
-                  (keydown.enter)="$event.preventDefault(); handleSave()"
                 />
               }
               @default {
@@ -111,7 +136,7 @@
                   size="sm"
                   type="checkbox"
                   [name]="option"
-                  [disabled]="!editable()"
+                  [disabled]="!editable() || (option === 'key' && keyUnavailable)"
                   [attr.aria-label]="t('editor.propertyOptions.' + option + '.label')"
                   [attr.aria-describedby]="'property-option-' + option"
                   [ngModel]="optionValue(option)"
@@ -124,7 +149,4 @@
       </sui-list>
     </sui-card>
   </ng-template>
-  @if (error(); as message) {
-    <p class="text-error text-sm" role="alert">{{ message }}</p>
-  }
 </form>

@@ -33,6 +33,7 @@ body {
   --nori-selection-color: var(--color-primary);
   --nori-project-card-height: 38rem;
   --nori-chrome-height: 4.5rem;
+  --nori-property-workspace-inset: clamp(1.5rem, 6dvh, 3.5rem);
   --nori-dialog-width: 36rem;
   --nori-dialog-width-compact: 28rem;
   --nori-notification-width: 42rem;

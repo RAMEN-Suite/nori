@@ -1,8 +1,10 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   computed,
   effect,
+  DestroyRef,
   ElementRef,
   inject,
   input,
@@ -16,7 +18,7 @@ import {
 } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TranslocoDirective } from '@jsverse/transloco';
+import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { type Attribute, type AttributeInput, DataTypes, type DataTypeSuggestion } from '@ramen-suite/core/model';
 import {
   Card,
@@ -29,33 +31,56 @@ import {
   type ListTrackBy,
   type SelectOption,
 } from '@sushi-kit/angular';
-import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
+import { AnimateHeightDirective } from '../../../../../directives/animate-height.directive';
+import { ApplicationState } from '../../../../../states/application.state';
+import { WorkspaceService, type WorkspaceContext } from '../../../../../services/workspace/workspace.service';
 import { PROPERTY_NAME_MAX_LENGTH } from '../../../../../utils/model-names';
 
 type PropertyToggleOption = 'required' | 'multiple' | 'ordered' | 'duplicates' | 'readonly' | 'key';
 type PropertyOption = PropertyToggleOption | 'minimum' | 'maximum';
 
-/** Applies property field changes serially while preserving newer edits and inline validation. */
+/** Keeps property edits local until an explicit save succeeds. */
 @Component({
   selector: 'nori-property-form',
+  host: { '[class.motion-disabled]': '!motion()' },
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgTemplateOutlet, TranslocoDirective, FormsModule, Card, Input, InputNumber, List, ListItemTemplate, Select, Toggle],
+  imports: [
+    AnimateHeightDirective,
+    NgTemplateOutlet,
+    TranslocoDirective,
+    FormsModule,
+    Card,
+    Input,
+    InputNumber,
+    List,
+    ListItemTemplate,
+    Select,
+    Toggle,
+  ],
   templateUrl: './property-form.component.html',
   styleUrl: './property-form.component.scss',
 })
 export class PropertyFormComponent {
+  protected readonly appearance: ApplicationState = inject(ApplicationState);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
+  private readonly changeDetector: ChangeDetectorRef = inject(ChangeDetectorRef);
+  private readonly translations: TranslocoService = inject(TranslocoService);
   private readonly element: ElementRef<HTMLElement> = inject<ElementRef<HTMLElement>>(ElementRef);
 
   public readonly modelLevelIndex: InputSignal<number | null> = input<number | null>(null);
   public readonly editable: InputSignal<boolean> = input(true);
+  public readonly animateChanges: InputSignal<boolean> = input(true);
+  protected readonly motion: Signal<boolean> = computed(() => this.appearance.state().animations && this.animateChanges());
   public readonly saved: OutputEmitterRef<string> = output();
+  public readonly saving: WritableSignal<boolean> = signal(false);
   public readonly currentAttribute: InputSignal<Attribute | undefined> = input();
 
   protected readonly trackOption: ListTrackBy<PropertyOption> = (_index: number, option: PropertyOption): string => option;
 
   protected readonly multipleOptions: readonly PropertyOption[] = ['minimum', 'maximum', 'ordered', 'duplicates'];
   protected readonly valueOptions: readonly PropertyOption[] = ['required', 'multiple'];
+  protected readonly usageOptions: readonly PropertyOption[] = ['readonly', 'key'];
 
   protected readonly nameMaxLength: number = PROPERTY_NAME_MAX_LENGTH;
 
@@ -73,8 +98,7 @@ export class PropertyFormComponent {
 
   private initialValue: string = '';
   private selectedAttributeId: string | undefined;
-  private saveRequested: boolean = false;
-  private saving: Promise<void> | null = null;
+  private constraints: AttributeInput['constraints'];
   private readonly attributeSnapshot: Signal<string | undefined> = computed((): string | undefined =>
     JSON.stringify(this.currentAttribute()),
   );
@@ -95,12 +119,12 @@ export class PropertyFormComponent {
     }
     return options;
   });
-  protected readonly hasOtherKey: Signal<boolean> = computed((): boolean => {
+  protected readonly otherKey: Signal<Attribute | undefined> = computed((): Attribute | undefined => {
     const own: readonly Attribute[] = this.workspace.queries.currentNode()?.attributes ?? [];
     const inherited: readonly Attribute[] = [...this.workspace.queries.inheritedAttributes().values()]
       .flat()
       .map((item) => item.attribute);
-    return [...own, ...inherited].some(
+    return [...own, ...inherited].find(
       (attribute: Attribute): boolean => attribute.isKey === true && attribute.id !== this.currentAttribute()?.id,
     );
   });
@@ -110,7 +134,7 @@ export class PropertyFormComponent {
       this.attributeSnapshot();
       untracked((): void => {
         const sameSelection: boolean = this.currentAttribute()?.id === this.selectedAttributeId;
-        if (!sameSelection || !this.hasChanges()) this.reset();
+        if (!this.initialValue || !sameSelection || !this.hasChanges()) this.reset();
       });
     });
   }
@@ -122,15 +146,7 @@ export class PropertyFormComponent {
       bounds: { lowerBound: 0, upperBound: 1 },
     };
 
-    this.name = attribute.name;
-    this.typeId = attribute.typeId;
-    this.lowerBound = attribute.bounds?.lowerBound ?? 0;
-    this.upperBound = attribute.bounds?.upperBound ?? 1;
-    this.multipleEnabled.set(this.upperBound === -1 || this.upperBound > 1);
-    this.isKey = attribute.isKey ?? false;
-    this.isReadOnly = attribute.isReadOnly ?? false;
-    this.isUnique = attribute.isUnique ?? true;
-    this.isOrdered = attribute.isOrdered ?? false;
+    this.loadValues(attribute);
     this.selectedAttributeId = this.currentAttribute()?.id;
     this.error.set(null);
     this.initialValue = this.snapshot(this.values());
@@ -141,7 +157,7 @@ export class PropertyFormComponent {
   }
 
   public async commit(): Promise<boolean> {
-    await this.handleSave();
+    await this.saveDraft();
     return !this.hasChanges();
   }
 
@@ -153,10 +169,8 @@ export class PropertyFormComponent {
     return this.multipleEnabled();
   }
 
-  protected get usageOptions(): readonly PropertyOption[] {
-    return this.lowerBound === 1 && this.upperBound === 1 && (!this.hasOtherKey() || this.isKey)
-      ? ['readonly', 'key']
-      : ['readonly'];
+  protected get keyUnavailable(): boolean {
+    return !!this.otherKey() || this.lowerBound !== 1 || this.upperBound !== 1;
   }
 
   protected optionValue(option: PropertyToggleOption): boolean {
@@ -190,7 +204,6 @@ export class PropertyFormComponent {
         this.isKey = value;
         break;
     }
-    void this.handleSave();
   }
 
   protected handleMinimum(value: number | null): void {
@@ -203,38 +216,49 @@ export class PropertyFormComponent {
     this.handleBounds();
   }
 
-  protected handleBounds(): void {
-    if (this.lowerBound !== 1 || this.upperBound !== 1) this.isKey = false;
-  }
-
   protected handleType(value: unknown): void {
     if (typeof value !== 'string' || !this.typeOptions().some((option: SelectOption): boolean => option.value === value)) return;
     this.typeId = value;
-    void this.handleSave();
   }
 
-  protected handleSave(): Promise<void> {
-    if (this.saving) {
-      this.saveRequested = true;
-      return this.saving;
-    }
+  private handleBounds(): void {
+    if (this.lowerBound !== 1 || this.upperBound !== 1) this.isKey = false;
+  }
 
+  private async saveDraft(): Promise<void> {
     const nodeId: string | null = this.workspace.store.currentNodeId();
-    if (!nodeId || !this.editable() || !this.name.trim()) return Promise.resolve();
-    if (!this.hasChanges()) {
-      this.error.set(null);
-      return Promise.resolve();
+    if (!nodeId || !this.editable() || this.saving() || !this.hasChanges()) return;
+    if (!this.name.trim()) {
+      this.error.set(this.translations.translate('editor.propertyNameRequired'));
+      return;
     }
 
-    this.saving = this.saveCurrent(nodeId);
-    return this.saving;
+    this.saving.set(true);
+    try {
+      await this.saveCurrent(nodeId);
+    } finally {
+      this.saving.set(false);
+    }
+  }
+
+  private loadValues(attribute: AttributeInput): void {
+    this.name = attribute.name;
+    this.typeId = attribute.typeId ?? DataTypes.String;
+    this.lowerBound = attribute.bounds?.lowerBound ?? 0;
+    this.upperBound = attribute.bounds?.upperBound ?? 1;
+    this.multipleEnabled.set(this.upperBound === -1 || this.upperBound > 1);
+    this.isKey = attribute.isKey ?? false;
+    this.isReadOnly = attribute.isReadOnly ?? false;
+    this.isUnique = attribute.isUnique ?? true;
+    this.isOrdered = attribute.isOrdered ?? false;
+    this.constraints = attribute.constraints;
+    this.changeDetector.markForCheck();
   }
 
   private handleRequired(required: boolean): void {
     this.lowerBound = required ? Math.max(1, this.lowerBound) : 0;
     if (required && this.upperBound === 0) this.upperBound = 1;
     if (!required) this.isKey = false;
-    void this.handleSave();
   }
 
   private handleMultiple(multiple: boolean): void {
@@ -242,21 +266,18 @@ export class PropertyFormComponent {
     this.upperBound = multiple ? -1 : 1;
     if (multiple) this.isKey = false;
     else this.lowerBound = Math.min(1, this.lowerBound);
-    void this.handleSave();
   }
 
   private async saveCurrent(nodeId: string): Promise<void> {
-    const existing: Attribute | undefined =
-      this.currentAttribute() ??
-      this.workspace.queries
-        .currentNode()
-        ?.attributes.find((attribute: Attribute): boolean => attribute.id === this.selectedAttributeId);
+    const context: WorkspaceContext | null = this.workspace.context();
+    if (!context) return;
+    const existing: Attribute | undefined = this.currentAttribute();
     const input: AttributeInput = this.values();
-    this.saveRequested = false;
     this.error.set(null);
 
     try {
       const attribute: Attribute | undefined = await this.persist(nodeId, existing, input);
+      if (!this.isCurrentForm(context, nodeId, existing?.id)) return;
       this.initialValue = this.snapshot(input);
       if (!this.hasChanges()) this.syncMultipleMode();
       if (attribute && !existing) {
@@ -264,12 +285,18 @@ export class PropertyFormComponent {
         this.saved.emit(attribute.id);
       }
     } catch (error: unknown) {
+      if (!this.isCurrentForm(context, nodeId, existing?.id)) return;
       this.error.set(error instanceof Error ? error.message : String(error));
-    } finally {
-      this.saving = null;
     }
+  }
 
-    await this.flushRequestedSave();
+  private isCurrentForm(context: WorkspaceContext, nodeId: string, attributeId: string | undefined): boolean {
+    return (
+      !this.destroyRef.destroyed &&
+      this.workspace.isCurrent(context) &&
+      this.workspace.store.currentNodeId() === nodeId &&
+      this.currentAttribute()?.id === attributeId
+    );
   }
 
   private syncMultipleMode(): void {
@@ -279,10 +306,6 @@ export class PropertyFormComponent {
       host.querySelector<HTMLInputElement>('#property-control-multiple')?.focus();
     }
     this.multipleEnabled.set(multiple);
-  }
-
-  private async flushRequestedSave(): Promise<void> {
-    if (this.saveRequested) await this.handleSave();
   }
 
   private async persist(nodeId: string, existing: Attribute | undefined, input: AttributeInput): Promise<Attribute | undefined> {
@@ -311,7 +334,7 @@ export class PropertyFormComponent {
       isReadOnly: this.isReadOnly,
       isUnique: this.isUnique,
       isOrdered: this.isOrdered,
-      constraints: this.currentAttribute()?.constraints,
+      constraints: this.constraints,
     };
   }
 }

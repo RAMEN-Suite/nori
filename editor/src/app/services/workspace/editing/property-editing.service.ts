@@ -72,9 +72,9 @@ export class PropertyEditingService {
         panelClass: 'nori-property-workspace-overlay',
         backdropClass: 'nori-property-workspace-backdrop',
         width: '60rem',
-        positionStrategy: this.overlay.position().global().centerHorizontally().top('clamp(1rem, 16dvh, 8rem)'),
+        positionStrategy: this.overlay.position().global().centerHorizontally().centerVertically(),
         maxWidth: 'calc(100vw - 2rem)',
-        maxHeight: 'calc(100dvh - 2rem)',
+        height: 'calc(100dvh - 2 * var(--nori-property-workspace-inset))',
         disableClose: true,
         autoFocus: 'dialog',
         restoreFocus: true,
@@ -104,13 +104,13 @@ export class PropertyEditingService {
     if (!this.navigating()) this.close();
   }
 
-  public async inspect(location: WorkspaceLocation): Promise<boolean> {
+  public async inspect(location: WorkspaceLocation, attributeId?: string): Promise<boolean> {
     const selection: PropertySelection | null = this.current();
     const name: string | undefined = this.workspace.queries.currentNode()?.name;
     if (!selection || !name || this.workspace.context()?.projectId !== location.projectId) return false;
 
     const entry: PropertyHistoryEntry = { url: this.router.url, name, selection };
-    const navigated: boolean = await this.navigate(() => this.navigation.navigateToLocation(location));
+    const navigated: boolean = await this.navigate(() => this.navigation.navigateToLocation(location), attributeId);
     if (navigated) this.history.update((history) => [...history, entry]);
     return navigated;
   }
