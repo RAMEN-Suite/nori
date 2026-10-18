@@ -4,7 +4,7 @@
   justify-content: center;
   position: relative;
   pointer-events: none;
-  min-height: 4.5rem;
+  min-height: var(--nori-chrome-height);
 }
 .editor-back {
   position: absolute;

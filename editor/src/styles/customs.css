@@ -32,6 +32,7 @@ body {
   --nori-selection-background: color-mix(in oklab, var(--color-primary) 10%, transparent);
   --nori-selection-color: var(--color-primary);
   --nori-project-card-height: 38rem;
+  --nori-chrome-height: 4.5rem;
   --nori-dialog-width: 36rem;
   --nori-dialog-width-compact: 28rem;
   --nori-notification-width: 42rem;

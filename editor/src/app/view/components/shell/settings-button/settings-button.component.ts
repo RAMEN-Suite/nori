@@ -9,6 +9,7 @@ import { SettingsDialog } from '../../dialogs/settings/settings.dialog';
 
 @Component({
   selector: 'nori-settings-button',
+  host: { class: 'inline-flex shrink-0' },
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [TranslocoDirective, Button, TooltipDirective, LucideSettings],
   templateUrl: './settings-button.component.html',
