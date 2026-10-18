@@ -140,6 +140,31 @@ export class WorkspaceActionsService {
     return name;
   }
 
+  public async reorderAttributes(nodeId: string, ids: readonly string[]): Promise<void> {
+    const projectId: string | null = this.projects.selectedProjectId();
+    const modelId: string | undefined = this.store.currentModel()?.id;
+    const models: readonly Model[] = this.store.getModels();
+    const model: Model | undefined = models.find((item: Model): boolean => item.id === modelId);
+    const node: Node | undefined = model?.classifiers.find((item): item is Node => item.kind === 'Node' && item.id === nodeId);
+    if (!model || !node) throw new Error(this.translations.translate('editor.propertyOrderChanged'));
+    const ordered: Attribute[] = this.orderAttributes(node.attributes, ids);
+    if (ordered.every((attribute: Attribute, index: number): boolean => attribute.id === node.attributes[index]?.id)) return;
+
+    const updated: Model = {
+      ...model,
+      classifiers: model.classifiers.map((item) => (item.id === nodeId ? { ...node, attributes: ordered } : item)),
+    };
+    this.store.restoreModels(models.map((item: Model): Model => (item.id === modelId ? updated : item)));
+    try {
+      await this.saveWorkspace();
+    } catch (error: unknown) {
+      if (this.projects.selectedProjectId() === projectId && this.store.currentModel()?.id === modelId) {
+        this.store.restoreModels(models);
+      }
+      throw error;
+    }
+  }
+
   public async removeAttribute(nodeId: string, attributeId: string): Promise<void> {
     this.store.getDraft().removeAttribute(nodeId, attributeId);
     await this.saveWorkspace();
@@ -301,6 +326,18 @@ export class WorkspaceActionsService {
     const save: Promise<void> = this.pendingSave.then(action);
     this.pendingSave = save.catch((): void => undefined);
     await save;
+  }
+
+  private orderAttributes(attributes: readonly Attribute[], ids: readonly string[]): Attribute[] {
+    const existing: ReadonlySet<string> = new Set(attributes.map((attribute: Attribute): string => attribute.id));
+    if (
+      ids.length !== existing.size ||
+      new Set(ids).size !== ids.length ||
+      ids.some((id: string): boolean => !existing.has(id))
+    ) {
+      throw new Error(this.translations.translate('editor.propertyOrderChanged'));
+    }
+    return [...attributes].sort((left: Attribute, right: Attribute): number => ids.indexOf(left.id) - ids.indexOf(right.id));
   }
 
   private requirePropertyNameLength(name: string): void {

@@ -107,6 +107,7 @@
     "removeError": "Das Projekt konnte nicht entfernt werden."
   },
   "editor": {
+    "propertyOrderChanged": "Die Property-Liste wurde geändert. Brich das Sortieren ab und versuche es erneut.",
     "graph": "Modellgraph",
     "inspector": "Details",
     "closeInspector": "Details schließen",

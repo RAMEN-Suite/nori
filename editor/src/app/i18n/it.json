@@ -107,6 +107,7 @@
     "removeError": "Impossibile eliminare il progetto."
   },
   "editor": {
+    "propertyOrderChanged": "L’elenco delle proprietà è cambiato. Annulla il riordinamento e riprova.",
     "graph": "Grafo del modello",
     "inspector": "Dettagli",
     "closeInspector": "Chiudi dettagli",
