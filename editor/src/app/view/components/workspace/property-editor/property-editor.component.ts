@@ -95,6 +95,10 @@ export class PropertyEditorComponent {
   private readonly injector: Injector = inject(Injector);
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
 
+  private cardAnimation: Animation | null = null;
+  private readonly lifetime: AbortController = new AbortController();
+  protected readonly switchingNode: WritableSignal<boolean> = signal(false);
+
   private readonly form: Signal<PropertyFormComponent | undefined> = viewChild(PropertyFormComponent);
 
   protected readonly trackProperty: ListTrackBy<Attribute> = (_index: number, property: Attribute): string => property.id;
@@ -115,7 +119,9 @@ export class PropertyEditorComponent {
   protected readonly properties: Signal<readonly Attribute[]> = computed(
     () => this.workspace.queries.currentNode()?.attributes ?? [],
   );
-  protected readonly actionPending: Signal<boolean> = this.dialogs.pending;
+  protected readonly actionPending: Signal<boolean> = computed(
+    () => this.dialogs.pending() || this.editing.changingNode() || this.switchingNode(),
+  );
 
   protected readonly inheritedGroups: Signal<readonly InheritedPropertyGroup[]> = computed(() => {
     const inherited: readonly InheritedAttribute[] = [...this.workspace.queries.inheritedAttributes().values()].flat();
@@ -158,8 +164,12 @@ export class PropertyEditorComponent {
   );
 
   public constructor() {
+    this.destroyRef.onDestroy((): void => {
+      this.lifetime.abort();
+      this.cardAnimation?.cancel();
+    });
     effect((): void => {
-      if (!this.editing.current()) this.editing.close();
+      if (!this.editing.changingNode() && !this.editing.current()) this.editing.close();
     });
   }
 
@@ -193,7 +203,11 @@ export class PropertyEditorComponent {
     if (!refinement || !projectId || levelIndex === undefined) return;
 
     const location: WorkspaceLocation = { projectId, levelIndex, nodeId: refinement.node.id };
-    void this.commitAndRun((): Promise<void> => this.editing.inspect(location));
+    void this.changeNode(() => this.editing.inspect(location), -1);
+  }
+
+  protected backToNode(): void {
+    void this.changeNode(() => this.editing.back(), 1);
   }
 
   protected create(): void {
@@ -242,6 +256,64 @@ export class PropertyEditorComponent {
       this.editing.select();
       this.focusDetail();
     }
+  }
+
+  private async changeNode(action: () => Promise<boolean>, direction: 1 | -1): Promise<void> {
+    if (this.actionPending() || this.removing()) return;
+    this.switchingNode.set(true);
+    try {
+      const committed: boolean = this.inheritedSelection() ? true : (await this.form()?.commit()) !== false;
+      this.lifetime.signal.throwIfAborted();
+      if (!committed) this.form()?.reset();
+
+      await this.slideCard(0, direction * 64, 'leave');
+      this.lifetime.signal.throwIfAborted();
+      const navigated: boolean = await action();
+      this.lifetime.signal.throwIfAborted();
+      if (navigated) this.detailVisible.set(true);
+      await this.waitForRender();
+      this.lifetime.signal.throwIfAborted();
+      await this.slideCard(navigated ? -direction * 64 : direction * 64, 0, 'enter');
+      this.focusDetail();
+    } catch (error: unknown) {
+      if (!this.destroyRef.destroyed) this.projects.reportError(error);
+    } finally {
+      this.cardAnimation?.cancel();
+      this.cardAnimation = null;
+      this.switchingNode.set(false);
+    }
+  }
+
+  private async slideCard(from: number, to: number, phase: 'enter' | 'leave'): Promise<void> {
+    if (!this.appearance.state().animations || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const surface: HTMLElement | null = this.element.nativeElement.querySelector('.property-workspace');
+    if (!surface) return;
+
+    this.cardAnimation?.cancel();
+    this.cardAnimation = surface.animate(
+      [
+        { transform: `translateX(${from}px)`, opacity: phase === 'enter' ? 0 : 1 },
+        { transform: `translateX(${to}px)`, opacity: phase === 'enter' ? 1 : 0 },
+      ],
+      { duration: phase === 'enter' ? 300 : 180, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'forwards' },
+    );
+    await this.cardAnimation.finished;
+  }
+
+  private waitForRender(): Promise<void> {
+    return new Promise((resolve): void => {
+      const render: ReturnType<typeof afterNextRender> = afterNextRender(
+        (): void => {
+          unregister();
+          resolve();
+        },
+        { injector: this.injector },
+      );
+      const unregister: () => void = this.destroyRef.onDestroy((): void => {
+        render.destroy();
+        resolve();
+      });
+    });
   }
 
   private async createProperty(): Promise<void> {

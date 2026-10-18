@@ -31,6 +31,7 @@
             class="mt-0.5 shrink-0"
             [attr.aria-label]="t('editor.renameNode')"
             [noriTooltip]="t('editor.renameNode')"
+            [noriTooltipSuspended]="tooltipSuspended()"
             placement="bottom"
             [showDelay]="600"
             (click)="handleStartRename()"

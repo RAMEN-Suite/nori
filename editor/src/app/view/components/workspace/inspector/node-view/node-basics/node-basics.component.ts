@@ -5,10 +5,12 @@ import {
   effect,
   type ElementRef,
   inject,
+  input,
   Injector,
   signal,
   viewChild,
   type Signal,
+  type InputSignal,
   type WritableSignal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -33,6 +35,8 @@ export class NodeBasicsComponent {
   private readonly injector: Injector = inject(Injector);
 
   private readonly renameButton: Signal<ElementRef<HTMLButtonElement> | undefined> = viewChild('renameButton');
+
+  public readonly tooltipSuspended: InputSignal<boolean> = input(false);
 
   protected readonly draftName: WritableSignal<string> = signal('');
   protected readonly savingName: WritableSignal<boolean> = signal(false);

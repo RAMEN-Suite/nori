@@ -67,7 +67,7 @@ The property workspace uses a CDK overlay with one backdrop and focus scope. The
 
 To make inspection resumable, call `RunningActionService.start` with project ID, icon, severity, translated title/hint and an async resume callback. Honour its abort signal before restoring UI. One action is active at a time; model writes invalidate it, while navigation and view preferences do not. Resume rechecks persisted revisions. Model changes must pass through `ProjectService` so invalidation remains consistent.
 
-`RemovalReviewService` retains the confirmation route, selected consequence list and scroll position. Property inspection restores its original route and selected property. Keep graph components independent of these restoration details.
+`RemovalReviewService` retains the confirmation route, selected consequence list and scroll position. The property workspace keeps an internal node-history stack: the refinement chip opens the ancestor in the same overlay, and Back restores the previous route and selected property. Commit valid edits before switching. The current card exits left and the ancestor enters from the right; Back reverses the motion and sits at the upper left of the backdrop. Both directions respect reduced motion. This does not create a paused running action. Keep graph components independent of these restoration details.
 
 ## Known limits
 

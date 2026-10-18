@@ -89,7 +89,7 @@ export class WorkspaceScreen implements OnInit {
       )
       .subscribe((): void => {
         this.syncSelectionFromRoute();
-        this.propertyEditing.close();
+        this.propertyEditing.closeOnNavigation();
       });
 
     effect((): void => this.ensureSelectedLevel());

@@ -34,6 +34,15 @@
   min-width: 0;
   flex: 1;
 }
+.property-node-back {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  max-width: calc(100vw - 2rem);
+  border: 1px solid var(--nori-border);
+  border-radius: var(--radius-field);
+  background: var(--color-base-100);
+}
 .property-workspace-close {
   display: inline-grid;
   width: 2rem;

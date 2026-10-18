@@ -3,10 +3,8 @@ import { Overlay } from '@angular/cdk/overlay';
 import { Router } from '@angular/router';
 import { computed, inject, Injectable, signal, type Signal, type WritableSignal } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
-import { LucidePencil } from '@lucide/angular';
 import type { WorkspaceLocation } from '../../../models/WorkspaceLocation';
 import { NavigationService } from '../../interaction/navigation.service';
-import { RunningActionService } from '../workflows/running-action.service';
 import { ProjectService } from '../../projects/project.service';
 import { DialogService } from '../../interaction/dialog.service';
 import { PropertyEditorComponent } from '../../../view/components/workspace/property-editor/property-editor.component';
@@ -18,6 +16,12 @@ interface PropertySelection {
   readonly attributeId: string | null;
 }
 
+interface PropertyHistoryEntry {
+  readonly url: string;
+  readonly name: string;
+  readonly selection: PropertySelection;
+}
+
 /** Owns the floating property workspace and its current node/property selection. */
 @Injectable({ providedIn: 'root' })
 export class PropertyEditingService {
@@ -27,13 +31,16 @@ export class PropertyEditingService {
 
   private readonly navigation: NavigationService = inject(NavigationService);
   private readonly router: Router = inject(Router);
-  private readonly actions: RunningActionService = inject(RunningActionService);
   private readonly projects: ProjectService = inject(ProjectService);
 
   private readonly overlays: Dialog = inject(Dialog);
   private readonly overlay: Overlay = inject(Overlay);
 
-  private inspecting: boolean = false;
+  private readonly history: WritableSignal<readonly PropertyHistoryEntry[]> = signal([]);
+  private readonly navigating: WritableSignal<boolean> = signal(false);
+
+  public readonly changingNode: Signal<boolean> = this.navigating.asReadonly();
+  public readonly previous: Signal<PropertyHistoryEntry | null> = computed(() => this.history().at(-1) ?? null);
   private dialogRef: DialogRef<undefined, PropertyEditorComponent> | null = null;
 
   private readonly selection: WritableSignal<PropertySelection | null> = signal<PropertySelection | null>(null);
@@ -60,7 +67,8 @@ export class PropertyEditingService {
     const ref: DialogRef<undefined, PropertyEditorComponent> = this.overlays.open<undefined, unknown, PropertyEditorComponent>(
       PropertyEditorComponent,
       {
-        ariaLabel: this.translations.translate('editor.editPropertiesOf', { name: this.workspace.queries.currentNode()?.name }),
+        ariaLabel: this.translations.translate('editor.editProperties'),
+        ariaDescribedBy: 'property-workspace-node-title',
         panelClass: 'nori-property-workspace-overlay',
         backdropClass: 'nori-property-workspace-backdrop',
         width: '60rem',
@@ -92,38 +100,47 @@ export class PropertyEditingService {
     if (!this.dialogs.pending()) this.dialogRef?.close();
   }
 
-  public async inspect(location: WorkspaceLocation): Promise<void> {
+  public closeOnNavigation(): void {
+    if (!this.navigating()) this.close();
+  }
+
+  public async inspect(location: WorkspaceLocation): Promise<boolean> {
     const selection: PropertySelection | null = this.current();
-    if (!selection || this.dialogs.pending() || this.inspecting || this.actions.pending()) return;
+    const name: string | undefined = this.workspace.queries.currentNode()?.name;
+    if (!selection || !name || this.workspace.context()?.projectId !== location.projectId) return false;
 
-    const returnUrl: string = this.router.url;
-    this.inspecting = true;
-    let paused: boolean = false;
+    const entry: PropertyHistoryEntry = { url: this.router.url, name, selection };
+    const navigated: boolean = await this.navigate(() => this.navigation.navigateToLocation(location));
+    if (navigated) this.history.update((history) => [...history, entry]);
+    return navigated;
+  }
+
+  public async back(): Promise<boolean> {
+    const entry: PropertyHistoryEntry | null = this.previous();
+    if (!entry) return false;
+
+    const navigated: boolean = await this.navigate(() => this.navigation.navigateToUrl(entry.url), entry.selection.attributeId);
+    if (navigated) this.history.update((history) => history.slice(0, -1));
+    return navigated;
+  }
+
+  private async navigate(action: () => Promise<boolean>, attributeId?: string | null): Promise<boolean> {
+    const ref: DialogRef<undefined, PropertyEditorComponent> | null = this.dialogRef;
+    const projectId: string | undefined = this.workspace.context()?.projectId;
+    if (!ref || !projectId || this.dialogs.pending() || this.navigating()) return false;
+
+    this.navigating.set(true);
     try {
-      paused = await this.actions.start({
-        icon: LucidePencil.icon,
-        severity: 'warning',
-        projectId: location.projectId,
-        titleKey: 'editor.runningPropertyEditing',
-        descriptionKey: 'editor.runningPropertyEditingHint',
-        resume: async (signal: AbortSignal): Promise<void> => {
-          if (!(await this.navigation.navigateToUrl(returnUrl))) throw new Error('The previous view could not be opened.');
-          if (!signal.aborted) this.open(selection.attributeId);
-        },
-      });
-      if (!paused) return;
-      if (this.current() !== selection) {
-        this.actions.cancel();
-        return;
-      }
-
-      this.close();
-      if (!(await this.navigation.navigateToLocation(location))) await this.actions.resume();
+      if (!(await action()) || this.dialogRef !== ref || this.workspace.context()?.projectId !== projectId) return false;
+      if (!this.workspace.queries.currentNode()) return false;
+      this.select(attributeId);
+      this.dialogs.error.set(null);
+      return true;
     } catch (error: unknown) {
       this.projects.reportError(error);
-      if (paused) await this.actions.resume();
+      return false;
     } finally {
-      this.inspecting = false;
+      this.navigating.set(false);
     }
   }
 
@@ -135,6 +152,7 @@ export class PropertyEditingService {
       if (this.dialogRef !== ref) return;
       this.dialogRef = null;
       this.selection.set(null);
+      this.history.set([]);
       this.dialogs.error.set(null);
     });
   }
