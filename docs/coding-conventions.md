@@ -26,6 +26,7 @@ Shared coding style for Nori and related libraries. General principles transfer 
 - Keep imports first: framework/runtime, external packages, project modules. Mark type-only imports explicitly; injection tokens remain runtime imports.
 - Use public package entry points. Avoid private package paths, unused imports and duplicate Angular metadata entries.
 - Keep feature files together. Nori retains `.component`, `.service`, `.directive`, `.dialog` and `.screen` suffixes; existing contract and Electron filenames retain their established style.
+- Use `.ts` for application sources. Standalone Node build scripts use `.mts` when they need explicit ESM semantics alongside the CommonJS Electron process.
 
 ## Methods and blank lines
 

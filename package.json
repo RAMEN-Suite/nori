@@ -31,7 +31,9 @@
     "verify": "npm run lint && npm run format && npm run typecheck && npm run build",
     "package": "npm run build && electron-forge package",
     "make": "npm run build && electron-forge make",
-    "release": "npm run build && electron-forge release",
+    "make:mac": "node tools/make-macos.mts",
+    "make:mac:signed": "node tools/make-macos.mts --signed",
+    "make:win": "node tools/make-windows.mts",
     "setup:electron": "node node_modules/electron/install.js",
     "prepare": "git config core.hooksPath .githooks",
     "ng": "ng"
