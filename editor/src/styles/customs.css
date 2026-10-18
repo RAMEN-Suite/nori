@@ -12,6 +12,7 @@ body {
   color: var(--color-base-content);
 }
 :root {
+  --nori-brand-ink: light-dark(#0b0d16, var(--color-base-content));
   --nori-ui-font-size: clamp(100%, calc(64% + 0.4vw), 118%);
   --nori-graph-dimmed-opacity: 0.25;
   --nori-graph-node-tint: 7%;
@@ -294,4 +295,12 @@ sui-toast.nori-notifications {
 
 .nori-property-workspace-overlay :is([role="dialog"], [role="tabpanel"]):focus {
   outline: none;
+}
+
+.nori-settings-host {
+  --sui-dialog-viewport-gap: 2.5rem;
+}
+
+.nori-settings-host dialog {
+  overflow: visible;
 }

@@ -8,7 +8,7 @@
   shape="circle"
   [attr.aria-label]="t('common.settings')"
   [attr.aria-keyshortcuts]="shortcut() ? shortcuts.aria('settings') : null"
-  [noriTooltip]="shortcut() ? t('common.settings') + ' (' + shortcut() + ')' : ''"
+  [noriTooltip]="shortcut() ? t('common.settings') + ' (' + shortcut() + ')' : t('common.settings')"
   placement="bottom"
   [showDelay]="600"
   (click)="handleOpen()"

@@ -57,7 +57,22 @@ For a language, extend `TranslationLanguage` and `Languages.translations` in `i1
 
 ## Brand assets
 
-`editor/public/images/nori-logo.svg` is the supplied logo source. `HomeScreen` displays it in the header as a monochrome mask so it follows the theme; `BrandIllustrationComponent` owns the separate decorative network. Keep its shape and texture intact. The padded light tile in `icons/icon.svg` supplies the desktop PNG, ICO and ICNS variants and the browser favicons. Update these derivatives together when replacing the logo; Electron and Forge use `icons/icon.*`.
+`editor/public/images/nori-logo.svg` is the supplied logo source. `HomeScreen` displays it in the header as a monochrome mask so it follows the theme; `LogoIntroComponent` animates the mark in the centre of the viewport, and `BrandIllustrationComponent` owns the decorative network on the left of the finished home screen. Keep its shape and texture intact. The padded light tile in `icons/icon.svg` supplies the desktop PNG, ICO and ICNS variants and the browser favicons. Update these derivatives together when replacing the logo; Electron and Forge use `icons/icon.*`.
+
+`HomeScreen` provides a static, accessible logo link on the home screen only. Other screens retain their back controls. The settings dialog displays the translated `Version {{version}}` centred below its outer dialog frame; there is no global version overlay.
+
+`--nori-brand-ink` uses the SVG's `#0b0d16` in the light theme and the theme foreground in the dark theme. The home screen plays a centred fullscreen logo intro only when it is the initial route after app startup or reload, below the Electron title bar. It checks the router's previous successful navigation, so reloading in the workspace and then returning home never queues an intro. The graph and project actions are already mounted underneath and appear after the logo fades out, using shared CSS timing. The home content remains inert until the intro finishes. It skips the intro when animations or reduced motion require that, including preference changes during playback. The intro emits completion from its root animation. The network draws outward from its centre on every home visit and keeps its ambient motion; only an active logo intro delays that drawing.
+
+The retained entity portraits in `editor/public/images/home/portrait-a.jpg` and `portrait-b.jpg` are 256px derivatives of user-supplied photos, edited with the built-in image generator. Keep enough headroom for the circular avatar crop and match `pine-landscape.jpg` when replacing them.
+
+<details>
+<summary>Portrait edit prompt</summary>
+
+```text
+Use case: identity-preserve, style-transfer. Image 1 is the edit target portrait; image 2 is ONLY the style and color reference (the Japanese landscape already used in our app). Create one square portrait avatar that harmonizes with image 2: restrained Japanese woodblock / painted editorial treatment, warm ivory paper, muted sage and earthy brown tones, softly simplified shading and fine printed texture. Preserve the exact identity, facial proportions, hairstyle and expression of the person in image 1; they must remain clearly recognizable. Do not make a generic face or add landscape elements. Framing is crucial: zoom out compared with a tight face crop, show the whole head and upper shoulders with 12–15% clear space above the hair. Place eyes around 48% of image height, face center just below the image center, chin near 72%; centered horizontally. This will be displayed in a tiny circular crop so do not cut off hair or chin. Quiet warm ivory background, gentle contrast, no orange cast, no border, no text, no watermark. Produce a single square image.
+```
+
+</details>
 
 ## Property workspace and resumable workflows
 

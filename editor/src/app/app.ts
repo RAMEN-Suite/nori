@@ -6,21 +6,12 @@ import { ProjectService } from './services/projects/project.service';
 import { ApplicationState } from './states/application.state';
 import { DialogHostComponent } from './view/components/shell/dialog-host/dialog-host.component';
 import { RunningActionNotificationComponent } from './view/components/shell/running-action-notification/running-action-notification.component';
-import { VersionFooterComponent } from './view/components/shell/version-footer/version-footer.component';
 import { TitleBarComponent } from './view/components/shell/title-bar/title-bar.component';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'nori-root',
-  imports: [
-    RunningActionNotificationComponent,
-    DialogHostComponent,
-    TitleBarComponent,
-    RouterOutlet,
-    VersionFooterComponent,
-    Toast,
-    TranslocoPipe,
-  ],
+  imports: [RunningActionNotificationComponent, DialogHostComponent, TitleBarComponent, RouterOutlet, Toast, TranslocoPipe],
   templateUrl: './app.html',
 })
 export class App {

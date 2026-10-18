@@ -1,25 +1,10 @@
-.home-wordmark {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
+:host {
+  --home-intro-duration: 2700ms;
+  --home-intro-delay: 0ms;
 }
 
-.home-wordmark-name {
-  font-family: var(--font-sans);
-  font-size: 1.5rem;
-  font-weight: 300;
-  line-height: 1;
-}
-
-.home-logo {
-  display: block;
-  width: 2rem;
-  height: 2rem;
-  flex-shrink: 0;
-  background: var(--color-base-content);
-  mask-position: center;
-  mask-size: contain;
-  mask-repeat: no-repeat;
+.play-brand-intro {
+  --home-intro-delay: var(--home-intro-duration);
 }
 
 .home-backdrop {
@@ -32,6 +17,19 @@
   letter-spacing: -0.045em;
   line-height: 1.08;
   text-wrap: balance;
+}
+
+@media (min-width: 768px) {
+  .home-intro {
+    width: 84%;
+    margin-inline: 10% 6%;
+  }
+}
+
+@media (max-width: 767px) {
+  .home-backdrop {
+    clip-path: inset(50% 0 0 0);
+  }
 }
 
 .home-actions {
@@ -53,15 +51,66 @@
   }
 }
 
-@media (min-width: 768px) {
-  .home-intro {
-    width: 84%;
-    margin-inline: 10% 6%;
+:where(.play-brand-intro) .home-actions {
+  animation-delay: var(--home-intro-delay);
+}
+
+:where(.play-brand-intro) .entry-chrome {
+  animation-delay: calc(var(--home-intro-delay) + 180ms);
+}
+
+:where(.play-brand-intro) .home-wordmark {
+  animation: home-fade-in 650ms calc(var(--home-intro-delay) + 1100ms) ease-out both;
+}
+
+:where(.play-brand-intro) .home-backdrop {
+  animation: home-fade-in 600ms var(--home-intro-delay) ease-out both;
+}
+
+@keyframes home-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
   }
 }
 
-@media (max-width: 767px) {
-  .home-backdrop {
-    clip-path: inset(50% 0 0 0);
+@media (prefers-reduced-motion: reduce) {
+  [data-nori-motion] {
+    animation: none !important;
   }
+}
+
+.home-wordmark {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  height: 2.5rem;
+  padding-inline: 0.25rem;
+  border-radius: var(--nori-radius-input);
+  color: var(--nori-brand-ink);
+  cursor: pointer;
+}
+
+.home-wordmark:focus-visible {
+  outline: 2px solid var(--nori-focus);
+  outline-offset: 2px;
+}
+
+.home-logo {
+  display: block;
+  width: 2rem;
+  height: 2rem;
+  background: var(--nori-brand-ink);
+  mask-size: contain;
+  mask-repeat: no-repeat;
+}
+
+.home-wordmark-name {
+  font-family: var(--font-sans);
+  font-size: 1.5rem;
+  font-weight: 300;
+  font-variation-settings: "wght" 300;
+  line-height: 1;
 }

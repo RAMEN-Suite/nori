@@ -4,6 +4,7 @@
 }
 
 .brand-emblem {
+  --ambient-start: calc(var(--home-intro-delay, 0ms) + 1.6s);
   aspect-ratio: 8 / 7;
 }
 
@@ -12,7 +13,6 @@
     linear-gradient(var(--nori-grid) 1px, transparent 1px), linear-gradient(90deg, var(--nori-grid) 1px, transparent 1px);
   background-size: 24px 24px;
   mask-image: radial-gradient(ellipse, black 25%, transparent 72%);
-  animation: grid-arrive 1.1s ease-out backwards;
 }
 
 .brand-graph {
@@ -21,15 +21,14 @@
   width: 170%;
   height: 170%;
   overflow: visible;
-  stroke: var(--nori-border);
+  stroke: color-mix(in oklab, var(--color-base-content) 22%, transparent);
   stroke-width: 1;
   pointer-events: none;
   user-select: none;
-  animation: content-arrive 1s 300ms ease-out both;
 }
 
 .brand-graph-lines {
-  opacity: 0.4;
+  opacity: 0.55;
 }
 
 .brand-graph-objects {
@@ -53,6 +52,16 @@
 
 .brand-text-preview .brand-text-title {
   height: 3px;
+}
+
+.brand-person-avatar {
+  overflow: hidden;
+  border-radius: 50%;
+  background: #f3e8d0;
+}
+
+.brand-person-avatar img {
+  transform: translateY(3%) scale(0.9);
 }
 
 .brand-image-region {
@@ -84,7 +93,7 @@
 
 .brand-graph-node circle {
   fill: var(--nori-graph-fill);
-  opacity: 0.65;
+  opacity: 0.75;
 }
 
 .brand-graph-focus {
@@ -93,7 +102,7 @@
   transform-box: fill-box;
   transform-origin: center;
   animation: node-focus 72s ease-out infinite;
-  animation-delay: var(--focus-delay);
+  animation-delay: calc(var(--focus-delay) + var(--ambient-start));
 }
 
 .brand-graph-edit {
@@ -105,7 +114,7 @@
   stroke-dashoffset: 1;
   opacity: 0;
   animation: edge-create 72s ease-in-out infinite;
-  animation-delay: var(--edit-delay);
+  animation-delay: calc(var(--edit-delay) + var(--ambient-start));
 }
 
 .brand-edit-node {
@@ -114,7 +123,7 @@
   transform-box: fill-box;
   transform-origin: center;
   animation: node-create 72s ease-out infinite;
-  animation-delay: var(--edit-delay);
+  animation-delay: calc(var(--edit-delay) + var(--ambient-start));
 }
 
 .brand-edit-extension {
@@ -242,7 +251,52 @@
     transform: translateY(10px);
   }
   to {
-    opacity: 1;
+    opacity: var(--nori-preview-opacity);
     transform: translateY(0);
   }
+}
+
+.brand-network {
+  animation: network-arrive 300ms var(--home-intro-delay, 0ms) ease-out both;
+}
+
+.brand-grid {
+  animation: grid-arrive 900ms var(--home-intro-delay, 0ms) ease-out both;
+}
+
+.brand-graph-lines path {
+  stroke-dasharray: 1;
+  animation: network-draw 500ms calc(var(--home-intro-delay, 0ms) + var(--branch-delay)) linear both;
+}
+
+.brand-graph-objects {
+  animation: content-arrive 600ms calc(var(--home-intro-delay, 0ms) + 500ms) ease-out both;
+}
+
+@keyframes network-arrive {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes network-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-nori-motion] {
+    animation: none !important;
+  }
+}
+
+.brand-node-arrival {
+  animation: network-arrive 250ms calc(var(--home-intro-delay, 0ms) + var(--arrival-delay)) ease-out both;
 }

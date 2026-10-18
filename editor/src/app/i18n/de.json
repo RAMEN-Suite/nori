@@ -1,5 +1,6 @@
 {
   "common": {
+    "home": "Startseite",
     "settings": "Einstellungen",
     "confirm": "Aktion bestätigen",
     "version": "Version {{version}}",

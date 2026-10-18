@@ -27,7 +27,7 @@ Shared rules for Nori panels, dialogs and lists. Use public Sushi APIs and token
 - For node/relation/level deletion, exclude the selected declaration from dependent counts and lists using both model and element identity. Hide zero-count consequences and their empty wrappers.
 - Consequence statements open an adjacent detail surface in the same focus scope. Use a single compact Sushi List with noninteractive model headings/dividers, without nested cards. The left confirmation determines both heights; the slightly narrower details list scrolls inside its surface and stacks on narrow screens.
 - Keep node/endpoint names prominent. Secondary text shows relation names and relevant counts: incident relations, own properties and constraints, including property constraints. Dependent levels show their own node/relation counts.
-- Inspecting an entry pauses the action and navigates to the normal workspace. The persistent action notification above the version footer offers Resume/Cancel. Navigation keeps it available; model changes invalidate it. See the [resumable workflow rules](editor-components.md#property-workspace-and-resumable-workflows).
+- Inspecting an entry pauses the action and navigates to the normal workspace. The persistent action notification near the bottom of the workspace offers Resume/Cancel. Navigation keeps it available; model changes invalidate it. See the [resumable workflow rules](editor-components.md#property-workspace-and-resumable-workflows).
 - Escape closes details first and restores focus. Preserve the dialog-host sequence: open/measure the native dialog before expanding the adjacent surface. Keep its outer frame/body untransformed so measurement and positioning remain correct.
 
 ## Sushi integration and upgrade checks
