@@ -12,13 +12,16 @@
     }
     <span class="truncate">{{ windowState.fullTitle() }}</span>
   </div>
-  @if (hasControls) {
-    <div class="window-buttons flex justify-end gap-1">
-      <button suiButton size="xs" variant="text" (click)="electron?.minimise()">{{ 'common.minimise' | transloco }}</button>
-      <button suiButton size="xs" variant="text" (click)="electron?.maximise()">{{ 'common.maximise' | transloco }}</button>
-      <button suiButton size="xs" variant="text" severity="error" (click)="electron?.close()">
-        {{ 'common.close' | transloco }}
-      </button>
-    </div>
-  }
+  <div class="flex min-w-0 items-center justify-end gap-3">
+    <span class="text-base-content/50 shrink-0 text-xs tabular-nums">v. {{ version }}</span>
+    @if (hasControls) {
+      <div class="window-buttons flex justify-end gap-1">
+        <button suiButton size="xs" variant="text" (click)="electron?.minimise()">{{ 'common.minimise' | transloco }}</button>
+        <button suiButton size="xs" variant="text" (click)="electron?.maximise()">{{ 'common.maximise' | transloco }}</button>
+        <button suiButton size="xs" variant="text" severity="error" (click)="electron?.close()">
+          {{ 'common.close' | transloco }}
+        </button>
+      </div>
+    }
+  </div>
 </header>

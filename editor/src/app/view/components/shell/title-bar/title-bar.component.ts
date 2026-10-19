@@ -2,6 +2,7 @@ import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LucideNetwork, LucidePencil, LucideFolderPlus, LucideFolderOpen } from '@lucide/angular';
 import { Button } from '@sushi-kit/angular';
+import { environment } from '../../../../../environments/environment';
 import { type Electron } from '../../../../../types/electron';
 import { WindowState } from '../../../../states/window.state';
 
@@ -17,4 +18,5 @@ export class TitleBarComponent {
 
   protected readonly electron: Electron | undefined = window.electron;
   protected readonly hasControls: boolean = window.platform !== 'darwin';
+  protected readonly version: string = environment.appVersion;
 }

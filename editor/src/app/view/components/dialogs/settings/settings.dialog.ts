@@ -26,7 +26,6 @@ import {
 import { ShortcutBindings } from '../../../../utils/shortcuts/bindings';
 import { ShortcutService } from '../../../../services/interaction/shortcut.service';
 import { ScrollHintsComponent } from '../../shared/scroll-hints/scroll-hints.component';
-import { environment } from '../../../../../environments/environment';
 import { ApplicationState } from '../../../../states/application.state';
 
 @Component({
@@ -72,7 +71,6 @@ export class SettingsDialog {
     }));
   });
 
-  protected readonly version: string = environment.appVersion;
   protected readonly themes: readonly AppTheme[] = APP_THEMES;
   protected readonly animationSettings: readonly string[] = ['animations'];
   protected readonly shortcutGroups: readonly ShortcutGroup[] = SHORTCUT_CATEGORIES.map(

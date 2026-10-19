@@ -302,7 +302,3 @@ sui-toast.nori-notifications {
 .nori-settings-host {
   --sui-dialog-viewport-gap: 2.5rem;
 }
-
-.nori-settings-host dialog {
-  overflow: visible;
-}
