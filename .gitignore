@@ -12,6 +12,13 @@
 npm-debug.log
 yarn-error.log
 
+# Local build configuration
+.env*
+!.env.example
+*.p12
+*.p8
+*.key
+
 # IDEs and editors
 .idea/
 .vscode/

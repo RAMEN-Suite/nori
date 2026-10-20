@@ -32,7 +32,7 @@
     "package": "npm run build && electron-forge package",
     "make": "npm run build && electron-forge make",
     "make:mac": "node tools/make-macos.mts",
-    "make:mac:signed": "node tools/make-macos.mts --signed",
+    "make:mac:signed": "node --env-file-if-exists=.env.local tools/make-macos.mts --signed",
     "make:win": "node tools/make-windows.mts",
     "setup:electron": "node node_modules/electron/install.js",
     "prepare": "git config core.hooksPath .githooks",
