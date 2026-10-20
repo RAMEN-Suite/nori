@@ -118,6 +118,14 @@
     "removeError": "Impossibile eliminare il progetto."
   },
   "editor": {
+    "propertyOrder": {
+      "up": "Sposta su",
+      "down": "Sposta giù",
+      "top": "Sposta all’inizio",
+      "bottom": "Sposta alla fine",
+      "instructions": "Trascina per riordinare o apri il menu della maniglia. Usa Alt + frecce per spostare; aggiungi Maiusc per spostare all’inizio o alla fine.",
+      "moved": "{{name}} spostato alla posizione {{position}} di {{count}}."
+    },
     "propertyOrderChanged": "L’elenco delle proprietà è cambiato. Annulla il riordinamento e riprova.",
     "propertyKeyAlreadyUsed": "{{name}} è già la chiave, incluse le proprietà ereditate.",
     "propertyKeyRequiresSingleValue": "Richiedi un valore e disattiva i valori multipli per usare questa proprietà come chiave.",
@@ -159,7 +167,7 @@
     "addProperty": "Crea proprietà",
     "sortProperties": "Riordina proprietà",
     "savePropertyOrder": "Salva ordine",
-    "reorderProperty": "Riordina {{name}}. Usa i tasti freccia su e giù.",
+    "reorderProperty": "Riordina {{name}}",
     "duplicateProperty": "Duplica proprietà",
     "selectHint": "Seleziona un nodo o una relazione per visualizzarne i dettagli.",
     "renameNode": "Rinomina nodo",

@@ -14,11 +14,9 @@ import {
   type WritableSignal,
 } from '@angular/core';
 import { CdkScrollable } from '@angular/cdk/scrolling';
-import { CdkDrag, CdkDragHandle, CdkDragPreview, CdkDropList, moveItemInArray, type CdkDragDrop } from '@angular/cdk/drag-drop';
-import { TranslocoDirective } from '@jsverse/transloco';
+import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import {
   LucideArrowDownUp,
-  LucideGripVertical,
   LucideInfo,
   LucideSave,
   LucideUndo2,
@@ -33,7 +31,18 @@ import {
 } from '@lucide/angular';
 import { ModelRef, type Attribute, type Node } from '@ramen-suite/core/model';
 import { RAMEN_ELEMENT } from '@ramen-suite/core/ramen';
-import { Button, Divider, Message, List, ListItemTemplate, type ListTrackBy } from '@sushi-kit/angular';
+import {
+  Button,
+  Divider,
+  Message,
+  List,
+  ListItemTemplate,
+  OrderList,
+  OrderListItemTemplate,
+  type ListTrackBy,
+  type OrderListLabels,
+  type OrderListReorderEvent,
+} from '@sushi-kit/angular';
 import { AnimateHeightDirective } from '../../../../directives/animate-height.directive';
 import { ScrollOverflowDirective } from '../../../../directives/scroll-overflow.directive';
 import { TooltipDirective } from '../../../../directives/tooltip.directive';
@@ -51,6 +60,12 @@ import { NodeAttributeComponent } from '../inspector/node-view/node-attributes/n
 import { NodeBasicsComponent } from '../inspector/node-view/node-basics/node-basics.component';
 import { PropertyFormComponent } from './property-form/property-form.component';
 
+interface PropertyOrderItem {
+  readonly label: string;
+  readonly value: string;
+  readonly attribute: Attribute;
+}
+
 interface InheritedPropertyGroup {
   readonly levelIndex: number;
   readonly modelName: string | null;
@@ -64,11 +79,8 @@ interface InheritedPropertyGroup {
   host: { '(keydown.escape)': 'handleEscape($event)' },
   imports: [
     CdkScrollable,
-    CdkDrag,
-    CdkDragHandle,
-    CdkDragPreview,
-    CdkDropList,
-    LucideGripVertical,
+    OrderList,
+    OrderListItemTemplate,
     LucideArrowDownUp,
     LucideX,
     TranslocoDirective,
@@ -104,12 +116,14 @@ export class PropertyEditorComponent {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   protected readonly appearance: ApplicationState = inject(ApplicationState);
   protected readonly dialogs: DialogService = inject(DialogService);
+  private readonly translations: TranslocoService = inject(TranslocoService);
   private readonly projects: ProjectService = inject(ProjectService);
   private readonly element: ElementRef<HTMLElement> = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector: Injector = inject(Injector);
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
 
   protected readonly form: Signal<PropertyFormComponent | undefined> = viewChild(PropertyFormComponent);
+  private readonly orderList: Signal<OrderList<PropertyOrderItem> | undefined> = viewChild(OrderList<PropertyOrderItem>);
 
   protected readonly trackProperty: ListTrackBy<Attribute> = (_index: number, property: Attribute): string => property.id;
   protected readonly trackInheritedProperty: ListTrackBy<InheritedAttribute> = (
@@ -117,6 +131,7 @@ export class PropertyEditorComponent {
     property: InheritedAttribute,
   ): string => `${property.modelId}:${property.attribute.id}`;
 
+  protected readonly savingOrder: WritableSignal<boolean> = signal(false);
   protected readonly decisionRequired: WritableSignal<boolean> = signal(false);
   protected readonly switchingNode: WritableSignal<boolean> = signal(false);
   protected readonly detailVisible: WritableSignal<boolean> = signal(true);
@@ -141,14 +156,39 @@ export class PropertyEditorComponent {
     () => this.workspace.queries.currentNode()?.attributes ?? [],
   );
   protected readonly sorting: Signal<boolean> = computed(() => this.orderDraft() !== null);
-  protected readonly sortedProperties: Signal<readonly Attribute[]> = computed(() => this.orderDraft() ?? this.properties());
+  private readonly sortedProperties: Signal<readonly Attribute[]> = computed(() => this.orderDraft() ?? this.properties());
+  protected readonly orderItems: Signal<readonly PropertyOrderItem[]> = computed(() =>
+    this.sortedProperties().map(
+      (attribute: Attribute): PropertyOrderItem => ({ value: attribute.id, label: attribute.name, attribute }),
+    ),
+  );
+  protected readonly orderLabels: Signal<Partial<OrderListLabels<PropertyOrderItem>>> = computed(() => {
+    this.appearance.language();
+    return {
+      reorder: (item: PropertyOrderItem): string => this.translations.translate('editor.reorderProperty', { name: item.label }),
+      moveUp: this.translations.translate('editor.propertyOrder.up'),
+      moveDown: this.translations.translate('editor.propertyOrder.down'),
+      moveToTop: this.translations.translate('editor.propertyOrder.top'),
+      moveToBottom: this.translations.translate('editor.propertyOrder.bottom'),
+      empty: this.translations.translate('editor.noProperties'),
+      instructions: this.translations.translate('editor.propertyOrder.instructions'),
+      moved: (event: OrderListReorderEvent<PropertyOrderItem>, count: number): string =>
+        this.translations.translate('editor.propertyOrder.moved', {
+          name: event.item.label,
+          position: event.currentIndex + 1,
+          count,
+        }),
+    };
+  });
   protected readonly orderChanged: Signal<boolean> = computed(() =>
     this.sortedProperties().some((property: Attribute, index: number): boolean => property.id !== this.properties()[index]?.id),
   );
   protected readonly controlsUnavailable: Signal<boolean> = computed(
     () => this.dialogs.pending() || this.editing.changingNode() || this.switchingNode(),
   );
-  protected readonly actionPending: Signal<boolean> = computed(() => this.controlsUnavailable() || !!this.form()?.saving());
+  protected readonly actionPending: Signal<boolean> = computed(
+    () => this.controlsUnavailable() || !!this.form()?.saving() || this.savingOrder(),
+  );
 
   protected readonly inheritedGroups: Signal<readonly InheritedPropertyGroup[]> = computed(() => {
     const inherited: readonly InheritedAttribute[] = [...this.workspace.queries.inheritedAttributes().values()].flat();
@@ -253,7 +293,7 @@ export class PropertyEditorComponent {
     if (this.sorting() || !this.workspace.queries.nodeEditable() || this.properties().length < 2 || this.removing()) return;
     if (!this.canRunAction()) return;
     this.orderDraft.set([...this.properties()]);
-    this.focusOrderControl('.property-drag-handle');
+    afterNextRender((): void => this.orderList()?.focus(), { injector: this.injector });
   }
 
   protected cancelSorting(): void {
@@ -267,32 +307,31 @@ export class PropertyEditorComponent {
     const nodeId: string | null = this.workspace.store.currentNodeId();
     const context: WorkspaceContext | null = this.workspace.context();
     if (!nodeId || !context || !this.sorting() || !this.orderChanged() || this.actionPending()) return;
-    const ids: string[] = this.sortedProperties().map((property: Attribute): string => property.id);
+    const draft: readonly Attribute[] = this.sortedProperties();
+    const ids: string[] = draft.map((property: Attribute): string => property.id);
 
-    await this.dialogs.run(
-      async (): Promise<void> => {
-        await this.workspace.actions.reorderAttributes(nodeId, ids);
-        if (!this.destroyRef.destroyed && this.workspace.isCurrent(context) && this.workspace.store.currentNodeId() === nodeId) {
-          this.orderDraft.set(null);
-          this.focusOrderControl('[data-property-sort]');
-        }
-      },
-      { closeOnSuccess: false },
-    );
+    this.savingOrder.set(true);
+    this.orderDraft.set(null);
+
+    try {
+      await this.workspace.actions.reorderAttributes(nodeId, ids);
+    } catch (error: unknown) {
+      if (this.isCurrentNode(context, nodeId)) {
+        this.orderDraft.set(draft);
+        this.projects.reportError(error);
+      }
+    } finally {
+      this.savingOrder.set(false);
+      if (this.isCurrentNode(context, nodeId)) {
+        if (this.sorting()) afterNextRender((): void => this.orderList()?.focus(), { injector: this.injector });
+        else this.focusOrderControl('[data-property-sort]');
+      }
+    }
   }
 
-  protected dropProperty(event: CdkDragDrop<readonly Attribute[]>): void {
-    if (event.previousIndex === event.currentIndex) return;
-    this.reorderProperty(event.previousIndex, event.currentIndex);
-  }
-
-  protected moveProperty(event: KeyboardEvent, property: Attribute): void {
-    if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
-    event.preventDefault();
-    event.stopPropagation();
-    const index: number = this.sortedProperties().findIndex((item: Attribute): boolean => item.id === property.id);
-    this.reorderProperty(index, index + (event.key === 'ArrowUp' ? -1 : 1));
-    this.focusOrderControl(`[data-property-order-id="${CSS.escape(property.id)}"]`);
+  protected updateOrder(items: readonly PropertyOrderItem[]): void {
+    if (!this.sorting() || this.actionPending()) return;
+    this.orderDraft.set(items.map((item: PropertyOrderItem): Attribute => item.attribute));
   }
 
   protected inspectRefinement(): void {
@@ -389,11 +428,8 @@ export class PropertyEditorComponent {
     );
   }
 
-  private reorderProperty(from: number, to: number): void {
-    if (!this.sorting() || this.actionPending() || from < 0 || to < 0 || to >= this.sortedProperties().length) return;
-    const properties: Attribute[] = [...this.sortedProperties()];
-    moveItemInArray(properties, from, to);
-    this.orderDraft.set(properties);
+  private isCurrentNode(context: WorkspaceContext, nodeId: string): boolean {
+    return !this.destroyRef.destroyed && this.workspace.isCurrent(context) && this.workspace.store.currentNodeId() === nodeId;
   }
 
   private async changeNode(action: () => Promise<boolean>, direction: 1 | -1): Promise<void> {

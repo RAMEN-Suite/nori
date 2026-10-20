@@ -118,6 +118,14 @@
     "removeError": "The project could not be removed."
   },
   "editor": {
+    "propertyOrder": {
+      "up": "Move up",
+      "down": "Move down",
+      "top": "Move to top",
+      "bottom": "Move to bottom",
+      "instructions": "Drag to reorder, or open the handle menu. Use Alt + arrow keys to move; add Shift to move to the beginning or end.",
+      "moved": "{{name}} moved to position {{position}} of {{count}}."
+    },
     "propertyOrderChanged": "The property list has changed. Cancel sorting and try again.",
     "propertyKeyAlreadyUsed": "{{name}} is already the key, including inherited properties.",
     "propertyKeyRequiresSingleValue": "Require a value and turn off multiple values to use this property as a key.",
@@ -159,7 +167,7 @@
     "addProperty": "Create property",
     "sortProperties": "Sort properties",
     "savePropertyOrder": "Save order",
-    "reorderProperty": "Reorder {{name}}. Use the up and down arrow keys.",
+    "reorderProperty": "Reorder {{name}}",
     "duplicateProperty": "Duplicate property",
     "selectHint": "Select a node or relation in the graph to explore its details.",
     "renameNode": "Rename node",

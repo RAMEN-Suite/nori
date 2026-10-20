@@ -118,6 +118,14 @@
     "removeError": "Das Projekt konnte nicht entfernt werden."
   },
   "editor": {
+    "propertyOrder": {
+      "up": "Nach oben",
+      "down": "Nach unten",
+      "top": "An den Anfang",
+      "bottom": "Ans Ende",
+      "instructions": "Zum Sortieren ziehen oder das Griffmenü öffnen. Mit Alt + Pfeiltasten verschieben; mit zusätzlicher Umschalttaste an den Anfang oder ans Ende.",
+      "moved": "{{name}} auf Position {{position}} von {{count}} verschoben."
+    },
     "propertyOrderChanged": "Die Property-Liste wurde geändert. Brich das Sortieren ab und versuche es erneut.",
     "propertyKeyAlreadyUsed": "{{name}} ist bereits der Key, einschließlich geerbter Eigenschaften.",
     "propertyKeyRequiresSingleValue": "Aktiviere einen erforderlichen Wert und deaktiviere mehrere Werte, um diese Eigenschaft als Key zu verwenden.",
@@ -159,7 +167,7 @@
     "addProperty": "Eigenschaft anlegen",
     "sortProperties": "Properties sortieren",
     "savePropertyOrder": "Sortierung speichern",
-    "reorderProperty": "{{name}} sortieren. Pfeiltasten nach oben und unten verwenden.",
+    "reorderProperty": "{{name}} umsortieren",
     "duplicateProperty": "Eigenschaft duplizieren",
     "selectHint": "Wähle einen Knoten oder eine Beziehung aus, um Details anzusehen.",
     "renameNode": "Knoten umbenennen",

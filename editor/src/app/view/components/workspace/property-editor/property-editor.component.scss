@@ -40,17 +40,13 @@
 .property-list-scroll .editor-list {
   padding-inline: 0.25rem;
 }
-.property-list-item:hover:not(:disabled),
-.property-sortable-row:has(button:not(:disabled)):hover {
+.property-list-item:hover:not(:disabled) {
   background: color-mix(in oklab, var(--color-base-content) 4%, transparent);
 }
-.property-list-item.is-selected,
-.property-sortable-row.is-selected {
+.property-list-item.is-selected {
   background: color-mix(in oklab, var(--color-primary) 10%, transparent);
 }
-.property-list-item:focus-visible,
-.property-select-button:focus-visible,
-.property-drag-handle:focus-visible {
+.property-list-item:focus-visible {
   outline: var(--sui-focus-ring-width) solid var(--sui-focus-ring-color, currentColor);
   outline-offset: -2px;
 }
@@ -184,10 +180,6 @@
 .switching-node .property-content-enter,
 .switching-node .property-content-leave {
   animation: none;
-}
-
-.property-drag-handle:active {
-  cursor: grabbing;
 }
 
 .property-order-actions > button {

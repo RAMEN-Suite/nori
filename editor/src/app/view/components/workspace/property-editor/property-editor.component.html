@@ -5,7 +5,7 @@
     [class.motion-enabled]="appearance.state().animations"
     [class.switching-node]="switchingNode()"
     [attr.aria-busy]="actionPending()"
-    [inert]="!!form()?.saving()"
+    [inert]="!!form()?.saving() || savingOrder()"
   >
     <header
       class="property-surface property-toolbar bg-base-200 grid min-w-0 shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4 overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)] px-3.5 py-2.5 backdrop-blur-[16px]"
@@ -187,59 +187,40 @@
                         : t('editor.propertyLevel', { level: ownLevelIndex() })
                     }}
                   </div>
-                  <sui-list
-                    class="editor-list"
-                    cdkDropList
-                    cdkDropListLockAxis="y"
-                    [cdkDropListData]="sortedProperties()"
-                    [cdkDropListDisabled]="!sorting() || controlsUnavailable()"
-                    (cdkDropListDropped)="dropProperty($event)"
-                    size="xs"
-                    [items]="sortedProperties()"
-                    [trackBy]="trackProperty"
-                    [dividers]="false"
-                    [rowHover]="false"
-                    [ariaLabel]="t('editor.properties')"
-                  >
-                    <ng-template suiListItem let-property>
-                      <div
-                        cdkDrag
-                        cdkDragRootElement="li"
-                        cdkDragPreviewContainer="parent"
-                        class="property-sortable-row col-span-full flex min-w-0 items-center rounded-[var(--nori-radius-input)]"
-                        [class.is-selected]="!inheritedSelection() && attribute()?.id === property.id"
-                        [cdkDragData]="property"
-                      >
-                        <ng-template cdkDragPreview [matchSize]="true">
-                          <div
-                            class="property-drag-preview text-base-content flex items-center gap-3 rounded-[var(--nori-radius-input)] border border-[var(--nori-border)] bg-[color-mix(in_oklab,var(--color-primary)_10%,var(--color-base-100))] px-3 py-1.5"
-                          >
-                            <svg lucideGripVertical class="size-3.5 shrink-0" aria-hidden="true"></svg>
-                            <nori-node-attribute
-                              class="block min-w-0 flex-1 text-left"
-                              [attribute]="property"
-                              [modelLevelIndex]="ownLevelIndex()"
-                              [focusable]="false"
-                            />
-                          </div>
-                        </ng-template>
-                        @if (sorting()) {
-                          <button
-                            type="button"
-                            cdkDragHandle
-                            class="property-drag-handle grid w-8 shrink-0 cursor-grab touch-none place-items-center self-stretch"
-                            [attr.aria-label]="t('editor.reorderProperty', { name: property.name })"
-                            [attr.data-property-order-id]="property.id"
-                            aria-keyshortcuts="ArrowUp ArrowDown"
-                            [disabled]="controlsUnavailable() || !!removing()"
-                            (keydown)="moveProperty($event, property)"
-                          >
-                            <svg lucideGripVertical class="size-3.5" aria-hidden="true"></svg>
-                          </button>
-                        }
+                  @if (sorting()) {
+                    <sui-order-list
+                      class="editor-list"
+                      size="xs"
+                      [value]="orderItems()"
+                      [labels]="orderLabels()"
+                      [disabled]="actionPending() || !!removing()"
+                      [ariaLabel]="t('editor.properties')"
+                      (valueChange)="updateOrder($event)"
+                    >
+                      <ng-template [suiOrderListItem]="orderItems()" let-item>
+                        <nori-node-attribute
+                          class="block min-w-0 px-3 py-1.5 text-left"
+                          [attribute]="item.attribute"
+                          [modelLevelIndex]="ownLevelIndex()"
+                          [focusable]="false"
+                        />
+                      </ng-template>
+                    </sui-order-list>
+                  } @else {
+                    <sui-list
+                      class="editor-list"
+                      size="xs"
+                      [items]="properties()"
+                      [trackBy]="trackProperty"
+                      [dividers]="false"
+                      [rowHover]="false"
+                      [ariaLabel]="t('editor.properties')"
+                    >
+                      <ng-template suiListItem let-property>
                         <button
                           type="button"
-                          class="property-select-button flex w-full min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-[var(--nori-radius-input)] px-3 py-1.5"
+                          class="property-list-item col-span-full flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-[var(--nori-radius-input)] px-3 py-1.5"
+                          [class.is-selected]="!inheritedSelection() && attribute()?.id === property.id"
                           [attr.aria-pressed]="!inheritedSelection() && attribute()?.id === property.id"
                           [disabled]="controlsUnavailable() || !!removing()"
                           (click)="select(property.id)"
@@ -251,9 +232,9 @@
                             [focusable]="false"
                           />
                         </button>
-                      </div>
-                    </ng-template>
-                  </sui-list>
+                      </ng-template>
+                    </sui-list>
+                  }
                 }
                 @if (!properties().length && !inheritedGroups().length) {
                   <p class="text-base-content/50 px-3 py-2 text-xs">{{ t('editor.noProperties') }}</p>
