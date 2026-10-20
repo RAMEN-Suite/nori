@@ -1,5 +1,5 @@
 import { computed, effect, inject, Injectable, type Signal, signal, type WritableSignal } from '@angular/core';
-import { type Model } from '@ramen-suite/core/model';
+import { type Model, type ProjectMetadata } from '@ramen-suite/core/model';
 import { RamenModel, RAMEN_MODEL } from '@ramen-suite/core/ramen';
 import { Subject, type Observable } from 'rxjs';
 import { type CreateManifest, type Manifest, type UpdateManifest } from '../../models/Manifest';
@@ -106,9 +106,10 @@ export class ProjectService {
   public async importProject(input: unknown): Promise<string> {
     const draft: RamenModel = RamenModel.import(input);
     const model: Model = draft.getModel();
+    const project: ProjectMetadata | undefined = draft.getProjectMetadata();
     const inputManifest: CreateManifest = {
-      name: model.name,
-      description: '',
+      name: project?.name ?? model.name,
+      description: project?.description ?? '',
       metamodelName: RAMEN_MODEL.name,
       metamodelId: RAMEN_MODEL.id,
       metamodelVersion: RAMEN_MODEL.version,

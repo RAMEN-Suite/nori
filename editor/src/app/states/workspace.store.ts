@@ -3,6 +3,7 @@ import { Modeller, type Id, type Model } from '@ramen-suite/core/model';
 import { RamenModel, RamenModelFormat, type RamenFile } from '@ramen-suite/core/ramen';
 import { getDefaultNodeColours } from '../utils/node-colours';
 import { type ModelRecord, type NodeColors } from '../models/ModelRecord';
+import { type Manifest } from '../models/Manifest';
 import { ProjectService } from '../services/projects/project.service';
 
 /** Owns the loaded Core workspace, selected elements and model change notifications. */
@@ -66,7 +67,13 @@ export class WorkspaceStore {
     const level: RamenModel | undefined = [...this.levels.values()].at(-1);
     if (!level) throw new Error('No editable model is available for export.');
 
-    const file: RamenFile = workspace.openLevel(level.getModel().id).export();
+    const project: Manifest | null = this.projects.selectedManifest();
+    if (!project) throw new Error('No project is loaded.');
+
+    const file: RamenFile = workspace.openLevel(level.getModel().id).export({
+      name: project.name,
+      description: project.description,
+    });
     const exportedIds: ReadonlySet<string> = new Set(file.models.map((model): string => model.id));
     if (this.getModels().some((model: Model): boolean => !exportedIds.has(model.id))) {
       throw new Error('RAMEN Core cannot export all branches in one file yet. No partial model was exported.');
