@@ -24,10 +24,16 @@
       </label>
       <div class="property-field">
         <span>{{ t('editor.dataType') }}</span>
-        <sui-select
+        <sui-autocomplete
           fluid
           size="sm"
-          checkmark
+          forceSelection
+          openOnFocus
+          openOnClick
+          [minQueryLength]="0"
+          [delay]="0"
+          [placeholder]="t('editor.searchDataTypes')"
+          [emptyMessage]="t('editor.noMatchingDataTypes')"
           [disabled]="!editable()"
           [ariaLabel]="t('editor.dataType')"
           [options]="typeOptions()"

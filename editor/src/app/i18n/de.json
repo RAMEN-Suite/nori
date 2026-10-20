@@ -118,6 +118,8 @@
     "removeError": "Das Projekt konnte nicht entfernt werden."
   },
   "editor": {
+    "searchDataTypes": "Datentypen suchen",
+    "noMatchingDataTypes": "Keine passenden Datentypen.",
     "increasePropertyCount": "{{name}} erhöhen",
     "decreasePropertyCount": "{{name}} verringern",
     "propertyOrder": {

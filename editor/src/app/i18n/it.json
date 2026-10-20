@@ -118,6 +118,8 @@
     "removeError": "Impossibile eliminare il progetto."
   },
   "editor": {
+    "searchDataTypes": "Cerca tipi di dato",
+    "noMatchingDataTypes": "Nessun tipo di dato corrispondente.",
     "increasePropertyCount": "Aumenta {{name}}",
     "decreasePropertyCount": "Diminuisci {{name}}",
     "propertyOrder": {

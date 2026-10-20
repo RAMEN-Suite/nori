@@ -118,6 +118,8 @@
     "removeError": "The project could not be removed."
   },
   "editor": {
+    "searchDataTypes": "Search data types",
+    "noMatchingDataTypes": "No matching data types.",
     "increasePropertyCount": "Increase {{name}}",
     "decreasePropertyCount": "Decrease {{name}}",
     "propertyOrder": {

@@ -26,10 +26,10 @@ import {
   InputNumber,
   List,
   ListItemTemplate,
-  Select,
+  Autocomplete,
   Toggle,
   type ListTrackBy,
-  type SelectOption,
+  type AutocompleteOption,
 } from '@sushi-kit/angular';
 import { AnimateHeightDirective } from '../../../../../directives/animate-height.directive';
 import { ApplicationState } from '../../../../../states/application.state';
@@ -54,7 +54,7 @@ type PropertyOption = PropertyToggleOption | 'minimum' | 'maximum';
     InputNumber,
     List,
     ListItemTemplate,
-    Select,
+    Autocomplete,
     Toggle,
   ],
   templateUrl: './property-form.component.html',
@@ -103,12 +103,12 @@ export class PropertyFormComponent {
     JSON.stringify(this.currentAttribute()),
   );
 
-  protected readonly typeOptions: Signal<readonly SelectOption[]> = computed((): readonly SelectOption[] => {
-    const options: SelectOption[] = this.workspace.queries
+  protected readonly typeOptions: Signal<readonly AutocompleteOption[]> = computed((): readonly AutocompleteOption[] => {
+    const options: AutocompleteOption[] = this.workspace.queries
       .dataTypeSuggestions()
-      .map((type: DataTypeSuggestion): SelectOption => ({ label: type.name, value: type.ref }));
+      .map((type: DataTypeSuggestion): AutocompleteOption => ({ label: type.name, value: type.ref }));
     const attribute: Attribute | undefined = this.currentAttribute();
-    if (attribute && !options.some((option: SelectOption): boolean => option.value === attribute.typeId)) {
+    if (attribute && !options.some((option: AutocompleteOption): boolean => option.value === attribute.typeId)) {
       options.unshift({
         value: attribute.typeId,
         label: this.workspace.queries.resolveTypeLabel(
@@ -217,7 +217,8 @@ export class PropertyFormComponent {
   }
 
   protected handleType(value: unknown): void {
-    if (typeof value !== 'string' || !this.typeOptions().some((option: SelectOption): boolean => option.value === value)) return;
+    if (typeof value !== 'string' || !this.typeOptions().some((option: AutocompleteOption): boolean => option.value === value))
+      return;
     this.typeId = value;
   }
 
