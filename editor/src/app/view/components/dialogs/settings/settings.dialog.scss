@@ -127,6 +127,10 @@
   @include surface-list.action;
   display: flex;
   justify-content: space-between;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   text-decoration: none;
+}
+
+.settings-credit-role {
+  font-size: 0.75rem;
 }
