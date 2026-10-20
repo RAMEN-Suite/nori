@@ -240,12 +240,6 @@ sui-toast.nori-notifications {
   scrollbar-color: var(--nori-scrollbar-thumb) transparent;
 }
 
-.settings-tabs [role="tabpanel"]:focus-visible {
-  outline: var(--sui-focus-ring-width) solid var(--sui-focus-ring-color, currentColor);
-  outline-offset: -3px;
-  border-radius: var(--nori-radius-input);
-}
-
 .nori-confirmation-host dialog {
   overflow: visible;
 }

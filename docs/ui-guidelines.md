@@ -46,6 +46,10 @@ Property count controls use Sushi’s public `incrementLabel` and `decrementLabe
 
 Refinement creation uses Sushi’s public `suiAccordionActions` slot beside the trigger. Actions follow normal Tab order and remain separate from the heading and trigger, including when an empty category cannot expand. Do not restore absolute positioning or custom Tab interception.
 
+### Tab panel focus
+
+Sushi supplies the inset focus ring for tabs and tab panels. Keep Settings on the native styles; do not add a second outline on the tabpanel role.
+
 ### Other limitations
 
 | Area              | Current handling and upgrade check                                                                                                                                                    |
@@ -54,6 +58,5 @@ Refinement creation uses Sushi’s public `suiAccordionActions` slot beside the 
 | Searchable Select | No built-in filter; an input in the header was observed to close the popup on focus. Check typing, selection and Escape before adopting a search header.                              |
 | Dialog resizing   | Previously observed locked initial positioning. Check short-to-tall content and restored removal details; use a public resize/reposition API, not forced reopening or private styles. |
 | Accordion focus   | Clipped outward outlines use the public inset focus-offset token. Check expanded/collapsed headers and first/last entries.                                                            |
-| Tabs              | Settings styles the public tabpanel role until consistent panel-focus tokens are available.                                                                                           |
 
 Design references: [Angular accessibility](https://angular.dev/best-practices/a11y), [W3C semantic structure](https://www.w3.org/WAI/tutorials/page-structure/). Project-specific spacing and interaction choices are defined above and in the shared components.
