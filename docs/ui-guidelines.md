@@ -30,35 +30,16 @@ Shared rules for Nori panels, dialogs and lists. Use public Sushi APIs and token
 - Inspecting an entry pauses the action and navigates to the normal workspace. The persistent action notification near the bottom of the workspace offers Resume/Cancel. Navigation keeps it available; model changes invalidate it. See the [resumable workflow rules](editor-components.md#property-workspace-and-resumable-workflows).
 - Escape closes details first and restores focus. Preserve the dialog-host sequence: open/measure the native dialog before expanding the adjacent surface. Keep its outer frame/body untransformed so measurement and positioning remain correct.
 
-## Sushi integration and upgrade checks
+## Sushi integration
 
-Installed: `@sushi-kit/angular` 0.2.0. The remaining checks below originated with 0.1.4 and require individual verification before removing a workaround.
+- Use public components, templates and styling tokens; keep behaviour in Sushi rather than duplicating it locally.
+- `TooltipDirective` only aliases Sushi inputs. `noriTooltipSuspended` maps to the native `disabled` input for file-dialog actions and node transitions.
+- Refinement creation uses `suiAccordionActions`. Keep actions outside the trigger and heading, with normal Tab order.
+- Use Sushi’s native tab focus styles. Catalogue accordions retain the inset focus-offset token to keep outlines visible.
+- Property datatype autocomplete opens all known types on focus/click, filters immediately and uses `forceSelection`. Only a confirmed known type updates the draft; Escape or blur discards unconfirmed text.
+- Translate control labels, empty states, number-step labels and OrderList announcements through public inputs.
+- The colour dialog keeps its size observer for centring after content changes. Removal details keep their measured opening sequence; both layouts have been checked with Sushi 0.2.0. Do not remove this positioning logic without checking the replacement.
 
-### Tooltip focus restoration
-
-Sushi owns activation dismissal, overlay suppression and focus-origin tracking. Nori's `TooltipDirective` only aliases the public inputs; `noriTooltipSuspended` maps directly to Sushi's `disabled` input for pending native-dialog actions and node transitions. Do not add local focus restoration or pointer suppression. Keep normal hover and deliberate keyboard tooltips, and recheck menu selection, Escape, outside clicks and native save/cancel after library updates.
-
-### Number input labels
-
-Property count controls use Sushi’s public `incrementLabel` and `decrementLabel` inputs with translated field names in German, English and Italian. Keep these labels explicit; the numeric locale does not translate step-button labels.
-
-### Accordion category actions
-
-Refinement creation uses Sushi’s public `suiAccordionActions` slot beside the trigger. Actions follow normal Tab order and remain separate from the heading and trigger, including when an empty category cannot expand. Do not restore absolute positioning or custom Tab interception.
-
-### Tab panel focus
-
-Sushi supplies the inset focus ring for tabs and tab panels. Keep Settings on the native styles; do not add a second outline on the tabpanel role.
-
-### Data type autocomplete
-
-The property datatype uses Sushi `Autocomplete` with `openOnFocus`, `openOnClick`, zero query delay and `forceSelection`. Focusing or clicking shows all known Core types; typing filters immediately. Unconfirmed text is discarded on Escape or blur, and only a known type updates the draft. Translate search and empty-result text.
-
-### Other limitations
-
-| Area            | Current handling and upgrade check                                                                                                                                                    |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Dialog resizing | Previously observed locked initial positioning. Check short-to-tall content and restored removal details; use a public resize/reposition API, not forced reopening or private styles. |
-| Accordion focus | Clipped outward outlines use the public inset focus-offset token. Check expanded/collapsed headers and first/last entries.                                                            |
+Collect unresolved library issues and proposals in [Sushi feedback](sushi-feedback.md). After upgrading, reproduce each listed issue before changing its status or removing an integration workaround.
 
 Design references: [Angular accessibility](https://angular.dev/best-practices/a11y), [W3C semantic structure](https://www.w3.org/WAI/tutorials/page-structure/). Project-specific spacing and interaction choices are defined above and in the shared components.
