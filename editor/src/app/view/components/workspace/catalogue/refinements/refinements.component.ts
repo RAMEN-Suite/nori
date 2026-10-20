@@ -20,6 +20,7 @@ import { LucideChevronRight, LucideCopy, LucidePlus, LucideTrash } from '@lucide
 import { ModelRef, type Node } from '@ramen-suite/core/model';
 import {
   Accordion,
+  AccordionActionsTemplate,
   AccordionHeaderTemplate,
   AccordionIndicatorTemplate,
   AccordionItem,
@@ -71,6 +72,7 @@ interface MutableNodeGroup extends Omit<NodeGroup, 'items'> {
     TooltipDirective,
     Accordion,
     AccordionItem,
+    AccordionActionsTemplate,
     AccordionHeaderTemplate,
     AccordionIndicatorTemplate,
     LucideChevronRight,
@@ -123,26 +125,6 @@ export class RefinementsComponent {
       const modelId: string | undefined = this.workspace.store.currentModel()?.id;
       if (modelId !== this.editingModelId) this.editingId.set(null);
     });
-  }
-
-  protected handleGroupTab(event: Event): void {
-    if (!(event instanceof KeyboardEvent) || !(event.currentTarget instanceof HTMLElement)) return;
-
-    const group: HTMLElement = event.currentTarget;
-    const header: HTMLButtonElement | null = group.querySelector('button[aria-expanded]');
-    const add: HTMLButtonElement | null = group.querySelector('.node-group-add:not(:disabled)');
-    const first: HTMLElement | null =
-      header?.getAttribute('aria-expanded') === 'true'
-        ? group.querySelector('.editor-list-entry, .editor-name-editor input')
-        : null;
-    const order: HTMLElement[] = [header, add, first].filter((entry): entry is HTMLElement => !!entry);
-    const index: number = order.findIndex((button: HTMLElement): boolean => button === event.target);
-    if (index < 0 || (event.target === first && !event.shiftKey)) return;
-    const next: HTMLElement | undefined = order[index + (event.shiftKey ? -1 : 1)];
-    if (!next) return;
-
-    event.preventDefault();
-    next.focus();
   }
 
   protected handleGroupExpansion(key: string, expanded: readonly string[]): void {

@@ -3,19 +3,6 @@
 .node-catalogue {
   width: 100%;
 }
-.node-group {
-  position: relative;
-}
-.node-accordion {
-  position: relative;
-  z-index: 0;
-}
-.node-group-add {
-  position: absolute;
-  z-index: 2;
-  top: 0.3125rem;
-  right: 0.875rem;
-}
 .readonly-node {
   --editor-list-action-space: 0.75rem;
 }

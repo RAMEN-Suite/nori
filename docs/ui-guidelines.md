@@ -42,6 +42,10 @@ Sushi owns activation dismissal, overlay suppression and focus-origin tracking. 
 
 Property count controls use Sushi’s public `incrementLabel` and `decrementLabel` inputs with translated field names in German, English and Italian. Keep these labels explicit; the numeric locale does not translate step-button labels.
 
+### Accordion category actions
+
+Refinement creation uses Sushi’s public `suiAccordionActions` slot beside the trigger. Actions follow normal Tab order and remain separate from the heading and trigger, including when an empty category cannot expand. Do not restore absolute positioning or custom Tab interception.
+
 ### Other limitations
 
 | Area              | Current handling and upgrade check                                                                                                                                                    |
@@ -51,6 +55,5 @@ Property count controls use Sushi’s public `incrementLabel` and `decrementLabe
 | Dialog resizing   | Previously observed locked initial positioning. Check short-to-tall content and restored removal details; use a public resize/reposition API, not forced reopening or private styles. |
 | Accordion focus   | Clipped outward outlines use the public inset focus-offset token. Check expanded/collapsed headers and first/last entries.                                                            |
 | Tabs              | Settings styles the public tabpanel role until consistent panel-focus tokens are available.                                                                                           |
-| Category actions  | Keep the add action a sibling of the accordion trigger, with predictable tab order. Adopt a public action slot when available.                                                        |
 
 Design references: [Angular accessibility](https://angular.dev/best-practices/a11y), [W3C semantic structure](https://www.w3.org/WAI/tutorials/page-structure/). Project-specific spacing and interaction choices are defined above and in the shared components.

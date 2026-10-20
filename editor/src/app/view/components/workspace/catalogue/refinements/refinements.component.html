@@ -9,7 +9,7 @@
       [attr.aria-label]="t(isRefinementLevel() ? 'editor.refinements' : 'editor.nodes')"
     >
       @for (group of groups(); track group.baseNodeRef ?? group.label) {
-        <section tabindex="-1" (keydown.tab)="handleGroupTab($event)" class="node-group" [attr.aria-label]="group.label">
+        <section [attr.aria-label]="group.label">
           @let key = group.baseNodeRef ?? group.label;
           <sui-accordion
             class="node-accordion"
@@ -18,12 +18,31 @@
             (valueChange)="handleGroupExpansion(key, $event)"
           >
             <ng-template suiAccordionHeader let-item let-expanded="expanded">
-              <span class="flex items-center gap-2 pr-7 text-xs font-semibold opacity-60">
+              <span class="flex items-center gap-2 text-xs font-semibold opacity-60">
                 <span class="shrink-0 transition-transform" [class.rotate-90]="expanded" aria-hidden="true">
                   <svg lucideChevronRight class="size-3.5"></svg>
                 </span>
                 <span class="truncate">{{ item.label }}</span>
               </span>
+            </ng-template>
+            <ng-template suiAccordionActions>
+              @if (workspace.queries.editable() && group.baseNodeRef) {
+                <button
+                  suiButton
+                  severity="neutral"
+                  variant="text"
+                  size="xs"
+                  shape="circle"
+                  [attr.aria-label]="t('editor.refineNamedNode', { name: group.label })"
+                  [noriTooltip]="t('editor.refineNode')"
+                  placement="bottom"
+                  [showDelay]="600"
+                  [disabled]="nodeEditing.creating()"
+                  (click)="nodeEditing.refine(group.baseNodeRef)"
+                >
+                  <svg lucidePlus class="size-3.5" aria-hidden="true"></svg>
+                </button>
+              }
             </ng-template>
             <ng-template suiAccordionIndicator></ng-template>
             <ng-template suiAccordionItem [value]="key" [label]="group.label" [disabled]="!group.items.length" [preserveContent]="true">
@@ -114,25 +133,6 @@
               }
             </ng-template>
           </sui-accordion>
-          @if (workspace.queries.editable() && group.baseNodeRef) {
-            <button
-              suiButton
-              severity="neutral"
-              variant="text"
-              size="xs"
-              shape="circle"
-              class="node-group-add"
-              [tabIndex]="group.items.length ? -1 : 0"
-              [attr.aria-label]="t('editor.refineNamedNode', { name: group.label })"
-              [noriTooltip]="t('editor.refineNode')"
-              placement="bottom"
-              [showDelay]="600"
-              [disabled]="nodeEditing.creating()"
-              (click)="nodeEditing.refine(group.baseNodeRef)"
-            >
-              <svg lucidePlus class="size-3.5" aria-hidden="true"></svg>
-            </button>
-          }
         </section>
       }
       @if (!groups().length) {
