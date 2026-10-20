@@ -32,13 +32,11 @@ Shared rules for Nori panels, dialogs and lists. Use public Sushi APIs and token
 
 ## Sushi integration and upgrade checks
 
-Baseline: `@sushi-kit/angular` 0.1.4. These are observed limitations or missing capabilities, not all confirmed library defects. Recheck after upgrading before removing a workaround.
+Installed: `@sushi-kit/angular` 0.2.0. The remaining checks below originated with 0.1.4 and require individual verification before removing a workaround.
 
 ### Tooltip focus restoration
 
-The installed Tooltip schedules showing on `focusin` and `mouseenter`, without distinguishing restored focus or dismissing on activation. Reproduce by opening an export menu/native save dialog, closing it and waiting for the tooltip delay.
-
-Nori's `TooltipDirective` dismisses on activation and suppresses restored menu/dialog focus; `noriTooltipSuspended` covers pending native-dialog actions such as JSON export. Keep focus restoration and deliberate keyboard tooltips. Remove the local workaround only when Sushi's public interaction policy covers activation, restored focus and overlay-generated hover events; test selection, Escape, outside click, save/cancel and subsequent normal focus/hover.
+Sushi owns activation dismissal, overlay suppression and focus-origin tracking. Nori's `TooltipDirective` only aliases the public inputs; `noriTooltipSuspended` maps directly to Sushi's `disabled` input for pending native-dialog actions and node transitions. Do not add local focus restoration or pointer suppression. Keep normal hover and deliberate keyboard tooltips, and recheck menu selection, Escape, outside clicks and native save/cancel after library updates.
 
 ### Other limitations
 

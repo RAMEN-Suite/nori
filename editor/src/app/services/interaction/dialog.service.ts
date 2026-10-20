@@ -1,4 +1,4 @@
-import { DOCUMENT, inject, Injectable, signal, type Type, type WritableSignal } from '@angular/core';
+import { Injectable, signal, type Type, type WritableSignal } from '@angular/core';
 
 export type DialogSize = 'compact' | 'form';
 
@@ -25,25 +25,15 @@ export interface OpenDialog {
   readonly inputs: Record<string, unknown>;
 }
 
-/** Owns the active dialog, its pending/error state and focus restoration for tooltips. */
+/** Owns the active dialog and its pending/error state. */
 @Injectable({ providedIn: 'root' })
 export class DialogService {
-  private readonly document: Document = inject(DOCUMENT);
-
-  private tooltipRestoreTarget: Element | null = null;
   public readonly current: WritableSignal<OpenDialog | null> = signal(null);
   public readonly detailsOpen: WritableSignal<boolean> = signal(false);
   public readonly error: WritableSignal<string | null> = signal(null);
   public readonly pending: WritableSignal<boolean> = signal(false);
 
-  public consumeRestoredFocus(target: Element): boolean {
-    if (target !== this.tooltipRestoreTarget) return false;
-    this.tooltipRestoreTarget = null;
-    return true;
-  }
-
   public open(component: Type<unknown>, options: DialogOptions = {}): DialogRef {
-    this.tooltipRestoreTarget = this.document.activeElement;
     this.error.set(null);
     this.detailsOpen.set(options.detailsOpen ?? false);
 
