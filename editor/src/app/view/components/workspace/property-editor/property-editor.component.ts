@@ -29,7 +29,7 @@ import {
   LucideShieldCheck,
   LucideX,
 } from '@lucide/angular';
-import { ModelRef, type Attribute, type Node } from '@ramen-suite/core/model';
+import type { Attribute } from '@ramen-suite/core/model';
 import { RAMEN_ELEMENT } from '@ramen-suite/core/ramen';
 import {
   Button,
@@ -57,7 +57,7 @@ import { groupBy } from '../../../../utils/collections';
 import { ScrollHintsComponent } from '../../shared/scroll-hints/scroll-hints.component';
 import { ConfirmationContentComponent } from '../../dialogs/confirmation/confirmation-content/confirmation-content.component';
 import { NodeAttributeComponent } from '../inspector/node-view/node-attributes/node-attribute/node-attribute.component';
-import { NodeBasicsComponent } from '../inspector/node-view/node-basics/node-basics.component';
+import { NodeContextPanelComponent } from './node-context-panel/node-context-panel.component';
 import { ShapeEditorComponent } from './shape-editor/shape-editor.component';
 import { PropertyFormComponent } from './property-form/property-form.component';
 
@@ -102,7 +102,7 @@ interface InheritedPropertyGroup {
     LucideShieldCheck,
     PropertyFormComponent,
     ShapeEditorComponent,
-    NodeBasicsComponent,
+    NodeContextPanelComponent,
     NodeAttributeComponent,
     AnimateHeightDirective,
     ScrollOverflowDirective,
@@ -124,6 +124,7 @@ export class PropertyEditorComponent {
   private readonly injector: Injector = inject(Injector);
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
 
+  private readonly nodePanel: Signal<NodeContextPanelComponent | undefined> = viewChild(NodeContextPanelComponent);
   protected readonly shapeEditor: Signal<ShapeEditorComponent | undefined> = viewChild(ShapeEditorComponent);
   protected readonly form: Signal<PropertyFormComponent | undefined> = viewChild(PropertyFormComponent);
   private readonly orderList: Signal<OrderList<PropertyOrderItem> | undefined> = viewChild(OrderList<PropertyOrderItem>);
@@ -137,15 +138,18 @@ export class PropertyEditorComponent {
   protected readonly savingOrder: WritableSignal<boolean> = signal(false);
   protected readonly decisionRequired: WritableSignal<boolean> = signal(false);
   protected readonly switchingNode: WritableSignal<boolean> = signal(false);
+  protected readonly switchingSection: WritableSignal<boolean> = signal(false);
+  protected readonly initialArrival: WritableSignal<boolean> = signal(true);
   protected readonly detailVisible: WritableSignal<boolean> = signal(true);
   protected readonly removing: WritableSignal<Attribute | null> = signal(null);
   private readonly orderDraft: WritableSignal<readonly Attribute[] | null> = signal(null);
   private cardAnimation: Animation | null = null;
   private decisionAnimation: Animation | null = null;
+  private tabAnimation: Animation | null = null;
   private readonly lifetime: AbortController = new AbortController();
 
   protected readonly panelMotion: Signal<boolean> = computed(
-    () => this.appearance.state().animations && !this.switchingNode() && !this.editing.changingNode(),
+    () => this.appearance.state().animations && !this.switchingNode() && !this.switchingSection() && !this.editing.changingNode(),
   );
 
   protected readonly inheritedSelection: Signal<InheritedAttribute | null> = computed(
@@ -187,7 +191,7 @@ export class PropertyEditorComponent {
     this.sortedProperties().some((property: Attribute, index: number): boolean => property.id !== this.properties()[index]?.id),
   );
   protected readonly controlsUnavailable: Signal<boolean> = computed(
-    () => this.dialogs.pending() || this.editing.changingNode() || this.switchingNode(),
+    () => this.dialogs.pending() || this.editing.changingNode() || this.switchingNode() || this.switchingSection(),
   );
   protected readonly actionPending: Signal<boolean> = computed(
     () => this.controlsUnavailable() || !!this.form()?.saving() || this.savingOrder(),
@@ -214,15 +218,7 @@ export class PropertyEditorComponent {
     () => this.workspace.queries.nodeOwner()?.levelIndex ?? this.workspace.store.currentLevelIndex(),
   );
   protected readonly ownModelName: Signal<string | null> = computed(() => this.workspace.queries.nodeOwner()?.name ?? null);
-  protected readonly refinement: Signal<NodeDefinition | null> = computed(
-    () => this.workspace.queries.currentNodeChain().at(-1) ?? null,
-  );
-  protected readonly refinementColour: Signal<string> = computed(() => {
-    const node: Node | undefined = this.refinement()?.node;
-    if (!node) return 'var(--color-base-content)';
-    const base: string = ModelRef.localId(node.superTypes[0] ?? node.id);
-    return this.workspace.store.currentNodeColors()[base] ?? 'var(--color-base-content)';
-  });
+  protected readonly refinementColour: Signal<string> = computed(() => this.nodePanel()?.colour() ?? 'var(--color-base-content)');
   protected readonly isAnnotation: Signal<boolean> = computed(
     (): boolean =>
       this.workspace.queries.currentNode()?.id === RAMEN_ELEMENT.ANNOTATION ||
@@ -238,6 +234,7 @@ export class PropertyEditorComponent {
       this.lifetime.abort();
       this.cardAnimation?.cancel();
       this.decisionAnimation?.cancel();
+      this.tabAnimation?.cancel();
     });
     effect((): void => {
       if (!this.editing.changingNode() && !this.editing.current()) this.editing.close();
@@ -245,17 +242,19 @@ export class PropertyEditorComponent {
   }
 
   protected changeSection(section: 'properties' | 'shapes'): void {
-    this.runWithCleanDraft((): void => this.editing.section.set(section));
+    if (this.editing.section() === section) return;
+    this.runWithCleanDraft((): Promise<void> => this.activateSection(section));
   }
 
-  protected handleTabKey(event: KeyboardEvent): void {
+  protected async handleTabKey(event: KeyboardEvent): Promise<void> {
     if (!this.isAnnotation() || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
     event.preventDefault();
     if (!this.canRunAction()) return;
     let section: 'properties' | 'shapes' = this.editing.section() === 'properties' ? 'shapes' : 'properties';
     if (event.key === 'Home') section = 'properties';
     if (event.key === 'End') section = 'shapes';
-    this.editing.section.set(section);
+    await this.activateSection(section);
+    if (this.destroyRef.destroyed) return;
     afterNextRender(
       (): void => {
         if (!this.destroyRef.destroyed)
@@ -263,6 +262,47 @@ export class PropertyEditorComponent {
       },
       { injector: this.injector },
     );
+  }
+
+  private async activateSection(section: 'properties' | 'shapes'): Promise<void> {
+    if (this.editing.section() === section || this.switchingSection()) return;
+    this.switchingSection.set(true);
+    try {
+      await this.animateTabs('leave');
+      this.lifetime.signal.throwIfAborted();
+      this.initialArrival.set(false);
+      this.editing.section.set(section);
+      await this.waitForRender();
+      this.lifetime.signal.throwIfAborted();
+      await this.animateTabs('enter');
+    } catch (error: unknown) {
+      if (!this.destroyRef.destroyed) this.projects.reportError(error);
+    } finally {
+      this.tabAnimation?.cancel();
+      this.tabAnimation = null;
+      this.switchingSection.set(false);
+    }
+  }
+
+  private async animateTabs(phase: 'enter' | 'leave'): Promise<void> {
+    if (!this.appearance.state().animations || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const panels: HTMLElement | null = this.element.nativeElement.querySelector('.property-tab-panels');
+    if (!panels) return;
+
+    const frames: Keyframe[] =
+      phase === 'leave'
+        ? [{ opacity: 1 }, { opacity: 0 }]
+        : [
+            { opacity: 0, transform: 'translateX(20px)' },
+            { opacity: 1, transform: 'translateX(0)' },
+          ];
+    this.tabAnimation?.cancel();
+    this.tabAnimation = panels.animate(frames, {
+      duration: phase === 'leave' ? 120 : 240,
+      easing: phase === 'leave' ? 'ease-out' : 'cubic-bezier(0.22, 1, 0.36, 1)',
+      fill: 'forwards',
+    });
+    await this.tabAnimation.finished;
   }
 
   public close(): void {
@@ -359,13 +399,10 @@ export class PropertyEditorComponent {
     this.orderDraft.set(items.map((item: PropertyOrderItem): Attribute => item.attribute));
   }
 
-  protected inspectRefinement(): void {
-    const refinement: NodeDefinition | null = this.refinement();
+  protected inspectRefinement(refinement: NodeDefinition): void {
     const projectId: string | undefined = this.workspace.context()?.projectId;
-    const levelIndex: number | undefined = refinement
-      ? this.projects.recordsByModelId().get(refinement.modelId)?.levelIndex
-      : undefined;
-    if (!refinement || !projectId || levelIndex === undefined) return;
+    const levelIndex: number | undefined = this.projects.recordsByModelId().get(refinement.modelId)?.levelIndex;
+    if (!projectId || levelIndex === undefined) return;
 
     const location: WorkspaceLocation = { projectId, levelIndex, nodeId: refinement.node.id };
     this.runWithCleanDraft(() => this.changeNode(() => this.editing.inspect(location), -1));
@@ -594,6 +631,7 @@ export class PropertyEditorComponent {
         }
         const target: HTMLElement | null =
           host.querySelector<HTMLElement>('[data-property-decision] button') ??
+          host.querySelector<HTMLElement>('.property-detail [aria-invalid="true"]') ??
           host.querySelector<HTMLElement>('.property-detail input:not(:disabled)') ??
           host.querySelector<HTMLElement>('.property-detail');
         target?.focus();

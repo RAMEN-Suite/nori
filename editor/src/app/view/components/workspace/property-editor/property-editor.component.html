@@ -3,6 +3,7 @@
     class="property-workspace flex h-full min-h-0 flex-col gap-4"
     [class.show-detail]="detailVisible()"
     [class.motion-enabled]="appearance.state().animations"
+    [class.initial-arrival]="initialArrival()"
     [class.switching-node]="switchingNode()"
     [attr.aria-busy]="actionPending()"
     [inert]="!!form()?.saving() || savingOrder()"
@@ -27,13 +28,13 @@
         }}</span>
       </button>
       <div
-        class="property-workspace-tabs flex shrink-0 flex-wrap items-center gap-5"
+        class="property-workspace-tabs bg-base-content/5 flex shrink-0 flex-wrap items-center gap-1 rounded-[var(--nori-radius-input)] p-1"
         role="tablist"
         [attr.aria-label]="t('editor.nodeDetails')"
       >
         <button
           type="button"
-          class="property-workspace-tab text-base-content/60 inline-flex cursor-pointer items-center gap-1.5 border-b-2 border-transparent px-0.5 py-2 text-xs"
+          class="property-workspace-tab text-base-content/60 inline-flex cursor-pointer items-center gap-1.5 rounded-[var(--nori-radius-input)] px-3 py-1.5 text-xs"
           role="tab"
           id="node-properties-tab"
           [attr.aria-selected]="editing.section() === 'properties'"
@@ -47,7 +48,7 @@
         @if (isAnnotation()) {
           <button
             type="button"
-            class="property-workspace-tab text-base-content/60 inline-flex cursor-pointer items-center gap-1.5 border-b-2 border-transparent px-0.5 py-2 text-xs"
+            class="property-workspace-tab text-base-content/60 inline-flex cursor-pointer items-center gap-1.5 rounded-[var(--nori-radius-input)] px-3 py-1.5 text-xs"
             role="tab"
             [attr.aria-selected]="editing.section() === 'shapes'"
             [attr.tabindex]="editing.section() === 'shapes' ? 0 : -1"
@@ -61,7 +62,7 @@
         }
         <button
           type="button"
-          class="property-workspace-tab text-base-content/60 inline-flex cursor-pointer items-center gap-1.5 border-b-2 border-transparent px-0.5 py-2 text-xs"
+          class="property-workspace-tab text-base-content/60 inline-flex cursor-pointer items-center gap-1.5 rounded-[var(--nori-radius-input)] px-3 py-1.5 text-xs"
           role="tab"
           aria-selected="false"
           disabled
@@ -80,148 +81,79 @@
       </button>
     </header>
 
-    @if (editing.section() === 'shapes' && isAnnotation()) {
-      <nori-shape-editor id="node-shapes-panel" role="tabpanel" aria-labelledby="node-shapes-tab" />
-    } @else {
-      <div
-        class="property-workspace-panels grid min-h-0 flex-1 grid-cols-[minmax(12rem,0.8fr)_minmax(0,1.7fr)] items-stretch gap-4"
-        id="node-properties-panel"
-        role="tabpanel"
-        aria-labelledby="node-properties-tab"
-      >
-        <aside class="property-left-column flex min-h-0 min-w-0 flex-col gap-4">
-          <section
-            class="property-surface property-node-info min-w-0 shrink-0 overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)] bg-[color-mix(in_oklab,var(--color-base-100)_96%,transparent)] p-5 backdrop-blur-[16px]"
-            [inert]="sorting()"
-            [noriAnimateHeight]="panelMotion()"
-          >
-            <div class="property-workspace-title min-w-0">
-              <nori-node-basics id="property-workspace-node-title" [tooltipSuspended]="switchingNode()" />
-              @if (refinement(); as base) {
-                <div class="property-refinement text-base-content/55 mt-1 flex min-w-0 items-center gap-2 text-xs">
-                  <span>{{ t('editor.refinesLabel') }}</span>
-                  <button
-                    type="button"
-                    class="property-refinement-chip text-base-content inline-flex min-w-0 cursor-pointer items-center gap-1.5 rounded-full border border-[color-mix(in_oklab,var(--refinement-colour)_40%,transparent)] bg-[color-mix(in_oklab,var(--refinement-colour)_10%,transparent)] px-2.5 py-0.5 text-xs"
-                    [style.--refinement-colour]="refinementColour()"
-                    [disabled]="controlsUnavailable() || !!removing()"
-                    (click)="inspectRefinement()"
-                  >
-                    <span
-                      class="property-refinement-dot size-1.5 shrink-0 rounded-full bg-[var(--refinement-colour)]"
-                      aria-hidden="true"
-                    ></span>
-                    <span class="truncate">{{ base.node.name }}</span>
-                  </button>
-                </div>
-              } @else {
-                <p class="text-base-content/55 mt-0.5 text-xs">{{ t('editor.baseNode') }}</p>
-              }
-            </div>
-          </section>
-          <section
-            class="property-surface property-list flex min-h-0 min-w-0 flex-1 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)] bg-[color-mix(in_oklab,var(--color-base-100)_96%,transparent)] backdrop-blur-[16px]"
-            [attr.aria-label]="t('editor.properties')"
-          >
-            <div class="property-panel-content flex min-h-0 flex-1 flex-col">
-              <header class="property-panel-heading flex min-h-14 shrink-0 items-center justify-between gap-3 pt-4 pr-3.5 pb-3.5 pl-5.5">
-                <h3 class="flex min-w-0 items-center gap-2.5 text-base font-semibold select-none">
-                  <svg lucideList class="size-4 shrink-0" aria-hidden="true"></svg>{{ t('editor.properties') }}
-                </h3>
-                @if (workspace.queries.nodeEditable() && properties().length > 1) {
-                  <button
-                    suiButton
-                    size="sm"
-                    severity="neutral"
-                    variant="text"
-                    shape="circle"
-                    data-property-sort
-                    [attr.aria-label]="t('editor.sortProperties')"
-                    [noriTooltip]="t('editor.sortProperties')"
-                    [attr.aria-pressed]="sorting()"
-                    [disabled]="controlsUnavailable() || !!removing() || sorting()"
-                    (click)="startSorting()"
-                  >
-                    <svg lucideArrowDownUp class="size-4" aria-hidden="true"></svg>
-                  </button>
-                }
-              </header>
-              <div class="nori-scroll-frame min-h-0 flex-1">
-                <div
-                  cdkScrollable
-                  noriScrollOverflow
-                  #propertyScroll="scrollOverflow"
-                  class="property-list-scroll editor-panel-scroll px-2 pb-2"
-                >
-                  @for (group of inheritedGroups(); track group.levelIndex) {
-                    <div suiDivider placement="start" class="text-base-content/60 text-xs" style="--sui-divider-margin: 0.75rem">
-                      {{
-                        group.modelName
-                          ? t('editor.propertySource', { name: group.modelName })
-                          : t('editor.propertyLevel', { level: group.levelIndex })
-                      }}
-                    </div>
-                    <sui-list
-                      class="editor-list"
-                      size="xs"
-                      [items]="group.properties"
-                      [trackBy]="trackInheritedProperty"
-                      [dividers]="false"
-                      [rowHover]="false"
-                      [ariaLabel]="t('editor.properties')"
+    <div class="property-tab-panels flex min-h-0 flex-1 flex-col" [inert]="switchingSection()">
+      @if (editing.section() === 'shapes' && isAnnotation()) {
+        <nori-shape-editor
+          id="node-shapes-panel"
+          role="tabpanel"
+          aria-labelledby="node-shapes-tab"
+          [initialArrival]="initialArrival()"
+          [switchingNode]="switchingNode()"
+          [animateChanges]="panelMotion()"
+          (inspectRefinement)="inspectRefinement($event)"
+        />
+      } @else {
+        <div
+          class="property-workspace-panels grid min-h-0 flex-1 grid-cols-[minmax(12rem,0.8fr)_minmax(0,1.7fr)] items-stretch gap-4"
+          id="node-properties-panel"
+          role="tabpanel"
+          aria-labelledby="node-properties-tab"
+        >
+          <aside class="property-left-column flex min-h-0 min-w-0 flex-col gap-4">
+            <nori-node-context-panel
+              [inert]="sorting()"
+              [animateChanges]="panelMotion()"
+              [tooltipSuspended]="switchingNode()"
+              [disabled]="controlsUnavailable() || !!removing()"
+              (inspect)="inspectRefinement($event)"
+            />
+            <section
+              class="property-surface property-list flex min-h-0 min-w-0 flex-1 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)] bg-[color-mix(in_oklab,var(--color-base-100)_96%,transparent)] backdrop-blur-[16px]"
+              [attr.aria-label]="t('editor.properties')"
+            >
+              <div class="property-panel-content flex min-h-0 flex-1 flex-col">
+                <header class="property-panel-heading flex min-h-14 shrink-0 items-center justify-between gap-3 pt-4 pr-3.5 pb-3.5 pl-5.5">
+                  <h3 class="flex min-w-0 items-center gap-2.5 text-base font-semibold select-none">
+                    <svg lucideList class="size-4 shrink-0" aria-hidden="true"></svg>{{ t('editor.properties') }}
+                  </h3>
+                  @if (workspace.queries.nodeEditable() && properties().length > 1) {
+                    <button
+                      suiButton
+                      size="sm"
+                      severity="neutral"
+                      variant="text"
+                      shape="circle"
+                      data-property-sort
+                      [attr.aria-label]="t('editor.sortProperties')"
+                      [noriTooltip]="t('editor.sortProperties')"
+                      [attr.aria-pressed]="sorting()"
+                      [disabled]="controlsUnavailable() || !!removing() || sorting()"
+                      (click)="startSorting()"
                     >
-                      <ng-template suiListItem let-property>
-                        <button
-                          type="button"
-                          class="property-list-item property-inherited-item col-span-full flex w-full min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-[var(--nori-radius-input)] px-3 py-1.5"
-                          [class.is-selected]="inheritedSelection() === property"
-                          [attr.aria-pressed]="inheritedSelection() === property"
-                          [disabled]="controlsUnavailable() || !!removing()"
-                          (click)="selectInherited(property)"
-                        >
-                          <nori-node-attribute
-                            class="block min-w-0 flex-1 text-left"
-                            [attribute]="property.attribute"
-                            [modelLevelIndex]="property.levelIndex"
-                            [focusable]="false"
-                          />
-                        </button>
-                      </ng-template>
-                    </sui-list>
+                      <svg lucideArrowDownUp class="size-4" aria-hidden="true"></svg>
+                    </button>
                   }
-                  @if (properties().length) {
-                    <div suiDivider placement="start" class="text-base-content/60 text-xs" style="--sui-divider-margin: 0.75rem">
-                      {{
-                        ownModelName()
-                          ? t('editor.propertySource', { name: ownModelName() })
-                          : t('editor.propertyLevel', { level: ownLevelIndex() })
-                      }}
-                    </div>
-                    @if (sorting()) {
-                      <sui-order-list
-                        class="editor-list"
-                        size="xs"
-                        [value]="orderItems()"
-                        [labels]="orderLabels()"
-                        [disabled]="actionPending() || !!removing()"
-                        [ariaLabel]="t('editor.properties')"
-                        (valueChange)="updateOrder($event)"
-                      >
-                        <ng-template [suiOrderListItem]="orderItems()" let-item>
-                          <nori-node-attribute
-                            class="block min-w-0 px-3 py-1.5 text-left"
-                            [attribute]="item.attribute"
-                            [modelLevelIndex]="ownLevelIndex()"
-                            [focusable]="false"
-                          />
-                        </ng-template>
-                      </sui-order-list>
-                    } @else {
+                </header>
+                <div class="nori-scroll-frame min-h-0 flex-1">
+                  <div
+                    cdkScrollable
+                    noriScrollOverflow
+                    #propertyScroll="scrollOverflow"
+                    class="property-list-scroll editor-panel-scroll px-2 pb-2"
+                  >
+                    @for (group of inheritedGroups(); track group.levelIndex) {
+                      <div suiDivider placement="start" class="text-base-content/60 text-xs" style="--sui-divider-margin: 1rem 0">
+                        {{
+                          group.modelName
+                            ? t('editor.propertySource', { name: group.modelName })
+                            : t('editor.propertyLevel', { level: group.levelIndex })
+                        }}
+                      </div>
                       <sui-list
                         class="editor-list"
                         size="xs"
-                        [items]="properties()"
-                        [trackBy]="trackProperty"
+                        [items]="group.properties"
+                        [trackBy]="trackInheritedProperty"
                         [dividers]="false"
                         [rowHover]="false"
                         [ariaLabel]="t('editor.properties')"
@@ -229,241 +161,308 @@
                         <ng-template suiListItem let-property>
                           <button
                             type="button"
-                            class="property-list-item col-span-full flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-[var(--nori-radius-input)] px-3 py-1.5"
-                            [class.is-selected]="!inheritedSelection() && attribute()?.id === property.id"
-                            [attr.aria-pressed]="!inheritedSelection() && attribute()?.id === property.id"
+                            class="property-list-item property-inherited-item col-span-full flex w-full min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-[var(--nori-radius-input)] px-3 py-1.5"
+                            [class.is-selected]="inheritedSelection() === property"
+                            [attr.aria-pressed]="inheritedSelection() === property"
                             [disabled]="controlsUnavailable() || !!removing()"
-                            (click)="select(property.id)"
+                            (click)="selectInherited(property)"
                           >
                             <nori-node-attribute
                               class="block min-w-0 flex-1 text-left"
-                              [attribute]="property"
-                              [modelLevelIndex]="ownLevelIndex()"
+                              [attribute]="property.attribute"
+                              [modelLevelIndex]="property.levelIndex"
                               [focusable]="false"
                             />
                           </button>
                         </ng-template>
                       </sui-list>
                     }
-                  }
-                  @if (!properties().length && !inheritedGroups().length) {
-                    <p class="text-base-content/50 px-3 py-2 text-xs">{{ t('editor.noProperties') }}</p>
-                  }
+                    @if (properties().length) {
+                      <div suiDivider placement="start" class="text-base-content/60 text-xs" style="--sui-divider-margin: 1rem 0">
+                        {{
+                          ownModelName()
+                            ? t('editor.propertySource', { name: ownModelName() })
+                            : t('editor.propertyLevel', { level: ownLevelIndex() })
+                        }}
+                      </div>
+                      @if (sorting()) {
+                        <sui-order-list
+                          class="editor-list"
+                          size="xs"
+                          [value]="orderItems()"
+                          [labels]="orderLabels()"
+                          [disabled]="actionPending() || !!removing()"
+                          [ariaLabel]="t('editor.properties')"
+                          (valueChange)="updateOrder($event)"
+                        >
+                          <ng-template [suiOrderListItem]="orderItems()" let-item>
+                            <nori-node-attribute
+                              class="block min-w-0 px-3 py-1.5 text-left"
+                              [attribute]="item.attribute"
+                              [modelLevelIndex]="ownLevelIndex()"
+                              [focusable]="false"
+                            />
+                          </ng-template>
+                        </sui-order-list>
+                      } @else {
+                        <sui-list
+                          class="editor-list"
+                          size="xs"
+                          [items]="properties()"
+                          [trackBy]="trackProperty"
+                          [dividers]="false"
+                          [rowHover]="false"
+                          [ariaLabel]="t('editor.properties')"
+                        >
+                          <ng-template suiListItem let-property>
+                            <button
+                              type="button"
+                              class="property-list-item col-span-full flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-[var(--nori-radius-input)] px-3 py-1.5"
+                              [class.is-selected]="!inheritedSelection() && attribute()?.id === property.id"
+                              [attr.aria-pressed]="!inheritedSelection() && attribute()?.id === property.id"
+                              [disabled]="controlsUnavailable() || !!removing()"
+                              (click)="select(property.id)"
+                            >
+                              <nori-node-attribute
+                                class="block min-w-0 flex-1 text-left"
+                                [attribute]="property"
+                                [modelLevelIndex]="ownLevelIndex()"
+                                [focusable]="false"
+                              />
+                            </button>
+                          </ng-template>
+                        </sui-list>
+                      }
+                    }
+                    @if (!properties().length && !inheritedGroups().length) {
+                      <p class="text-base-content/50 px-3 py-2 text-xs">{{ t('editor.noProperties') }}</p>
+                    }
+                  </div>
+                  <nori-scroll-hints [up]="propertyScroll.canScrollUp()" [down]="propertyScroll.canScrollDown()" />
                 </div>
-                <nori-scroll-hints [up]="propertyScroll.canScrollUp()" [down]="propertyScroll.canScrollDown()" />
-              </div>
-              @if (workspace.queries.nodeEditable()) {
-                <footer class="property-list-footer p-3">
-                  @if (sorting()) {
-                    <div class="property-order-actions flex flex-wrap justify-end gap-2">
-                      <button suiButton size="sm" severity="neutral" variant="text" [disabled]="actionPending()" (click)="cancelSorting()">
-                        <svg lucideX class="size-4" aria-hidden="true"></svg>{{ t('common.cancel') }}
-                      </button>
-                      <button
-                        suiButton
-                        size="sm"
-                        severity="primary"
-                        [loading]="actionPending()"
-                        [disabled]="actionPending() || !orderChanged()"
-                        (click)="saveOrder()"
-                      >
-                        <svg lucideSave class="size-4" aria-hidden="true"></svg>{{ t('editor.savePropertyOrder') }}
-                      </button>
-                    </div>
-                  } @else {
-                    <button
-                      suiButton
-                      severity="primary"
-                      size="sm"
-                      class="w-full"
-                      [disabled]="controlsUnavailable() || !!removing()"
-                      (click)="create()"
-                    >
-                      <svg lucidePlus class="size-4" aria-hidden="true"></svg>{{ t('editor.addProperty') }}
-                    </button>
-                  }
-                </footer>
-              }
-            </div>
-          </section>
-        </aside>
-        <div class="property-right-column flex min-h-0 min-w-0 flex-col gap-4" [inert]="sorting()">
-          <section
-            class="property-surface property-detail flex min-h-0 min-w-0 flex-1 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)] bg-[color-mix(in_oklab,var(--color-base-100)_96%,transparent)] backdrop-blur-[16px]"
-            tabindex="-1"
-            [attr.aria-label]="t('editor.editProperties')"
-          >
-            <div class="property-panel-content flex min-h-0 flex-1 flex-col">
-              <header
-                class="property-panel-heading property-detail-heading hidden min-h-0 shrink-0 items-center justify-between gap-3 px-3.5 pt-2 pb-0"
-              >
-                <button
-                  suiButton
-                  severity="neutral"
-                  variant="text"
-                  size="xs"
-                  shape="circle"
-                  class="property-mobile-back hidden"
-                  [attr.aria-label]="t('editor.properties')"
-                  [disabled]="controlsUnavailable() || !!removing()"
-                  (click)="backToList()"
-                >
-                  <svg lucideArrowLeft class="size-4" aria-hidden="true"></svg>
-                </button>
-              </header>
-              <div class="nori-scroll-frame min-h-0 flex-1">
-                <div noriScrollOverflow #detailScroll="scrollOverflow" class="property-detail-scroll editor-panel-scroll px-6 pt-5 pb-6">
-                  @if (dialogs.error(); as error) {
-                    <p class="text-error mb-4 text-sm" role="alert">{{ error }}</p>
-                  }
-                  <nori-property-form
-                    class="property-form-host"
-                    [animateChanges]="panelMotion()"
-                    [inert]="!!removing()"
-                    [currentAttribute]="inheritedSelection()?.attribute ?? attribute()"
-                    [editable]="workspace.queries.nodeEditable() && !inheritedSelection() && !switchingNode()"
-                    [modelLevelIndex]="inheritedSelection()?.levelIndex ?? ownLevelIndex()"
-                    (saved)="editing.select($event)"
-                  />
-                </div>
-                <nori-scroll-hints [up]="detailScroll.canScrollUp()" [down]="detailScroll.canScrollDown()" />
-              </div>
-            </div>
-          </section>
-          <div class="property-footer-dock shrink-0" [noriAnimateHeight]="panelMotion()">
-            <div class="property-footer-content relative flow-root">
-              @if (inheritedSelection(); as inheritedProperty) {
-                <aside
-                  suiMessage
-                  severity="warning"
-                  variant="soft"
-                  class="property-inherited-notice flex min-h-[calc(4rem+2px)] flex-wrap items-center gap-3 px-5 py-4"
-                  data-nori-motion
-                  [animate.enter]="panelMotion() ? 'property-content-enter' : ''"
-                  [animate.leave]="panelMotion() ? 'property-content-leave' : ''"
-                >
-                  <svg lucideInfo class="size-4 shrink-0" aria-hidden="true"></svg>
-                  <span class="text-sm">{{ t('editor.inheritedPropertyHint') }}</span>
-                  <button
-                    type="button"
-                    class="property-refinement-chip text-base-content inline-flex min-w-0 cursor-pointer items-center gap-1.5 rounded-full border border-[color-mix(in_oklab,var(--refinement-colour)_40%,transparent)] bg-[color-mix(in_oklab,var(--refinement-colour)_10%,transparent)] px-2.5 py-0.5 text-xs"
-                    [style.--refinement-colour]="refinementColour()"
-                    [disabled]="controlsUnavailable()"
-                    [attr.aria-label]="t('editor.openPropertySource', { name: inheritedProperty.nodeName })"
-                    (click)="inspectPropertySource(inheritedProperty)"
-                  >
-                    <span
-                      class="property-refinement-dot size-1.5 shrink-0 rounded-full bg-[var(--refinement-colour)]"
-                      aria-hidden="true"
-                    ></span>
-                    <span class="truncate">{{ inheritedProperty.nodeName }}</span>
-                  </button>
-                </aside>
-              }
-              @if (workspace.queries.nodeEditable() && !inheritedSelection()) {
-                <section
-                  class="property-surface property-save-panel flex min-h-[calc(4rem+2px)] min-w-0 flex-wrap items-center gap-3 overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)] bg-[color-mix(in_oklab,var(--color-base-100)_96%,transparent)] px-5 py-4 backdrop-blur-[16px]"
-                  data-nori-motion
-                  [animate.enter]="panelMotion() ? 'property-content-enter' : ''"
-                  [animate.leave]="panelMotion() ? 'property-content-leave' : ''"
-                  [class.needs-decision]="decisionRequired()"
-                  [attr.aria-label]="t('editor.propertyChanges')"
-                >
-                  @if (removing(); as property) {
-                    <div class="property-removal-summary w-full">
-                      <nori-confirmation-content [message]="{ key: 'editor.confirmRemoveProperty', params: { name: property.name } }" />
-                    </div>
-                    <div class="property-save-actions ml-auto flex flex-wrap justify-end gap-2" data-property-decision>
-                      <button
-                        suiButton
-                        size="sm"
-                        severity="neutral"
-                        variant="text"
-                        [disabled]="controlsUnavailable()"
-                        (click)="cancelRemoval()"
-                      >
-                        <svg lucideX class="size-4" aria-hidden="true"></svg>{{ t('common.cancel') }}
-                      </button>
-                      <button
-                        suiButton
-                        size="sm"
-                        severity="error"
-                        [loading]="actionPending()"
-                        [disabled]="controlsUnavailable()"
-                        (click)="confirmRemoval()"
-                      >
-                        <svg lucideEraser class="size-4" aria-hidden="true"></svg>{{ t('editor.removeProperty') }}
-                      </button>
-                    </div>
-                  } @else {
-                    @if (attribute(); as property) {
-                      <div class="property-secondary-actions flex shrink-0 items-center gap-0.5">
+                @if (workspace.queries.nodeEditable()) {
+                  <footer class="property-list-footer p-3">
+                    @if (sorting()) {
+                      <div class="property-order-actions flex flex-wrap justify-end gap-2">
                         <button
                           suiButton
+                          size="sm"
                           severity="neutral"
                           variant="text"
-                          size="sm"
-                          shape="circle"
-                          [attr.aria-label]="t('editor.duplicateProperty')"
-                          [noriTooltip]="t('editor.duplicateProperty')"
-                          placement="bottom"
-                          [showDelay]="600"
-                          [disabled]="controlsUnavailable() || !!removing()"
-                          (click)="duplicate(property)"
+                          [disabled]="actionPending()"
+                          (click)="cancelSorting()"
                         >
-                          <svg lucideCopy class="size-3.5" aria-hidden="true"></svg>
+                          <svg lucideX class="size-4" aria-hidden="true"></svg>{{ t('common.cancel') }}
                         </button>
                         <button
                           suiButton
-                          severity="error"
-                          variant="text"
                           size="sm"
-                          shape="circle"
-                          [attr.aria-label]="t('editor.removeNamedProperty', { name: property.name })"
-                          [noriTooltip]="t('editor.removeProperty')"
-                          placement="bottom"
-                          [showDelay]="600"
-                          [disabled]="controlsUnavailable() || !!removing()"
-                          (click)="remove(property)"
+                          severity="primary"
+                          [loading]="actionPending()"
+                          [disabled]="actionPending() || !orderChanged()"
+                          (click)="saveOrder()"
                         >
-                          <svg lucideEraser class="size-3.5" aria-hidden="true"></svg>
+                          <svg lucideSave class="size-4" aria-hidden="true"></svg>{{ t('editor.savePropertyOrder') }}
+                        </button>
+                      </div>
+                    } @else {
+                      <button
+                        suiButton
+                        severity="primary"
+                        size="sm"
+                        class="w-full"
+                        [disabled]="controlsUnavailable() || !!removing()"
+                        (click)="create()"
+                      >
+                        <svg lucidePlus class="size-4" aria-hidden="true"></svg>{{ t('editor.addProperty') }}
+                      </button>
+                    }
+                  </footer>
+                }
+              </div>
+            </section>
+          </aside>
+          <div class="property-right-column flex min-h-0 min-w-0 flex-col gap-4" [inert]="sorting()">
+            <section
+              class="property-surface property-detail flex min-h-0 min-w-0 flex-1 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)] bg-[color-mix(in_oklab,var(--color-base-100)_96%,transparent)] backdrop-blur-[16px]"
+              tabindex="-1"
+              [attr.aria-label]="t('editor.editProperties')"
+            >
+              <div class="property-panel-content flex min-h-0 flex-1 flex-col">
+                <header
+                  class="property-panel-heading property-detail-heading hidden min-h-0 shrink-0 items-center justify-between gap-3 px-3.5 pt-2 pb-0"
+                >
+                  <button
+                    suiButton
+                    severity="neutral"
+                    variant="text"
+                    size="xs"
+                    shape="circle"
+                    class="property-mobile-back hidden"
+                    [attr.aria-label]="t('editor.properties')"
+                    [disabled]="controlsUnavailable() || !!removing()"
+                    (click)="backToList()"
+                  >
+                    <svg lucideArrowLeft class="size-4" aria-hidden="true"></svg>
+                  </button>
+                </header>
+                <div class="nori-scroll-frame min-h-0 flex-1">
+                  <div noriScrollOverflow #detailScroll="scrollOverflow" class="property-detail-scroll editor-panel-scroll px-6 pt-5 pb-6">
+                    @if (dialogs.error(); as error) {
+                      <p class="text-error mb-4 text-sm" role="alert">{{ error }}</p>
+                    }
+                    <nori-property-form
+                      class="property-form-host"
+                      [animateChanges]="panelMotion()"
+                      [inert]="!!removing()"
+                      [currentAttribute]="inheritedSelection()?.attribute ?? attribute()"
+                      [editable]="workspace.queries.nodeEditable() && !inheritedSelection() && !switchingNode()"
+                      [modelLevelIndex]="inheritedSelection()?.levelIndex ?? ownLevelIndex()"
+                      (saved)="editing.select($event)"
+                    />
+                  </div>
+                  <nori-scroll-hints [up]="detailScroll.canScrollUp()" [down]="detailScroll.canScrollDown()" />
+                </div>
+              </div>
+            </section>
+            <div class="property-footer-dock shrink-0" [noriAnimateHeight]="panelMotion()">
+              <div class="property-footer-content relative flow-root">
+                @if (inheritedSelection(); as inheritedProperty) {
+                  <aside
+                    suiMessage
+                    severity="warning"
+                    variant="soft"
+                    class="property-inherited-notice flex min-h-[calc(4rem+2px)] flex-wrap items-center gap-3 px-5 py-4"
+                    data-nori-motion
+                    [animate.enter]="panelMotion() ? 'property-content-enter' : ''"
+                    [animate.leave]="panelMotion() ? 'property-content-leave' : ''"
+                  >
+                    <svg lucideInfo class="size-4 shrink-0" aria-hidden="true"></svg>
+                    <span class="text-sm">{{ t('editor.inheritedPropertyHint') }}</span>
+                    <button
+                      type="button"
+                      class="property-refinement-chip text-base-content inline-flex min-w-0 cursor-pointer items-center gap-1.5 rounded-full border border-[color-mix(in_oklab,var(--refinement-colour)_40%,transparent)] bg-[color-mix(in_oklab,var(--refinement-colour)_10%,transparent)] px-2.5 py-0.5 text-xs"
+                      [style.--refinement-colour]="refinementColour()"
+                      [disabled]="controlsUnavailable()"
+                      [attr.aria-label]="t('editor.openPropertySource', { name: inheritedProperty.nodeName })"
+                      (click)="inspectPropertySource(inheritedProperty)"
+                    >
+                      <span
+                        class="property-refinement-dot size-1.5 shrink-0 rounded-full bg-[var(--refinement-colour)]"
+                        aria-hidden="true"
+                      ></span>
+                      <span class="truncate">{{ inheritedProperty.nodeName }}</span>
+                    </button>
+                  </aside>
+                }
+                @if (workspace.queries.nodeEditable() && !inheritedSelection()) {
+                  <section
+                    class="property-surface property-save-panel flex min-h-[calc(4rem+2px)] min-w-0 flex-wrap items-center gap-3 overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)] bg-[color-mix(in_oklab,var(--color-base-100)_96%,transparent)] px-5 py-4 backdrop-blur-[16px]"
+                    data-nori-motion
+                    [animate.enter]="panelMotion() ? 'property-content-enter' : ''"
+                    [animate.leave]="panelMotion() ? 'property-content-leave' : ''"
+                    [class.needs-decision]="decisionRequired()"
+                    [attr.aria-label]="t('editor.propertyChanges')"
+                  >
+                    @if (form()?.saveError(); as message) {
+                      <p class="text-error w-full text-sm" role="alert">{{ message }}</p>
+                    }
+                    @if (removing(); as property) {
+                      <div class="property-removal-summary w-full">
+                        <nori-confirmation-content [message]="{ key: 'editor.confirmRemoveProperty', params: { name: property.name } }" />
+                      </div>
+                      <div class="property-save-actions ml-auto flex flex-wrap justify-end gap-2" data-property-decision>
+                        <button
+                          suiButton
+                          size="sm"
+                          severity="neutral"
+                          variant="text"
+                          [disabled]="controlsUnavailable()"
+                          (click)="cancelRemoval()"
+                        >
+                          <svg lucideX class="size-4" aria-hidden="true"></svg>{{ t('common.cancel') }}
+                        </button>
+                        <button
+                          suiButton
+                          size="sm"
+                          severity="error"
+                          [loading]="actionPending()"
+                          [disabled]="controlsUnavailable()"
+                          (click)="confirmRemoval()"
+                        >
+                          <svg lucideEraser class="size-4" aria-hidden="true"></svg>{{ t('editor.removeProperty') }}
+                        </button>
+                      </div>
+                    } @else {
+                      @if (attribute(); as property) {
+                        <div class="property-secondary-actions flex shrink-0 items-center gap-0.5">
+                          <button
+                            suiButton
+                            severity="neutral"
+                            variant="text"
+                            size="sm"
+                            shape="circle"
+                            [attr.aria-label]="t('editor.duplicateProperty')"
+                            [noriTooltip]="t('editor.duplicateProperty')"
+                            placement="bottom"
+                            [showDelay]="600"
+                            [disabled]="controlsUnavailable() || !!removing()"
+                            (click)="duplicate(property)"
+                          >
+                            <svg lucideCopy class="size-3.5" aria-hidden="true"></svg>
+                          </button>
+                          <button
+                            suiButton
+                            severity="error"
+                            variant="text"
+                            size="sm"
+                            shape="circle"
+                            [attr.aria-label]="t('editor.removeNamedProperty', { name: property.name })"
+                            [noriTooltip]="t('editor.removeProperty')"
+                            placement="bottom"
+                            [showDelay]="600"
+                            [disabled]="controlsUnavailable() || !!removing()"
+                            (click)="remove(property)"
+                          >
+                            <svg lucideEraser class="size-3.5" aria-hidden="true"></svg>
+                          </button>
+                        </div>
+                      }
+
+                      <div class="property-save-actions ml-auto flex flex-wrap justify-end gap-2">
+                        <button
+                          suiButton
+                          size="sm"
+                          severity="neutral"
+                          variant="text"
+                          [disabled]="controlsUnavailable() || (!form()?.hasChanges() && !decisionRequired())"
+                          (click)="discard()"
+                        >
+                          <svg lucideUndo2 class="size-4" aria-hidden="true"></svg>{{ t('editor.discardChanges') }}
+                        </button>
+                        <button
+                          suiButton
+                          size="sm"
+                          severity="primary"
+                          [loading]="!!form()?.saving()"
+                          [disabled]="actionPending() || (!form()?.hasChanges() && !decisionRequired())"
+                          (click)="save()"
+                        >
+                          @if (attribute()) {
+                            <svg lucideSave class="size-4" aria-hidden="true"></svg>{{ t('editor.saveProperty') }}
+                          } @else {
+                            <svg lucidePlus class="size-4" aria-hidden="true"></svg>{{ t('editor.addProperty') }}
+                          }
                         </button>
                       </div>
                     }
-
-                    <div class="property-save-actions ml-auto flex flex-wrap justify-end gap-2">
-                      <button
-                        suiButton
-                        size="sm"
-                        severity="neutral"
-                        variant="text"
-                        [disabled]="controlsUnavailable() || (!form()?.hasChanges() && !decisionRequired())"
-                        (click)="discard()"
-                      >
-                        <svg lucideUndo2 class="size-4" aria-hidden="true"></svg>{{ t('editor.discardChanges') }}
-                      </button>
-                      <button
-                        suiButton
-                        size="sm"
-                        severity="primary"
-                        [loading]="!!form()?.saving()"
-                        [disabled]="actionPending() || (!form()?.hasChanges() && !decisionRequired())"
-                        (click)="save()"
-                      >
-                        @if (attribute()) {
-                          <svg lucideSave class="size-4" aria-hidden="true"></svg>{{ t('editor.saveProperty') }}
-                        } @else {
-                          <svg lucidePlus class="size-4" aria-hidden="true"></svg>{{ t('editor.addProperty') }}
-                        }
-                      </button>
-                    </div>
-                  }
-                </section>
-              }
+                  </section>
+                }
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    }
+      }
+    </div>
   </section>
 </ng-container>

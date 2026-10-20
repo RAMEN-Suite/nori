@@ -9,9 +9,13 @@ import {
   DestroyRef,
   ElementRef,
   inject,
+  input,
+  output,
   signal,
   viewChild,
   type Signal,
+  type InputSignal,
+  type OutputEmitterRef,
   type WritableSignal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -39,13 +43,13 @@ import {
 import { Button, Divider, Input, List, ListItemTemplate, type ListTrackBy } from '@sushi-kit/angular';
 import { ScrollOverflowDirective } from '../../../../../directives/scroll-overflow.directive';
 import { TooltipDirective } from '../../../../../directives/tooltip.directive';
-import type { InheritedAttribute } from '../../../../../models/WorkspaceDetails';
+import type { InheritedAttribute, NodeDefinition } from '../../../../../models/WorkspaceDetails';
 import { ProjectService } from '../../../../../services/projects/project.service';
 import { WorkspaceService, type WorkspaceContext } from '../../../../../services/workspace/workspace.service';
 import { ApplicationState } from '../../../../../states/application.state';
 import { ScrollHintsComponent } from '../../../shared/scroll-hints/scroll-hints.component';
 import { NodeAttributeComponent } from '../../inspector/node-view/node-attributes/node-attribute/node-attribute.component';
-import { NodeBasicsComponent } from '../../inspector/node-view/node-basics/node-basics.component';
+import { NodeContextPanelComponent } from '../node-context-panel/node-context-panel.component';
 import { PropertyFormComponent } from '../property-form/property-form.component';
 import { ShapeRelationFormComponent } from './shape-relation-form.component';
 
@@ -73,7 +77,7 @@ type ShapeRemoval = 'shape' | 'property' | 'relation' | null;
     ScrollOverflowDirective,
     ScrollHintsComponent,
     TooltipDirective,
-    NodeBasicsComponent,
+    NodeContextPanelComponent,
     NodeAttributeComponent,
     PropertyFormComponent,
     ShapeRelationFormComponent,
@@ -101,6 +105,10 @@ export class ShapeEditorComponent {
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
   protected readonly form: Signal<PropertyFormComponent | undefined> = viewChild(PropertyFormComponent);
   protected readonly relationForm: Signal<ShapeRelationFormComponent | undefined> = viewChild(ShapeRelationFormComponent);
+  public readonly initialArrival: InputSignal<boolean> = input(false);
+  public readonly switchingNode: InputSignal<boolean> = input(false);
+  public readonly animateChanges: InputSignal<boolean> = input(true);
+  public readonly inspectRefinement: OutputEmitterRef<NodeDefinition> = output();
   public readonly busy: WritableSignal<boolean> = signal(false);
   protected readonly error: WritableSignal<string | null> = signal(null);
   protected readonly shapeId: WritableSignal<string | null> = signal(null);
@@ -257,8 +265,14 @@ export class ShapeEditorComponent {
       return [
         {
           ...relation,
-          from: { ...relation.from, nodeId: this.qualify(relation.from.nodeId, ownerId) },
-          to: { ...relation.to, nodeId: this.qualify(relation.to.nodeId, ownerId) },
+          from: {
+            ...relation.from,
+            nodeId: this.qualify(relation.from.nodeId, ownerId),
+          },
+          to: {
+            ...relation.to,
+            nodeId: this.qualify(relation.to.nodeId, ownerId),
+          },
         },
       ];
     });
@@ -395,7 +409,10 @@ export class ShapeEditorComponent {
         (property: Attribute): Attribute => ({
           ...property,
           id: ModelFactory.createIdentifier(),
-          constraints: property.constraints?.map((constraint) => ({ ...constraint, id: ModelFactory.createIdentifier() })),
+          constraints: property.constraints?.map((constraint) => ({
+            ...constraint,
+            id: ModelFactory.createIdentifier(),
+          })),
         }),
       );
       const copy: AnnotationShape = await this.workspace.actions.createAnnotationShape({

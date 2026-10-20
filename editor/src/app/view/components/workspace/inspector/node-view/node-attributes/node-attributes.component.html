@@ -40,18 +40,16 @@
     </div>
     <nori-scroll-hints [up]="scroll.canScrollUp()" [down]="scroll.canScrollDown()" />
   </div>
-  @if (workspace.queries.nodeEditable() || (workspace.queries.editable() && isAnnotation())) {
+  @if (workspace.queries.currentNode()) {
     <footer class="flex shrink-0 flex-col gap-2">
       @if (isAnnotation()) {
         <button suiButton severity="neutral" variant="soft" size="sm" class="w-full" (click)="handleEditAnnotations()">
           <svg lucideTags class="size-3.5" aria-hidden="true"></svg>{{ t('editor.shapes.edit') }}
         </button>
       }
-      @if (workspace.queries.nodeEditable()) {
-        <button suiButton severity="primary" size="sm" class="w-full" (click)="propertyEditing.open()">
-          <svg lucidePencil class="size-3.5" aria-hidden="true"></svg>{{ t('editor.editProperties') }}
-        </button>
-      }
+      <button suiButton severity="primary" size="sm" class="w-full" (click)="propertyEditing.open()">
+        <svg lucidePencil class="size-3.5" aria-hidden="true"></svg>{{ t('editor.editProperties') }}
+      </button>
     </footer>
   }
 </div>

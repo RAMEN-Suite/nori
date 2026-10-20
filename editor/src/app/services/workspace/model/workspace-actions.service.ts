@@ -27,6 +27,7 @@ import {
   type AnnotationShapeInput,
   type AnnotationShapeUpdate,
 } from '@ramen-suite/core/ramen';
+import { FieldValidationError } from '../../../models/FieldValidationError';
 import { type GraphView, type ModelRecord, type NodeColors, type ViewSettings } from '../../../models/ModelRecord';
 import { ProjectService } from '../../projects/project.service';
 import { RelationHistoryService } from './relation-history.service';
@@ -101,10 +102,7 @@ export class WorkspaceActionsService {
 
   public async createAttribute(nodeId: string, input: AttributeInput): Promise<Attribute> {
     this.requirePropertyNameLength(input.name);
-    this.requireValidChange((draft: RamenModel): ModelChange<Attribute> => draft.createAttribute(nodeId, input));
-    const attribute: Attribute = this.store.getDraft().createAttribute(nodeId, input).element;
-    await this.saveWorkspace();
-    return attribute;
+    return this.persistValidatedChange((draft: RamenModel): ModelChange<Attribute> => draft.createAttribute(nodeId, input));
   }
 
   public async updateAttribute(nodeId: string, attributeId: string, patch: UpdateAttributeInput): Promise<void> {
@@ -113,9 +111,9 @@ export class WorkspaceActionsService {
       .getNode(nodeId)
       ?.attributes.find((attribute: Attribute): boolean => attribute.id === attributeId)?.name;
     if (patch.name !== undefined && patch.name !== currentName) this.requirePropertyNameLength(patch.name);
-    this.requireValidChange((draft: RamenModel): ModelChange<Attribute> => draft.updateAttribute(nodeId, attributeId, patch));
-    this.store.getDraft().updateAttribute(nodeId, attributeId, patch);
-    await this.saveWorkspace();
+    await this.persistValidatedChange(
+      (draft: RamenModel): ModelChange<Attribute> => draft.updateAttribute(nodeId, attributeId, patch),
+    );
   }
 
   public async duplicateAttribute(nodeId: string, attributeId: string): Promise<Attribute> {
@@ -177,15 +175,17 @@ export class WorkspaceActionsService {
   }
 
   public async createAnnotationShape(input: AnnotationShapeInput): Promise<AnnotationShape> {
-    return this.persistShape((draft: RamenModel): ModelChange<AnnotationShape> => draft.createAnnotationShape(input));
+    return this.persistValidatedChange((draft: RamenModel): ModelChange<AnnotationShape> => draft.createAnnotationShape(input));
   }
 
   public async updateAnnotationShape(shapeId: string, input: AnnotationShapeUpdate): Promise<AnnotationShape> {
-    return this.persistShape((draft: RamenModel): ModelChange<AnnotationShape> => draft.updateAnnotationShape(shapeId, input));
+    return this.persistValidatedChange(
+      (draft: RamenModel): ModelChange<AnnotationShape> => draft.updateAnnotationShape(shapeId, input),
+    );
   }
 
   public async removeAnnotationShape(shapeId: string): Promise<void> {
-    await this.persistShape((draft: RamenModel): ModelChange<AnnotationShape> => draft.removeAnnotationShape(shapeId));
+    await this.persistValidatedChange((draft: RamenModel): ModelChange<AnnotationShape> => draft.removeAnnotationShape(shapeId));
   }
 
   public async saveShapeProperty(shapeId: string, input: AttributeInput, attributeId?: string): Promise<Attribute> {
@@ -201,7 +201,11 @@ export class WorkspaceActionsService {
       constraints: input.constraints ? [...input.constraints] : undefined,
     };
     const created: Attribute = ModelFactory.createAttribute(values);
-    const attribute: Attribute = { ...current, ...created, id: current?.id ?? created.id };
+    const attribute: Attribute = {
+      ...current,
+      ...created,
+      id: current?.id ?? created.id,
+    };
     const properties: readonly Attribute[] = current
       ? shape.properties.map((item: Attribute): Attribute => (item.id === current.id ? attribute : item))
       : [...shape.properties, attribute];
@@ -225,7 +229,7 @@ export class WorkspaceActionsService {
     return shape;
   }
 
-  private async persistShape<T>(edit: (draft: RamenModel) => ModelChange<T>): Promise<T> {
+  private async persistValidatedChange<T>(edit: (draft: RamenModel) => ModelChange<T>): Promise<T> {
     this.requireValidChange(edit);
     const models: readonly Model[] = this.store.getModels();
     const projectId: string | null = this.projects.selectedProjectId();
@@ -312,7 +316,9 @@ export class WorkspaceActionsService {
     const node: Node | undefined = this.store.getDraft().getNode(reference);
     if (!node) throw new Error(this.translations.translate('editor.nodeUnavailable'));
     this.requireAvailableNodeName(node.name);
-    await this.saveView(record.modelId, { visibleNodeRefs: [...(record.view?.visibleNodeRefs ?? []), reference] });
+    await this.saveView(record.modelId, {
+      visibleNodeRefs: [...(record.view?.visibleNodeRefs ?? []), reference],
+    });
   }
 
   public previewVisibleNodeRemoval(reference: string): RelationRemovalPreview {
@@ -399,7 +405,12 @@ export class WorkspaceActionsService {
 
   private requirePropertyNameLength(name: string): void {
     if (name.trim().length <= PROPERTY_NAME_MAX_LENGTH) return;
-    throw new Error(this.translations.translate('editor.propertyNameTooLong', { maximum: PROPERTY_NAME_MAX_LENGTH }));
+    throw new FieldValidationError(
+      'name',
+      this.translations.translate('editor.propertyNameTooLong', {
+        maximum: PROPERTY_NAME_MAX_LENGTH,
+      }),
+    );
   }
 
   private requireValidChange<T>(edit: (draft: RamenModel) => ModelChange<T>): void {
@@ -419,6 +430,10 @@ export class WorkspaceActionsService {
     );
     if (!issue) return;
 
+    throw this.validationError(issue);
+  }
+
+  private validationError(issue: Diagnostic): Error {
     const messageKeys: Record<string, string> = {
       RAMEN_ANNOTATION_TYPE_DUPLICATE: 'editor.shapes.nameTaken',
       ATTRIBUTE_NAME_DUPLICATE: 'editor.propertyNameTaken',
@@ -428,7 +443,22 @@ export class WorkspaceActionsService {
       ATTRIBUTE_KEY_BOUNDS_INVALID: 'editor.propertyKeyBounds',
     };
     const key: string = messageKeys[issue.code] ?? 'editor.propertyChangeInvalid';
-    throw new Error(this.translations.translate(key, { reason: issue.message }));
+    const message: string = this.translations.translate(key, {
+      reason: issue.message,
+    });
+    const fields: Record<string, string> = {
+      RAMEN_ANNOTATION_TYPE_EMPTY: 'name',
+      RAMEN_ANNOTATION_TYPE_DUPLICATE: 'name',
+      ATTRIBUTE_NAME_DUPLICATE: 'name',
+      ATTRIBUTE_NAME_SHADOWS_SUPERTYPE: 'name',
+      ATTRIBUTE_MULTIPLE_KEYS: 'key',
+      ATTRIBUTE_KEY_BOUNDS_INVALID: 'key',
+      ATTRIBUTE_BOUNDS_INVALID: 'maximum',
+      RAMEN_ANNOTATION_BOUNDS_INVALID: 'maximum',
+      RAMEN_ANNOTATION_RELATION_INVALID: 'relations',
+    };
+    const field: string | undefined = fields[issue.code];
+    return field ? new FieldValidationError(field, message) : new Error(message);
   }
 
   private requireAvailableNodeName(name: string, excludedId?: string): void {
@@ -467,8 +497,16 @@ export class WorkspaceActionsService {
       draft.createRelation({
         name: relation.name,
         refines: relation.superTypes[0],
-        from: { nodeId: from, bounds: relation.from.bounds, constraints: relation.from.constraints },
-        to: { nodeId: to, bounds: relation.to.bounds, constraints: relation.to.constraints },
+        from: {
+          nodeId: from,
+          bounds: relation.from.bounds,
+          constraints: relation.from.constraints,
+        },
+        to: {
+          nodeId: to,
+          bounds: relation.to.bounds,
+          constraints: relation.to.constraints,
+        },
         constraints: relation.constraints,
       });
     }

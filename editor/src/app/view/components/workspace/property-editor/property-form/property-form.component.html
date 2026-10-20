@@ -1,26 +1,27 @@
 <form *transloco="let t" class="property-form" [inert]="saving()" (ngSubmit)="$event.preventDefault()">
-  <div class="property-reveal" [noriAnimateHeight]="motion()">
-    <div>
-      @if (error(); as message) {
-        <p
-          class="property-reveal-content text-error text-sm"
-          role="alert"
-          data-nori-motion
-          [animate.enter]="motion() ? 'property-form-enter' : ''"
-          [animate.leave]="motion() ? 'property-form-leave' : ''"
-        >
-          {{ message }}
-        </p>
-      }
-    </div>
-  </div>
   <fieldset class="property-fields" [disabled]="!editable()">
     <legend class="sr-only">{{ t('editor.properties') }}</legend>
     <fieldset class="property-basics">
       <legend class="property-group-title">{{ t('editor.propertyDefinition') }}</legend>
       <label class="property-field"
         >{{ t('editor.propertyName') }}
-        <input suiInput fluid size="sm" name="name" [maxlength]="nameMaxLength" [(ngModel)]="name" required />
+        <input
+          suiInput
+          fluid
+          size="sm"
+          name="name"
+          [maxlength]="nameMaxLength"
+          [(ngModel)]="name"
+          (ngModelChange)="clearFieldError('name')"
+          [invalid]="!!nameError()"
+          [touched]="!!nameError()"
+          [attr.aria-invalid]="nameError() ? 'true' : null"
+          [attr.aria-describedby]="nameError() ? 'property-name-error' : null"
+          required
+        />
+        @if (nameError(); as message) {
+          <span id="property-name-error" class="text-error text-xs font-normal" role="alert">{{ message }}</span>
+        }
       </label>
       <div class="property-field">
         <span>{{ t('editor.dataType') }}</span>
@@ -80,9 +81,11 @@
   <ng-template #optionList let-options let-label="label">
     <sui-card size="xs" variant="border">
       <sui-list size="xs" [items]="options" [trackBy]="trackOption" [ariaLabel]="label" [dividers]="true" [rowHover]="false">
-        <ng-template suiListItem let-option>
+        <ng-template suiListItem let-option let-first="first" let-last="last">
           <label
             class="property-option-row col-span-full"
+            [class.has-previous]="!first"
+            [class.has-next]="!last"
             data-nori-motion
             [attr.for]="'property-control-' + option"
             [attr.aria-disabled]="!editable() || (option === 'key' && keyUnavailable) ? 'true' : null"
@@ -98,6 +101,9 @@
                   {{ t('editor.propertyOptions.' + option + '.hint') }}
                 }
               </span>
+              @if (fieldErrors()[option]; as message) {
+                <span [id]="'property-error-' + option" class="text-error text-xs" role="alert">{{ message }}</span>
+              }
             </span>
             @switch (option) {
               @case ('minimum') {
@@ -132,7 +138,10 @@
                   [maxFractionDigits]="0"
                   [disabled]="!editable()"
                   [ariaLabel]="t('editor.propertyOptions.maximum.label')"
-                  ariaDescribedby="property-option-maximum"
+                  [ariaDescribedby]="
+                    fieldErrors()['maximum'] ? 'property-option-maximum property-error-maximum' : 'property-option-maximum'
+                  "
+                  [invalid]="!!fieldErrors()['maximum']"
                   [placeholder]="t('editor.unlimitedValues')"
                   [value]="upperBound === -1 ? null : upperBound"
                   (valueChange)="handleMaximum($event)"
@@ -148,7 +157,8 @@
                   [name]="option"
                   [disabled]="!editable() || (option === 'key' && keyUnavailable)"
                   [attr.aria-label]="t('editor.propertyOptions.' + option + '.label')"
-                  [attr.aria-describedby]="'property-option-' + option"
+                  [attr.aria-describedby]="'property-option-' + option + (fieldErrors()[option] ? ' property-error-' + option : '')"
+                  [attr.aria-invalid]="fieldErrors()[option] ? 'true' : null"
                   [ngModel]="optionValue(option)"
                   (ngModelChange)="handleOption(option, $event)"
                 />

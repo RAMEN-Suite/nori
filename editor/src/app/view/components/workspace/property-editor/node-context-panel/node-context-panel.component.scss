@@ -1,0 +1,12 @@
+:host {
+  display: block;
+  min-width: 0;
+  flex-shrink: 0;
+}
+.property-refinement-chip:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--refinement-colour) 20%, transparent);
+}
+.property-refinement-chip:focus-visible {
+  outline: var(--sui-focus-ring-width) solid var(--sui-focus-ring-color, currentColor);
+  outline-offset: var(--sui-focus-ring-offset);
+}

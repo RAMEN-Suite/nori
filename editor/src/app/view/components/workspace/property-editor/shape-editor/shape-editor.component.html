@@ -2,22 +2,18 @@
   <div
     class="shape-panels property-workspace-panels grid min-h-0 flex-1 grid-cols-[minmax(12rem,0.8fr)_minmax(0,1.7fr)] items-stretch gap-4"
     [class.show-detail]="mobileDetail()"
-    [class.motion-disabled]="!appearance.state().animations"
+    [class.motion-enabled]="appearance.state().animations"
+    [class.initial-arrival]="initialArrival()"
     [attr.aria-busy]="busy()"
-    [inert]="busy() || !!form()?.saving() || !!relationForm()?.saving()"
+    [inert]="pending() || switchingNode()"
   >
     <aside class="property-left-column flex min-h-0 min-w-0 flex-col gap-4">
-      <section
-        class="property-node-info min-w-0 shrink-0 overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)] bg-[color-mix(in_oklab,var(--color-base-100)_96%,transparent)] p-5 backdrop-blur-[16px]"
-      >
-        <nori-node-basics id="property-workspace-node-title" />
-        @if (workspace.queries.currentNodeChain().at(-1); as base) {
-          <p class="text-base-content/60 mt-1 text-xs">
-            {{ t('editor.refinesLabel') }}
-            <span class="property-refinement-chip rounded-full border border-[var(--nori-border)] px-2.5 py-0.5">{{ base.node.name }}</span>
-          </p>
-        }
-      </section>
+      <nori-node-context-panel
+        [animateChanges]="animateChanges()"
+        [tooltipSuspended]="switchingNode()"
+        [disabled]="pending() || switchingNode() || !!removing()"
+        (inspect)="inspectRefinement.emit($event)"
+      />
       <section
         class="property-list flex min-h-0 min-w-0 flex-1 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)] bg-[color-mix(in_oklab,var(--color-base-100)_96%,transparent)] backdrop-blur-[16px]"
       >
@@ -41,7 +37,9 @@
                 <svg lucideSettings2 class="size-4" aria-hidden="true"></svg>
               </button>
             </div>
-            <h3 class="px-2 text-base font-semibold break-words">{{ entry.shape.type }}</h3>
+            <h3 class="px-2 text-base font-semibold break-words">
+              {{ entry.shape.type }}
+            </h3>
             <div class="flex flex-wrap gap-1" role="group" [attr.aria-label]="t('editor.shapes.content')">
               <button
                 suiButton
@@ -74,7 +72,9 @@
           <div noriScrollOverflow #shapeScroll="scrollOverflow" class="property-list-scroll editor-panel-scroll px-2 pb-2">
             @if (selected(); as entry) {
               @if (section() === 'properties') {
-                <div suiDivider placement="start" class="text-base-content/60 text-xs">{{ t('editor.shapes.fromNode') }}</div>
+                <div suiDivider placement="start" class="text-base-content/60 text-xs">
+                  {{ t('editor.shapes.fromNode') }}
+                </div>
                 <sui-list
                   class="editor-list"
                   size="xs"
@@ -99,7 +99,9 @@
                       /></button
                   ></ng-template>
                 </sui-list>
-                <div suiDivider placement="start" class="text-base-content/60 text-xs">{{ t('editor.shapes.onShape') }}</div>
+                <div suiDivider placement="start" class="text-base-content/60 text-xs">
+                  {{ t('editor.shapes.onShape') }}
+                </div>
                 <sui-list
                   class="editor-list"
                   size="xs"
@@ -173,7 +175,9 @@
                 ></ng-template>
               </sui-list>
               @if (!shapes().length) {
-                <p class="text-base-content/60 px-4 py-3 text-sm">{{ t('editor.shapes.empty') }}</p>
+                <p class="text-base-content/60 px-4 py-3 text-sm">
+                  {{ t('editor.shapes.empty') }}
+                </p>
               }
             }
           </div>
@@ -211,7 +215,9 @@
                     >{{ t('editor.shapes.name')
                     }}<input suiInput fluid size="sm" name="shapeName" [(ngModel)]="name" [disabled]="!editable()"
                   /></label>
-                  <p class="text-base-content/60 text-xs">{{ t('editor.shapes.nameHint') }}</p>
+                  <p class="text-base-content/60 text-xs">
+                    {{ t('editor.shapes.nameHint') }}
+                  </p>
                 </form>
               }
               @case ('property') {
@@ -248,7 +254,9 @@
               @default {
                 <div class="text-base-content/60 flex h-full min-h-40 flex-col items-center justify-center gap-3 text-center">
                   <svg lucideTags class="size-6" aria-hidden="true"></svg>
-                  <p class="text-sm">{{ t(selected() ? 'editor.shapes.selectItem' : 'editor.shapes.selectShape') }}</p>
+                  <p class="text-sm">
+                    {{ t(selected() ? 'editor.shapes.selectItem' : 'editor.shapes.selectShape') }}
+                  </p>
                 </div>
               }
             }
@@ -268,8 +276,13 @@
           class="property-save-panel mt-4 flex min-h-16 flex-wrap items-center gap-3 rounded-[var(--nori-radius)] border border-[var(--nori-border)] bg-[color-mix(in_oklab,var(--color-base-100)_96%,transparent)] px-5 py-4 backdrop-blur-[16px]"
           [attr.aria-label]="t('editor.shapes.changes')"
         >
+          @if (form()?.saveError(); as message) {
+            <p class="text-error w-full text-sm" role="alert">{{ message }}</p>
+          }
           @if (removing(); as removal) {
-            <p class="w-full text-sm">{{ t('editor.shapes.remove.' + removal) }}</p>
+            <p class="w-full text-sm">
+              {{ t('editor.shapes.remove.' + removal) }}
+            </p>
             <div class="ml-auto flex flex-wrap gap-2">
               <button suiButton size="sm" severity="neutral" variant="text" (click)="removing.set(null)">
                 <svg lucideX class="size-4" aria-hidden="true"></svg>{{ t('common.cancel') }}</button

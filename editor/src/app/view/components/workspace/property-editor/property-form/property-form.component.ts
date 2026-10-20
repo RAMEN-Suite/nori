@@ -32,8 +32,9 @@ import {
   type AutocompleteOption,
 } from '@sushi-kit/angular';
 import { AnimateHeightDirective } from '../../../../../directives/animate-height.directive';
-import { ApplicationState } from '../../../../../states/application.state';
+import { FieldValidationError } from '../../../../../models/FieldValidationError';
 import { WorkspaceService, type WorkspaceContext } from '../../../../../services/workspace/workspace.service';
+import { ApplicationState } from '../../../../../states/application.state';
 import { PROPERTY_NAME_MAX_LENGTH } from '../../../../../utils/model-names';
 
 type PropertyToggleOption = 'required' | 'multiple' | 'ordered' | 'duplicates' | 'readonly' | 'key';
@@ -61,8 +62,8 @@ type PropertyOption = PropertyToggleOption | 'minimum' | 'maximum';
   styleUrl: './property-form.component.scss',
 })
 export class PropertyFormComponent {
-  protected readonly appearance: ApplicationState = inject(ApplicationState);
-  protected readonly workspace: WorkspaceService = inject(WorkspaceService);
+  private readonly appearance: ApplicationState = inject(ApplicationState);
+  private readonly workspace: WorkspaceService = inject(WorkspaceService);
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
   private readonly changeDetector: ChangeDetectorRef = inject(ChangeDetectorRef);
   private readonly translations: TranslocoService = inject(TranslocoService);
@@ -85,7 +86,9 @@ export class PropertyFormComponent {
 
   protected readonly nameMaxLength: number = PROPERTY_NAME_MAX_LENGTH;
 
-  protected readonly error: WritableSignal<string | null> = signal<string | null>(null);
+  protected readonly fieldErrors: WritableSignal<Readonly<Record<string, string>>> = signal({});
+  public readonly saveError: WritableSignal<string | null> = signal(null);
+  protected readonly nameError: Signal<string | null> = computed(() => this.fieldErrors()['name'] ?? null);
   protected name: string = '';
   protected typeId: string = DataTypes.String;
   protected lowerBound: number = 0;
@@ -149,7 +152,8 @@ export class PropertyFormComponent {
 
     this.loadValues(attribute);
     this.selectedAttributeId = this.currentAttribute()?.id;
-    this.error.set(null);
+    this.saveError.set(null);
+    this.fieldErrors.set({});
     this.initialValue = this.snapshot(this.values());
   }
 
@@ -186,7 +190,16 @@ export class PropertyFormComponent {
     return values[option];
   }
 
+  protected clearFieldError(field: string): void {
+    if (!this.fieldErrors()[field]) return;
+    this.fieldErrors.update(
+      (errors: Readonly<Record<string, string>>): Readonly<Record<string, string>> =>
+        Object.fromEntries(Object.entries(errors).filter(([key]): boolean => key !== field)),
+    );
+  }
+
   protected handleOption(option: PropertyToggleOption, value: boolean): void {
+    this.clearFieldError(option);
     switch (option) {
       case 'required':
         return this.handleRequired(value);
@@ -224,14 +237,19 @@ export class PropertyFormComponent {
   }
 
   private handleBounds(): void {
+    this.clearFieldError('maximum');
+    this.clearFieldError('key');
     if (this.lowerBound !== 1 || this.upperBound !== 1) this.isKey = false;
   }
 
   private async saveDraft(): Promise<void> {
     const nodeId: string | null = this.workspace.store.currentNodeId();
     if (!nodeId || !this.editable() || this.saving() || !this.hasChanges()) return;
+    this.saveError.set(null);
+    this.fieldErrors.set({});
     if (!this.name.trim()) {
-      this.error.set(this.translations.translate('editor.propertyNameRequired'));
+      this.fieldErrors.set({ name: this.translations.translate('editor.propertyNameRequired') });
+      this.element.nativeElement.querySelector<HTMLInputElement>('[name=name]')?.focus();
       return;
     }
 
@@ -260,14 +278,14 @@ export class PropertyFormComponent {
   private handleRequired(required: boolean): void {
     this.lowerBound = required ? Math.max(1, this.lowerBound) : 0;
     if (required && this.upperBound === 0) this.upperBound = 1;
-    if (!required) this.isKey = false;
+    this.handleBounds();
   }
 
   private handleMultiple(multiple: boolean): void {
     this.multipleEnabled.set(multiple);
     this.upperBound = multiple ? -1 : 1;
-    if (multiple) this.isKey = false;
-    else this.lowerBound = Math.min(1, this.lowerBound);
+    if (!multiple) this.lowerBound = Math.min(1, this.lowerBound);
+    this.handleBounds();
   }
 
   private async saveCurrent(nodeId: string): Promise<void> {
@@ -275,7 +293,6 @@ export class PropertyFormComponent {
     if (!context) return;
     const existing: Attribute | undefined = this.currentAttribute();
     const input: AttributeInput = this.values();
-    this.error.set(null);
 
     try {
       const attribute: Attribute | undefined = await this.persist(nodeId, existing, input);
@@ -288,8 +305,20 @@ export class PropertyFormComponent {
       }
     } catch (error: unknown) {
       if (!this.isCurrentForm(context, nodeId, existing?.id)) return;
-      this.error.set(error instanceof Error ? error.message : String(error));
+      this.showError(error);
     }
+  }
+
+  private showError(error: unknown): void {
+    if (error instanceof FieldValidationError && this.hasField(error.field)) {
+      this.fieldErrors.set({ [error.field]: error.message });
+      this.changeDetector.detectChanges();
+      this.element.nativeElement.querySelector<HTMLElement>('[aria-invalid=true]')?.focus();
+    } else this.saveError.set(error instanceof Error ? error.message : String(error));
+  }
+
+  private hasField(field: string): boolean {
+    return field === 'name' || field === 'key' || (field === 'maximum' && this.multiple);
   }
 
   private isCurrentForm(context: WorkspaceContext, nodeId: string, attributeId: string | undefined): boolean {

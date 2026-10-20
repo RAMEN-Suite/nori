@@ -41,6 +41,12 @@
   cursor: pointer;
   transition: background-color 180ms ease-out;
 }
+.property-option-row.has-previous {
+  margin-top: 0.5rem;
+}
+.property-option-row.has-next {
+  margin-bottom: 0.5rem;
+}
 .property-option-text {
   display: flex;
   min-width: 0;
