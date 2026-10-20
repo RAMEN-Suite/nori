@@ -4,7 +4,9 @@ import {
   type Attribute,
   type AttributeInput,
   type CreateNodeInput,
+  type CreateAttributeInput,
   type Diagnostic,
+  ModelFactory,
   type Model,
   type ModelChange,
   type ModelInput,
@@ -18,7 +20,13 @@ import {
   type UpdateNodeInput,
   type WorkspaceElement,
 } from '@ramen-suite/core/model';
-import { RamenModel, RamenModelFormat, type AnnotationInput, type AnnotationUpdate } from '@ramen-suite/core/ramen';
+import {
+  RamenModel,
+  RamenModelFormat,
+  type AnnotationShape,
+  type AnnotationShapeInput,
+  type AnnotationShapeUpdate,
+} from '@ramen-suite/core/ramen';
 import { type GraphView, type ModelRecord, type NodeColors, type ViewSettings } from '../../../models/ModelRecord';
 import { ProjectService } from '../../projects/project.service';
 import { RelationHistoryService } from './relation-history.service';
@@ -93,7 +101,7 @@ export class WorkspaceActionsService {
 
   public async createAttribute(nodeId: string, input: AttributeInput): Promise<Attribute> {
     this.requirePropertyNameLength(input.name);
-    this.requireValidAttributeChange((draft: RamenModel): ModelChange<Attribute> => draft.createAttribute(nodeId, input));
+    this.requireValidChange((draft: RamenModel): ModelChange<Attribute> => draft.createAttribute(nodeId, input));
     const attribute: Attribute = this.store.getDraft().createAttribute(nodeId, input).element;
     await this.saveWorkspace();
     return attribute;
@@ -105,9 +113,7 @@ export class WorkspaceActionsService {
       .getNode(nodeId)
       ?.attributes.find((attribute: Attribute): boolean => attribute.id === attributeId)?.name;
     if (patch.name !== undefined && patch.name !== currentName) this.requirePropertyNameLength(patch.name);
-    this.requireValidAttributeChange(
-      (draft: RamenModel): ModelChange<Attribute> => draft.updateAttribute(nodeId, attributeId, patch),
-    );
+    this.requireValidChange((draft: RamenModel): ModelChange<Attribute> => draft.updateAttribute(nodeId, attributeId, patch));
     this.store.getDraft().updateAttribute(nodeId, attributeId, patch);
     await this.saveWorkspace();
   }
@@ -170,19 +176,70 @@ export class WorkspaceActionsService {
     await this.saveWorkspace();
   }
 
-  public async createAnnotation(input: AnnotationInput): Promise<void> {
-    this.store.getDraft().createAnnotation(input);
-    await this.saveWorkspace();
+  public async createAnnotationShape(input: AnnotationShapeInput): Promise<AnnotationShape> {
+    return this.persistShape((draft: RamenModel): ModelChange<AnnotationShape> => draft.createAnnotationShape(input));
   }
 
-  public async updateAnnotation(annotationId: string, input: AnnotationUpdate): Promise<void> {
-    this.store.getDraft().updateAnnotation(annotationId, input);
-    await this.saveWorkspace();
+  public async updateAnnotationShape(shapeId: string, input: AnnotationShapeUpdate): Promise<AnnotationShape> {
+    return this.persistShape((draft: RamenModel): ModelChange<AnnotationShape> => draft.updateAnnotationShape(shapeId, input));
   }
 
-  public async removeAnnotation(annotationId: string): Promise<void> {
-    this.store.getDraft().removeAnnotation(annotationId);
-    await this.saveWorkspace();
+  public async removeAnnotationShape(shapeId: string): Promise<void> {
+    await this.persistShape((draft: RamenModel): ModelChange<AnnotationShape> => draft.removeAnnotationShape(shapeId));
+  }
+
+  public async saveShapeProperty(shapeId: string, input: AttributeInput, attributeId?: string): Promise<Attribute> {
+    this.requirePropertyNameLength(input.name);
+    const shape: AnnotationShape = this.requireShape(shapeId);
+    const current: Attribute | undefined = shape.properties.find((item: Attribute): boolean => item.id === attributeId);
+    if (attributeId && !current) throw new Error('The selected property no longer exists.');
+    if (!input.typeId) throw new Error('Select a property data type.');
+    const values: CreateAttributeInput = {
+      ...input,
+      typeId: input.typeId,
+      bounds: input.bounds ?? { lowerBound: 0, upperBound: 1 },
+      constraints: input.constraints ? [...input.constraints] : undefined,
+    };
+    const created: Attribute = ModelFactory.createAttribute(values);
+    const attribute: Attribute = { ...current, ...created, id: current?.id ?? created.id };
+    const properties: readonly Attribute[] = current
+      ? shape.properties.map((item: Attribute): Attribute => (item.id === current.id ? attribute : item))
+      : [...shape.properties, attribute];
+    await this.updateAnnotationShape(shapeId, { properties });
+    return attribute;
+  }
+
+  public async removeShapeProperty(shapeId: string, attributeId: string): Promise<void> {
+    const shape: AnnotationShape = this.requireShape(shapeId);
+    await this.updateAnnotationShape(shapeId, {
+      properties: shape.properties.filter((item: Attribute): boolean => item.id !== attributeId),
+    });
+  }
+
+  private requireShape(shapeId: string): AnnotationShape {
+    const shape: AnnotationShape | undefined = this.store
+      .getDraft()
+      .getAnnotationShapes()
+      .find((item: AnnotationShape): boolean => item.id === shapeId);
+    if (!shape) throw new Error('The selected shape no longer exists.');
+    return shape;
+  }
+
+  private async persistShape<T>(edit: (draft: RamenModel) => ModelChange<T>): Promise<T> {
+    this.requireValidChange(edit);
+    const models: readonly Model[] = this.store.getModels();
+    const projectId: string | null = this.projects.selectedProjectId();
+    const modelId: string | undefined = this.store.currentModel()?.id;
+    const result: T = edit(this.store.getDraft()).element;
+
+    try {
+      await this.saveWorkspace();
+      return result;
+    } catch (error: unknown) {
+      if (this.projects.selectedProjectId() === projectId && this.store.currentModel()?.id === modelId)
+        this.store.restoreModels(models);
+      throw error;
+    }
   }
 
   public async createRelation(input: RelationInput): Promise<Relation> {
@@ -345,7 +402,7 @@ export class WorkspaceActionsService {
     throw new Error(this.translations.translate('editor.propertyNameTooLong', { maximum: PROPERTY_NAME_MAX_LENGTH }));
   }
 
-  private requireValidAttributeChange(edit: (draft: RamenModel) => ModelChange<Attribute>): void {
+  private requireValidChange<T>(edit: (draft: RamenModel) => ModelChange<T>): void {
     const trial: RamenModel = this.store.getDraft().snapshot();
     const levels: readonly RamenModel[] = this.store
       .getModels()
@@ -363,6 +420,7 @@ export class WorkspaceActionsService {
     if (!issue) return;
 
     const messageKeys: Record<string, string> = {
+      RAMEN_ANNOTATION_TYPE_DUPLICATE: 'editor.shapes.nameTaken',
       ATTRIBUTE_NAME_DUPLICATE: 'editor.propertyNameTaken',
       ATTRIBUTE_NAME_SHADOWS_SUPERTYPE: 'editor.propertyNameTaken',
       ATTRIBUTE_MULTIPLE_KEYS: 'editor.propertyMultipleKeys',
@@ -391,7 +449,7 @@ export class WorkspaceActionsService {
     const references: readonly string[] = [
       ...(this.store.currentModelRecord()?.view?.visibleNodeRefs ?? []),
       ...model.relations.flatMap((relation: Relation): string[] => [relation.from.nodeId, relation.to.nodeId]),
-      ...draft.getAnnotations().map((annotation): string => annotation.annotationId),
+      ...draft.getAnnotationShapes().map((annotation): string => annotation.annotationId),
     ];
     for (const reference of new Set(references)) {
       const node: Node | undefined = draft.getNode(reference);

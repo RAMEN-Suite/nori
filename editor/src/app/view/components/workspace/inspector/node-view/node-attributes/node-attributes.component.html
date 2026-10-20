@@ -44,7 +44,7 @@
     <footer class="flex shrink-0 flex-col gap-2">
       @if (isAnnotation()) {
         <button suiButton severity="neutral" variant="soft" size="sm" class="w-full" (click)="handleEditAnnotations()">
-          <svg lucideTags class="size-3.5" aria-hidden="true"></svg>{{ t('editor.editAnnotations') }}
+          <svg lucideTags class="size-3.5" aria-hidden="true"></svg>{{ t('editor.shapes.edit') }}
         </button>
       }
       @if (workspace.queries.nodeEditable()) {

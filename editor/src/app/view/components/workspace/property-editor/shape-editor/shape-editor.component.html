@@ -1,0 +1,323 @@
+<ng-container *transloco="let t">
+  <div
+    class="shape-panels property-workspace-panels grid min-h-0 flex-1 grid-cols-[minmax(12rem,0.8fr)_minmax(0,1.7fr)] items-stretch gap-4"
+    [class.show-detail]="mobileDetail()"
+    [class.motion-disabled]="!appearance.state().animations"
+    [attr.aria-busy]="busy()"
+    [inert]="busy() || !!form()?.saving() || !!relationForm()?.saving()"
+  >
+    <aside class="property-left-column flex min-h-0 min-w-0 flex-col gap-4">
+      <section
+        class="property-node-info min-w-0 shrink-0 overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)] bg-[color-mix(in_oklab,var(--color-base-100)_96%,transparent)] p-5 backdrop-blur-[16px]"
+      >
+        <nori-node-basics id="property-workspace-node-title" />
+        @if (workspace.queries.currentNodeChain().at(-1); as base) {
+          <p class="text-base-content/60 mt-1 text-xs">
+            {{ t('editor.refinesLabel') }}
+            <span class="property-refinement-chip rounded-full border border-[var(--nori-border)] px-2.5 py-0.5">{{ base.node.name }}</span>
+          </p>
+        }
+      </section>
+      <section
+        class="property-list flex min-h-0 min-w-0 flex-1 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)] bg-[color-mix(in_oklab,var(--color-base-100)_96%,transparent)] backdrop-blur-[16px]"
+      >
+        <header class="property-panel-heading flex shrink-0 flex-col gap-2 pt-4 pr-3.5 pb-3.5 pl-5.5">
+          @if (selected(); as entry) {
+            <div class="flex items-center justify-between gap-2">
+              <button suiButton type="button" size="sm" severity="neutral" variant="text" (click)="backToShapes()">
+                <svg lucideArrowLeft class="size-4" aria-hidden="true"></svg>{{ t('editor.shapes.title') }}
+              </button>
+              <button
+                suiButton
+                type="button"
+                size="sm"
+                severity="neutral"
+                variant="text"
+                shape="circle"
+                [attr.aria-label]="t('editor.shapes.settings')"
+                [noriTooltip]="t('editor.shapes.settings')"
+                (click)="settings()"
+              >
+                <svg lucideSettings2 class="size-4" aria-hidden="true"></svg>
+              </button>
+            </div>
+            <h3 class="px-2 text-base font-semibold break-words">{{ entry.shape.type }}</h3>
+            <div class="flex flex-wrap gap-1" role="group" [attr.aria-label]="t('editor.shapes.content')">
+              <button
+                suiButton
+                size="sm"
+                severity="neutral"
+                [variant]="section() === 'properties' ? 'soft' : 'text'"
+                [attr.aria-pressed]="section() === 'properties'"
+                (click)="switchSection('properties')"
+              >
+                {{ t('editor.properties') }}
+              </button>
+              <button
+                suiButton
+                size="sm"
+                severity="neutral"
+                [variant]="section() === 'relations' ? 'soft' : 'text'"
+                [attr.aria-pressed]="section() === 'relations'"
+                (click)="switchSection('relations')"
+              >
+                {{ t('editor.shapes.relations') }}
+              </button>
+            </div>
+          } @else {
+            <h3 class="flex items-center gap-2.5 text-base font-semibold">
+              <svg lucideTags class="size-4" aria-hidden="true"></svg>{{ t('editor.shapes.title') }}
+            </h3>
+          }
+        </header>
+        <div class="nori-scroll-frame min-h-0 flex-1">
+          <div noriScrollOverflow #shapeScroll="scrollOverflow" class="property-list-scroll editor-panel-scroll px-2 pb-2">
+            @if (selected(); as entry) {
+              @if (section() === 'properties') {
+                <div suiDivider placement="start" class="text-base-content/60 text-xs">{{ t('editor.shapes.fromNode') }}</div>
+                <sui-list
+                  class="editor-list"
+                  size="xs"
+                  [items]="sharedProperties()"
+                  [trackBy]="trackShared"
+                  [rowHover]="false"
+                  [dividers]="false"
+                  [ariaLabel]="t('editor.shapes.fromNode')"
+                >
+                  <ng-template suiListItem let-property
+                    ><button
+                      type="button"
+                      class="property-list-item col-span-full flex w-full cursor-pointer rounded-[var(--nori-radius-input)] px-3 py-1.5 text-left"
+                      [class.is-selected]="shared()?.attribute?.id === property.attribute.id"
+                      (click)="selectShared(property)"
+                    >
+                      <nori-node-attribute
+                        class="block min-w-0 flex-1"
+                        [attribute]="property.attribute"
+                        [modelLevelIndex]="property.levelIndex"
+                        [focusable]="false"
+                      /></button
+                  ></ng-template>
+                </sui-list>
+                <div suiDivider placement="start" class="text-base-content/60 text-xs">{{ t('editor.shapes.onShape') }}</div>
+                <sui-list
+                  class="editor-list"
+                  size="xs"
+                  [items]="entry.shape.properties"
+                  [trackBy]="trackProperty"
+                  [rowHover]="false"
+                  [dividers]="false"
+                  [ariaLabel]="t('editor.properties')"
+                >
+                  <ng-template suiListItem let-property
+                    ><button
+                      type="button"
+                      class="property-list-item col-span-full flex w-full cursor-pointer rounded-[var(--nori-radius-input)] px-3 py-1.5 text-left"
+                      [class.is-selected]="propertyId() === property.id && detail() === 'property'"
+                      (click)="selectProperty(property.id)"
+                    >
+                      <nori-node-attribute
+                        class="block min-w-0 flex-1"
+                        [attribute]="property"
+                        [modelLevelIndex]="entry.levelIndex"
+                        [focusable]="false"
+                      /></button
+                  ></ng-template>
+                </sui-list>
+              } @else {
+                <sui-list
+                  class="editor-list"
+                  size="xs"
+                  [items]="entry.shape.relations"
+                  [rowHover]="false"
+                  [dividers]="false"
+                  [ariaLabel]="t('editor.shapes.relations')"
+                >
+                  <ng-template suiListItem let-rule let-index="index"
+                    ><button
+                      type="button"
+                      class="property-list-item col-span-full flex w-full cursor-pointer flex-col items-start rounded-[var(--nori-radius-input)] px-3 py-2 text-left"
+                      [class.is-selected]="detail() === 'relation' && relationIndex() === index"
+                      (click)="selectRelation(index)"
+                    >
+                      <span class="text-sm">{{ relationTargets(rule) }}</span
+                      ><span class="text-base-content/60 text-xs"
+                        >{{ relationLabel(rule) }}, {{ rule.bounds.lowerBound }}–{{
+                          rule.bounds.upperBound === -1 ? '∞' : rule.bounds.upperBound
+                        }}</span
+                      >
+                    </button></ng-template
+                  >
+                </sui-list>
+              }
+            } @else {
+              <sui-list
+                class="editor-list shape-content"
+                size="xs"
+                [items]="shapes()"
+                [trackBy]="trackShape"
+                [rowHover]="false"
+                [dividers]="false"
+                [ariaLabel]="t('editor.shapes.title')"
+              >
+                <ng-template suiListItem let-entry
+                  ><button
+                    type="button"
+                    class="property-list-item col-span-full flex w-full cursor-pointer items-center gap-3 rounded-[var(--nori-radius-input)] px-3 py-2 text-left"
+                    (click)="choose(entry)"
+                  >
+                    <span class="min-w-0 flex-1"
+                      ><span class="block text-sm font-medium break-words">{{ entry.shape.type }}</span
+                      ><span class="text-base-content/60 text-xs">{{ entry.modelName }}</span></span
+                    ><svg lucideChevronRight class="size-4 shrink-0" aria-hidden="true"></svg></button
+                ></ng-template>
+              </sui-list>
+              @if (!shapes().length) {
+                <p class="text-base-content/60 px-4 py-3 text-sm">{{ t('editor.shapes.empty') }}</p>
+              }
+            }
+          </div>
+          <nori-scroll-hints [up]="shapeScroll.canScrollUp()" [down]="shapeScroll.canScrollDown()" />
+        </div>
+        @if (editable()) {
+          <footer class="property-list-footer shrink-0 px-3 pt-4 pb-3">
+            <button suiButton type="button" size="sm" class="w-full" (click)="createItem()">
+              <svg lucidePlus class="size-4" aria-hidden="true"></svg>{{ t(createLabel()) }}
+            </button>
+          </footer>
+        }
+      </section>
+    </aside>
+    <div class="property-right-column flex min-h-0 min-w-0 flex-col">
+      <section
+        class="property-detail flex min-h-0 min-w-0 flex-1 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)] bg-[color-mix(in_oklab,var(--color-base-100)_96%,transparent)] backdrop-blur-[16px]"
+        tabindex="-1"
+        [attr.aria-label]="t('editor.shapes.details')"
+      >
+        <header class="property-detail-heading hidden shrink-0 px-3.5 pt-2">
+          <button suiButton size="sm" severity="neutral" variant="text" (click)="showList()">
+            <svg lucideArrowLeft class="size-4" aria-hidden="true"></svg>{{ t('common.back') }}
+          </button>
+        </header>
+        <div class="nori-scroll-frame min-h-0 flex-1">
+          <div noriScrollOverflow #shapeDetailScroll="scrollOverflow" class="property-detail-scroll editor-panel-scroll px-6 pt-5 pb-6">
+            @if (error(); as message) {
+              <p class="text-error mb-4 text-sm" role="alert">{{ message }}</p>
+            }
+            @switch (detail()) {
+              @case ('settings') {
+                <form class="flex flex-col gap-5" (submit)="$event.preventDefault()">
+                  <label class="flex flex-col gap-2 text-xs font-medium"
+                    >{{ t('editor.shapes.name')
+                    }}<input suiInput fluid size="sm" name="shapeName" [(ngModel)]="name" [disabled]="!editable()"
+                  /></label>
+                  <p class="text-base-content/60 text-xs">{{ t('editor.shapes.nameHint') }}</p>
+                </form>
+              }
+              @case ('property') {
+                @if (selected(); as entry) {
+                  <nori-property-form
+                    [shapeId]="entry.shape.id"
+                    [currentAttribute]="attribute()"
+                    [editable]="editable()"
+                    [modelLevelIndex]="entry.levelIndex"
+                    [inert]="!!removing()"
+                    (saved)="savedProperty($event)"
+                  />
+                }
+              }
+              @case ('shared') {
+                <nori-property-form
+                  [currentAttribute]="shared()?.attribute"
+                  [editable]="false"
+                  [modelLevelIndex]="shared()?.levelIndex ?? null"
+                />
+              }
+              @case ('relation') {
+                @if (selected(); as entry) {
+                  <nori-shape-relation-form
+                    [shape]="entry.shape"
+                    [ownerModelId]="entry.modelId"
+                    [index]="relationIndex()"
+                    [editable]="editable()"
+                    [inert]="!!removing()"
+                    (saved)="savedRelation($event)"
+                  />
+                }
+              }
+              @default {
+                <div class="text-base-content/60 flex h-full min-h-40 flex-col items-center justify-center gap-3 text-center">
+                  <svg lucideTags class="size-6" aria-hidden="true"></svg>
+                  <p class="text-sm">{{ t(selected() ? 'editor.shapes.selectItem' : 'editor.shapes.selectShape') }}</p>
+                </div>
+              }
+            }
+          </div>
+          <nori-scroll-hints [up]="shapeDetailScroll.canScrollUp()" [down]="shapeDetailScroll.canScrollDown()" />
+        </div>
+      </section>
+      @if (detail() === 'shared' || (selected() && !editable())) {
+        <aside
+          class="property-save-panel border-warning/40 bg-warning/10 mt-4 flex flex-wrap items-center gap-3 rounded-[var(--nori-radius)] border px-5 py-4 text-sm"
+        >
+          <svg lucideInfo class="size-4 shrink-0" aria-hidden="true"></svg
+          >{{ t(detail() === 'shared' ? 'editor.shapes.sharedHint' : 'editor.shapes.inheritedHint') }}
+        </aside>
+      } @else if (detail() !== 'empty') {
+        <section
+          class="property-save-panel mt-4 flex min-h-16 flex-wrap items-center gap-3 rounded-[var(--nori-radius)] border border-[var(--nori-border)] bg-[color-mix(in_oklab,var(--color-base-100)_96%,transparent)] px-5 py-4 backdrop-blur-[16px]"
+          [attr.aria-label]="t('editor.shapes.changes')"
+        >
+          @if (removing(); as removal) {
+            <p class="w-full text-sm">{{ t('editor.shapes.remove.' + removal) }}</p>
+            <div class="ml-auto flex flex-wrap gap-2">
+              <button suiButton size="sm" severity="neutral" variant="text" (click)="removing.set(null)">
+                <svg lucideX class="size-4" aria-hidden="true"></svg>{{ t('common.cancel') }}</button
+              ><button suiButton size="sm" severity="error" (click)="confirmRemoval()">
+                <svg lucideEraser class="size-4" aria-hidden="true"></svg>{{ t('editor.shapes.removeAction') }}
+              </button>
+            </div>
+          } @else {
+            <div class="flex gap-1">
+              @if (detail() === 'settings' && selected()) {
+                <button
+                  suiButton
+                  size="sm"
+                  shape="circle"
+                  severity="neutral"
+                  variant="text"
+                  [attr.aria-label]="t('editor.shapes.duplicate')"
+                  [noriTooltip]="t('editor.shapes.duplicate')"
+                  (click)="duplicateShape()"
+                >
+                  <svg lucideCopy class="size-4" aria-hidden="true"></svg>
+                </button>
+              }
+              @if (selected() && (detail() === 'settings' || attribute() || (detail() === 'relation' && relationIndex() >= 0))) {
+                <button
+                  suiButton
+                  size="sm"
+                  shape="circle"
+                  severity="error"
+                  variant="text"
+                  [attr.aria-label]="t('editor.shapes.removeAction')"
+                  [noriTooltip]="t('editor.shapes.removeAction')"
+                  (click)="requestRemoval(detail() === 'settings' ? 'shape' : detail() === 'relation' ? 'relation' : 'property')"
+                >
+                  <svg lucideEraser class="size-4" aria-hidden="true"></svg>
+                </button>
+              }
+            </div>
+            <div class="property-save-actions ml-auto flex flex-wrap justify-end gap-2">
+              <button suiButton size="sm" severity="neutral" variant="text" [disabled]="!hasChanges()" (click)="discard()">
+                <svg lucideUndo2 class="size-4" aria-hidden="true"></svg>{{ t('editor.discardChanges') }}</button
+              ><button suiButton size="sm" [loading]="pending()" [disabled]="!hasChanges() || !editable()" (click)="save()">
+                <svg lucideSave class="size-4" aria-hidden="true"></svg>{{ t(saveLabel()) }}
+              </button>
+            </div>
+          }
+        </section>
+      }
+    </div>
+  </div>
+</ng-container>

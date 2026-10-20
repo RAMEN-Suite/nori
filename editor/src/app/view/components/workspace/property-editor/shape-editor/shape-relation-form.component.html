@@ -1,0 +1,74 @@
+<form *transloco="let t" class="flex min-w-0 flex-col gap-5" (submit)="$event.preventDefault()" [inert]="saving()">
+  @if (error(); as message) {
+    <p class="text-error text-sm" role="alert">{{ message }}</p>
+  }
+  <fieldset class="flex min-w-0 flex-col gap-5" [disabled]="!editable()">
+    <legend class="mb-3 text-sm font-medium">{{ t('editor.shapes.relationRule') }}</legend>
+    <div class="flex flex-col gap-2 text-xs font-medium">
+      <span id="shape-relation-direction">{{ t('editor.shapes.direction') }}</span>
+      <sui-select
+        fluid
+        size="sm"
+        ariaLabelledby="shape-relation-direction"
+        [disabled]="!editable()"
+        [options]="[
+          { label: t('editor.shapes.outgoing'), value: 'outgoing' },
+          { label: t('editor.shapes.incoming'), value: 'incoming' },
+        ]"
+        [value]="direction()"
+        (valueChange)="changeDirection($event)"
+      />
+      <span class="text-base-content/60 text-xs">{{
+        t(direction() === 'outgoing' ? 'editor.shapes.outgoing' : 'editor.shapes.incoming')
+      }}</span>
+    </div>
+    <fieldset class="flex min-w-0 flex-col gap-2">
+      <legend class="mb-2 text-xs font-medium">{{ t('editor.shapes.modelledRelations') }}</legend>
+      @for (option of options(); track option.ref) {
+        <label
+          class="shape-relation-choice flex items-center gap-3 rounded-[var(--nori-radius-input)] px-3 py-2 text-sm"
+          [attr.aria-disabled]="!editable()"
+        >
+          <input suiCheckbox type="checkbox" [checked]="refs().includes(reference(option))" (change)="toggle(option)" />
+          <span class="flex min-w-0 flex-col"
+            ><span>{{ option.targetName }}</span
+            ><span class="text-base-content/60 text-xs">{{ option.name }}</span></span
+          >
+        </label>
+      } @empty {
+        <p class="text-base-content/60 text-sm">{{ t('editor.shapes.noRelations') }}</p>
+      }
+    </fieldset>
+    <fieldset class="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
+      <legend class="mb-3 text-sm font-medium">{{ t('editor.shapes.cardinality') }}</legend>
+      <div class="flex min-w-0 flex-col gap-2 text-xs font-medium">
+        <span id="shape-relation-minimum">{{ t('editor.propertyOptions.minimum.label') }}</span
+        ><sui-input-number
+          fluid
+          size="sm"
+          ariaLabelledby="shape-relation-minimum"
+          [disabled]="!editable()"
+          [min]="0"
+          [maxFractionDigits]="0"
+          [value]="minimum"
+          (valueChange)="minimum = $event ?? 0"
+        />
+      </div>
+      <div class="flex min-w-0 flex-col gap-2 text-xs font-medium">
+        <span id="shape-relation-maximum">{{ t('editor.propertyOptions.maximum.label') }}</span
+        ><sui-input-number
+          fluid
+          size="sm"
+          ariaLabelledby="shape-relation-maximum"
+          [disabled]="!editable()"
+          [placeholder]="t('editor.unlimitedValues')"
+          [min]="minimum"
+          [maxFractionDigits]="0"
+          [value]="maximum"
+          (valueChange)="maximum = $event"
+        />
+      </div>
+    </fieldset>
+    <p class="text-base-content/60 text-xs">{{ t('editor.shapes.relationHint') }}</p>
+  </fieldset>
+</form>

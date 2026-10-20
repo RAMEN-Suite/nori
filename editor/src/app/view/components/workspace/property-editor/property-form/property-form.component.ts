@@ -69,6 +69,7 @@ export class PropertyFormComponent {
   private readonly element: ElementRef<HTMLElement> = inject<ElementRef<HTMLElement>>(ElementRef);
 
   public readonly modelLevelIndex: InputSignal<number | null> = input<number | null>(null);
+  public readonly shapeId: InputSignal<string | null> = input<string | null>(null);
   public readonly editable: InputSignal<boolean> = input(true);
   public readonly animateChanges: InputSignal<boolean> = input(true);
   protected readonly motion: Signal<boolean> = computed(() => this.appearance.state().animations && this.animateChanges());
@@ -310,6 +311,8 @@ export class PropertyFormComponent {
   }
 
   private async persist(nodeId: string, existing: Attribute | undefined, input: AttributeInput): Promise<Attribute | undefined> {
+    const shapeId: string | null = this.shapeId();
+    if (shapeId) return this.workspace.actions.saveShapeProperty(shapeId, input, existing?.id);
     if (existing) {
       await this.workspace.actions.updateAttribute(nodeId, existing.id, {
         ...input,

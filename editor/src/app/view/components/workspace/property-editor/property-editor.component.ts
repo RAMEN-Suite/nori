@@ -58,6 +58,7 @@ import { ScrollHintsComponent } from '../../shared/scroll-hints/scroll-hints.com
 import { ConfirmationContentComponent } from '../../dialogs/confirmation/confirmation-content/confirmation-content.component';
 import { NodeAttributeComponent } from '../inspector/node-view/node-attributes/node-attribute/node-attribute.component';
 import { NodeBasicsComponent } from '../inspector/node-view/node-basics/node-basics.component';
+import { ShapeEditorComponent } from './shape-editor/shape-editor.component';
 import { PropertyFormComponent } from './property-form/property-form.component';
 
 interface PropertyOrderItem {
@@ -100,6 +101,7 @@ interface InheritedPropertyGroup {
     LucideTags,
     LucideShieldCheck,
     PropertyFormComponent,
+    ShapeEditorComponent,
     NodeBasicsComponent,
     NodeAttributeComponent,
     AnimateHeightDirective,
@@ -122,6 +124,7 @@ export class PropertyEditorComponent {
   private readonly injector: Injector = inject(Injector);
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
 
+  protected readonly shapeEditor: Signal<ShapeEditorComponent | undefined> = viewChild(ShapeEditorComponent);
   protected readonly form: Signal<PropertyFormComponent | undefined> = viewChild(PropertyFormComponent);
   private readonly orderList: Signal<OrderList<PropertyOrderItem> | undefined> = viewChild(OrderList<PropertyOrderItem>);
 
@@ -241,6 +244,27 @@ export class PropertyEditorComponent {
     });
   }
 
+  protected changeSection(section: 'properties' | 'shapes'): void {
+    this.runWithCleanDraft((): void => this.editing.section.set(section));
+  }
+
+  protected handleTabKey(event: KeyboardEvent): void {
+    if (!this.isAnnotation() || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    event.preventDefault();
+    if (!this.canRunAction()) return;
+    let section: 'properties' | 'shapes' = this.editing.section() === 'properties' ? 'shapes' : 'properties';
+    if (event.key === 'Home') section = 'properties';
+    if (event.key === 'End') section = 'shapes';
+    this.editing.section.set(section);
+    afterNextRender(
+      (): void => {
+        if (!this.destroyRef.destroyed)
+          this.element.nativeElement.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')?.focus();
+      },
+      { injector: this.injector },
+    );
+  }
+
   public close(): void {
     this.runWithCleanDraft((): void => this.editing.close());
   }
@@ -270,6 +294,7 @@ export class PropertyEditorComponent {
   public handleEscape(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
+    if (this.shapeEditor()?.cancelRemoval()) return;
     if (this.sorting()) this.cancelSorting();
     else if (this.removing()) {
       if (!this.actionPending()) this.cancelRemoval();
@@ -513,7 +538,7 @@ export class PropertyEditorComponent {
   }
 
   private canRunAction(): boolean {
-    if (this.actionPending()) return false;
+    if (this.actionPending() || this.shapeEditor()?.canLeave() === false) return false;
     if (this.sorting()) {
       this.element.nativeElement.querySelector<HTMLElement>('.property-list-footer button')?.focus();
       this.shakePanel('.property-list-footer');

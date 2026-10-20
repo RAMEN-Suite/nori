@@ -39,6 +39,7 @@ export class PropertyEditingService {
   private readonly history: WritableSignal<readonly PropertyHistoryEntry[]> = signal([]);
   private readonly navigating: WritableSignal<boolean> = signal(false);
 
+  public readonly section: WritableSignal<'properties' | 'shapes'> = signal('properties');
   public readonly changingNode: Signal<boolean> = this.navigating.asReadonly();
   public readonly previous: Signal<PropertyHistoryEntry | null> = computed(() => this.history().at(-1) ?? null);
   private dialogRef: DialogRef<undefined, PropertyEditorComponent> | null = null;
@@ -56,18 +57,19 @@ export class PropertyEditingService {
     return selection;
   });
 
-  public open(attributeId?: string | null): void {
+  public open(attributeId?: string | null, section: 'properties' | 'shapes' = 'properties'): void {
     const modelId: string | undefined = this.workspace.store.currentModel()?.id;
     const nodeId: string | null = this.workspace.store.currentNodeId();
     if (!modelId || !nodeId || !this.workspace.queries.currentNode()) return;
     if (this.dialogRef) return;
 
     this.select(attributeId);
+    this.section.set(section);
     this.dialogs.error.set(null);
     const ref: DialogRef<undefined, PropertyEditorComponent> = this.overlays.open<undefined, unknown, PropertyEditorComponent>(
       PropertyEditorComponent,
       {
-        ariaLabel: this.translations.translate('editor.editProperties'),
+        ariaLabel: this.translations.translate('editor.nodeDetails'),
         ariaDescribedBy: 'property-workspace-node-title',
         panelClass: 'nori-property-workspace-overlay',
         backdropClass: 'nori-property-workspace-backdrop',

@@ -1,0 +1,10 @@
+.shape-relation-choice {
+  cursor: pointer;
+}
+.shape-relation-choice:not([aria-disabled="true"]):hover {
+  background: var(--sui-color-hover);
+}
+.shape-relation-choice[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: var(--sui-disabled-opacity);
+}
