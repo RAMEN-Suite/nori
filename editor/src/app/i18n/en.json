@@ -118,6 +118,8 @@
     "removeError": "The project could not be removed."
   },
   "editor": {
+    "increasePropertyCount": "Increase {{name}}",
+    "decreasePropertyCount": "Decrease {{name}}",
     "propertyOrder": {
       "up": "Move up",
       "down": "Move down",
