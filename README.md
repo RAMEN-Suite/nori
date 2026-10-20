@@ -105,7 +105,7 @@ See [Build and distribution](docs/deployment.md) for prerequisites, platform-spe
 
 ## License
 
-Copyright 2026 Sebastian Enns, TH Mittelhessen
+Copyright 2026 Sebastian Enns
 
 Licensed under the **Apache License, Version 2.0** (the "License");  
 you may not use this file except in compliance with the License.

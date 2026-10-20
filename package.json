@@ -3,8 +3,8 @@
   "productName": "Nori",
   "description": "Tool for (multi-level) modelling objects across heterogeneous domains in the Digital Humanities.",
   "author": {
-    "name": "Sebastian Enns, TH Mittelhessen",
-    "email": "sebastian.enns@mni.thm.de",
+    "name": "Sebastian Enns",
+    "email": "mail@sebenns.com",
     "url": "https://www.sebenns.com"
   },
   "license": "Apache-2.0",

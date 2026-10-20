@@ -22,6 +22,7 @@ Shared coding style for Nori and related libraries. General principles transfer 
 | Wrapping                          | Prettier owns expression wrapping; configured widths are 130, HTML 140    |
 
 - Write identifiers and technical documentation in English; translate product text.
+- Use `Nori` as the product name in prose and the interface. Use `nori` for repository names, URLs, package names, file names and technical prefixes; retain the established casing rules for types, constants and environment variables.
 - Distinguish IDs, qualified references, indexes, counts and units in names.
 - Keep imports first: framework/runtime, external packages, project modules. Mark type-only imports explicitly; injection tokens remain runtime imports.
 - Use public package entry points. Avoid private package paths, unused imports and duplicate Angular metadata entries.
@@ -71,6 +72,7 @@ Use guard clauses instead of deeply nested branches. Extract meaningful operatio
 
 ## Comments, documentation and libraries
 
+- Do not infer institutional affiliations, copyright holders or contact details. Use only information explicitly supplied by the project owner.
 - Prefer clear names over narration. Explain responsibility, non-obvious reasons, invariants and temporary workarounds; remove dead code and obsolete comments.
 - Keep extension guidance in short Markdown sections organised by task. Update documentation when ownership or APIs change.
 - A library exposes only supported entry points and contracts. Document inputs, mutation, errors, runtime support and compatibility; test the packaged consumer, including declarations and exports.
