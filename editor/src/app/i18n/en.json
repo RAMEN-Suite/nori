@@ -26,6 +26,17 @@
     "importError": "The model could not be imported."
   },
   "settings": {
+    "repository": "Questions & issues on GitHub",
+    "ramenDescription": "Explore the schema behind your models and the tools in the RAMEN ecosystem.",
+    "development": "Concept & development",
+    "support": "Get in touch",
+    "help": "Help & support",
+    "about": "About Nori",
+    "softwareLicense": "Software licensed under Apache 2.0.",
+    "credits": "Credits",
+    "logoMotion": "Logo, motion design & visual design",
+    "contact": "Contact",
+    "contactDescription": "Need help, found a bug or have an idea? Get in touch through the GitHub repository.",
     "theme": "Theme",
     "behaviour": "Behaviour",
     "animations": "Animations",

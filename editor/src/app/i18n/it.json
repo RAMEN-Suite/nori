@@ -26,6 +26,17 @@
     "importError": "Impossibile importare il modello."
   },
   "settings": {
+    "repository": "Domande e problemi su GitHub",
+    "ramenDescription": "Scopri lo schema alla base dei tuoi modelli e gli strumenti dell’ecosistema RAMEN.",
+    "development": "Ideazione e sviluppo",
+    "support": "Contattaci",
+    "help": "Aiuto e supporto",
+    "about": "Informazioni su Nori",
+    "softwareLicense": "Software distribuito con licenza Apache 2.0.",
+    "credits": "Crediti",
+    "logoMotion": "Logo, motion design e visual design",
+    "contact": "Contatti",
+    "contactDescription": "Hai bisogno di aiuto, hai trovato un errore o hai un’idea? Contattaci tramite il repository GitHub.",
     "theme": "Tema",
     "behaviour": "Comportamento",
     "animations": "Animazioni",

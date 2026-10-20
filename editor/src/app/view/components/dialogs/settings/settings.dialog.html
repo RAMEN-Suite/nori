@@ -164,5 +164,84 @@
         </footer>
       </div>
     </ng-template>
+    <ng-template suiTab value="help" [label]="t('settings.help')">
+      <div class="settings-page">
+        <div class="nori-scroll-frame flex-1">
+          <div noriScrollOverflow #helpScroll="scrollOverflow" class="settings-scroll editor-panel-scroll flex min-w-0 flex-col gap-6">
+            <section class="settings-help-section" aria-labelledby="settings-support">
+              <h3 id="settings-support" class="flex items-center gap-2 text-sm font-medium">
+                <svg lucideMail class="size-4 opacity-60" aria-hidden="true"></svg>{{ t('settings.support') }}
+              </h3>
+              <sui-card size="xs" variant="border">
+                <p class="settings-help-description settings-help-introduction">{{ t('settings.contactDescription') }}</p>
+                <ul class="settings-help-list">
+                  <li>
+                    <a class="settings-help-link" noriExternalLink="https://github.com/sebenns/nori/issues"
+                      ><span>{{ t('settings.repository') }}</span
+                      ><svg lucideExternalLink class="size-4 shrink-0 opacity-60" aria-hidden="true"></svg
+                    ></a>
+                  </li>
+                </ul>
+              </sui-card>
+            </section>
+            <section class="settings-help-section" aria-labelledby="settings-ramen">
+              <h3 id="settings-ramen" class="flex items-center gap-2 text-sm font-medium">
+                <svg lucideNetwork class="size-4 opacity-60" aria-hidden="true"></svg>RAMEN
+              </h3>
+              <sui-card size="xs" variant="border">
+                <p class="settings-help-description settings-help-introduction">{{ t('settings.ramenDescription') }}</p>
+                <ul class="settings-help-list">
+                  <li>
+                    <a class="settings-help-link" [noriExternalLink]="schemaURL"
+                      ><span>RAMEN Schema</span><svg lucideExternalLink class="size-4 shrink-0 opacity-60" aria-hidden="true"></svg
+                    ></a>
+                  </li>
+                  <li>
+                    <a class="settings-help-link" [noriExternalLink]="repositoryURL"
+                      ><span>RAMEN Suite</span><svg lucideExternalLink class="size-4 shrink-0 opacity-60" aria-hidden="true"></svg
+                    ></a>
+                  </li>
+                  <li>
+                    <a class="settings-help-link" [noriExternalLink]="coreURL"
+                      ><span>RAMEN Core</span><svg lucideExternalLink class="size-4 shrink-0 opacity-60" aria-hidden="true"></svg
+                    ></a>
+                  </li>
+                </ul>
+              </sui-card>
+            </section>
+            <section class="settings-help-section" aria-labelledby="settings-credits">
+              <h3 id="settings-credits" class="flex items-center gap-2 text-sm font-medium">
+                <svg lucideUsers class="size-4 opacity-60" aria-hidden="true"></svg>{{ t('settings.credits') }}
+              </h3>
+              <sui-card size="xs" variant="border">
+                <ul class="settings-help-list">
+                  <li>
+                    <a class="settings-help-link" noriExternalLink="https://www.sebenns.com"
+                      ><span class="flex min-w-0 flex-col"
+                        ><span class="font-medium">Sebastian Enns</span
+                        ><span class="settings-help-description">{{ t('settings.development') }}</span></span
+                      ><svg lucideExternalLink class="size-4 shrink-0 opacity-60" aria-hidden="true"></svg
+                    ></a>
+                  </li>
+                  <li>
+                    <a
+                      class="settings-help-link"
+                      noriExternalLink="https://www.linkedin.com/in/anna-carina-kn%C3%B6%C3%9F-52b961186/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      ><span class="flex min-w-0 flex-col"
+                        ><span class="font-medium">Carina Knöß</span
+                        ><span class="settings-help-description">{{ t('settings.logoMotion') }}</span></span
+                      ><svg lucideExternalLink class="size-4 shrink-0 opacity-60" aria-hidden="true"></svg
+                    ></a>
+                  </li>
+                </ul>
+              </sui-card>
+            </section>
+          </div>
+          <nori-scroll-hints [up]="helpScroll.canScrollUp()" [down]="helpScroll.canScrollDown()" />
+        </div>
+      </div>
+    </ng-template>
   </sui-tabs>
 </div>

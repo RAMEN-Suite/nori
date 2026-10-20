@@ -1,6 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal, type Signal, type WritableSignal } from '@angular/core';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import {
+  LucideExternalLink,
+  LucideMail,
+  LucideUsers,
   LucideFolder,
   LucideLanguages,
   LucideNavigation,
@@ -12,6 +15,7 @@ import {
   LucideSlidersHorizontal,
 } from '@lucide/angular';
 import { Card, Radio, Toggle, List, ListItemTemplate, Select, Tabs, Tab, Input, Button } from '@sushi-kit/angular';
+import { ExternalLinkDirective } from '../../../../directives/external-link.directive';
 import { ScrollOverflowDirective } from '../../../../directives/scroll-overflow.directive';
 import { APP_THEMES, type AppTheme } from '../../../../models/Appearance';
 import { Languages, type AppLanguage } from '../../../../i18n/languages';
@@ -26,12 +30,17 @@ import {
 import { ShortcutBindings } from '../../../../utils/shortcuts/bindings';
 import { ShortcutService } from '../../../../services/interaction/shortcut.service';
 import { ScrollHintsComponent } from '../../shared/scroll-hints/scroll-hints.component';
+import { environment } from '../../../../../environments/environment';
 import { ApplicationState } from '../../../../states/application.state';
 
 @Component({
   selector: 'nori-settings-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    ExternalLinkDirective,
+    LucideExternalLink,
+    LucideMail,
+    LucideUsers,
     LucideRotateCcw,
     TranslocoDirective,
     ScrollOverflowDirective,
@@ -70,6 +79,10 @@ export class SettingsDialog {
       label: this.translations.translate(`settings.languageOptions.${language}`),
     }));
   });
+
+  protected readonly schemaURL: string = environment.schemaURL;
+  protected readonly repositoryURL: string = environment.repositoryURL;
+  protected readonly coreURL: string = environment.coreURL;
 
   protected readonly themes: readonly AppTheme[] = APP_THEMES;
   protected readonly animationSettings: readonly string[] = ['animations'];

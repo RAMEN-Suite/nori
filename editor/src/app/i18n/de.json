@@ -26,6 +26,17 @@
     "importError": "Das Modell konnte nicht importiert werden."
   },
   "settings": {
+    "repository": "Fragen & Fehler im Repository",
+    "ramenDescription": "Entdecke das Schema hinter deinen Modellen und die Werkzeuge im RAMEN-Ökosystem.",
+    "development": "Konzeption & Entwicklung",
+    "support": "Kontakt aufnehmen",
+    "help": "Hilfe & Support",
+    "about": "Über Nori",
+    "softwareLicense": "Software lizenziert unter Apache 2.0.",
+    "credits": "Mitwirkende",
+    "logoMotion": "Logo, Motion Design & Visual Design",
+    "contact": "Kontakt",
+    "contactDescription": "Du brauchst Hilfe, hast einen Fehler gefunden oder eine Idee? Melde dich gerne über das GitHub-Repository.",
     "theme": "Darstellung",
     "behaviour": "Verhalten",
     "animations": "Animationen",
