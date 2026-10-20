@@ -1,26 +1,3 @@
-<div class="intro-sequence" data-nori-motion (animationend)="finish($event)">
-  <svg viewBox="-150 -150 300 300" fill="none" focusable="false">
-    <defs>
-      <mask [id]="maskId" maskUnits="userSpaceOnUse" x="-80" y="-80" width="160" height="160">
-        <circle class="intro-progress" data-nori-motion r="74" pathLength="1" />
-      </mask>
-    </defs>
-    <foreignObject class="intro-ring" data-nori-motion x="-78" y="-78" width="156" height="156" [attr.mask]="'url(#' + maskId + ')'">
-      <span class="intro-mark" style="mask-image: url('images/nori-logo.svg')"></span>
-    </foreignObject>
-    @for (tile of tiles; track $index) {
-      <g
-        class="intro-tile"
-        data-nori-motion
-        [style.--tile-x]="tile.x + 'px'"
-        [style.--tile-y]="tile.y + 'px'"
-        [style.--spread-x]="tile.spreadX + 'px'"
-        [style.--spread-y]="tile.spreadY + 'px'"
-      >
-        <foreignObject x="-26" y="-26" width="52" height="52">
-          <span class="intro-tile-art" style="mask-image: url('images/nori-logo.svg')"></span>
-        </foreignObject>
-      </g>
-    }
-  </svg>
-</div>
+<video autoplay [muted]="true" playsinline preload="auto" disablepictureinpicture (ended)="reveal()" (error)="reveal()">
+  <source src="videos/nori-intro.webm" type="video/webm" (error)="reveal()" />
+</video>

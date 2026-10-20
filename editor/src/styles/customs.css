@@ -302,3 +302,7 @@ sui-toast.nori-notifications {
 .nori-settings-host {
   --sui-dialog-viewport-gap: 2.5rem;
 }
+
+.nori-intro-active [data-nori-motion] {
+  animation-play-state: paused !important;
+}

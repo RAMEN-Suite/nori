@@ -60,6 +60,7 @@ export class HomeScreen implements OnInit {
     this.router.lastSuccessfulNavigation() === null && this.application.state().animations && !this.reducedMotion.matches,
   );
   protected readonly playLogoIntro: boolean = this.introVisible();
+  protected readonly introPlaying: WritableSignal<boolean> = signal(this.introVisible());
   protected readonly importing: WritableSignal<boolean> = signal(false);
   protected readonly importError: WritableSignal<string | null> = signal(null);
   protected readonly resources: readonly {

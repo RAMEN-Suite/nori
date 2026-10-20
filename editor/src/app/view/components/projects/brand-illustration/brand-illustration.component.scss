@@ -4,7 +4,7 @@
 }
 
 .brand-emblem {
-  --ambient-start: calc(var(--home-intro-delay, 0ms) + 1.6s);
+  --ambient-start: 1.6s;
   aspect-ratio: 8 / 7;
 }
 
@@ -237,20 +237,20 @@
 }
 
 .brand-network {
-  animation: network-arrive 300ms var(--home-intro-delay, 0ms) ease-out both;
+  animation: network-arrive 300ms ease-out both;
 }
 
 .brand-grid {
-  animation: grid-arrive 900ms var(--home-intro-delay, 0ms) ease-out both;
+  animation: grid-arrive 900ms ease-out both;
 }
 
 .brand-graph-lines path {
   stroke-dasharray: 1;
-  animation: network-draw 500ms calc(var(--home-intro-delay, 0ms) + var(--branch-delay)) linear both;
+  animation: network-draw 500ms var(--branch-delay) linear both;
 }
 
 .brand-graph-objects {
-  animation: content-arrive 600ms calc(var(--home-intro-delay, 0ms) + 500ms) ease-out both;
+  animation: content-arrive 600ms 500ms ease-out both;
 }
 
 @keyframes network-arrive {
@@ -278,5 +278,5 @@
 }
 
 .brand-node-arrival {
-  animation: network-arrive 250ms calc(var(--home-intro-delay, 0ms) + var(--arrival-delay)) ease-out both;
+  animation: network-arrive 250ms var(--arrival-delay) ease-out both;
 }

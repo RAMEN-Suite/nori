@@ -1,17 +1,18 @@
 @if (introVisible()) {
-  <nori-logo-intro (completed)="finishIntro()" />
+  <nori-logo-intro (revealing)="introPlaying.set(false)" (completed)="finishIntro()" />
 }
 <main
   *transloco="let t"
   class="entry-screen relative isolate flex min-h-full flex-col overflow-y-auto"
   [class.play-brand-intro]="playLogoIntro"
+  [class.nori-intro-active]="introPlaying() && introVisible()"
   [inert]="introVisible()"
   [attr.aria-hidden]="introVisible() ? 'true' : null"
 >
   <nori-entry-backdrop class="home-backdrop" data-nori-motion />
   <header class="entry-chrome flex items-center justify-between px-5 sm:px-6" data-nori-motion>
     <a routerLink="/" class="home-wordmark" data-nori-motion [attr.aria-label]="t('common.home')">
-      <span class="home-logo" style="mask-image: url('images/nori-logo.svg')" aria-hidden="true"></span>
+      <span class="home-logo" style="mask-image: url('images/nori-logo-clean.svg')" aria-hidden="true"></span>
       <span class="home-wordmark-name" aria-hidden="true">Nori</span>
     </a>
     <nori-settings-button />

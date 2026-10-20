@@ -1,12 +1,3 @@
-:host {
-  --home-intro-duration: 2700ms;
-  --home-intro-delay: 0ms;
-}
-
-.play-brand-intro {
-  --home-intro-delay: var(--home-intro-duration);
-}
-
 .home-backdrop {
   clip-path: inset(0 0 0 50%);
 }
@@ -52,19 +43,19 @@
 }
 
 :where(.play-brand-intro) .home-actions {
-  animation-delay: var(--home-intro-delay);
+  animation-delay: 0ms;
 }
 
 :where(.play-brand-intro) .entry-chrome {
-  animation-delay: var(--home-intro-delay);
+  animation-delay: 0ms;
 }
 
 :where(.play-brand-intro) .home-wordmark {
-  animation: home-fade-in 300ms var(--home-intro-delay) ease-out both;
+  animation: home-fade-in 300ms ease-out both;
 }
 
 :where(.play-brand-intro) .home-backdrop {
-  animation: home-fade-in 600ms var(--home-intro-delay) ease-out both;
+  animation: home-fade-in 600ms ease-out both;
 }
 
 @keyframes home-fade-in {

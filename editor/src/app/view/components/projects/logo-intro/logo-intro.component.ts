@@ -1,27 +1,42 @@
-import { ChangeDetectionStrategy, Component, output, type OutputEmitterRef } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  type OnInit,
+  output,
+  signal,
+  type OutputEmitterRef,
+  type WritableSignal,
+} from '@angular/core';
 
 @Component({
   selector: 'nori-logo-intro',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  host: { 'aria-hidden': 'true' },
+  host: {
+    'aria-hidden': 'true',
+    '[class.intro-leaving]': 'leaving()',
+    '(animationend)': 'finish($event)',
+  },
   templateUrl: './logo-intro.component.html',
   styleUrl: './logo-intro.component.scss',
 })
-export class LogoIntroComponent {
-  private static nextMaskId: number = 0;
-  protected readonly maskId: string = `nori-intro-ring-${LogoIntroComponent.nextMaskId++}`;
+export class LogoIntroComponent implements OnInit {
+  private readonly destroyRef: DestroyRef = inject(DestroyRef);
+  protected readonly leaving: WritableSignal<boolean> = signal(false);
+  public readonly revealing: OutputEmitterRef<void> = output();
   public readonly completed: OutputEmitterRef<void> = output();
-  protected readonly tiles: readonly {
-    readonly x: number;
-    readonly y: number;
-    readonly spreadX: number;
-    readonly spreadY: number;
-  }[] = [
-    { x: 0, y: -27, spreadX: 0, spreadY: -185 },
-    { x: -27, y: 0, spreadX: -225, spreadY: 0 },
-    { x: 27, y: 0, spreadX: 225, spreadY: 0 },
-    { x: 0, y: 27, spreadX: 0, spreadY: 185 },
-  ];
+
+  public ngOnInit(): void {
+    const timeout: ReturnType<typeof setTimeout> = setTimeout((): void => this.reveal(), 6000);
+    this.destroyRef.onDestroy((): void => clearTimeout(timeout));
+  }
+
+  protected reveal(): void {
+    if (this.leaving()) return;
+    this.leaving.set(true);
+    this.revealing.emit();
+  }
 
   protected finish(event: AnimationEvent): void {
     if (event.target === event.currentTarget) this.completed.emit();
