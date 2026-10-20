@@ -17,7 +17,7 @@ const config: ForgeConfig = {
   packagerConfig: {
     name: 'Nori',
     asar: true,
-    icon: './icons/icon',
+    icon: process.platform === 'darwin' ? ['./icons/icon.icns', './icons/icon.icon'] : './icons/icon',
     executableName: 'Nori',
     ignore: [/^\/(?!(?:dist|icons|node_modules)(?:\/|$)|package\.json$|LICENSE$)/],
     ...(distributeMac

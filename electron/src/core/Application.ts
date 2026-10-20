@@ -37,7 +37,7 @@ export class Application {
   }
 
   private createWindow(): void {
-    app.dock?.setIcon(ICON_PATH);
+    if (!app.isPackaged) app.dock?.setIcon(ICON_PATH);
     const { width, height } = screen.getPrimaryDisplay().workAreaSize;
     const window: BrowserWindow = new BrowserWindow({
       width: Math.floor(width * 0.9),
