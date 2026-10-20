@@ -13,7 +13,7 @@ Run the commands from the Nori repository root unless stated otherwise.
 
 ## Prepare your machine
 
-1. Install the Node.js version listed in `.nvmrc` and npm 11.16 or later within version 11.
+1. Install Node.js as specified in [`.nvmrc`](../.nvmrc) and npm according to the `engines` requirements in [`package.json`](../package.json).
 2. Place the RAMEN Core repository next to Nori at `../ramen-core`. Nori currently uses that local package. In the Core directory, run `npm ci` and `npm run build`.
 3. Back in Nori, install dependencies:
 
@@ -57,7 +57,7 @@ Projects and preferences are stored in the browser profile. The browser and desk
 
 ## macOS
 
-Build on a Mac with **macOS 26+ and Xcode 26+**. Apple's asset compiler is needed for the light/dark app icons. The current build targets **Apple Silicon (`arm64`)**.
+Build on a Mac with Xcode. Use macOS and Xcode releases supported by the project's locked build dependencies. Apple's asset compiler must support the included Icon Composer project for the light/dark app icons. The current build targets **Apple Silicon (`arm64`)**.
 
 For a local packaging test without Apple signing credentials:
 
@@ -74,7 +74,7 @@ npm run make:mac:signed
 Both commands build the application first. The results are:
 
 - App: `out/Nori-darwin-arm64/Nori.app`
-- ZIP: `out/make/zip/darwin/arm64/Nori-darwin-arm64-<version>.zip`
+- ZIP: generated in `out/make/zip/darwin/arm64/`
 
 ### One-time signing setup
 
