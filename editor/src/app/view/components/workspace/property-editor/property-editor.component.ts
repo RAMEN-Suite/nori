@@ -57,6 +57,7 @@ import { groupBy } from '../../../../utils/collections';
 import { ScrollHintsComponent } from '../../shared/scroll-hints/scroll-hints.component';
 import { ConfirmationContentComponent } from '../../dialogs/confirmation/confirmation-content/confirmation-content.component';
 import { NodeAttributeComponent } from '../inspector/node-view/node-attributes/node-attribute/node-attribute.component';
+import { NotificationsComponent } from '../../shell/notifications/notifications.component';
 import { NodeContextPanelComponent } from './node-context-panel/node-context-panel.component';
 import { ShapeEditorComponent } from './shape-editor/shape-editor.component';
 import { PropertyFormComponent } from './property-form/property-form.component';
@@ -103,6 +104,7 @@ interface InheritedPropertyGroup {
     PropertyFormComponent,
     ShapeEditorComponent,
     NodeContextPanelComponent,
+    NotificationsComponent,
     NodeAttributeComponent,
     AnimateHeightDirective,
     ScrollOverflowDirective,
@@ -145,7 +147,7 @@ export class PropertyEditorComponent {
   private readonly orderDraft: WritableSignal<readonly Attribute[] | null> = signal(null);
   private cardAnimation: Animation | null = null;
   private decisionAnimation: Animation | null = null;
-  private tabAnimation: Animation | null = null;
+  private tabAnimations: readonly Animation[] = [];
   private readonly lifetime: AbortController = new AbortController();
 
   protected readonly panelMotion: Signal<boolean> = computed(
@@ -191,7 +193,7 @@ export class PropertyEditorComponent {
     this.sortedProperties().some((property: Attribute, index: number): boolean => property.id !== this.properties()[index]?.id),
   );
   protected readonly controlsUnavailable: Signal<boolean> = computed(
-    () => this.dialogs.pending() || this.editing.changingNode() || this.switchingNode() || this.switchingSection(),
+    () => this.dialogs.pending() || this.editing.changingNode() || this.switchingNode(),
   );
   protected readonly actionPending: Signal<boolean> = computed(
     () => this.controlsUnavailable() || !!this.form()?.saving() || this.savingOrder(),
@@ -234,7 +236,7 @@ export class PropertyEditorComponent {
       this.lifetime.abort();
       this.cardAnimation?.cancel();
       this.decisionAnimation?.cancel();
-      this.tabAnimation?.cancel();
+      this.tabAnimations.forEach((animation: Animation): void => animation.cancel());
     });
     effect((): void => {
       if (!this.editing.changingNode() && !this.editing.current()) this.editing.close();
@@ -242,12 +244,18 @@ export class PropertyEditorComponent {
   }
 
   protected changeSection(section: 'properties' | 'shapes'): void {
+    if (section === 'shapes' && !this.editing.annotationEditingEnabled) return;
     if (this.editing.section() === section) return;
     this.runWithCleanDraft((): Promise<void> => this.activateSection(section));
   }
 
   protected async handleTabKey(event: KeyboardEvent): Promise<void> {
-    if (!this.isAnnotation() || !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+    if (
+      !this.editing.annotationEditingEnabled ||
+      !this.isAnnotation() ||
+      !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)
+    )
+      return;
     event.preventDefault();
     if (!this.canRunAction()) return;
     let section: 'properties' | 'shapes' = this.editing.section() === 'properties' ? 'shapes' : 'properties';
@@ -278,31 +286,34 @@ export class PropertyEditorComponent {
     } catch (error: unknown) {
       if (!this.destroyRef.destroyed) this.projects.reportError(error);
     } finally {
-      this.tabAnimation?.cancel();
-      this.tabAnimation = null;
+      this.tabAnimations.forEach((animation: Animation): void => animation.cancel());
+      this.tabAnimations = [];
       this.switchingSection.set(false);
     }
   }
 
   private async animateTabs(phase: 'enter' | 'leave'): Promise<void> {
     if (!this.appearance.state().animations || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const panels: HTMLElement | null = this.element.nativeElement.querySelector('.property-tab-panels');
-    if (!panels) return;
-
+    const panels: NodeListOf<HTMLElement> = this.element.nativeElement.querySelectorAll(
+      '.property-tab-panels .property-list, .property-tab-panels .property-right-column',
+    );
     const frames: Keyframe[] =
       phase === 'leave'
-        ? [{ opacity: 1 }, { opacity: 0 }]
-        : [
-            { opacity: 0, transform: 'translateX(20px)' },
-            { opacity: 1, transform: 'translateX(0)' },
-          ];
-    this.tabAnimation?.cancel();
-    this.tabAnimation = panels.animate(frames, {
-      duration: phase === 'leave' ? 120 : 240,
-      easing: phase === 'leave' ? 'ease-out' : 'cubic-bezier(0.22, 1, 0.36, 1)',
-      fill: 'forwards',
-    });
-    await this.tabAnimation.finished;
+        ? [{ transform: 'scale(1)' }, { transform: 'scale(0.985)' }]
+        : [{ transform: 'scale(0.985)' }, { transform: 'scale(1)' }];
+    const previous: readonly Animation[] = this.tabAnimations;
+    this.tabAnimations = [...panels]
+      .filter((panel: HTMLElement): boolean => panel.getClientRects().length > 0)
+      .map(
+        (panel: HTMLElement): Animation =>
+          panel.animate(frames, {
+            duration: phase === 'leave' ? 90 : 180,
+            easing: phase === 'leave' ? 'cubic-bezier(0.4, 0, 1, 1)' : 'cubic-bezier(0, 0, 0.2, 1)',
+            fill: 'forwards',
+          }),
+      );
+    previous.forEach((animation: Animation): void => animation.cancel());
+    await Promise.all(this.tabAnimations.map((animation: Animation): Promise<Animation> => animation.finished));
   }
 
   public close(): void {
@@ -318,6 +329,7 @@ export class PropertyEditorComponent {
       return;
     }
     this.clearDecision();
+    this.focusDetail();
   }
 
   protected discard(): void {
@@ -334,6 +346,7 @@ export class PropertyEditorComponent {
   public handleEscape(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
+    if (this.switchingSection()) return;
     if (this.shapeEditor()?.cancelRemoval()) return;
     if (this.sorting()) this.cancelSorting();
     else if (this.removing()) {
@@ -408,6 +421,10 @@ export class PropertyEditorComponent {
     this.runWithCleanDraft(() => this.changeNode(() => this.editing.inspect(location), -1));
   }
 
+  protected inspectNodeSource(location: WorkspaceLocation): void {
+    this.runWithCleanDraft(() => this.changeNode(() => this.editing.inspect(location), -1));
+  }
+
   protected inspectPropertySource(property: InheritedAttribute): void {
     const projectId: string | undefined = this.workspace.context()?.projectId;
     if (!projectId) return;
@@ -468,13 +485,13 @@ export class PropertyEditorComponent {
     const index: number = properties.findIndex((item: Attribute): boolean => item.id === property.id);
     const nextId: string | undefined = properties[index + 1]?.id ?? properties[index - 1]?.id;
 
-    await this.dialogs.run((): Promise<void> => this.workspace.actions.removeAttribute(nodeId, property.id), {
-      closeOnSuccess: false,
-    });
+    const removed: boolean = await this.runPendingAction(
+      (): Promise<void> => this.workspace.actions.removeAttribute(nodeId, property.id),
+    );
 
     if (this.destroyRef.destroyed || !this.workspace.isCurrent(context) || this.workspace.store.currentNodeId() !== nodeId)
       return;
-    if (!this.dialogs.error()) {
+    if (removed) {
       this.removing.set(null);
       this.editing.select(nextId);
       this.focusDetail();
@@ -553,16 +570,22 @@ export class PropertyEditorComponent {
     const context: WorkspaceContext | null = this.workspace.context();
     if (!nodeId || !context) return;
 
-    await this.dialogs.run(
-      async (): Promise<void> => {
-        const copy: Attribute = await this.workspace.actions.duplicateAttribute(nodeId, property.id);
-        if (this.destroyRef.destroyed || !this.workspace.isCurrent(context) || this.workspace.store.currentNodeId() !== nodeId)
-          return;
-        this.selectOwnProperty(copy.id);
-        this.focusDetail(true);
-      },
-      { closeOnSuccess: false },
-    );
+    await this.runPendingAction(async (): Promise<void> => {
+      const copy: Attribute = await this.workspace.actions.duplicateAttribute(nodeId, property.id);
+      if (this.destroyRef.destroyed || !this.workspace.isCurrent(context) || this.workspace.store.currentNodeId() !== nodeId)
+        return;
+      this.selectOwnProperty(copy.id);
+      this.focusDetail(true);
+    });
+  }
+
+  private async runPendingAction(action: () => Promise<void>): Promise<boolean> {
+    await this.dialogs.run(action, { closeOnSuccess: false });
+    const error: string | null = this.dialogs.error();
+    if (!error) return true;
+    this.projects.reportError(new Error(error));
+    this.dialogs.error.set(null);
+    return false;
   }
 
   private selectOwnProperty(attributeId: string | null): void {
@@ -575,7 +598,7 @@ export class PropertyEditorComponent {
   }
 
   private canRunAction(): boolean {
-    if (this.actionPending() || this.shapeEditor()?.canLeave() === false) return false;
+    if (this.switchingSection() || this.actionPending() || this.shapeEditor()?.canLeave() === false) return false;
     if (this.sorting()) {
       this.element.nativeElement.querySelector<HTMLElement>('.property-list-footer button')?.focus();
       this.shakePanel('.property-list-footer');

@@ -42,7 +42,7 @@
   </div>
   @if (workspace.queries.currentNode()) {
     <footer class="flex shrink-0 flex-col gap-2">
-      @if (isAnnotation()) {
+      @if (isAnnotation() && propertyEditing.annotationEditingEnabled) {
         <button suiButton severity="neutral" variant="soft" size="sm" class="w-full" (click)="handleEditAnnotations()">
           <svg lucideTags class="size-3.5" aria-hidden="true"></svg>{{ t('editor.shapes.edit') }}
         </button>

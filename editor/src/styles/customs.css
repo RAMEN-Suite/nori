@@ -36,8 +36,7 @@ body {
   --nori-property-workspace-inset: clamp(1.5rem, 6dvh, 3.5rem);
   --nori-dialog-width: 36rem;
   --nori-dialog-width-compact: 28rem;
-  --nori-notification-width: 42rem;
-  --nori-notification-top: calc(var(--title-bar-height) + 4.5rem);
+  --nori-notification-width: 26rem;
   --nori-radius-preview: 0.5rem;
   --nori-preview-border: color-mix(in oklab, var(--color-base-content) 18%, transparent);
   --nori-preview-opacity: 0.8;
@@ -171,7 +170,8 @@ html:active-view-transition-type(open-workspace)::view-transition-old(project-li
 
 sui-toast.nori-notifications {
   --sui-toast-width: var(--nori-notification-width);
-  --sui-toast-offset-block: var(--nori-notification-top);
+  --sui-toast-offset-block: 1rem;
+  --sui-toast-z-index: 2000;
 }
 
 .editor-panel-scroll {

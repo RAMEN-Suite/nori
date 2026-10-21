@@ -1,0 +1,19 @@
+@use "../../../../../../../styles/surface-list";
+
+.vocabulary-toggle {
+  @include surface-list.action;
+}
+.vocabulary-choice {
+  @include surface-list.row;
+  display: flex;
+  border-radius: var(--nori-radius-input);
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+.vocabulary-choice:not([aria-disabled="true"]):hover {
+  background: var(--sui-color-hover);
+}
+.vocabulary-choice[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: var(--sui-disabled-opacity);
+}

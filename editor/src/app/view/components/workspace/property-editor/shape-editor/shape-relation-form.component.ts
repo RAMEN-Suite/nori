@@ -19,6 +19,7 @@ import { TranslocoDirective } from '@jsverse/transloco';
 import { ModelRef } from '@ramen-suite/core/model';
 import type { AnnotationShape, AnnotationShapeRelation, RelationOption } from '@ramen-suite/core/ramen';
 import { Checkbox, InputNumber, Select } from '@sushi-kit/angular';
+import { ProjectService } from '../../../../../services/projects/project.service';
 import { WorkspaceService, type WorkspaceContext } from '../../../../../services/workspace/workspace.service';
 
 @Component({
@@ -30,14 +31,15 @@ import { WorkspaceService, type WorkspaceContext } from '../../../../../services
 })
 export class ShapeRelationFormComponent {
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
+  private readonly projects: ProjectService = inject(ProjectService);
   private readonly workspace: WorkspaceService = inject(WorkspaceService);
   public readonly shape: InputSignal<AnnotationShape> = input.required();
   public readonly ownerModelId: InputSignal<string> = input.required();
   public readonly index: InputSignal<number> = input(-1);
   public readonly editable: InputSignal<boolean> = input(true);
   public readonly saved: OutputEmitterRef<number> = output();
+  public readonly submitRequested: OutputEmitterRef<void> = output();
   public readonly saving: WritableSignal<boolean> = signal(false);
-  protected readonly error: WritableSignal<string | null> = signal(null);
   protected readonly direction: WritableSignal<'incoming' | 'outgoing'> = signal('outgoing');
   protected readonly refs: WritableSignal<readonly string[]> = signal([]);
   protected minimum: number = 0;
@@ -73,7 +75,6 @@ export class ShapeRelationFormComponent {
     this.minimum = rule?.bounds.lowerBound ?? 0;
     const maximum: number = rule?.bounds.upperBound ?? -1;
     this.maximum = maximum === -1 ? null : maximum;
-    this.error.set(null);
     this.initialValue = JSON.stringify(this.values());
   }
 
@@ -101,7 +102,6 @@ export class ShapeRelationFormComponent {
   public async commit(): Promise<void> {
     if (!this.editable() || this.saving() || !this.hasChanges()) return;
     this.saving.set(true);
-    this.error.set(null);
     try {
       const shape: AnnotationShape = this.shape();
       const relations: AnnotationShapeRelation[] = [...shape.relations];
@@ -113,7 +113,7 @@ export class ShapeRelationFormComponent {
       this.initialValue = JSON.stringify(this.values());
       this.saved.emit(index);
     } catch (error: unknown) {
-      this.error.set(error instanceof Error ? error.message : String(error));
+      if (!this.destroyRef.destroyed) this.projects.reportError(error);
     } finally {
       this.saving.set(false);
     }

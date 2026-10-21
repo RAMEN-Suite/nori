@@ -22,6 +22,7 @@ import { Dialog, DialogHeader, DialogBody, Message, type DialogPosition, type Di
 import { DialogService, type OpenDialog } from '../../../../services/interaction/dialog.service';
 import { ApplicationState } from '../../../../states/application.state';
 import { NodeColorsDialog } from '../../dialogs/node-colors/node-colors.dialog';
+import { NotificationsComponent } from '../notifications/notifications.component';
 import { SettingsDialog } from '../../dialogs/settings/settings.dialog';
 import { ConfirmationDialog } from '../../dialogs/confirmation/confirmation.dialog';
 
@@ -29,7 +30,16 @@ import { ConfirmationDialog } from '../../dialogs/confirmation/confirmation.dial
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'nori-dialog-host',
-  imports: [TranslocoPipe, NgComponentOutlet, Dialog, DialogHeader, DialogBody, Message, LucideCircleAlert],
+  imports: [
+    TranslocoPipe,
+    NgComponentOutlet,
+    Dialog,
+    DialogHeader,
+    DialogBody,
+    Message,
+    LucideCircleAlert,
+    NotificationsComponent,
+  ],
   template: `
     @for (frame of frames(); track frame.component) {
       <sui-dialog
@@ -65,6 +75,7 @@ import { ConfirmationDialog } from '../../dialogs/confirmation/confirmation.dial
               </div>
             }
             <ng-container [ngComponentOutlet]="current.component" [ngComponentOutletInputs]="current.inputs" />
+            <nori-notifications />
           }
         </div>
       </sui-dialog>

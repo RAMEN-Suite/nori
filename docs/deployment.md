@@ -71,7 +71,9 @@ For a build to distribute to other people, complete the signing setup below and 
 npm run make:mac:signed
 ```
 
-Both commands build the application first. The results are:
+Both commands build the application first. Signed distributions currently hide the unfinished annotation editor; browser and unsigned local builds keep it available. Existing annotation definitions remain in imported and exported projects.
+
+The results are:
 
 - App: `out/Nori-darwin-arm64/Nori.app`
 - ZIP: generated in `out/make/zip/darwin/arm64/`

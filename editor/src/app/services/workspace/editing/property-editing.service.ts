@@ -3,6 +3,7 @@ import { Overlay } from '@angular/cdk/overlay';
 import { Router } from '@angular/router';
 import { computed, inject, Injectable, signal, type Signal, type WritableSignal } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
+import { features } from '../../../../environments/features';
 import type { WorkspaceLocation } from '../../../models/WorkspaceLocation';
 import { NavigationService } from '../../interaction/navigation.service';
 import { ProjectService } from '../../projects/project.service';
@@ -39,12 +40,15 @@ export class PropertyEditingService {
   private readonly history: WritableSignal<readonly PropertyHistoryEntry[]> = signal([]);
   private readonly navigating: WritableSignal<boolean> = signal(false);
 
+  public readonly annotationEditingEnabled: boolean = features.annotationEditing;
   public readonly section: WritableSignal<'properties' | 'shapes'> = signal('properties');
   public readonly changingNode: Signal<boolean> = this.navigating.asReadonly();
   public readonly previous: Signal<PropertyHistoryEntry | null> = computed(() => this.history().at(-1) ?? null);
   private dialogRef: DialogRef<undefined, PropertyEditorComponent> | null = null;
 
   private readonly selection: WritableSignal<PropertySelection | null> = signal<PropertySelection | null>(null);
+
+  public readonly isOpen: Signal<boolean> = computed(() => this.selection() !== null);
 
   public readonly current: Signal<PropertySelection | null> = computed((): PropertySelection | null => {
     const selection: PropertySelection | null = this.selection();
@@ -64,7 +68,7 @@ export class PropertyEditingService {
     if (this.dialogRef) return;
 
     this.select(attributeId);
-    this.section.set(section);
+    this.section.set(section === 'shapes' && !this.annotationEditingEnabled ? 'properties' : section);
     this.dialogs.error.set(null);
     const ref: DialogRef<undefined, PropertyEditorComponent> = this.overlays.open<undefined, unknown, PropertyEditorComponent>(
       PropertyEditorComponent,

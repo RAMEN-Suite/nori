@@ -6,14 +6,32 @@
     "editor": {
       "projectType": "application",
       "schematics": {
-        "@schematics/angular:component": { "type": "component", "style": "scss" },
-        "@schematics/angular:directive": { "type": "directive", "prefix": "nori" },
-        "@schematics/angular:service": { "type": "service" },
-        "@schematics/angular:guard": { "typeSeparator": "." },
-        "@schematics/angular:interceptor": { "typeSeparator": "." },
-        "@schematics/angular:module": { "typeSeparator": "." },
-        "@schematics/angular:pipe": { "typeSeparator": "." },
-        "@schematics/angular:resolver": { "typeSeparator": "." }
+        "@schematics/angular:component": {
+          "type": "component",
+          "style": "scss"
+        },
+        "@schematics/angular:directive": {
+          "type": "directive",
+          "prefix": "nori"
+        },
+        "@schematics/angular:service": {
+          "type": "service"
+        },
+        "@schematics/angular:guard": {
+          "typeSeparator": "."
+        },
+        "@schematics/angular:interceptor": {
+          "typeSeparator": "."
+        },
+        "@schematics/angular:module": {
+          "typeSeparator": "."
+        },
+        "@schematics/angular:pipe": {
+          "typeSeparator": "."
+        },
+        "@schematics/angular:resolver": {
+          "typeSeparator": "."
+        }
       },
       "root": "editor",
       "sourceRoot": "editor/src",
@@ -64,6 +82,14 @@
                 {
                   "replace": "editor/src/environments/environment.ts",
                   "with": "editor/src/environments/environment.development.ts"
+                }
+              ]
+            },
+            "signed": {
+              "fileReplacements": [
+                {
+                  "replace": "editor/src/environments/features.ts",
+                  "with": "editor/src/environments/features.signed.ts"
                 }
               ]
             }

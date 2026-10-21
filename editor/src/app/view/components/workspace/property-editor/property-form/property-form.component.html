@@ -1,4 +1,5 @@
-<form *transloco="let t" class="property-form" [inert]="saving()" (ngSubmit)="$event.preventDefault()">
+<form *transloco="let t" class="property-form" [inert]="saving()" (ngSubmit)="submitRequested.emit()">
+  <button type="submit" hidden [disabled]="!editable() || saving()">{{ t('common.save') }}</button>
   <fieldset class="property-fields" [disabled]="!editable()">
     <legend class="sr-only">{{ t('editor.properties') }}</legend>
     <fieldset class="property-basics">

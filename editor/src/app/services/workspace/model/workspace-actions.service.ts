@@ -178,6 +178,16 @@ export class WorkspaceActionsService {
     return this.persistValidatedChange((draft: RamenModel): ModelChange<AnnotationShape> => draft.createAnnotationShape(input));
   }
 
+  public async createAnnotationShapes(inputs: readonly AnnotationShapeInput[]): Promise<readonly AnnotationShape[]> {
+    if (!inputs.length) return [];
+    return this.persistValidatedChange(
+      (draft: RamenModel): ModelChange<readonly AnnotationShape[]> => ({
+        element: inputs.map((input: AnnotationShapeInput): AnnotationShape => draft.createAnnotationShape(input).element),
+        validation: draft.validate(),
+      }),
+    );
+  }
+
   public async updateAnnotationShape(shapeId: string, input: AnnotationShapeUpdate): Promise<AnnotationShape> {
     return this.persistValidatedChange(
       (draft: RamenModel): ModelChange<AnnotationShape> => draft.updateAnnotationShape(shapeId, input),
@@ -201,11 +211,7 @@ export class WorkspaceActionsService {
       constraints: input.constraints ? [...input.constraints] : undefined,
     };
     const created: Attribute = ModelFactory.createAttribute(values);
-    const attribute: Attribute = {
-      ...current,
-      ...created,
-      id: current?.id ?? created.id,
-    };
+    const attribute: Attribute = { ...current, ...created, id: current?.id ?? created.id };
     const properties: readonly Attribute[] = current
       ? shape.properties.map((item: Attribute): Attribute => (item.id === current.id ? attribute : item))
       : [...shape.properties, attribute];
@@ -316,9 +322,7 @@ export class WorkspaceActionsService {
     const node: Node | undefined = this.store.getDraft().getNode(reference);
     if (!node) throw new Error(this.translations.translate('editor.nodeUnavailable'));
     this.requireAvailableNodeName(node.name);
-    await this.saveView(record.modelId, {
-      visibleNodeRefs: [...(record.view?.visibleNodeRefs ?? []), reference],
-    });
+    await this.saveView(record.modelId, { visibleNodeRefs: [...(record.view?.visibleNodeRefs ?? []), reference] });
   }
 
   public previewVisibleNodeRemoval(reference: string): RelationRemovalPreview {
@@ -407,9 +411,7 @@ export class WorkspaceActionsService {
     if (name.trim().length <= PROPERTY_NAME_MAX_LENGTH) return;
     throw new FieldValidationError(
       'name',
-      this.translations.translate('editor.propertyNameTooLong', {
-        maximum: PROPERTY_NAME_MAX_LENGTH,
-      }),
+      this.translations.translate('editor.propertyNameTooLong', { maximum: PROPERTY_NAME_MAX_LENGTH }),
     );
   }
 
@@ -443,9 +445,7 @@ export class WorkspaceActionsService {
       ATTRIBUTE_KEY_BOUNDS_INVALID: 'editor.propertyKeyBounds',
     };
     const key: string = messageKeys[issue.code] ?? 'editor.propertyChangeInvalid';
-    const message: string = this.translations.translate(key, {
-      reason: issue.message,
-    });
+    const message: string = this.translations.translate(key, { reason: issue.message });
     const fields: Record<string, string> = {
       RAMEN_ANNOTATION_TYPE_EMPTY: 'name',
       RAMEN_ANNOTATION_TYPE_DUPLICATE: 'name',
@@ -497,16 +497,8 @@ export class WorkspaceActionsService {
       draft.createRelation({
         name: relation.name,
         refines: relation.superTypes[0],
-        from: {
-          nodeId: from,
-          bounds: relation.from.bounds,
-          constraints: relation.from.constraints,
-        },
-        to: {
-          nodeId: to,
-          bounds: relation.to.bounds,
-          constraints: relation.to.constraints,
-        },
+        from: { nodeId: from, bounds: relation.from.bounds, constraints: relation.from.constraints },
+        to: { nodeId: to, bounds: relation.to.bounds, constraints: relation.to.constraints },
         constraints: relation.constraints,
       });
     }

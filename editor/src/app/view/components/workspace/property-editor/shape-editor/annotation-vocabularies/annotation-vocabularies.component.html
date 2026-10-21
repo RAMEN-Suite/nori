@@ -1,0 +1,96 @@
+<section *transloco="let t" class="mt-7 min-w-0" aria-labelledby="annotation-vocabularies-title">
+  <h3 id="annotation-vocabularies-title" class="mb-2.5 text-sm font-medium">{{ t('editor.shapes.vocabularies.title') }}</h3>
+  <div class="nori-scroll-frame overflow-clip rounded-[var(--nori-radius-input)] border border-[var(--nori-border)]">
+    <div noriScrollOverflow #vocabularyScroll="scrollOverflow" class="editor-panel-scroll max-h-56 p-2">
+      <sui-list size="xs" [items]="vocabularies" [rowHover]="false" [dividers]="false" [ariaLabel]="t('editor.shapes.vocabularies.title')">
+        <ng-template suiListItem let-vocabulary>
+          <div class="col-span-full min-w-0">
+            <div class="flex items-center gap-2">
+              <button
+                suiButton
+                type="button"
+                size="sm"
+                severity="neutral"
+                variant="text"
+                class="vocabulary-toggle min-w-0 flex-1"
+                [attr.aria-expanded]="expanded() === vocabulary.id"
+                [attr.aria-controls]="'annotation-vocabulary-' + vocabulary.id"
+                (click)="toggleVocabulary(vocabulary.id)"
+              >
+                <svg lucideBookOpen class="size-4 shrink-0" aria-hidden="true"></svg>
+                <span class="min-w-0 flex-1 text-left">{{ t(vocabulary.nameKey) }}</span>
+                <svg lucideChevronDown class="size-3.5 shrink-0" [class.rotate-180]="expanded() === vocabulary.id" aria-hidden="true"></svg>
+              </button>
+              <button
+                suiButton
+                type="button"
+                size="sm"
+                severity="neutral"
+                variant="text"
+                [disabled]="disabled() || !available(vocabulary).length"
+                [attr.aria-label]="t('editor.shapes.vocabularies.addVocabulary', { name: t(vocabulary.nameKey) })"
+                (click)="add.emit(available(vocabulary))"
+              >
+                <svg lucidePlus class="size-4" aria-hidden="true"></svg>{{ t('editor.shapes.vocabularies.addAll') }}
+              </button>
+            </div>
+            @if (expanded() === vocabulary.id) {
+              <div [id]="'annotation-vocabulary-' + vocabulary.id" class="px-1 pt-2 pb-1">
+                <p class="text-base-content/60 mb-2 px-2 text-xs">{{ t(vocabulary.hintKey) }}</p>
+                <sui-list
+                  size="xs"
+                  [items]="vocabulary.annotations"
+                  [rowHover]="false"
+                  [dividers]="false"
+                  [ariaLabel]="t(vocabulary.nameKey)"
+                >
+                  <ng-template suiListItem let-annotation>
+                    <label
+                      class="vocabulary-choice col-span-full"
+                      [attr.aria-disabled]="disabled() || existingTypes().includes(annotation.type)"
+                    >
+                      <input
+                        suiCheckbox
+                        type="checkbox"
+                        [checked]="selected().includes(annotation.type) || existingTypes().includes(annotation.type)"
+                        [disabled]="disabled() || existingTypes().includes(annotation.type)"
+                        (change)="toggleType(annotation.type)"
+                      />
+                      <span class="min-w-0 flex-1">
+                        <span class="block">{{ annotation.type }}</span>
+                        @if (annotation.properties?.length) {
+                          <span class="text-base-content/60 block">
+                            @for (property of annotation.properties; track property.name; let last = $last) {
+                              {{ property.name }}{{ last ? '' : ', ' }}
+                            }
+                          </span>
+                        }
+                      </span>
+                      @if (existingTypes().includes(annotation.type)) {
+                        <span class="text-base-content/60">{{ t('editor.shapes.vocabularies.added') }}</span>
+                      }
+                    </label>
+                  </ng-template>
+                </sui-list>
+                <div class="mt-2 flex justify-end">
+                  <button
+                    suiButton
+                    type="button"
+                    size="sm"
+                    severity="neutral"
+                    variant="text"
+                    [disabled]="disabled() || !availableSelection().length"
+                    (click)="add.emit(availableSelection())"
+                  >
+                    <svg lucidePlus class="size-4" aria-hidden="true"></svg>{{ t('editor.shapes.vocabularies.addSelected') }}
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </ng-template>
+      </sui-list>
+    </div>
+    <nori-scroll-hints [up]="vocabularyScroll.canScrollUp()" [down]="vocabularyScroll.canScrollDown()" />
+  </div>
+</section>

@@ -8,6 +8,8 @@ export class AnimateHeightDirective {
 
   public readonly enabled: InputSignal<boolean> = input(true, { alias: 'noriAnimateHeight' });
 
+  public readonly noriHeightEasing: InputSignal<string> = input('cubic-bezier(0.22, 1, 0.36, 1)');
+
   private height: number | null = null;
   private animation: Animation | null = null;
 
@@ -48,7 +50,7 @@ export class AnimateHeightDirective {
     this.animation = animate
       ? host.animate([{ height: `${previous}px` }, { height: `${height}px` }], {
           duration: 300,
-          easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+          easing: this.noriHeightEasing(),
         })
       : null;
   }

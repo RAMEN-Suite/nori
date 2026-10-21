@@ -32,7 +32,10 @@ function makeMac(): void {
   }
   if (signed) checkSigning();
 
-  run('npm', ['run', 'build']);
+  if (signed) {
+    run('npm', ['run', 'build:electron']);
+    run('npm', ['run', 'build:editor', '--', '--configuration=production,signed']);
+  } else run('npm', ['run', 'build']);
   run(process.execPath, [
     path.join(projectRoot, 'node_modules/@electron-forge/cli/dist/electron-forge.js'),
     'make',

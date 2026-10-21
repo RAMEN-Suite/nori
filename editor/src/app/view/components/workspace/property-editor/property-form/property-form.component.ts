@@ -33,6 +33,7 @@ import {
 } from '@sushi-kit/angular';
 import { AnimateHeightDirective } from '../../../../../directives/animate-height.directive';
 import { FieldValidationError } from '../../../../../models/FieldValidationError';
+import { ProjectService } from '../../../../../services/projects/project.service';
 import { WorkspaceService, type WorkspaceContext } from '../../../../../services/workspace/workspace.service';
 import { ApplicationState } from '../../../../../states/application.state';
 import { PROPERTY_NAME_MAX_LENGTH } from '../../../../../utils/model-names';
@@ -66,6 +67,7 @@ export class PropertyFormComponent {
   private readonly workspace: WorkspaceService = inject(WorkspaceService);
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
   private readonly changeDetector: ChangeDetectorRef = inject(ChangeDetectorRef);
+  private readonly projects: ProjectService = inject(ProjectService);
   private readonly translations: TranslocoService = inject(TranslocoService);
   private readonly element: ElementRef<HTMLElement> = inject<ElementRef<HTMLElement>>(ElementRef);
 
@@ -75,6 +77,7 @@ export class PropertyFormComponent {
   public readonly animateChanges: InputSignal<boolean> = input(true);
   protected readonly motion: Signal<boolean> = computed(() => this.appearance.state().animations && this.animateChanges());
   public readonly saved: OutputEmitterRef<string> = output();
+  public readonly submitRequested: OutputEmitterRef<void> = output();
   public readonly saving: WritableSignal<boolean> = signal(false);
   public readonly currentAttribute: InputSignal<Attribute | undefined> = input();
 
@@ -87,7 +90,6 @@ export class PropertyFormComponent {
   protected readonly nameMaxLength: number = PROPERTY_NAME_MAX_LENGTH;
 
   protected readonly fieldErrors: WritableSignal<Readonly<Record<string, string>>> = signal({});
-  public readonly saveError: WritableSignal<string | null> = signal(null);
   protected readonly nameError: Signal<string | null> = computed(() => this.fieldErrors()['name'] ?? null);
   protected name: string = '';
   protected typeId: string = DataTypes.String;
@@ -152,7 +154,6 @@ export class PropertyFormComponent {
 
     this.loadValues(attribute);
     this.selectedAttributeId = this.currentAttribute()?.id;
-    this.saveError.set(null);
     this.fieldErrors.set({});
     this.initialValue = this.snapshot(this.values());
   }
@@ -245,7 +246,6 @@ export class PropertyFormComponent {
   private async saveDraft(): Promise<void> {
     const nodeId: string | null = this.workspace.store.currentNodeId();
     if (!nodeId || !this.editable() || this.saving() || !this.hasChanges()) return;
-    this.saveError.set(null);
     this.fieldErrors.set({});
     if (!this.name.trim()) {
       this.fieldErrors.set({ name: this.translations.translate('editor.propertyNameRequired') });
@@ -314,7 +314,7 @@ export class PropertyFormComponent {
       this.fieldErrors.set({ [error.field]: error.message });
       this.changeDetector.detectChanges();
       this.element.nativeElement.querySelector<HTMLElement>('[aria-invalid=true]')?.focus();
-    } else this.saveError.set(error instanceof Error ? error.message : String(error));
+    } else this.projects.reportError(error);
   }
 
   private hasField(field: string): boolean {

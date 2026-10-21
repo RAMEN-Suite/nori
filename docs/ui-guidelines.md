@@ -6,6 +6,7 @@ Shared rules for Nori panels, dialogs and lists. Use public Sushi APIs and token
 
 - Use semantic buttons, links, headings, groups and lists. Icon-only controls need accessible names; decorative icons are hidden from assistive technology. Avoid nested buttons and hover-only actions.
 - Reuse panel/dialog frames, typography, list spacing and tooltips. Comparable bordered lists use `styles/_surface-list.scss` mixins with Sushi List; keep dimensions in shared styles rather than repeating numbers here.
+- Unexpected errors use the shared bottom-right Toast outlet. Native dialogs and the property workspace host the outlet inside their focus scope; otherwise the app shell owns it. Field validation stays beside the input.
 - Keep focus visible without clipping it. Support keyboard navigation, long/translatable text, small viewports and zoom.
 - Keep headings and bottom actions fixed; scroll the content area. Use shared scroll hints only when content overflows, with room for the scrollbar and focus rings.
 - Respect reduced motion and the user's animation preference. Keep shared motion in its owner; dialogs currently open with a 280ms fade/6px upward movement and close with a short 180ms fade.
@@ -16,6 +17,7 @@ Shared rules for Nori panels, dialogs and lists. Use public Sushi APIs and token
 - Centre ordinary dialogs and respect the viewport. Use shared compact/form sizing; the property workspace is a dedicated overlay, not a nested dialog.
 - Follow the node-colours dialog's calm style: clear introduction, thin bordered content area and compact actions. Use feedback boxes for feedback, not decorative instructions.
 - Keep labels above full-width controls, validation inline and near its context, and enough inset for focus rings. Translate all visible text.
+- Enter in a form input submits through the same guarded save/create action as its footer button. Autocomplete/select controls handle selection first; multiline fields keep Enter for new lines.
 - Put actions bottom right: neutral Cancel first, one specific primary action last. Use Sushi button size `sm` and a matching leading Lucide icon; destructive actions use error styling and Eraser. Avoid vague OK/Yes/No labels.
 - Immediately applied settings/colours use contextual reset actions, without Save/Cancel. Settings and colours may close on backdrop click; editing and confirmation dialogs remain protected, especially while pending.
 - Edit inside the existing surface; never open editing dialogs inside dialogs.

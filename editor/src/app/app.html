@@ -6,12 +6,6 @@
 <nori-dialog-host />
 <nori-running-action-notification />
 
-<sui-toast
-  class="nori-notifications"
-  horizontal="center"
-  vertical="top"
-  [maxVisible]="3"
-  [dismissLabel]="'common.close' | transloco"
-  [motion]="editorState.state().animations ? 'fade' : 'none'"
-  [ariaLabel]="'common.notifications' | transloco"
-/>
+@if (!dialogs.current() && !propertyEditing.isOpen()) {
+  <nori-notifications />
+}

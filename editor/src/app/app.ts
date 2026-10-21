@@ -9,8 +9,11 @@ import {
   untracked,
 } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { TranslocoPipe, TranslocoService } from '@jsverse/transloco';
-import { Toast, ToastService } from '@sushi-kit/angular';
+import { TranslocoService } from '@jsverse/transloco';
+import { ToastService } from '@sushi-kit/angular';
+import { PropertyEditingService } from './services/workspace/editing/property-editing.service';
+import { DialogService } from './services/interaction/dialog.service';
+import { NotificationsComponent } from './view/components/shell/notifications/notifications.component';
 import { ProjectService } from './services/projects/project.service';
 import { ApplicationState } from './states/application.state';
 import { DialogHostComponent } from './view/components/shell/dialog-host/dialog-host.component';
@@ -20,10 +23,12 @@ import { TitleBarComponent } from './view/components/shell/title-bar/title-bar.c
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'nori-root',
-  imports: [RunningActionNotificationComponent, DialogHostComponent, TitleBarComponent, RouterOutlet, Toast, TranslocoPipe],
+  imports: [RunningActionNotificationComponent, DialogHostComponent, TitleBarComponent, RouterOutlet, NotificationsComponent],
   templateUrl: './app.html',
 })
 export class App {
+  protected readonly propertyEditing: PropertyEditingService = inject(PropertyEditingService);
+  protected readonly dialogs: DialogService = inject(DialogService);
   private readonly projects: ProjectService = inject(ProjectService);
   private readonly toasts: ToastService = inject(ToastService);
   private readonly translations: TranslocoService = inject(TranslocoService);
@@ -49,6 +54,7 @@ export class App {
           message: error,
           severity: 'error',
           variant: 'soft',
+          duration: 0,
         });
         this.projects.error.set(null);
       });
