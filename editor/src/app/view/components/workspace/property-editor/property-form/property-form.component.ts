@@ -36,6 +36,8 @@ import { FieldValidationError } from '../../../../../models/FieldValidationError
 import { ProjectService } from '../../../../../services/projects/project.service';
 import { WorkspaceService, type WorkspaceContext } from '../../../../../services/workspace/workspace.service';
 import { ApplicationState } from '../../../../../states/application.state';
+import { descriptionValue, isDescriptionValid } from '../../../../../utils/descriptions';
+import { DescriptionFieldComponent } from '../../../shared/description-field/description-field.component';
 import { PROPERTY_NAME_MAX_LENGTH } from '../../../../../utils/model-names';
 
 type PropertyToggleOption = 'required' | 'multiple' | 'ordered' | 'duplicates' | 'readonly' | 'key';
@@ -48,6 +50,7 @@ type PropertyOption = PropertyToggleOption | 'minimum' | 'maximum';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     AnimateHeightDirective,
+    DescriptionFieldComponent,
     NgTemplateOutlet,
     TranslocoDirective,
     FormsModule,
@@ -92,6 +95,8 @@ export class PropertyFormComponent {
   protected readonly fieldErrors: WritableSignal<Readonly<Record<string, string>>> = signal({});
   protected readonly nameError: Signal<string | null> = computed(() => this.fieldErrors()['name'] ?? null);
   protected name: string = '';
+  protected readonly description: WritableSignal<string> = signal('');
+  public readonly descriptionValid: Signal<boolean> = computed(() => isDescriptionValid(this.description()));
   protected typeId: string = DataTypes.String;
   protected lowerBound: number = 0;
   protected upperBound: number = 1;
@@ -247,6 +252,10 @@ export class PropertyFormComponent {
     const nodeId: string | null = this.workspace.store.currentNodeId();
     if (!nodeId || !this.editable() || this.saving() || !this.hasChanges()) return;
     this.fieldErrors.set({});
+    if (!this.descriptionValid()) {
+      this.element.nativeElement.querySelector<HTMLTextAreaElement>('textarea')?.focus();
+      return;
+    }
     if (!this.name.trim()) {
       this.fieldErrors.set({ name: this.translations.translate('editor.propertyNameRequired') });
       this.element.nativeElement.querySelector<HTMLInputElement>('[name=name]')?.focus();
@@ -263,6 +272,7 @@ export class PropertyFormComponent {
 
   private loadValues(attribute: AttributeInput): void {
     this.name = attribute.name;
+    this.description.set(attribute.description ?? '');
     this.typeId = attribute.typeId ?? DataTypes.String;
     this.lowerBound = attribute.bounds?.lowerBound ?? 0;
     this.upperBound = attribute.bounds?.upperBound ?? 1;
@@ -361,6 +371,7 @@ export class PropertyFormComponent {
   private values(): AttributeInput {
     return {
       name: this.name.trim(),
+      description: descriptionValue(this.description()),
       typeId: this.typeId,
       bounds: { lowerBound: this.lowerBound, upperBound: this.upperBound },
       isKey: this.isKey,

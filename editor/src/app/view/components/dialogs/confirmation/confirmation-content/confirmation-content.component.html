@@ -1,5 +1,5 @@
 <div *transloco="let t" class="flex min-w-0 flex-col gap-4">
-  <p data-nori-dialog-entry class="text-base-content/75 text-sm leading-relaxed break-words">
+  <p class="text-base-content/75 text-sm leading-relaxed break-words">
     @for (part of messageParts(); track $index) {
       @if (part.emphasized) {
         <strong class="text-base-content font-semibold">{{ part.text }}</strong>
@@ -9,7 +9,7 @@
     }
   </p>
   @if (impactActions().length) {
-    <div class="impact-actions" data-nori-dialog-entry>
+    <div class="impact-actions">
       <div class="impact-list">
         <sui-list size="xs" [items]="impactActions()" [dividers]="false" [rowHover]="false">
           <ng-template suiListItem let-action>

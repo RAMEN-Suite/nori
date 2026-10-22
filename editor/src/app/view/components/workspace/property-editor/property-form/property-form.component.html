@@ -5,7 +5,7 @@
     <fieldset class="property-basics">
       <legend class="property-group-title">{{ t('editor.propertyDefinition') }}</legend>
       <label class="property-field"
-        >{{ t('editor.propertyName') }}
+        ><span class="nori-field-label">{{ t('editor.propertyName') }}</span>
         <input
           suiInput
           fluid
@@ -25,7 +25,7 @@
         }
       </label>
       <div class="property-field">
-        <span>{{ t('editor.dataType') }}</span>
+        <span class="nori-field-label">{{ t('editor.dataType') }}</span>
         <sui-autocomplete
           fluid
           size="sm"
@@ -44,6 +44,7 @@
         />
       </div>
     </fieldset>
+    <nori-description-field inputId="property-description" [(value)]="description" [disabled]="!editable()" />
     <fieldset class="property-option-group">
       <legend class="property-group-title">{{ t('editor.propertyValues') }}</legend>
       <ng-container

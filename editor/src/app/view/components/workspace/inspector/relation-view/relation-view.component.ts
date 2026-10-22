@@ -7,6 +7,7 @@ import { ScrollOverflowDirective } from '../../../../../directives/scroll-overfl
 import { NavigationService } from '../../../../../services/interaction/navigation.service';
 import { ProjectService } from '../../../../../services/projects/project.service';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
+import { DefinitionDescriptionComponent } from '../definition-description/definition-description.component';
 import { ScrollHintsComponent } from '../../../shared/scroll-hints/scroll-hints.component';
 
 interface RelationEndpoint {
@@ -21,7 +22,16 @@ interface RelationEndpoint {
 @Component({
   selector: 'nori-relation-view',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslocoDirective, Badge, Button, Divider, LucideArrowUpRight, ScrollOverflowDirective, ScrollHintsComponent],
+  imports: [
+    DefinitionDescriptionComponent,
+    TranslocoDirective,
+    Badge,
+    Button,
+    Divider,
+    LucideArrowUpRight,
+    ScrollOverflowDirective,
+    ScrollHintsComponent,
+  ],
   templateUrl: './relation-view.component.html',
   styles: ':host { display: block; height: 100%; } :host:hover, :host:focus-within { --nori-scroll-hint-play-state: running; }',
 })

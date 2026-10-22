@@ -41,5 +41,11 @@
         }
       }
     </div>
+    <nori-definition-description
+      kind="node"
+      [elementId]="node.id"
+      [value]="node.description"
+      [editable]="workspace.queries.nodeEditable()"
+    />
   </section>
 }

@@ -1,0 +1,46 @@
+<ng-container *transloco="let t">
+  @if (editing() || value() || editable()) {
+    <div class="mt-2 min-w-0">
+      @if (editing()) {
+        <form class="flex flex-col gap-2" (submit)="$event.preventDefault(); save()" (keydown.escape)="$event.stopPropagation(); cancel()">
+          <nori-description-field [inputId]="fieldId" [(value)]="draft" [disabled]="saving() || !editable()" />
+          <div class="flex flex-wrap justify-end gap-1">
+            <button suiButton type="button" size="sm" severity="neutral" variant="text" [disabled]="saving()" (click)="cancel()">
+              <svg lucideUndo2 class="size-3.5" aria-hidden="true"></svg>{{ t('editor.discardChanges') }}
+            </button>
+            <button suiButton type="submit" size="sm" [loading]="saving()" [disabled]="saving() || !changed() || !valid() || !editable()">
+              <svg lucideSave class="size-3.5" aria-hidden="true"></svg>{{ t('common.save') }}
+            </button>
+          </div>
+        </form>
+      } @else {
+        @if (value(); as description) {
+          <p
+            class="editor-panel-scroll text-base-content/65 max-h-32 overflow-y-auto text-xs leading-relaxed break-words whitespace-pre-wrap"
+          >
+            {{ description }}
+          </p>
+        }
+        @if (editable()) {
+          <button
+            suiButton
+            type="button"
+            size="sm"
+            severity="neutral"
+            variant="text"
+            class="mt-1"
+            data-description-action
+            (click)="start()"
+          >
+            @if (value()) {
+              <svg lucidePencil class="size-3.5" aria-hidden="true"></svg>
+            } @else {
+              <svg lucidePlus class="size-3.5" aria-hidden="true"></svg>
+            }
+            {{ t(value() ? 'editor.description.edit' : 'editor.description.add') }}
+          </button>
+        }
+      }
+    </div>
+  }
+</ng-container>

@@ -54,6 +54,8 @@ import { ScrollHintsComponent } from '../../../shared/scroll-hints/scroll-hints.
 import { NodeAttributeComponent } from '../../inspector/node-view/node-attributes/node-attribute/node-attribute.component';
 import { PropertyFormComponent } from '../property-form/property-form.component';
 import type { AnnotationPreset } from './annotation-vocabularies/annotation-vocabularies';
+import { descriptionValue, isDescriptionValid } from '../../../../../utils/descriptions';
+import { DescriptionFieldComponent } from '../../../shared/description-field/description-field.component';
 import { AnnotationVocabulariesComponent } from './annotation-vocabularies/annotation-vocabularies.component';
 import { ShapeRelationFormComponent } from './shape-relation-form.component';
 
@@ -99,6 +101,7 @@ type ShapeRemoval = 'shape' | 'property' | 'relation' | null;
     PropertyFormComponent,
     ShapeRelationFormComponent,
     AnnotationVocabulariesComponent,
+    DescriptionFieldComponent,
     LucideArrowLeft,
     LucideChevronRight,
     LucideCopy,
@@ -140,6 +143,8 @@ export class ShapeEditorComponent {
   protected readonly removing: WritableSignal<ShapeRemoval> = signal(null);
   public readonly mobileDetail: WritableSignal<boolean> = signal(false);
   protected name: string = '';
+  protected readonly description: WritableSignal<string> = signal('');
+  private initialDescription: string = '';
   private initialName: string = '';
   private decisionAnimation: Animation | null = null;
 
@@ -269,6 +274,8 @@ export class ShapeEditorComponent {
         this.clearSelection();
         this.section.set('overview');
         this.name = '';
+        this.description.set('');
+        this.initialDescription = '';
         this.initialName = '';
         this.detail.set('settings');
         this.mobileDetail.set(true);
@@ -294,7 +301,8 @@ export class ShapeEditorComponent {
   }
 
   protected hasChanges(): boolean {
-    if (this.detail() === 'settings') return this.name.trim() !== this.initialName;
+    if (this.detail() === 'settings')
+      return this.name.trim() !== this.initialName || descriptionValue(this.description()) !== this.initialDescription;
     if (this.detail() === 'property') return this.form()?.hasChanges() ?? false;
     return this.detail() === 'relation' && (this.relationForm()?.hasChanges() ?? false);
   }
@@ -305,6 +313,8 @@ export class ShapeEditorComponent {
     this.clearSelection();
     this.section.set('overview');
     this.name = entry.shape.type;
+    this.description.set(entry.shape.description ?? '');
+    this.initialDescription = this.description();
     this.initialName = this.name;
     this.detail.set('settings');
     this.mobileDetail.set(true);
@@ -366,6 +376,8 @@ export class ShapeEditorComponent {
     this.clearSelection();
     this.section.set('overview');
     this.name = this.selected()?.shape.type ?? '';
+    this.description.set(this.selected()?.shape.description ?? '');
+    this.initialDescription = this.description();
     this.initialName = this.name;
     this.detail.set('settings');
     this.mobileDetail.set(true);
@@ -419,17 +431,24 @@ export class ShapeEditorComponent {
       this.focus('.property-detail [role=combobox]');
       return;
     }
+    if (!isDescriptionValid(this.description())) {
+      this.focus('.property-detail textarea');
+      return;
+    }
     const nodeId: string | null = this.workspace.store.currentNodeId();
     const type: string = this.name.trim();
+    const description: string = descriptionValue(this.description());
     const context: WorkspaceContext | null = this.workspace.context();
     if (!nodeId || !type || !context) return;
     await this.run(async (): Promise<void> => {
       const shape: AnnotationShape = this.selected()
-        ? await this.workspace.actions.updateAnnotationShape(this.selected()?.shape.id ?? '', { type })
-        : await this.workspace.actions.createAnnotationShape({ nodeId, type });
+        ? await this.workspace.actions.updateAnnotationShape(this.selected()?.shape.id ?? '', { type, description })
+        : await this.workspace.actions.createAnnotationShape({ nodeId, type, description });
       if (!this.isCurrentNode(context, nodeId)) return;
       this.shapeId.set(shape.id);
       this.name = shape.type;
+      this.description.set(shape.description ?? '');
+      this.initialDescription = this.description();
       this.initialName = shape.type;
       this.focus('.property-detail input:not(:disabled)');
     });
@@ -454,8 +473,10 @@ export class ShapeEditorComponent {
 
   protected discard(): void {
     this.nameError.set(null);
-    if (this.detail() === 'settings') this.name = this.initialName;
-    else if (this.detail() === 'relation') this.relationForm()?.reset();
+    if (this.detail() === 'settings') {
+      this.name = this.initialName;
+      this.description.set(this.initialDescription);
+    } else if (this.detail() === 'relation') this.relationForm()?.reset();
     else this.form()?.reset();
   }
 
@@ -502,11 +523,14 @@ export class ShapeEditorComponent {
         nodeId,
         type,
         properties,
+        description: shape.description,
         relations: shape.relations,
       });
       if (!this.isCurrentNode(context, nodeId)) return;
       this.shapeId.set(copy.id);
       this.name = copy.type;
+      this.description.set(copy.description ?? '');
+      this.initialDescription = this.description();
       this.initialName = copy.type;
       this.focus('.property-detail input:not(:disabled)');
     });

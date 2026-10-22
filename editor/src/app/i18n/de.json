@@ -187,7 +187,7 @@
     "coloursHint": "Farben gelten für jeden Grundtyp und seine Verfeinerungen.\nÄnderungen werden sofort im Graph angezeigt.",
     "colourForNode": "Farbe für {{name}}",
     "resetColours": "Farben zurücksetzen",
-    "generateColours": "Palette generieren",
+    "generateColours": "Palette mischen",
     "refineNamedNode": "{{name}} verfeinern",
     "removeNamedNode": "{{name}} entfernen",
     "confirmRemoveNode": "Mit {{name}} werden auch seine Eigenschaften, abhängigen Verfeinerungen und Beziehungen entfernt.",
@@ -211,6 +211,7 @@
     "redoRelation": "Beziehungsänderung wiederholen",
     "saveProject": "Projekt speichern",
     "editProject": "Projekt bearbeiten",
+    "updateProjectTitle": "Dein Projekt aktualisieren",
     "projectNameLength": "Wähle einen aussagekräftigen Projektnamen mit 3–70 Zeichen.",
     "projectNameTooShort": "Gib einen Projektnamen mit mindestens 3 Zeichen ein.",
     "removeConnectionTitle": "Beziehung entfernen?",
@@ -413,6 +414,12 @@
         "textEditorHint": "Standard-Mapping des Texteditors. Enthält level, cols und rows als optionale Integer-Properties.",
         "tei": "TEI"
       }
+    },
+    "description": {
+      "label": "Beschreibung",
+      "tooLong": "Verwende höchstens {{maximum}} Zeichen.",
+      "add": "Beschreibung hinzufügen",
+      "edit": "Beschreibung bearbeiten"
     }
   }
 }

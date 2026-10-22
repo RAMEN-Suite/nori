@@ -191,6 +191,17 @@ sui-toast.nori-notifications {
   border-radius: var(--nori-radius-input);
 }
 
+.nori-field-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.nori-field-optional {
+  color: color-mix(in oklab, var(--color-base-content) 60%, transparent);
+  font-size: inherit;
+  font-weight: 400;
+}
+
 .nori-dialog-actions {
   display: flex;
   flex-wrap: wrap;
@@ -209,18 +220,45 @@ sui-toast.nori-notifications {
   background-color: color-mix(in oklab, var(--color-primary) 14%, transparent);
 }
 
-.nori-dialog-motion dialog[open] {
-  translate: 0 0;
-  transition: translate 280ms cubic-bezier(0.22, 1, 0.36, 1);
-
-  @starting-style {
-    translate: 0 6px;
+.nori-dialog-motion dialog[data-motion="fade"][open] {
+  animation: none;
+  opacity: 0;
+}
+/* Start window motion after Sushi has measured and locked the untransformed frame. */
+.nori-dialog-motion.nori-dialog-enter-ready dialog[data-motion="fade"][open] {
+  animation: sui-dialog-nori-enter var(--sui-dialog-enter-duration) var(--sui-dialog-motion-easing) both;
+}
+.nori-dialog-motion dialog[data-motion="fade"][open][data-closing] {
+  animation: sui-dialog-nori-exit var(--sui-dialog-exit-duration) ease-in both;
+}
+/* Sushi awaits closing animations whose names start with sui-dialog-. */
+@keyframes sui-dialog-nori-enter {
+  from {
+    opacity: 0;
+    scale: 0.7;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
   }
 }
-
+@keyframes sui-dialog-nori-exit {
+  from {
+    opacity: 1;
+    scale: 1;
+  }
+  to {
+    opacity: 0;
+    scale: 0.98;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
-  .nori-dialog-motion dialog[open] {
-    transition: none;
+  .nori-dialog-motion dialog[data-motion="fade"][open],
+  .nori-dialog-motion.nori-dialog-enter-ready dialog[data-motion="fade"][open],
+  .nori-dialog-motion dialog[data-motion="fade"][open][data-closing] {
+    animation: none;
+    opacity: 1;
+    scale: none;
   }
 }
 
@@ -244,20 +282,7 @@ sui-toast.nori-notifications {
   overflow: visible;
 }
 .nori-confirmation-host.nori-dialog-motion dialog[open] {
-  translate: 0 0;
   transition: transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
-
-  @starting-style {
-    translate: 0 0;
-  }
-}
-.nori-confirmation-host.nori-dialog-motion [data-nori-dialog-entry] {
-  translate: 0 0;
-  transition: translate 280ms cubic-bezier(0.22, 1, 0.36, 1);
-
-  @starting-style {
-    translate: 0 6px;
-  }
 }
 @media (min-width: 833px) {
   .nori-confirmation-expanded dialog[open] {
@@ -265,8 +290,7 @@ sui-toast.nori-notifications {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .nori-confirmation-host.nori-dialog-motion dialog[open],
-  .nori-confirmation-host.nori-dialog-motion [data-nori-dialog-entry] {
+  .nori-confirmation-host.nori-dialog-motion dialog[open] {
     transition: none;
   }
 }

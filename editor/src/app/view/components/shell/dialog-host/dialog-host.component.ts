@@ -47,11 +47,12 @@ import { ConfirmationDialog } from '../../dialogs/confirmation/confirmation.dial
         [class.nori-confirmation-host]="isConfirmation()"
         [class.nori-settings-host]="isSettings()"
         [class.nori-confirmation-expanded]="isConfirmation() && positionReady() && dialogs.detailsOpen()"
-        [draggable]="!isConfirmation()"
+        [draggable]="false"
         [position]="contentReady() ? dialogPosition() : 'top'"
         (keydown.escape)="handleEscape($event)"
         [class.nori-dialog-motion]="appearance.state().animations"
-        style="--sui-dialog-radius: var(--nori-radius); --sui-dialog-border-color: var(--nori-border); --sui-dialog-shadow: none; --sui-dialog-enter-duration: 280ms; --sui-dialog-exit-duration: 180ms; --sui-dialog-motion-easing: cubic-bezier(0.22, 1, 0.36, 1)"
+        [class.nori-dialog-enter-ready]="positionReady()"
+        style="--sui-dialog-radius: var(--nori-radius); --sui-dialog-border-color: var(--nori-border); --sui-dialog-shadow: none; --sui-dialog-enter-duration: 250ms; --sui-dialog-exit-duration: 100ms; --sui-dialog-motion-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275)"
         [style.--sui-dialog-width]="isConfirmation() ? '24rem' : (content()?.width ?? 'var(--nori-dialog-width)')"
         [open]="dialogs.current() !== null && contentReady()"
         [ariaLabel]="content()?.title || (content()?.titleKey || 'common.confirm' | transloco)"
@@ -62,7 +63,7 @@ import { ConfirmationDialog } from '../../dialogs/confirmation/confirmation.dial
         (closed)="handleClosed(dialog)"
       >
         @if (content(); as current) {
-          <header suiDialogHeader class="min-h-14" data-nori-dialog-entry>
+          <header suiDialogHeader class="min-h-14">
             {{ current.titleKey ? (current.titleKey | transloco) : current.title }}
           </header>
         }
@@ -155,10 +156,12 @@ export class DialogHostComponent {
       const viewport: Window | null = dialog.ownerDocument.defaultView;
       if (!viewport) return;
       const bounds: DOMRect = dialog.getBoundingClientRect();
-      const motionY: number = Number.parseFloat(viewport.getComputedStyle(dialog).translate.split(' ')[1] ?? '0') || 0;
+      // Sushi locks the rendered bounds after positioning; compensate for the entrance scale.
+      const scaleOffsetX: number = (dialog.offsetWidth - bounds.width) / 2;
+      const scaleOffsetY: number = (dialog.offsetHeight - bounds.height) / 2;
       const position: DialogCoordinates = {
-        left: Math.max(16, (viewport.innerWidth - bounds.width) / 2),
-        top: Math.max(16, (viewport.innerHeight - bounds.height) / 2 - motionY),
+        left: Math.max(16, (viewport.innerWidth - dialog.offsetWidth) / 2) - scaleOffsetX,
+        top: Math.max(16, (viewport.innerHeight - dialog.offsetHeight) / 2) - scaleOffsetY,
       };
       const previous: DialogPosition = this.colourPosition();
       if (typeof previous === 'string' || previous.left !== position.left || previous.top !== position.top) {

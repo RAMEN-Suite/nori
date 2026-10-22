@@ -18,6 +18,7 @@ import {
   type RelationRemovalPreview,
   type UpdateAttributeInput,
   type UpdateNodeInput,
+  type UpdateRelationInput,
   type WorkspaceElement,
 } from '@ramen-suite/core/model';
 import {
@@ -34,7 +35,7 @@ import { RelationHistoryService } from './relation-history.service';
 import { WorkspaceStore } from '../../../states/workspace.store';
 import { PROPERTY_NAME_MAX_LENGTH } from '../../../utils/model-names';
 
-export type CreateLevelInput = Required<Pick<ModelInput, 'name' | 'uri' | 'version'>>;
+export type CreateLevelInput = Required<Pick<ModelInput, 'name' | 'uri' | 'version'>> & Pick<ModelInput, 'description'>;
 export type UpdateLevelInput = CreateLevelInput;
 
 /** Applies model changes through RAMEN Core and persists the resulting workspace. */
@@ -49,7 +50,9 @@ export class WorkspaceActionsService {
 
   public async createNode(input: CreateNodeInput): Promise<Node> {
     this.requireAvailableNodeName(input.name);
-    const change: ModelChange<Node> = this.store.getDraft().createNode({ name: input.name, refines: input.baseNodeId });
+    const change: ModelChange<Node> = this.store
+      .getDraft()
+      .createNode({ name: input.name, description: input.description, refines: input.baseNodeId });
     await this.saveWorkspace();
 
     return change.element;
@@ -57,8 +60,7 @@ export class WorkspaceActionsService {
 
   public async updateNode(nodeId: string, patch: UpdateNodeInput): Promise<void> {
     if (patch.name !== undefined) this.requireAvailableNodeName(patch.name, nodeId);
-    this.store.getDraft().updateNode(nodeId, patch);
-    await this.saveWorkspace();
+    await this.persistValidatedChange((draft: RamenModel): ModelChange<Node> => draft.updateNode(nodeId, patch));
   }
 
   public getAvailableNodeName(preferred: string): string {
@@ -211,7 +213,12 @@ export class WorkspaceActionsService {
       constraints: input.constraints ? [...input.constraints] : undefined,
     };
     const created: Attribute = ModelFactory.createAttribute(values);
-    const attribute: Attribute = { ...current, ...created, id: current?.id ?? created.id };
+    const attribute: Attribute = {
+      ...current,
+      ...created,
+      id: current?.id ?? created.id,
+      ...('description' in input ? { description: input.description } : {}),
+    };
     const properties: readonly Attribute[] = current
       ? shape.properties.map((item: Attribute): Attribute => (item.id === current.id ? attribute : item))
       : [...shape.properties, attribute];
@@ -260,6 +267,10 @@ export class WorkspaceActionsService {
     await this.saveWorkspace();
 
     return relation;
+  }
+
+  public async updateRelation(relationId: string, patch: UpdateRelationInput): Promise<void> {
+    await this.persistValidatedChange((draft: RamenModel): ModelChange<Relation> => draft.updateRelation(relationId, patch));
   }
 
   public async undoRelation(): Promise<void> {

@@ -15,7 +15,7 @@
     </div>
     <div class="flex flex-col gap-5">
       <label class="flex flex-col gap-2">
-        <span class="font-medium">{{ t('create.name') }}</span>
+        <span class="nori-field-label">{{ t('create.name') }}</span>
         <input
           suiInput
           fluid
@@ -31,22 +31,7 @@
         />
         <span id="project-name-hint" class="text-base-content/55 text-xs">{{ t('create.nameHint') }}</span>
       </label>
-      <label class="flex flex-col gap-2">
-        <span class="font-medium"
-          >{{ t('create.summary') }} <span class="text-base-content/50 font-normal">{{ t('create.optional') }}</span></span
-        >
-        <textarea
-          suiTextarea
-          fluid
-          [fluid]="true"
-          name="description"
-          rows="2"
-          [placeholder]="t('create.summaryPlaceholder')"
-          maxlength="140"
-          [(ngModel)]="draft.description"
-          [disabled]="busy() || disabled()"
-        ></textarea>
-      </label>
+      <nori-description-field inputId="create-project-description" [(value)]="draft.description" [disabled]="busy() || disabled()" />
       <label class="flex cursor-pointer items-start gap-3 py-2">
         <input suiCheckbox class="shrink-0" type="checkbox" name="example" [(ngModel)]="useExample" [disabled]="busy() || disabled()" />
         <span class="flex flex-col gap-1">
@@ -64,7 +49,7 @@
       size="lg"
       type="submit"
       [loading]="busy()"
-      [disabled]="!projectForm.valid || !isNameValid() || busy() || disabled()"
+      [disabled]="!projectForm.valid || !isNameValid() || !isDescriptionValid() || busy() || disabled()"
     >
       <svg lucidePlus class="size-4" aria-hidden="true"></svg>{{ t(busy() ? 'create.creating' : 'home.create') }}
     </button>

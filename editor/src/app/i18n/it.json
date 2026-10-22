@@ -187,7 +187,7 @@
     "coloursHint": "I colori si applicano a ogni tipo di base e ai suoi raffinamenti.\nLe modifiche sono visibili immediatamente.",
     "colourForNode": "Colore di {{name}}",
     "resetColours": "Ripristina colori",
-    "generateColours": "Genera tavolozza",
+    "generateColours": "Mescola tavolozza",
     "refineNamedNode": "Raffina {{name}}",
     "removeNamedNode": "Elimina {{name}}",
     "confirmRemoveNode": "L’eliminazione di {{name}} rimuove anche le sue proprietà, i raffinamenti dipendenti e le relazioni.",
@@ -211,6 +211,7 @@
     "redoRelation": "Ripeti modifica alla relazione",
     "saveProject": "Salva progetto",
     "editProject": "Modifica progetto",
+    "updateProjectTitle": "Aggiorna il tuo progetto",
     "projectNameLength": "Scegli un nome descrittivo per il progetto, da 3 a 70 caratteri.",
     "projectNameTooShort": "Inserisci un nome per il progetto di almeno 3 caratteri.",
     "removeConnectionTitle": "Eliminare la relazione?",
@@ -413,6 +414,12 @@
         "textEditorHint": "Mapping predefinito dell’editor di testo. Include level, cols e rows come proprietà intere facoltative.",
         "tei": "TEI"
       }
+    },
+    "description": {
+      "label": "Descrizione",
+      "tooLong": "Usa al massimo {{maximum}} caratteri.",
+      "add": "Aggiungi descrizione",
+      "edit": "Modifica descrizione"
     }
   }
 }

@@ -187,7 +187,7 @@
     "coloursHint": "Colours apply to each base type and its refinements.\nChanges appear immediately.",
     "colourForNode": "Colour for {{name}}",
     "resetColours": "Reset colours",
-    "generateColours": "Generate palette",
+    "generateColours": "Shuffle palette",
     "refineNamedNode": "Refine {{name}}",
     "removeNamedNode": "Remove {{name}}",
     "confirmRemoveNode": "Removing {{name}} also removes its properties, dependent refinements and relationships.",
@@ -211,6 +211,7 @@
     "redoRelation": "Redo relationship change",
     "saveProject": "Save project",
     "editProject": "Edit project",
+    "updateProjectTitle": "Update your project",
     "projectNameLength": "Choose a descriptive project name with 3–70 characters.",
     "projectNameTooShort": "Enter a project name with at least 3 characters.",
     "removeConnectionTitle": "Remove relationship?",
@@ -413,6 +414,12 @@
         "textEditorHint": "Default text editor mapping. Includes level, cols and rows as optional integer properties.",
         "tei": "TEI"
       }
+    },
+    "description": {
+      "label": "Description",
+      "tooLong": "Use no more than {{maximum}} characters.",
+      "add": "Add description",
+      "edit": "Edit description"
     }
   }
 }

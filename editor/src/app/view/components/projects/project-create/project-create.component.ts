@@ -14,11 +14,13 @@ import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { LucidePlus } from '@lucide/angular';
 import { type Model } from '@ramen-suite/core/model';
 import { RAMEN_MODEL } from '@ramen-suite/core/ramen';
-import { Button, Card, Checkbox, Input, Message, Textarea } from '@sushi-kit/angular';
+import { Button, Card, Checkbox, Input, Message } from '@sushi-kit/angular';
 import { createCorrespondenceModel } from '../../../../../data/correspondence';
 import { type Manifest, type CreateManifest } from '../../../../models/Manifest';
 import { NavigationService } from '../../../../services/interaction/navigation.service';
 import { ProjectService } from '../../../../services/projects/project.service';
+import { isDescriptionValid } from '../../../../utils/descriptions';
+import { DescriptionFieldComponent } from '../../shared/description-field/description-field.component';
 import { ProjectAlternativeComponent } from '../project-alternative/project-alternative.component';
 
 @Component({
@@ -32,7 +34,7 @@ import { ProjectAlternativeComponent } from '../project-alternative/project-alte
     Checkbox,
     Input,
     Message,
-    Textarea,
+    DescriptionFieldComponent,
     LucidePlus,
     ProjectAlternativeComponent,
   ],
@@ -54,12 +56,16 @@ export class ProjectCreateComponent {
   protected readonly error: WritableSignal<string | null> = signal(null);
   protected useExample: boolean = false;
 
+  protected isDescriptionValid(): boolean {
+    return isDescriptionValid(this.draft.description);
+  }
+
   protected isNameValid(): boolean {
     return this.draft.name.trim().length >= 3;
   }
 
   protected async handleCreateProject(form: NgForm): Promise<void> {
-    if (form.invalid || !this.isNameValid() || this.busy() || this.disabled()) return;
+    if (form.invalid || !this.isNameValid() || !this.isDescriptionValid() || this.busy() || this.disabled()) return;
 
     const input: CreateManifest = {
       name: this.draft.name.trim(),

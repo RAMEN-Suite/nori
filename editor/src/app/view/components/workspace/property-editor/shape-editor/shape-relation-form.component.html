@@ -3,7 +3,7 @@
   <fieldset class="flex min-w-0 flex-col gap-5" [disabled]="!editable()">
     <legend class="mb-3 text-sm font-medium">{{ t('editor.shapes.relationRule') }}</legend>
     <div class="flex flex-col gap-2 text-xs font-medium">
-      <span id="shape-relation-direction">{{ t('editor.shapes.direction') }}</span>
+      <span id="shape-relation-direction" class="nori-field-label">{{ t('editor.shapes.direction') }}</span>
       <sui-select
         fluid
         size="sm"
@@ -40,7 +40,7 @@
     <fieldset class="grid min-w-0 grid-cols-1 gap-3 sm:grid-cols-2">
       <legend class="mb-3 text-sm font-medium">{{ t('editor.shapes.cardinality') }}</legend>
       <div class="flex min-w-0 flex-col gap-2 text-xs font-medium">
-        <span id="shape-relation-minimum">{{ t('editor.propertyOptions.minimum.label') }}</span
+        <span id="shape-relation-minimum" class="nori-field-label">{{ t('editor.propertyOptions.minimum.label') }}</span
         ><sui-input-number
           fluid
           size="sm"
@@ -53,7 +53,7 @@
         />
       </div>
       <div class="flex min-w-0 flex-col gap-2 text-xs font-medium">
-        <span id="shape-relation-maximum">{{ t('editor.propertyOptions.maximum.label') }}</span
+        <span id="shape-relation-maximum" class="nori-field-label">{{ t('editor.propertyOptions.maximum.label') }}</span
         ><sui-input-number
           fluid
           size="sm"

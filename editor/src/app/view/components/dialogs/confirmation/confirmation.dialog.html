@@ -9,7 +9,7 @@
       [affectedLevels]="options().affectedLevels ?? []"
     />
   </div>
-  <footer class="nori-dialog-actions" data-nori-dialog-entry>
+  <footer class="nori-dialog-actions">
     @for (group of options().buttons; track $index) {
       @for (button of group; track button.label) {
         <button

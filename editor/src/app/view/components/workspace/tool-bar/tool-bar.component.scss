@@ -6,6 +6,13 @@
   pointer-events: none;
   min-height: var(--nori-chrome-height);
 }
+.editor-project-name {
+  cursor: pointer;
+}
+.editor-project-name:focus-visible {
+  outline: var(--sui-focus-ring-width) solid var(--sui-focus-ring-color, currentColor);
+  outline-offset: var(--sui-focus-ring-offset);
+}
 .editor-back {
   position: absolute;
   left: 0;

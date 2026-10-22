@@ -17,6 +17,7 @@ import { FormsModule } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { LucidePencil } from '@lucide/angular';
 import { Button, Input } from '@sushi-kit/angular';
+import { DefinitionDescriptionComponent } from '../../definition-description/definition-description.component';
 import { toPascalName } from '../../../../../../utils/model-names';
 import { AutoselectDirective } from '../../../../../../directives/autoselect.directive';
 import { TooltipDirective } from '../../../../../../directives/tooltip.directive';
@@ -26,7 +27,16 @@ import { WorkspaceService } from '../../../../../../services/workspace/workspace
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'nori-node-basics',
-  imports: [TranslocoDirective, Button, Input, TooltipDirective, FormsModule, AutoselectDirective, LucidePencil],
+  imports: [
+    DefinitionDescriptionComponent,
+    TranslocoDirective,
+    Button,
+    Input,
+    TooltipDirective,
+    FormsModule,
+    AutoselectDirective,
+    LucidePencil,
+  ],
   templateUrl: './node-basics.component.html',
 })
 export class NodeBasicsComponent {

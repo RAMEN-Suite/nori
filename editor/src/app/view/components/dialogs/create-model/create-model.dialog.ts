@@ -15,6 +15,8 @@ import { TranslocoDirective } from '@jsverse/transloco';
 import { LucidePlus, LucideSave, LucideX } from '@lucide/angular';
 import { RAMEN_MODEL } from '@ramen-suite/core/ramen';
 import { Button, Input } from '@sushi-kit/angular';
+import { isDescriptionValid } from '../../../../utils/descriptions';
+import { DescriptionFieldComponent } from '../../shared/description-field/description-field.component';
 import { type ModelRecord } from '../../../../models/ModelRecord';
 import { DialogService } from '../../../../services/interaction/dialog.service';
 import { NavigationService } from '../../../../services/interaction/navigation.service';
@@ -25,7 +27,7 @@ import { WorkspaceService } from '../../../../services/workspace/workspace.servi
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'nori-create-model-dialog',
-  imports: [LucidePlus, LucideSave, LucideX, TranslocoDirective, Input, Button, FormsModule],
+  imports: [DescriptionFieldComponent, LucidePlus, LucideSave, LucideX, TranslocoDirective, Input, Button, FormsModule],
   templateUrl: './create-model.dialog.html',
 })
 export class CreateModelDialog {
@@ -39,6 +41,7 @@ export class CreateModelDialog {
   protected isSubmitted: boolean = false;
   protected readonly draftModel: WritableSignal<CreateLevelInput> = signal({
     name: '',
+    description: '',
     version: '1.0.0',
     uri: 'https://example.com/',
   });
@@ -57,6 +60,7 @@ export class CreateModelDialog {
 
       const input: CreateLevelInput = {
         name: existing.name,
+        description: existing.gmodel.description ?? '',
         uri: existing.gmodel.$id,
         version: existing.gmodel.version,
       };
@@ -80,7 +84,16 @@ export class CreateModelDialog {
   }
 
   protected isFormValid(): boolean {
-    return this.isModelNameValid() && this.isVersionValid() && this.isUriValid();
+    return (
+      isDescriptionValid(this.draftModel().description ?? '') &&
+      this.isModelNameValid() &&
+      this.isVersionValid() &&
+      this.isUriValid()
+    );
+  }
+
+  protected setDescription(description: string): void {
+    this.draftModel.update((draft: CreateLevelInput): CreateLevelInput => ({ ...draft, description }));
   }
 
   protected handleClose(): void {
