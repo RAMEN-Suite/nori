@@ -23,6 +23,7 @@ export class Application {
     });
     app.on('activate', (): void => {
       if (BrowserWindow.getAllWindows().length === 0) this.createWindow();
+      else this.focusWindow();
     });
   }
 
@@ -33,7 +34,16 @@ export class Application {
   public showWindow(): void {
     if (!this.window || this.rendererReady) return;
     this.rendererReady = true;
-    this.window.show();
+    this.focusWindow();
+  }
+
+  private focusWindow(): void {
+    const window: BrowserWindow | null = this.window;
+    if (!window || !this.rendererReady) return;
+    if (window.isMinimized()) window.restore();
+    if (process.platform === 'darwin') app.focus({ steal: true });
+    window.show();
+    window.focus();
   }
 
   private createWindow(): void {
