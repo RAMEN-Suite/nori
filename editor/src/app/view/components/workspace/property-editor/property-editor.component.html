@@ -1,6 +1,6 @@
 <ng-container *transloco="let t">
   <section
-    class="property-workspace flex h-full min-h-0 flex-col gap-4"
+    class="property-workspace flex h-full min-h-0 flex-col gap-2.5"
     [class.show-detail]="editing.section() === 'shapes' ? shapeEditor()?.mobileDetail() : detailVisible()"
     [class.motion-enabled]="appearance.state().animations"
     [class.initial-arrival]="initialArrival()"
@@ -82,13 +82,12 @@
     </header>
 
     <div
-      class="property-workspace-body grid min-h-0 flex-1 grid-cols-[minmax(12rem,0.8fr)_minmax(0,1.7fr)] grid-rows-[auto_minmax(0,1fr)] gap-4"
+      class="property-workspace-body grid min-h-0 flex-1 grid-cols-[minmax(12rem,0.65fr)_minmax(0,1.85fr)] grid-rows-[auto_minmax(0,1fr)] gap-2.5"
     >
       <nori-node-context-panel
         class="property-context col-start-1 row-start-1"
         [inert]="sorting() || switchingSection() || !!shapeEditor()?.pending()"
         [animateChanges]="panelMotion()"
-        [tooltipSuspended]="switchingNode()"
         [disabled]="controlsUnavailable() || !!removing()"
         (inspect)="inspectRefinement($event)"
       />
@@ -106,12 +105,12 @@
           />
         } @else {
           <div
-            class="property-workspace-panels grid min-h-0 flex-1 grid-cols-[minmax(12rem,0.8fr)_minmax(0,1.7fr)] items-stretch gap-4"
+            class="property-workspace-panels grid min-h-0 flex-1 grid-cols-[minmax(12rem,0.65fr)_minmax(0,1.85fr)] items-stretch gap-2.5"
             id="node-properties-panel"
             role="tabpanel"
             aria-labelledby="node-properties-tab"
           >
-            <aside class="property-left-column flex min-h-0 min-w-0 flex-col gap-4">
+            <aside class="property-left-column flex min-h-0 min-w-0 flex-col gap-2.5">
               <section
                 class="property-surface property-list flex min-h-0 min-w-0 flex-1 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)] bg-[color-mix(in_oklab,var(--color-base-100)_96%,transparent)] backdrop-blur-[16px]"
                 [attr.aria-label]="t('editor.properties')"
@@ -287,7 +286,7 @@
                 </div>
               </section>
             </aside>
-            <div class="property-right-column flex min-h-0 min-w-0 flex-col gap-4" [inert]="sorting()">
+            <div class="property-right-column flex min-h-0 min-w-0 flex-col gap-2.5" [inert]="sorting()">
               <section
                 class="property-surface property-detail flex min-h-0 min-w-0 flex-1 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)] bg-[color-mix(in_oklab,var(--color-base-100)_96%,transparent)] backdrop-blur-[16px]"
                 tabindex="-1"
@@ -477,6 +476,7 @@
         }
       </div>
     </div>
+    <nori-dialog-host />
     @if (!dialogs.current()) {
       <nori-notifications />
     }

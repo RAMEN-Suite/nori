@@ -164,6 +164,8 @@
     "colours": "Colori dei nodi",
     "adjustNodeColours": "Modifica colori dei nodi",
     "levelName": "Nome del livello",
+    "relationActions": "Azioni della relazione",
+    "nodeNameRequired": "Inserisci un nome del nodo.",
     "nodeName": "Nome del nodo",
     "refineNode": "Raffina nodo",
     "properties": "Proprietà",
@@ -252,6 +254,7 @@
     "annotations": "Annotazioni",
     "inheritedPropertyHint": "Questa proprietà non può essere modificata qui perché è ereditata da",
     "openPropertySource": "Apri la proprietà su {{name}}",
+    "editNode": "Modifica nodo",
     "editProperties": "Modifica proprietà",
     "editPropertiesOf": "Modifica proprietà di {{name}}",
     "allowDuplicates": "Consenti duplicati",
@@ -416,9 +419,11 @@
       }
     },
     "description": {
+      "add": "Aggiungi descrizione",
+      "showMore": "Mostra di più",
+      "showLess": "Mostra meno",
       "label": "Descrizione",
       "tooLong": "Usa al massimo {{maximum}} caratteri.",
-      "add": "Aggiungi descrizione",
       "edit": "Modifica descrizione"
     }
   }

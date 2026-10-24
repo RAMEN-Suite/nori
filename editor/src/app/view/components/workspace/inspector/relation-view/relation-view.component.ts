@@ -1,8 +1,19 @@
-import { ChangeDetectionStrategy, Component, computed, inject, type Signal } from '@angular/core';
+import { CDK_CONNECTED_OVERLAY_DEFAULT_CONFIG } from '@angular/cdk/overlay';
+import {
+  afterNextRender,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  type ElementRef,
+  inject,
+  Injector,
+  viewChild,
+  type Signal,
+} from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { LucideArrowUpRight } from '@lucide/angular';
+import { LucideArrowUpRight, LucideEllipsis } from '@lucide/angular';
 import { type Bounds, type Constraint, type Relation } from '@ramen-suite/core/model';
-import { Badge, Button, Divider } from '@sushi-kit/angular';
+import { Badge, Button, Divider, Menu, MenuTrigger } from '@sushi-kit/angular';
 import { ScrollOverflowDirective } from '../../../../../directives/scroll-overflow.directive';
 import { NavigationService } from '../../../../../services/interaction/navigation.service';
 import { ProjectService } from '../../../../../services/projects/project.service';
@@ -28,10 +39,14 @@ interface RelationEndpoint {
     Badge,
     Button,
     Divider,
+    Menu,
+    MenuTrigger,
+    LucideEllipsis,
     LucideArrowUpRight,
     ScrollOverflowDirective,
     ScrollHintsComponent,
   ],
+  providers: [{ provide: CDK_CONNECTED_OVERLAY_DEFAULT_CONFIG, useValue: { usePopover: 'inline' } }],
   templateUrl: './relation-view.component.html',
   styles: ':host { display: block; height: 100%; } :host:hover, :host:focus-within { --nori-scroll-hint-play-state: running; }',
 })
@@ -39,6 +54,13 @@ export class RelationViewComponent {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   private readonly navigation: NavigationService = inject(NavigationService);
   private readonly projects: ProjectService = inject(ProjectService);
+
+  private readonly injector: Injector = inject(Injector);
+  private readonly actionsButton: Signal<ElementRef<HTMLButtonElement> | undefined> = viewChild('actionsButton');
+
+  protected focusActions(): void {
+    afterNextRender((): void => this.actionsButton()?.nativeElement.focus(), { injector: this.injector });
+  }
 
   protected readonly endpoints: Signal<readonly RelationEndpoint[]> = computed((): readonly RelationEndpoint[] => {
     const relation: Relation | null = this.workspace.queries.currentRelation();

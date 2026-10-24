@@ -77,7 +77,7 @@ export class PropertyEditingService {
         ariaDescribedBy: 'property-workspace-node-title',
         panelClass: 'nori-property-workspace-overlay',
         backdropClass: 'nori-property-workspace-backdrop',
-        width: '60rem',
+        width: '72rem',
         positionStrategy: this.overlay.position().global().centerHorizontally().centerVertically(),
         maxWidth: 'calc(100vw - 2rem)',
         height: 'calc(100dvh - 2 * var(--nori-property-workspace-inset))',
@@ -152,6 +152,7 @@ export class PropertyEditingService {
 
   private observeDialog(ref: DialogRef<undefined, PropertyEditorComponent>): void {
     ref.keydownEvents.subscribe((event: KeyboardEvent): void => {
+      if (this.dialogs.current()) return;
       if (event.key === 'Escape' && !event.defaultPrevented) ref.componentInstance?.handleEscape(event);
     });
     ref.closed.subscribe((): void => {

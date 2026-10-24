@@ -1,6 +1,6 @@
 @if (workspace.queries.currentNode(); as node) {
   <section *transloco="let t" class="flex flex-col" [attr.aria-label]="node.name">
-    <div class="flex min-h-8 items-start gap-2">
+    <div class="flex min-h-8 items-center gap-2">
       @if (editingName() && workspace.queries.nodeEditable()) {
         <input
           suiInput
@@ -15,37 +15,29 @@
           (ngModelChange)="draftName.set($event)"
           [readOnly]="savingName()"
           (keydown.enter)="handleSaveName(true)"
-          (blur)="handleSaveName()"
+          (blur)="handleBlurName()"
           (keydown.escape)="$event.stopPropagation(); handleCancelRename()"
         />
-      } @else {
-        <h1 class="min-w-0 text-xl leading-8 font-semibold break-words" (dblclick)="handleStartRename()">{{ node.name }}</h1>
-        @if (workspace.queries.nodeEditable()) {
+      } @else if (showEditingControls() && workspace.queries.nodeEditable()) {
+        <h1 class="min-w-0 flex-1 text-xl leading-8 font-semibold break-words" [attr.aria-label]="node.name">
           <button
-            suiButton
-            severity="neutral"
-            variant="text"
-            size="xs"
-            shape="circle"
-            #renameButton
-            class="mt-0.5 shrink-0"
+            #renameTarget
+            type="button"
+            class="block min-w-0 cursor-text rounded-[var(--nori-radius-input)] text-left break-words"
             [attr.aria-label]="t('editor.renameNode')"
-            [noriTooltip]="t('editor.renameNode')"
-            [noriTooltipSuspended]="tooltipSuspended()"
-            placement="bottom"
-            [showDelay]="600"
             (click)="handleStartRename()"
           >
-            <svg lucidePencil class="size-3.5" aria-hidden="true"></svg>
+            {{ node.name }}
           </button>
-        }
+        </h1>
+      } @else {
+        <h1 #renameTarget tabindex="-1" class="min-w-0 flex-1 text-xl leading-8 font-semibold break-words" (dblclick)="handleStartRename()">
+          {{ node.name }}
+        </h1>
+      }
+      @if (!editingName()) {
+        <ng-content />
       }
     </div>
-    <nori-definition-description
-      kind="node"
-      [elementId]="node.id"
-      [value]="node.description"
-      [editable]="workspace.queries.nodeEditable()"
-    />
   </section>
 }

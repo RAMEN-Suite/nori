@@ -3,7 +3,9 @@
 }
 <router-outlet (activate)="handleViewReady()" />
 
-<nori-dialog-host />
+@if (!propertyEditing.isOpen()) {
+  <nori-dialog-host />
+}
 <nori-running-action-notification />
 
 @if (!dialogs.current() && !propertyEditing.isOpen()) {

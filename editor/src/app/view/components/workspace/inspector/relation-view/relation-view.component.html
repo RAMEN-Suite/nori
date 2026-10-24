@@ -1,15 +1,46 @@
 <section *transloco="let t" class="flex h-full min-h-0 flex-col gap-3 px-3.5 pt-2 pb-3" [attr.aria-label]="t('editor.inspector')">
   @if (workspace.queries.currentRelation(); as relation) {
     <header>
-      <h1 class="text-xl leading-8 font-semibold break-words">{{ relation.name }}</h1>
+      <div class="flex items-start gap-2">
+        <h1 class="min-w-0 flex-1 text-xl leading-8 font-semibold break-words">{{ relation.name }}</h1>
+        @if (workspace.queries.editable()) {
+          <button
+            #actionsButton
+            suiButton
+            type="button"
+            severity="neutral"
+            variant="text"
+            size="xs"
+            shape="circle"
+            class="mt-0.5 shrink-0"
+            [attr.aria-label]="t('editor.relationActions')"
+            [disabled]="description.busy()"
+            [suiMenuTrigger]="relationMenu"
+          >
+            <svg lucideEllipsis class="size-3.5" aria-hidden="true"></svg>
+          </button>
+          <sui-menu
+            #relationMenu
+            popup
+            size="sm"
+            severity="neutral"
+            [ariaLabel]="t('editor.relationActions')"
+            [items]="[{ label: t(relation.description ? 'editor.description.edit' : 'editor.description.add'), value: 'description' }]"
+            (itemSelected)="description.start()"
+          />
+        }
+      </div>
       <p class="text-base-content/60 text-xs">{{ t('editor.relation') }}</p>
+      <nori-definition-description
+        #description
+        kind="relation"
+        [elementId]="relation.id"
+        [value]="relation.description"
+        [editable]="workspace.queries.editable()"
+        (finished)="focusActions()"
+      />
     </header>
-    <nori-definition-description
-      kind="relation"
-      [elementId]="relation.id"
-      [value]="relation.description"
-      [editable]="workspace.queries.editable()"
-    />
+
     <div class="nori-scroll-frame flex-1">
       <div
         noriScrollOverflow

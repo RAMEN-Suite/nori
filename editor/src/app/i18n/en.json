@@ -164,6 +164,8 @@
     "colours": "Node colours",
     "adjustNodeColours": "Adjust node colours",
     "levelName": "Level name",
+    "relationActions": "Relation actions",
+    "nodeNameRequired": "Enter a node name.",
     "nodeName": "Node name",
     "refineNode": "Refine node",
     "properties": "Properties",
@@ -252,6 +254,7 @@
     "annotations": "Annotations",
     "inheritedPropertyHint": "This property cannot be edited here, because it is inherited from",
     "openPropertySource": "Open property on {{name}}",
+    "editNode": "Edit node",
     "editProperties": "Edit properties",
     "editPropertiesOf": "Edit properties of {{name}}",
     "allowDuplicates": "Allow duplicates",
@@ -416,9 +419,11 @@
       }
     },
     "description": {
+      "add": "Add description",
+      "showMore": "Show more",
+      "showLess": "Show less",
       "label": "Description",
       "tooLong": "Use no more than {{maximum}} characters.",
-      "add": "Add description",
       "edit": "Edit description"
     }
   }

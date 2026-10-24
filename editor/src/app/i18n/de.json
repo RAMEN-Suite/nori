@@ -164,6 +164,8 @@
     "colours": "Knotenfarben",
     "adjustNodeColours": "Knotenfarben anpassen",
     "levelName": "Ebenenname",
+    "relationActions": "Beziehungsaktionen",
+    "nodeNameRequired": "Gib einen Knotennamen ein.",
     "nodeName": "Knotenname",
     "refineNode": "Knoten verfeinern",
     "properties": "Eigenschaften",
@@ -252,6 +254,7 @@
     "annotations": "Annotationen",
     "inheritedPropertyHint": "Hier nicht bearbeitbar, da geerbt von",
     "openPropertySource": "Eigenschaft auf {{name}} öffnen",
+    "editNode": "Knoten bearbeiten",
     "editProperties": "Eigenschaften bearbeiten",
     "editPropertiesOf": "Eigenschaften von „{{name}}“ bearbeiten",
     "allowDuplicates": "Duplikate erlauben",
@@ -416,9 +419,11 @@
       }
     },
     "description": {
+      "add": "Beschreibung hinzufügen",
+      "showMore": "Mehr anzeigen",
+      "showLess": "Weniger anzeigen",
       "label": "Beschreibung",
       "tooLong": "Verwende höchstens {{maximum}} Zeichen.",
-      "add": "Beschreibung hinzufügen",
       "edit": "Beschreibung bearbeiten"
     }
   }

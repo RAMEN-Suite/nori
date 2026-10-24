@@ -58,6 +58,7 @@ import { ScrollHintsComponent } from '../../shared/scroll-hints/scroll-hints.com
 import { ConfirmationContentComponent } from '../../dialogs/confirmation/confirmation-content/confirmation-content.component';
 import { NodeAttributeComponent } from '../inspector/node-view/node-attributes/node-attribute/node-attribute.component';
 import { NotificationsComponent } from '../../shell/notifications/notifications.component';
+import { DialogHostComponent } from '../../shell/dialog-host/dialog-host.component';
 import { NodeContextPanelComponent } from './node-context-panel/node-context-panel.component';
 import { ShapeEditorComponent } from './shape-editor/shape-editor.component';
 import { PropertyFormComponent } from './property-form/property-form.component';
@@ -105,6 +106,7 @@ interface InheritedPropertyGroup {
     ShapeEditorComponent,
     NodeContextPanelComponent,
     NotificationsComponent,
+    DialogHostComponent,
     NodeAttributeComponent,
     AnimateHeightDirective,
     ScrollOverflowDirective,
@@ -322,6 +324,7 @@ export class PropertyEditorComponent {
 
   protected async save(): Promise<void> {
     if (this.actionPending()) return;
+    const activeElement: Element | null = this.element.nativeElement.ownerDocument.activeElement;
     const saved: boolean = (await this.form()?.commit()) !== false;
     if (this.destroyRef.destroyed) return;
     if (!saved) {
@@ -329,7 +332,7 @@ export class PropertyEditorComponent {
       return;
     }
     this.clearDecision();
-    this.focusDetail();
+    this.restoreEditingFocus(activeElement);
   }
 
   protected discard(): void {
@@ -344,6 +347,7 @@ export class PropertyEditorComponent {
   }
 
   public handleEscape(event: Event): void {
+    if (this.dialogs.current()) return;
     event.preventDefault();
     event.stopPropagation();
     if (this.switchingSection()) return;
@@ -637,6 +641,18 @@ export class PropertyEditorComponent {
     } catch (error: unknown) {
       if (!this.destroyRef.destroyed) this.projects.reportError(error);
     }
+  }
+
+  private restoreEditingFocus(previous: Element | null): void {
+    afterNextRender(
+      (): void => {
+        if (this.destroyRef.destroyed) return;
+        const panel: HTMLElement | null = this.element.nativeElement.querySelector<HTMLElement>('.property-detail');
+        const target: HTMLElement | null = previous instanceof HTMLElement && panel?.contains(previous) ? previous : panel;
+        target?.focus({ preventScroll: true });
+      },
+      { injector: this.injector },
+    );
   }
 
   private focusDetail(selectName: boolean = false): void {

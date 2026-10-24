@@ -1,13 +1,13 @@
 <ng-container *transloco="let t">
   <div
-    class="shape-panels property-workspace-panels grid min-h-0 flex-1 grid-cols-[minmax(12rem,0.8fr)_minmax(0,1.7fr)] items-stretch gap-4"
+    class="shape-panels property-workspace-panels grid min-h-0 flex-1 grid-cols-[minmax(12rem,0.65fr)_minmax(0,1.85fr)] items-stretch gap-2.5"
     [class.show-detail]="mobileDetail()"
     [class.motion-enabled]="appearance.state().animations"
     [class.initial-arrival]="initialArrival()"
     [attr.aria-busy]="busy()"
     [inert]="pending() || switchingNode()"
   >
-    <aside class="property-left-column flex min-h-0 min-w-0 flex-col gap-4">
+    <aside class="property-left-column flex min-h-0 min-w-0 flex-col gap-2.5">
       <section
         class="property-list flex min-h-0 min-w-0 flex-1 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)] bg-[color-mix(in_oklab,var(--color-base-100)_96%,transparent)] backdrop-blur-[16px]"
       >
@@ -336,7 +336,7 @@
           suiMessage
           severity="warning"
           variant="soft"
-          class="property-inherited-notice mt-4 flex min-h-[calc(4rem+2px)] flex-wrap items-center gap-3 px-5 py-4"
+          class="property-inherited-notice mt-2.5 flex min-h-[calc(4rem+2px)] flex-wrap items-center gap-3 px-5 py-4"
         >
           <svg lucideInfo class="size-4 shrink-0" aria-hidden="true"></svg>
           <span class="text-sm">{{ t(detail() === 'shared' ? 'editor.shapes.sharedHint' : 'editor.shapes.inheritedHint') }}</span>
@@ -356,7 +356,7 @@
         </aside>
       } @else if (detail() !== 'empty') {
         <section
-          class="property-save-panel mt-4 flex min-h-16 flex-wrap items-center gap-3 rounded-[var(--nori-radius)] border border-[var(--nori-border)] bg-[color-mix(in_oklab,var(--color-base-100)_96%,transparent)] px-5 py-4 backdrop-blur-[16px]"
+          class="property-save-panel mt-2.5 flex min-h-16 flex-wrap items-center gap-3 rounded-[var(--nori-radius)] border border-[var(--nori-border)] bg-[color-mix(in_oklab,var(--color-base-100)_96%,transparent)] px-5 py-4 backdrop-blur-[16px]"
           [attr.aria-label]="t('editor.shapes.changes')"
         >
           @if (removing(); as removal) {
