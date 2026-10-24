@@ -51,7 +51,7 @@ export class AnimateHeightDirective {
     host.style.height = `${height}px`;
     this.animation = animate
       ? host.animate([{ height: `${previous}px` }, { height: `${height}px` }], {
-          duration: parseFloat(style.getPropertyValue('--nori-panel-enter-duration')) || 280,
+          duration: parseFloat(style.getPropertyValue('--nori-panel-enter-duration')) || 300,
           easing: this.noriHeightEasing(),
         })
       : null;

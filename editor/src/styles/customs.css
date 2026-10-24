@@ -34,8 +34,6 @@ body {
   --nori-project-card-height: 38rem;
   --nori-chrome-height: 4.5rem;
   --nori-property-workspace-inset: clamp(1.5rem, 6dvh, 3.5rem);
-  --nori-panel-enter-duration: 280ms;
-  --nori-panel-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --nori-dialog-enter-duration: 400ms;
   --nori-dialog-exit-duration: 100ms;
   --nori-dialog-ease: cubic-bezier(0.16, 1, 0.3, 1);

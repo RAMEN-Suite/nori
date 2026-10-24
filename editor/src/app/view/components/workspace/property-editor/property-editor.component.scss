@@ -1,4 +1,6 @@
 :host {
+  --nori-panel-enter-duration: 280ms;
+  --nori-panel-ease: cubic-bezier(0.22, 1, 0.36, 1);
   display: block;
   width: 100%;
   height: 100%;
@@ -51,7 +53,7 @@
   overscroll-behavior: contain;
 }
 .property-list-scroll .editor-list {
-  padding-inline: 0.25rem;
+  padding-inline: 0.625rem;
 }
 .property-list-item:hover:not(:disabled) {
   background: color-mix(in oklab, var(--color-base-content) 4%, transparent);
@@ -111,12 +113,6 @@
   }
   .property-mobile-back {
     display: inline-flex;
-  }
-  .property-panel-heading {
-    padding-inline: 1rem;
-  }
-  .property-detail-scroll {
-    padding: 1.25rem 1rem 1rem;
   }
   .property-toolbar {
     grid-template-columns: 2rem minmax(0, 1fr) 2rem;

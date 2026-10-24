@@ -49,7 +49,7 @@
         tabindex="0"
         [attr.aria-label]="relation.name"
       >
-        <div suiDivider placement="start" class="text-base-content/60 text-xs" style="--sui-divider-margin: 0.5rem">
+        <div suiDivider placement="start" class="text-base-content/60 text-xs" style="--sui-divider-margin: 0.5rem 0">
           {{ t('editor.propertySource', { name: workspace.store.currentModel()?.name }) }}
         </div>
         @for (endpoint of endpoints(); track endpoint.key) {
@@ -88,7 +88,7 @@
           </section>
         }
         @if (relation.constraints?.length) {
-          <div suiDivider placement="start" class="text-base-content/60 text-xs" style="--sui-divider-margin: 0.5rem">
+          <div suiDivider placement="start" class="text-base-content/60 text-xs" style="--sui-divider-margin: 0.5rem 0">
             {{ t('editor.constraints') }}
           </div>
           <ul class="flex flex-col gap-3 px-4">

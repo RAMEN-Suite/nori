@@ -8,7 +8,7 @@
           suiDivider
           placement="start"
           class="text-base-content/60 text-xs"
-          style="--sui-divider-margin: 0.75rem; margin-bottom: 0.25rem"
+          style="--sui-divider-margin: 0.75rem 0.5rem; margin-bottom: 0.25rem"
         >
           {{ label }}
         </div>
@@ -35,7 +35,7 @@
           </sui-list>
         </div>
       } @empty {
-        <p class="text-base-content/60 px-4 py-1 text-xs">{{ t('editor.noProperties') }}</p>
+        <p class="text-base-content/60 px-2 py-1 text-xs">{{ t('editor.noProperties') }}</p>
       }
     </div>
     <nori-scroll-hints [up]="scroll.canScrollUp()" [down]="scroll.canScrollDown()" />

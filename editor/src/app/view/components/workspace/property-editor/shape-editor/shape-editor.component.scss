@@ -1,3 +1,11 @@
 :host {
   display: contents;
 }
+
+.property-list-scroll .editor-list {
+  padding-inline: 0.625rem;
+}
+.property-list-scroll [suiDivider] {
+  --sui-divider-margin: 0.75rem 0.875rem;
+  margin-bottom: 0.25rem;
+}

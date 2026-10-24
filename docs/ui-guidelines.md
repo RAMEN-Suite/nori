@@ -8,7 +8,7 @@ Shared rules for Nori panels, dialogs and lists. Use public Sushi APIs and token
 - Reuse panel/dialog frames, typography, list spacing and tooltips. Comparable bordered lists use `styles/_surface-list.scss` mixins with Sushi List; keep dimensions in shared styles rather than repeating numbers here.
 - Unexpected errors use the shared bottom-right Toast outlet. Native dialogs and the property workspace host the outlet inside their focus scope; otherwise the app shell owns it. Field validation stays beside the input.
 - Keep focus visible without clipping it. Support keyboard navigation, long/translatable text, small viewports and zoom.
-- Panel entrances share a 280ms duration and easing without staggered delays; resizing uses the same timing.
+- Panels inside the node editing workspace share a 280ms entrance without staggered delays; resizing uses the same timing. The main workspace retains its original panel motion.
 - Keep headings and bottom actions fixed; scroll the content area. Use shared scroll hints only when content overflows, with room for the scrollbar and focus rings.
 - Respect reduced motion and the user's animation preference. Keep shared motion in its owner; dialog windows enter as one surface using shared motion tokens: a subtle scale from 98% over 400ms without overshoot, becoming opaque early, and a 100ms exit. Start window movement after initial positioning; do not animate dialog contents separately.
 

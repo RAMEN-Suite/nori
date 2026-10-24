@@ -9,7 +9,7 @@
   >
     <aside class="property-left-column flex min-h-0 min-w-0 flex-col gap-2.5">
       <section
-        class="property-list flex min-h-0 min-w-0 flex-1 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)] bg-[color-mix(in_oklab,var(--color-base-100)_96%,transparent)] backdrop-blur-[16px]"
+        class="property-list bg-base-100 flex min-h-0 min-w-0 flex-1 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)]"
       >
         <header class="property-panel-heading flex min-h-14 shrink-0 items-center justify-between gap-3 pt-4 pr-3.5 pb-2 pl-5.5">
           @if (section() !== 'overview' && selected(); as entry) {
@@ -79,7 +79,7 @@
                   <ng-template suiListItem let-property
                     ><button
                       type="button"
-                      class="property-list-item col-span-full flex w-full cursor-pointer rounded-[var(--nori-radius-input)] px-3 py-1.5 text-left"
+                      class="property-list-item col-span-full flex w-full cursor-pointer rounded-[var(--nori-radius-input)] px-3 py-1 text-left"
                       [class.is-selected]="shared()?.attribute?.id === property.attribute.id"
                       (click)="selectShared(property)"
                     >
@@ -104,7 +104,7 @@
                   <ng-template suiListItem let-property
                     ><button
                       type="button"
-                      class="property-list-item col-span-full flex w-full cursor-pointer rounded-[var(--nori-radius-input)] px-3 py-1.5 text-left"
+                      class="property-list-item col-span-full flex w-full cursor-pointer rounded-[var(--nori-radius-input)] px-3 py-1 text-left"
                       [class.is-selected]="propertyId() === property.id && detail() === 'property'"
                       (click)="selectProperty(property.id)"
                     >
@@ -144,7 +144,12 @@
               }
             } @else {
               @for (group of shapeGroups(); track group.modelId) {
-                <div suiDivider placement="start" class="text-base-content/60 text-xs" style="--sui-divider-margin: 1rem 0">
+                <div
+                  suiDivider
+                  placement="start"
+                  class="text-base-content/60 text-xs"
+                  style="--sui-divider-margin: 0.75rem 0.875rem; margin-bottom: 0.25rem"
+                >
                   {{
                     group.modelName
                       ? t('editor.propertySource', { name: group.modelName })
@@ -163,7 +168,7 @@
                   <ng-template suiListItem let-entry>
                     <button
                       type="button"
-                      class="property-list-item col-span-full flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-[var(--nori-radius-input)] px-3 py-1.5 text-left"
+                      class="property-list-item col-span-full flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-[var(--nori-radius-input)] px-3 py-1 text-left"
                       [class.is-selected]="shapeId() === entry.shape.id"
                       [attr.aria-pressed]="shapeId() === entry.shape.id"
                       [disabled]="pending() || switchingNode() || !!removing()"
@@ -184,7 +189,7 @@
           <nori-scroll-hints [up]="shapeScroll.canScrollUp()" [down]="shapeScroll.canScrollDown()" />
         </div>
         @if (section() === 'overview' || editable()) {
-          <footer class="property-list-footer flex shrink-0 flex-col gap-3 p-3">
+          <footer class="property-list-footer flex shrink-0 flex-col gap-3 px-5.5 py-5">
             @if (section() === 'overview') {
               <input
                 suiInput
@@ -209,7 +214,7 @@
     </aside>
     <div class="property-right-column flex min-h-0 min-w-0 flex-col">
       <section
-        class="property-detail flex min-h-0 min-w-0 flex-1 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)] bg-[color-mix(in_oklab,var(--color-base-100)_96%,transparent)] backdrop-blur-[16px]"
+        class="property-detail bg-base-100 flex min-h-0 min-w-0 flex-1 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)]"
         tabindex="-1"
         [attr.aria-label]="t('editor.shapes.details')"
       >
@@ -219,7 +224,7 @@
           </button>
         </header>
         <div class="nori-scroll-frame min-h-0 flex-1">
-          <div noriScrollOverflow #shapeDetailScroll="scrollOverflow" class="property-detail-scroll editor-panel-scroll px-6 pt-5 pb-6">
+          <div noriScrollOverflow #shapeDetailScroll="scrollOverflow" class="property-detail-scroll editor-panel-scroll px-5.5 pt-4 pb-5">
             @switch (detail()) {
               @case ('settings') {
                 <form class="flex flex-col gap-2.5" (ngSubmit)="save()">
@@ -356,7 +361,7 @@
         </aside>
       } @else if (detail() !== 'empty') {
         <section
-          class="property-save-panel mt-2.5 flex min-h-16 flex-wrap items-center gap-3 rounded-[var(--nori-radius)] border border-[var(--nori-border)] bg-[color-mix(in_oklab,var(--color-base-100)_96%,transparent)] px-5 py-4 backdrop-blur-[16px]"
+          class="property-save-panel bg-base-100 mt-2.5 flex min-h-16 flex-wrap items-center gap-3 rounded-[var(--nori-radius)] border border-[var(--nori-border)] px-5 py-4"
           [attr.aria-label]="t('editor.shapes.changes')"
         >
           @if (removing(); as removal) {

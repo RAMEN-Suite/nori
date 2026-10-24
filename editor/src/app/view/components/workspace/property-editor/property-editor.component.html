@@ -9,7 +9,7 @@
     [inert]="!!form()?.saving() || savingOrder()"
   >
     <header
-      class="property-surface property-toolbar bg-base-200 grid min-w-0 shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4 overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)] px-3.5 py-2.5 backdrop-blur-[16px]"
+      class="property-surface property-toolbar bg-base-200 grid min-w-0 shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4 overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)] px-3.5 py-2.5"
     >
       <button
         suiButton
@@ -112,7 +112,7 @@
           >
             <aside class="property-left-column flex min-h-0 min-w-0 flex-col gap-2.5">
               <section
-                class="property-surface property-list flex min-h-0 min-w-0 flex-1 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)] bg-[color-mix(in_oklab,var(--color-base-100)_96%,transparent)] backdrop-blur-[16px]"
+                class="property-surface property-list bg-base-100 flex min-h-0 min-w-0 flex-1 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)]"
                 [attr.aria-label]="t('editor.properties')"
               >
                 <div class="property-panel-content flex min-h-0 flex-1 flex-col">
@@ -146,7 +146,12 @@
                       class="property-list-scroll editor-panel-scroll px-2 pb-2"
                     >
                       @for (group of inheritedGroups(); track group.levelIndex) {
-                        <div suiDivider placement="start" class="text-base-content/60 text-xs" style="--sui-divider-margin: 1rem 0">
+                        <div
+                          suiDivider
+                          placement="start"
+                          class="text-base-content/60 text-xs"
+                          style="--sui-divider-margin: 0.75rem 0.875rem; margin-bottom: 0.25rem"
+                        >
                           {{
                             group.modelName
                               ? t('editor.propertySource', { name: group.modelName })
@@ -165,7 +170,7 @@
                           <ng-template suiListItem let-property>
                             <button
                               type="button"
-                              class="property-list-item property-inherited-item col-span-full flex w-full min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-[var(--nori-radius-input)] px-3 py-1.5"
+                              class="property-list-item property-inherited-item col-span-full flex w-full min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-[var(--nori-radius-input)] px-3 py-1"
                               [class.is-selected]="inheritedSelection() === property"
                               [attr.aria-pressed]="inheritedSelection() === property"
                               [disabled]="controlsUnavailable() || !!removing()"
@@ -182,7 +187,12 @@
                         </sui-list>
                       }
                       @if (properties().length) {
-                        <div suiDivider placement="start" class="text-base-content/60 text-xs" style="--sui-divider-margin: 1rem 0">
+                        <div
+                          suiDivider
+                          placement="start"
+                          class="text-base-content/60 text-xs"
+                          style="--sui-divider-margin: 0.75rem 0.875rem; margin-bottom: 0.25rem"
+                        >
                           {{
                             ownModelName()
                               ? t('editor.propertySource', { name: ownModelName() })
@@ -201,7 +211,7 @@
                           >
                             <ng-template [suiOrderListItem]="orderItems()" let-item>
                               <nori-node-attribute
-                                class="block min-w-0 px-3 py-1.5 text-left"
+                                class="block min-w-0 px-3 py-1 text-left"
                                 [attribute]="item.attribute"
                                 [modelLevelIndex]="ownLevelIndex()"
                                 [focusable]="false"
@@ -221,7 +231,7 @@
                             <ng-template suiListItem let-property>
                               <button
                                 type="button"
-                                class="property-list-item col-span-full flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-[var(--nori-radius-input)] px-3 py-1.5"
+                                class="property-list-item col-span-full flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-[var(--nori-radius-input)] px-3 py-1"
                                 [class.is-selected]="!inheritedSelection() && attribute()?.id === property.id"
                                 [attr.aria-pressed]="!inheritedSelection() && attribute()?.id === property.id"
                                 [disabled]="controlsUnavailable() || !!removing()"
@@ -245,7 +255,7 @@
                     <nori-scroll-hints [up]="propertyScroll.canScrollUp()" [down]="propertyScroll.canScrollDown()" />
                   </div>
                   @if (workspace.queries.nodeEditable()) {
-                    <footer class="property-list-footer p-3">
+                    <footer class="property-list-footer px-5.5 py-5">
                       @if (sorting()) {
                         <div class="property-order-actions flex flex-wrap justify-end gap-2">
                           <button
@@ -288,7 +298,7 @@
             </aside>
             <div class="property-right-column flex min-h-0 min-w-0 flex-col gap-2.5" [inert]="sorting()">
               <section
-                class="property-surface property-detail flex min-h-0 min-w-0 flex-1 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)] bg-[color-mix(in_oklab,var(--color-base-100)_96%,transparent)] backdrop-blur-[16px]"
+                class="property-surface property-detail bg-base-100 flex min-h-0 min-w-0 flex-1 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)]"
                 tabindex="-1"
                 [attr.aria-label]="t('editor.editProperties')"
               >
@@ -314,7 +324,7 @@
                     <div
                       noriScrollOverflow
                       #detailScroll="scrollOverflow"
-                      class="property-detail-scroll editor-panel-scroll px-6 pt-5 pb-6"
+                      class="property-detail-scroll editor-panel-scroll px-5.5 pt-4 pb-5"
                     >
                       <nori-property-form
                         class="property-form-host"
@@ -363,7 +373,7 @@
                   }
                   @if (workspace.queries.nodeEditable() && !inheritedSelection()) {
                     <section
-                      class="property-surface property-save-panel flex min-h-[calc(4rem+2px)] min-w-0 flex-col justify-end overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)] bg-[color-mix(in_oklab,var(--color-base-100)_96%,transparent)] px-5 py-4 backdrop-blur-[16px]"
+                      class="property-surface property-save-panel bg-base-100 flex min-h-[calc(4rem+2px)] min-w-0 flex-col justify-end overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)] px-5 py-4"
                       data-nori-motion
                       [animate.enter]="panelMotion() ? 'property-content-enter' : ''"
                       [animate.leave]="panelMotion() ? 'property-content-leave' : ''"
