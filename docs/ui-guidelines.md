@@ -8,8 +8,9 @@ Shared rules for Nori panels, dialogs and lists. Use public Sushi APIs and token
 - Reuse panel/dialog frames, typography, list spacing and tooltips. Comparable bordered lists use `styles/_surface-list.scss` mixins with Sushi List; keep dimensions in shared styles rather than repeating numbers here.
 - Unexpected errors use the shared bottom-right Toast outlet. Native dialogs and the property workspace host the outlet inside their focus scope; otherwise the app shell owns it. Field validation stays beside the input.
 - Keep focus visible without clipping it. Support keyboard navigation, long/translatable text, small viewports and zoom.
+- Panel entrances share a 280ms duration and easing without staggered delays; resizing uses the same timing.
 - Keep headings and bottom actions fixed; scroll the content area. Use shared scroll hints only when content overflows, with room for the scrollbar and focus rings.
-- Respect reduced motion and the user's animation preference. Keep shared motion in its owner; dialog windows enter as one surface over 250ms with a scale from 70%, a slight overshoot and a fade, and leave over 100ms. Start window movement after initial positioning; do not animate dialog contents separately.
+- Respect reduced motion and the user's animation preference. Keep shared motion in its owner; dialog windows enter as one surface using shared motion tokens: a subtle scale from 98% over 400ms without overshoot, becoming opaque early, and a 100ms exit. Start window movement after initial positioning; do not animate dialog contents separately.
 
 ## Dialogs and forms
 
@@ -21,7 +22,7 @@ Shared rules for Nori panels, dialogs and lists. Use public Sushi APIs and token
 - Enter in a form input submits through the same guarded save/create action as its footer button. Autocomplete/select controls handle selection first; multiline fields keep Enter for new lines.
 - Put actions bottom right: neutral Cancel first, one specific primary action last. Use Sushi button size `sm` and a matching leading Lucide icon; destructive actions use error styling and Eraser. Avoid vague OK/Yes/No labels.
 - Immediately applied settings/colours use contextual reset actions, without Save/Cancel. Settings and colours may close on backdrop click; editing and confirmation dialogs remain protected, especially while pending.
-- Edit inside the existing surface; never open editing dialogs inside dialogs.
+- Node name and description open together in the shared dialog above the property workspace. Keep the dialog host inside that workspace's focus scope; Escape closes only the top dialog and restores focus to its trigger.
 
 ## Removal and inspection
 

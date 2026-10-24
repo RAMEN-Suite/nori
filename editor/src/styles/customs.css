@@ -34,6 +34,11 @@ body {
   --nori-project-card-height: 38rem;
   --nori-chrome-height: 4.5rem;
   --nori-property-workspace-inset: clamp(1.5rem, 6dvh, 3.5rem);
+  --nori-panel-enter-duration: 280ms;
+  --nori-panel-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --nori-dialog-enter-duration: 400ms;
+  --nori-dialog-exit-duration: 100ms;
+  --nori-dialog-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --nori-dialog-width: 36rem;
   --nori-dialog-width-compact: 28rem;
   --nori-notification-width: 26rem;
@@ -235,7 +240,10 @@ sui-toast.nori-notifications {
 @keyframes sui-dialog-nori-enter {
   from {
     opacity: 0;
-    scale: 0.7;
+    scale: 0.98;
+  }
+  35% {
+    opacity: 1;
   }
   to {
     opacity: 1;

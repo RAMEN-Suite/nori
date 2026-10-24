@@ -16,11 +16,10 @@
   background: var(--color-base-100);
   pointer-events: auto;
   transition:
-    transform 300ms cubic-bezier(0.4, 0, 0.2, 1),
-    opacity 220ms ease-in-out,
+    transform var(--nori-panel-enter-duration) var(--nori-panel-ease),
+    opacity var(--nori-panel-enter-duration) var(--nori-panel-ease),
     visibility 0s;
-  animation: panel-arrive 760ms var(--nori-panel-arrival-delay, 340ms) var(--nori-editor-ease, cubic-bezier(0.22, 1, 0.36, 1))
-    backwards;
+  animation: panel-arrive var(--nori-panel-enter-duration) var(--nori-panel-ease) backwards;
 }
 .editor-panel.from-left {
   --panel-x: calc(-100% - 2rem);
@@ -30,10 +29,10 @@
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition-delay: 0s, 0s, 300ms;
+  transition-delay: 0s, 0s, var(--nori-panel-enter-duration);
 }
 .editor-panel:not(.is-closed) {
-  transition-delay: 100ms, 100ms, 0s;
+  transition-delay: 0s;
 }
 
 .panel-content {

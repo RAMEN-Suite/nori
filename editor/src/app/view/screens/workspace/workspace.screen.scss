@@ -49,36 +49,27 @@
 .top-slot {
   top: 0;
   bottom: 0;
-  transition: bottom 480ms 180ms var(--nori-editor-ease);
+  transition: bottom var(--nori-panel-enter-duration) var(--nori-panel-ease);
 }
 .bottom-slot {
   bottom: 0;
   height: 100%;
-  transition: height 480ms 180ms var(--nori-editor-ease);
+  transition: height var(--nori-panel-enter-duration) var(--nori-panel-ease);
 }
 .workspace-left.both-open .top-slot {
   bottom: calc(50% + 0.5rem);
-  transition-duration: 80ms;
-  transition-delay: 0s;
 }
 .workspace-left.both-open .bottom-slot {
   height: calc(50% - 0.5rem);
-  transition-duration: 80ms;
-  transition-delay: 0s;
 }
 .workspace-right {
   --levels-height: min(var(--nori-levels-height), 100%);
 }
 .workspace-right.levels-open .top-slot {
   bottom: calc(var(--levels-height) + 1rem);
-  transition-duration: 80ms;
-  transition-delay: 0s;
 }
 .workspace-right .bottom-slot {
   height: var(--levels-height);
-}
-.workspace-catalogue {
-  --nori-panel-arrival-delay: 280ms;
 }
 @media (min-width: 640px) {
   .workspace-shell {

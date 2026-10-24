@@ -52,7 +52,7 @@ import { ConfirmationDialog } from '../../dialogs/confirmation/confirmation.dial
         (keydown.escape)="handleEscape($event)"
         [class.nori-dialog-motion]="appearance.state().animations"
         [class.nori-dialog-enter-ready]="positionReady()"
-        style="--sui-dialog-radius: var(--nori-radius); --sui-dialog-border-color: var(--nori-border); --sui-dialog-shadow: none; --sui-dialog-enter-duration: 250ms; --sui-dialog-exit-duration: 100ms; --sui-dialog-motion-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275)"
+        style="--sui-dialog-radius: var(--nori-radius); --sui-dialog-border-color: var(--nori-border); --sui-dialog-shadow: none; --sui-dialog-enter-duration: var(--nori-dialog-enter-duration); --sui-dialog-exit-duration: var(--nori-dialog-exit-duration); --sui-dialog-motion-easing: var(--nori-dialog-ease)"
         [style.--sui-dialog-width]="isConfirmation() ? '24rem' : (content()?.width ?? 'var(--nori-dialog-width)')"
         [open]="dialogs.current() !== null && contentReady()"
         [ariaLabel]="content()?.title || (content()?.titleKey || 'common.confirm' | transloco)"
