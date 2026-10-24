@@ -35,6 +35,15 @@ export class NodeAttributeComponent {
     return bounds.upperBound === -1 || bounds.upperBound > 1;
   }
 
+  protected formatBounds(bounds: Bounds): string {
+    const { lowerBound: minimum, upperBound: maximum } = bounds;
+    if (maximum === 1) return '';
+    if (minimum === maximum) return ` [${maximum}]`;
+    if (maximum === -1) return minimum <= 1 ? ' []' : ` [≥ ${minimum}]`;
+    if (minimum <= 1) return ` [≤ ${maximum}]`;
+    return ` [${minimum}–${maximum}]`;
+  }
+
   protected formatAttributeCount(bounds: Bounds): string | null {
     const { lowerBound: minimum, upperBound: maximum } = bounds;
     const translate: (key: string, params?: Record<string, number>) => string = (key, params = {}): string =>

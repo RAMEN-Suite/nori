@@ -22,8 +22,26 @@
           >
         }
       </div>
-      <span suiBadge size="xs" severity="neutral" variant="soft" class="shrink-0" style="cursor: inherit">
-        {{ workspace.queries.resolveTypeLabel(property.typeId, modelLevelIndex()) }}{{ isMultiValue(property.bounds) ? ' [ ]' : '' }}
+      @let count = formatAttributeCount(property.bounds);
+      @let countLabel = count ?? t(isMultiValue(property.bounds) ? 'editor.propertyCount.multiple' : 'editor.propertyCount.single');
+      <span
+        suiBadge
+        size="xs"
+        severity="neutral"
+        variant="soft"
+        class="shrink-0"
+        style="cursor: inherit"
+        [noriTooltip]="countLabel"
+        placement="bottom"
+        [offset]="12"
+        [showDelay]="600"
+        [attr.tabindex]="focusable() ? 0 : null"
+      >
+        <span>
+          {{ workspace.queries.resolveTypeLabel(property.typeId, modelLevelIndex())
+          }}<span aria-hidden="true">{{ formatBounds(property.bounds) }}</span>
+          <span class="sr-only"> ({{ countLabel }})</span>
+        </span>
       </span>
     </div>
     <div class="property-status">
@@ -86,8 +104,4 @@
       }
     </div>
   </div>
-  @let count = formatAttributeCount(property.bounds);
-  @if (count) {
-    <p class="text-base-content/60 mt-1 text-xs leading-relaxed">{{ count }}</p>
-  }
 }
