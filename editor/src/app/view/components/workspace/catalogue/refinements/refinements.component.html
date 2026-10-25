@@ -9,7 +9,7 @@
       [attr.aria-label]="t(isRefinementLevel() ? 'editor.refinements' : 'editor.nodes')"
     >
       @for (group of groups(); track group.baseNodeRef ?? group.label) {
-        <section [attr.aria-label]="group.label">
+        <section class="node-group" [attr.aria-label]="group.label">
           @let key = group.baseNodeRef ?? group.label;
           <sui-accordion
             class="node-accordion"

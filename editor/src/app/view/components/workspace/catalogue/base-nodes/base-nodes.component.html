@@ -2,85 +2,87 @@
   <div class="nori-scroll-frame flex-1">
     <div noriScrollOverflow #scroll="scrollOverflow" class="editor-panel-scroll min-h-0 flex-1 overflow-auto">
       @for (group of groups(); track group.record.modelId) {
-        <sui-accordion
-          class="node-accordion"
-          size="sm"
-          [value]="collapsedGroups().has(group.record.modelId) ? [] : [group.record.modelId]"
-          (valueChange)="handleGroupExpansion(group.record.modelId, $event)"
-        >
-          <ng-template suiAccordionHeader let-item let-expanded="expanded">
-            <span class="flex items-center gap-2 text-xs font-semibold opacity-60">
-              <span class="shrink-0 transition-transform" [class.rotate-90]="expanded" aria-hidden="true"
-                ><svg lucideChevronRight class="size-3.5"></svg
-              ></span>
-              <span class="truncate">{{ item.label }}</span>
-            </span>
-          </ng-template>
-          <ng-template suiAccordionIndicator></ng-template>
-          <ng-template suiAccordionItem [value]="group.record.modelId" [label]="group.record.name" [preserveContent]="true">
-            <sui-list
-              class="editor-list"
-              size="xs"
-              [items]="group.nodes"
-              [trackBy]="trackNode"
-              [ariaLabel]="group.record.name"
-              [dividers]="false"
-              [rowHover]="false"
-            >
-              <ng-template suiListItem let-node>
-                <div class="editor-list-row" [class.selected]="workspace.store.currentNodeId() === node.ref">
-                  <button
-                    suiButton
-                    severity="neutral"
-                    variant="text"
-                    class="editor-list-entry"
-                    [attr.aria-current]="workspace.store.currentNodeId() === node.ref ? 'page' : null"
-                    (click)="handleSelect(node.ref)"
-                  >
-                    <svg lucideChevronRight class="size-2.5 shrink-0 opacity-45" aria-hidden="true"></svg>
-                    <span class="truncate text-xs font-medium">{{ node.name }}</span>
-                  </button>
-                  <div class="editor-list-actions flex gap-0.5">
+        <section class="node-group" [attr.aria-label]="group.record.name">
+          <sui-accordion
+            class="node-accordion"
+            size="sm"
+            [value]="collapsedGroups().has(group.record.modelId) ? [] : [group.record.modelId]"
+            (valueChange)="handleGroupExpansion(group.record.modelId, $event)"
+          >
+            <ng-template suiAccordionHeader let-item let-expanded="expanded">
+              <span class="flex items-center gap-2 text-xs font-semibold opacity-60">
+                <span class="shrink-0 transition-transform" [class.rotate-90]="expanded" aria-hidden="true"
+                  ><svg lucideChevronRight class="size-3.5"></svg
+                ></span>
+                <span class="truncate">{{ item.label }}</span>
+              </span>
+            </ng-template>
+            <ng-template suiAccordionIndicator></ng-template>
+            <ng-template suiAccordionItem [value]="group.record.modelId" [label]="group.record.name" [preserveContent]="true">
+              <sui-list
+                class="editor-list"
+                size="xs"
+                [items]="group.nodes"
+                [trackBy]="trackNode"
+                [ariaLabel]="group.record.name"
+                [dividers]="false"
+                [rowHover]="false"
+              >
+                <ng-template suiListItem let-node>
+                  <div class="editor-list-row" [class.selected]="workspace.store.currentNodeId() === node.ref">
                     <button
                       suiButton
                       severity="neutral"
                       variant="text"
-                      size="xs"
-                      shape="circle"
-                      [attr.aria-label]="t('editor.refineNamedNode', { name: node.name })"
-                      [noriTooltip]="t('editor.refineNode')"
-                      placement="bottom"
-                      [showDelay]="600"
-                      [disabled]="pending() || nodeEditing.creating()"
-                      (click)="nodeEditing.refine(node.ref)"
+                      class="editor-list-entry"
+                      [attr.aria-current]="workspace.store.currentNodeId() === node.ref ? 'page' : null"
+                      (click)="handleSelect(node.ref)"
                     >
-                      <svg lucideGitBranch class="size-3.5" aria-hidden="true"></svg>
+                      <svg lucideChevronRight class="size-2.5 shrink-0 opacity-45" aria-hidden="true"></svg>
+                      <span class="truncate text-xs font-medium">{{ node.name }}</span>
                     </button>
-                    <button
-                      suiButton
-                      [severity]="visible().has(node.ref) ? 'error' : 'neutral'"
-                      variant="text"
-                      size="xs"
-                      shape="circle"
-                      [attr.aria-label]="t(visible().has(node.ref) ? 'editor.hideBaseNode' : 'editor.showBaseNode', { name: node.name })"
-                      [noriTooltip]="t(visible().has(node.ref) ? 'editor.removeFromCanvas' : 'editor.showOnCanvas')"
-                      placement="bottom"
-                      [showDelay]="600"
-                      [disabled]="pending()"
-                      (click)="handleVisibility(node.ref)"
-                    >
-                      @if (visible().has(node.ref)) {
-                        <svg lucideTrash class="size-3.5" aria-hidden="true"></svg>
-                      } @else {
-                        <svg lucidePlus class="size-3.5" aria-hidden="true"></svg>
-                      }
-                    </button>
+                    <div class="editor-list-actions flex gap-0.5">
+                      <button
+                        suiButton
+                        severity="neutral"
+                        variant="text"
+                        size="xs"
+                        shape="circle"
+                        [attr.aria-label]="t('editor.refineNamedNode', { name: node.name })"
+                        [noriTooltip]="t('editor.refineNode')"
+                        placement="bottom"
+                        [showDelay]="600"
+                        [disabled]="pending() || nodeEditing.creating()"
+                        (click)="nodeEditing.refine(node.ref)"
+                      >
+                        <svg lucideGitBranch class="size-3.5" aria-hidden="true"></svg>
+                      </button>
+                      <button
+                        suiButton
+                        [severity]="visible().has(node.ref) ? 'error' : 'neutral'"
+                        variant="text"
+                        size="xs"
+                        shape="circle"
+                        [attr.aria-label]="t(visible().has(node.ref) ? 'editor.hideBaseNode' : 'editor.showBaseNode', { name: node.name })"
+                        [noriTooltip]="t(visible().has(node.ref) ? 'editor.removeFromCanvas' : 'editor.showOnCanvas')"
+                        placement="bottom"
+                        [showDelay]="600"
+                        [disabled]="pending()"
+                        (click)="handleVisibility(node.ref)"
+                      >
+                        @if (visible().has(node.ref)) {
+                          <svg lucideTrash class="size-3.5" aria-hidden="true"></svg>
+                        } @else {
+                          <svg lucidePlus class="size-3.5" aria-hidden="true"></svg>
+                        }
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </ng-template>
-            </sui-list>
-          </ng-template>
-        </sui-accordion>
+                </ng-template>
+              </sui-list>
+            </ng-template>
+          </sui-accordion>
+        </section>
       }
       @if (!groups().length) {
         <p class="text-base-content/60 px-3 py-2 text-sm">{{ t('editor.noBaseNodes') }}</p>
