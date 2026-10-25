@@ -62,7 +62,7 @@
 }
 
 .node-accordion {
-  --sui-focus-ring-offset: -3px;
+  --sui-focus-ring-offset: calc(-1 * var(--sui-focus-ring-width));
   --sui-accordion-background: transparent;
   --sui-accordion-border-color: transparent;
   --sui-accordion-content-color: inherit;
@@ -73,9 +73,8 @@
 .node-accordion .editor-list {
   padding: 0 0.5rem;
 }
-.node-group + .node-group,
 .node-accordion + .node-accordion {
-  --sui-focus-ring-offset: -3px;
+  --sui-focus-ring-offset: calc(-1 * var(--sui-focus-ring-width));
   margin-top: 0.625rem;
 }
 .editor-list-actions svg {

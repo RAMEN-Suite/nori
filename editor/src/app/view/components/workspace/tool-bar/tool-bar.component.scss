@@ -28,12 +28,10 @@
   background: var(--color-base-100);
   pointer-events: auto;
   max-width: calc(100% - 6rem);
-}
-
-// Clip the container to unfold it without stretching Sushi controls or text.
-.editor-tools {
+  // Clip the container to unfold it without stretching Sushi controls or text.
   animation: tools-unfold 900ms 250ms var(--nori-editor-ease) backwards;
 }
+
 .editor-tools-content {
   animation: chrome-arrive 360ms 380ms ease-out backwards;
 }

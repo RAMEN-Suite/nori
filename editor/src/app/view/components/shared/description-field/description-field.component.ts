@@ -29,7 +29,7 @@ import { descriptionLength } from '../../../../utils/descriptions';
         fluid
         size="sm"
         rows="3"
-        class="resize-y"
+        class="text-base"
         data-description-input
         [id]="inputId()"
         [ngModel]="value()"

@@ -34,9 +34,9 @@
 }
 
 .project-title {
-  font-size: 2rem;
+  font-size: var(--text-3xl);
   font-weight: 600;
   letter-spacing: -0.045em;
-  line-height: 1.08;
+  line-height: var(--text-3xl--line-height);
   text-wrap: balance;
 }

@@ -14,5 +14,5 @@
 }
 .property-entry:focus-visible {
   outline: var(--sui-focus-ring-width) solid var(--sui-focus-ring-color, currentColor);
-  outline-offset: -2px;
+  outline-offset: calc(-1 * var(--sui-focus-ring-offset));
 }

@@ -8,9 +8,30 @@ Shared rules for Nori panels, dialogs and lists. Use public Sushi APIs and token
 - Reuse panel/dialog frames, typography, list spacing and tooltips. Comparable bordered lists use `styles/_surface-list.scss` mixins with Sushi List; keep dimensions in shared styles rather than repeating numbers here.
 - Unexpected errors use the shared bottom-right Toast outlet. Native dialogs and the property workspace host the outlet inside their focus scope; otherwise the app shell owns it. Field validation stays beside the input.
 - Keep focus visible without clipping it. Support keyboard navigation, long/translatable text, small viewports and zoom.
-- Panels inside the node editing workspace share a 280ms entrance without staggered delays; resizing uses the same timing. The main workspace retains its original panel motion.
+- Panels inside the node editing workspace share a 280ms initial entrance without staggered delays; subsequent content, footer and selection changes do not animate. The main workspace retains its original panel motion.
 - Keep headings and bottom actions fixed; scroll the content area. Use shared scroll hints only when content overflows, with room for the scrollbar and focus rings.
 - Respect reduced motion and the user's animation preference. Keep shared motion in its owner; dialog windows enter as one surface using shared motion tokens: a subtle scale from 98% over 400ms without overshoot, becoming opaque early, and a 100ms exit. Start window movement after initial positioning; do not animate dialog contents separately.
+
+## Typography and scale
+
+The fixed type scale is defined once in `editor/src/styles/tailwind.css`. Use Tailwind text utilities in templates and the corresponding `--text-*` tokens in component styles; do not add local font sizes in px/pt, intermediate rem sizes, or viewport-based font-size formulas.
+
+| Role                                                                      | Token / utility | Size     |
+| ------------------------------------------------------------------------- | --------------- | -------- |
+| Hints, counters, compact data rows, badge text and secondary graph labels | `text-xs`       | 0.75rem  |
+| Reading text, field/option labels, help links and form section titles     | `text-sm`       | 0.875rem |
+| Editable form text, panel headings and graph node names                   | `text-base`     | 1rem     |
+| Secondary headings when needed                                            | `text-lg`       | 1.125rem |
+| Inspector/node titles                                                     | `text-xl`       | 1.25rem  |
+| Large section headings; light brand wordmark                              | `text-2xl`      | 1.5rem   |
+| Project entry titles; compact home headings                               | `text-3xl`      | 1.875rem |
+| Wide-screen home headings                                                 | `text-4xl`      | 2.25rem  |
+
+- Use the matching `--text-*--line-height` token or Tailwind utility defaults. Reading and input text use regular weight, labels medium, headings semibold; the brand wordmark retains Roboto Light.
+- Native text inputs and textareas in editing forms share `text-base`, including descriptions. Compact search controls, buttons, suggestions and badges retain Sushi's size variants; these use the same scale.
+- Keep the existing root scale in `customs.css`: 100% on smaller screens, gradually increasing to a maximum of 118% on large screens. All rem-based type and spacing scale together. Preserve browser zoom and user font preferences; do not scale the app using CSS transforms.
+- SVG text also reads the shared tokens; graph geometry remains in scene coordinates. Export copies computed text styles.
+- Keyboard focus uses `--sui-focus-ring-width`, `--sui-focus-ring-color` and `--sui-focus-ring-offset`. Derive necessary inset offsets from these tokens. Graph selection, erase feedback and domain highlights remain separate states, not replacements for keyboard focus.
 
 ## Dialogs and forms
 
@@ -18,7 +39,7 @@ Shared rules for Nori panels, dialogs and lists. Use public Sushi APIs and token
 - Centre ordinary dialogs and respect the viewport. Use shared compact/form sizing; the property workspace is a dedicated overlay, not a nested dialog.
 - Follow the node-colours dialog's calm style: clear introduction, thin bordered content area and compact actions. Use feedback boxes for feedback, not decorative instructions.
 - Keep labels above full-width controls, validation inline and near its context, and enough inset for focus rings. Use `nori-field-label` for field labels (0.875rem, medium) and `nori-field-optional` inline for optional markers. Hints and counters use smaller, regular text. Translate all visible text.
-- Definition descriptions use the shared field and the Core `DESCRIPTION_MAX_LENGTH` limit, counting Unicode code points. Show the counter and over-limit errors beside the textarea; never truncate pasted or imported text. Project descriptions use the same field and UI limit; Core treats project metadata separately from model definitions.
+- Definition descriptions use the shared field with 1rem input text, smaller hints/counters, and the Core `DESCRIPTION_MAX_LENGTH` limit, counting Unicode code points. Show the counter and over-limit errors beside the textarea; never truncate pasted or imported text. Project descriptions use the same field and UI limit; Core treats project metadata separately from model definitions.
 - Enter in a form input submits through the same guarded save/create action as its footer button. Autocomplete/select controls handle selection first; multiline fields keep Enter for new lines.
 - Put actions bottom right: neutral Cancel first, one specific primary action last. Use Sushi button size `sm` and a matching leading Lucide icon; destructive actions use error styling and Eraser. Avoid vague OK/Yes/No labels.
 - Immediately applied settings/colours use contextual reset actions, without Save/Cancel. Settings and colours may close on backdrop click; editing and confirmation dialogs remain protected, especially while pending.

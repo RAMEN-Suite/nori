@@ -198,6 +198,6 @@ export class GraphRenderer {
 
     g.append('title');
     content.append('text').attr('class', 'node-base').attr('dy', 17).attr('text-anchor', 'middle');
-    content.append('text').attr('dy', -4).attr('text-anchor', 'middle').attr('font-size', 16);
+    content.append('text').attr('dy', -4).attr('text-anchor', 'middle');
   }
 }

@@ -14,7 +14,6 @@ import { DescriptionFieldComponent } from '../../shared/description-field/descri
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [LucideSave, LucideX, FormsModule, TranslocoDirective, Button, Input, DescriptionFieldComponent],
   templateUrl: './project-edit.dialog.html',
-  styleUrl: './project-edit.dialog.scss',
 })
 export class ProjectEditDialog implements OnInit {
   private readonly projects: ProjectService = inject(ProjectService);
