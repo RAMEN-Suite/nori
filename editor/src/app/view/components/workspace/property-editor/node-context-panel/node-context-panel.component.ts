@@ -13,7 +13,6 @@ import { TranslocoDirective } from '@jsverse/transloco';
 import { LucideInfo, LucidePencil } from '@lucide/angular';
 import { ModelRef, type Node } from '@ramen-suite/core/model';
 import { Button } from '@sushi-kit/angular';
-import { AnimateHeightDirective } from '../../../../../directives/animate-height.directive';
 import type { NodeDefinition } from '../../../../../models/WorkspaceDetails';
 import { DialogService } from '../../../../../services/interaction/dialog.service';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
@@ -23,7 +22,7 @@ import { NodeBasicsComponent } from '../../inspector/node-view/node-basics/node-
 @Component({
   selector: 'nori-node-context-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslocoDirective, AnimateHeightDirective, NodeBasicsComponent, Button, LucideInfo, LucidePencil],
+  imports: [TranslocoDirective, NodeBasicsComponent, Button, LucideInfo, LucidePencil],
   templateUrl: './node-context-panel.component.html',
   styleUrl: './node-context-panel.component.scss',
 })
@@ -31,7 +30,6 @@ export class NodeContextPanelComponent {
   private readonly dialogs: DialogService = inject(DialogService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   public readonly disabled: InputSignal<boolean> = input(false);
-  public readonly animateChanges: InputSignal<boolean> = input(true);
   public readonly inspect: OutputEmitterRef<NodeDefinition> = output();
 
   protected readonly refinement: Signal<NodeDefinition | null> = computed(

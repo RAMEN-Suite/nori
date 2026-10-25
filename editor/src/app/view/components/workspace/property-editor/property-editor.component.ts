@@ -43,7 +43,6 @@ import {
   type OrderListLabels,
   type OrderListReorderEvent,
 } from '@sushi-kit/angular';
-import { AnimateHeightDirective } from '../../../../directives/animate-height.directive';
 import { ScrollOverflowDirective } from '../../../../directives/scroll-overflow.directive';
 import { TooltipDirective } from '../../../../directives/tooltip.directive';
 import type { InheritedAttribute, NodeDefinition } from '../../../../models/WorkspaceDetails';
@@ -55,7 +54,7 @@ import { WorkspaceService, type WorkspaceContext } from '../../../../services/wo
 import { ApplicationState } from '../../../../states/application.state';
 import { groupBy } from '../../../../utils/collections';
 import { ScrollHintsComponent } from '../../shared/scroll-hints/scroll-hints.component';
-import { ConfirmationContentComponent } from '../../dialogs/confirmation/confirmation-content/confirmation-content.component';
+import { ConfirmationDialog, type ConfirmationOptions } from '../../dialogs/confirmation/confirmation.dialog';
 import { NodeAttributeComponent } from '../inspector/node-view/node-attributes/node-attribute/node-attribute.component';
 import { NotificationsComponent } from '../../shell/notifications/notifications.component';
 import { DialogHostComponent } from '../../shell/dialog-host/dialog-host.component';
@@ -108,11 +107,9 @@ interface InheritedPropertyGroup {
     NotificationsComponent,
     DialogHostComponent,
     NodeAttributeComponent,
-    AnimateHeightDirective,
     ScrollOverflowDirective,
     ScrollHintsComponent,
     TooltipDirective,
-    ConfirmationContentComponent,
   ],
   templateUrl: './property-editor.component.html',
   styleUrl: './property-editor.component.scss',
@@ -140,21 +137,12 @@ export class PropertyEditorComponent {
   ): string => `${property.modelId}:${property.attribute.id}`;
 
   protected readonly savingOrder: WritableSignal<boolean> = signal(false);
-  protected readonly decisionRequired: WritableSignal<boolean> = signal(false);
   protected readonly switchingNode: WritableSignal<boolean> = signal(false);
   protected readonly switchingSection: WritableSignal<boolean> = signal(false);
   protected readonly initialArrival: WritableSignal<boolean> = signal(true);
   protected readonly detailVisible: WritableSignal<boolean> = signal(true);
-  protected readonly removing: WritableSignal<Attribute | null> = signal(null);
   private readonly orderDraft: WritableSignal<readonly Attribute[] | null> = signal(null);
-  private cardAnimation: Animation | null = null;
-  private decisionAnimation: Animation | null = null;
-  private tabAnimations: readonly Animation[] = [];
   private readonly lifetime: AbortController = new AbortController();
-
-  protected readonly panelMotion: Signal<boolean> = computed(
-    () => this.appearance.state().animations && !this.switchingNode() && !this.switchingSection() && !this.editing.changingNode(),
-  );
 
   protected readonly inheritedSelection: Signal<InheritedAttribute | null> = computed(
     () =>
@@ -236,9 +224,6 @@ export class PropertyEditorComponent {
   public constructor() {
     this.destroyRef.onDestroy((): void => {
       this.lifetime.abort();
-      this.cardAnimation?.cancel();
-      this.decisionAnimation?.cancel();
-      this.tabAnimations.forEach((animation: Animation): void => animation.cancel());
     });
     effect((): void => {
       if (!this.editing.changingNode() && !this.editing.current()) this.editing.close();
@@ -278,44 +263,16 @@ export class PropertyEditorComponent {
     if (this.editing.section() === section || this.switchingSection()) return;
     this.switchingSection.set(true);
     try {
-      await this.animateTabs('leave');
       this.lifetime.signal.throwIfAborted();
       this.initialArrival.set(false);
       this.editing.section.set(section);
       await this.waitForRender();
       this.lifetime.signal.throwIfAborted();
-      await this.animateTabs('enter');
     } catch (error: unknown) {
       if (!this.destroyRef.destroyed) this.projects.reportError(error);
     } finally {
-      this.tabAnimations.forEach((animation: Animation): void => animation.cancel());
-      this.tabAnimations = [];
       this.switchingSection.set(false);
     }
-  }
-
-  private async animateTabs(phase: 'enter' | 'leave'): Promise<void> {
-    if (!this.appearance.state().animations || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const panels: NodeListOf<HTMLElement> = this.element.nativeElement.querySelectorAll(
-      '.property-tab-panels .property-list, .property-tab-panels .property-right-column',
-    );
-    const frames: Keyframe[] =
-      phase === 'leave'
-        ? [{ transform: 'scale(1)' }, { transform: 'scale(0.985)' }]
-        : [{ transform: 'scale(0.985)' }, { transform: 'scale(1)' }];
-    const previous: readonly Animation[] = this.tabAnimations;
-    this.tabAnimations = [...panels]
-      .filter((panel: HTMLElement): boolean => panel.getClientRects().length > 0)
-      .map(
-        (panel: HTMLElement): Animation =>
-          panel.animate(frames, {
-            duration: phase === 'leave' ? 90 : 180,
-            easing: phase === 'leave' ? 'cubic-bezier(0.4, 0, 1, 1)' : 'cubic-bezier(0, 0, 0.2, 1)',
-            fill: 'forwards',
-          }),
-      );
-    previous.forEach((animation: Animation): void => animation.cancel());
-    await Promise.all(this.tabAnimations.map((animation: Animation): Promise<Animation> => animation.finished));
   }
 
   public close(): void {
@@ -331,14 +288,12 @@ export class PropertyEditorComponent {
       this.focusDetail();
       return;
     }
-    this.clearDecision();
     this.restoreEditingFocus(activeElement);
   }
 
   protected discard(): void {
     if (this.actionPending()) return;
     this.form()?.reset();
-    this.clearDecision();
   }
 
   protected back(): void {
@@ -351,11 +306,8 @@ export class PropertyEditorComponent {
     event.preventDefault();
     event.stopPropagation();
     if (this.switchingSection()) return;
-    if (this.shapeEditor()?.cancelRemoval()) return;
     if (this.sorting()) this.cancelSorting();
-    else if (this.removing()) {
-      if (!this.actionPending()) this.cancelRemoval();
-    } else this.close();
+    else this.close();
   }
 
   protected select(attributeId: string | null): void {
@@ -372,7 +324,7 @@ export class PropertyEditorComponent {
   }
 
   protected startSorting(): void {
-    if (this.sorting() || !this.workspace.queries.nodeEditable() || this.properties().length < 2 || this.removing()) return;
+    if (this.sorting() || !this.workspace.queries.nodeEditable() || this.properties().length < 2) return;
     if (!this.canRunAction()) return;
     this.orderDraft.set([...this.properties()]);
     afterNextRender((): void => this.orderList()?.focus(), { injector: this.injector });
@@ -381,7 +333,6 @@ export class PropertyEditorComponent {
   protected cancelSorting(): void {
     if (this.actionPending()) return;
     this.orderDraft.set(null);
-    this.decisionAnimation?.cancel();
     this.focusOrderControl('[data-property-sort]');
   }
 
@@ -422,22 +373,22 @@ export class PropertyEditorComponent {
     if (!projectId || levelIndex === undefined) return;
 
     const location: WorkspaceLocation = { projectId, levelIndex, nodeId: refinement.node.id };
-    this.runWithCleanDraft(() => this.changeNode(() => this.editing.inspect(location), -1));
+    this.runWithCleanDraft(() => this.changeNode(() => this.editing.inspect(location)));
   }
 
   protected inspectNodeSource(location: WorkspaceLocation): void {
-    this.runWithCleanDraft(() => this.changeNode(() => this.editing.inspect(location), -1));
+    this.runWithCleanDraft(() => this.changeNode(() => this.editing.inspect(location)));
   }
 
   protected inspectPropertySource(property: InheritedAttribute): void {
     const projectId: string | undefined = this.workspace.context()?.projectId;
     if (!projectId) return;
     const location: WorkspaceLocation = { projectId, levelIndex: property.levelIndex, nodeId: property.nodeId };
-    this.runWithCleanDraft(() => this.changeNode(() => this.editing.inspect(location, property.attribute.id), -1));
+    this.runWithCleanDraft(() => this.changeNode(() => this.editing.inspect(location, property.attribute.id)));
   }
 
   protected backToNode(): void {
-    this.runWithCleanDraft(() => this.changeNode(() => this.editing.back(), 1));
+    this.runWithCleanDraft(() => this.changeNode(() => this.editing.back()));
   }
 
   protected create(): void {
@@ -462,9 +413,24 @@ export class PropertyEditorComponent {
 
   protected remove(property: Attribute): void {
     this.runWithCleanDraft((): void => {
-      this.selectOwnProperty(property.id);
-      this.removing.set(property);
-      this.focusDetail();
+      const nodeId: string | null = this.workspace.store.currentNodeId();
+      const context: WorkspaceContext | null = this.workspace.context();
+      if (!nodeId || !context) return;
+      const options: ConfirmationOptions = {
+        title: this.translations.translate('editor.removeProperty'),
+        message: { key: 'editor.confirmRemoveProperty', params: { name: property.name } },
+        buttons: [
+          [
+            { label: this.translations.translate('common.cancel') },
+            {
+              label: this.translations.translate('editor.removeProperty'),
+              severity: 'error',
+              click: (): Promise<void> => this.confirmRemoval(property, nodeId, context),
+            },
+          ],
+        ],
+      };
+      this.dialogs.open(ConfirmationDialog, { size: 'compact', header: options.title, inputValues: { options } });
     });
   }
 
@@ -472,34 +438,16 @@ export class PropertyEditorComponent {
     this.runWithCleanDraft((): Promise<void> => this.duplicateProperty(property));
   }
 
-  protected cancelRemoval(): void {
-    if (this.actionPending()) return;
-    this.removing.set(null);
-    this.dialogs.error.set(null);
-    this.focusDetail();
-  }
-
-  protected async confirmRemoval(): Promise<void> {
-    const property: Attribute | null = this.removing();
-    const nodeId: string | null = this.workspace.store.currentNodeId();
-    const context: WorkspaceContext | null = this.workspace.context();
-    if (!property || !nodeId || !context || this.actionPending()) return;
+  private async confirmRemoval(property: Attribute, nodeId: string, context: WorkspaceContext): Promise<void> {
+    if (!this.isCurrentNode(context, nodeId)) return;
 
     const properties: readonly Attribute[] = this.properties();
     const index: number = properties.findIndex((item: Attribute): boolean => item.id === property.id);
     const nextId: string | undefined = properties[index + 1]?.id ?? properties[index - 1]?.id;
 
-    const removed: boolean = await this.runPendingAction(
-      (): Promise<void> => this.workspace.actions.removeAttribute(nodeId, property.id),
-    );
-
-    if (this.destroyRef.destroyed || !this.workspace.isCurrent(context) || this.workspace.store.currentNodeId() !== nodeId)
-      return;
-    if (removed) {
-      this.removing.set(null);
-      this.editing.select(nextId);
-      this.focusDetail();
-    }
+    await this.workspace.actions.removeAttribute(nodeId, property.id);
+    if (!this.isCurrentNode(context, nodeId)) return;
+    this.editing.select(nextId);
   }
 
   private focusOrderControl(selector: string): void {
@@ -515,42 +463,22 @@ export class PropertyEditorComponent {
     return !this.destroyRef.destroyed && this.workspace.isCurrent(context) && this.workspace.store.currentNodeId() === nodeId;
   }
 
-  private async changeNode(action: () => Promise<boolean>, direction: 1 | -1): Promise<void> {
-    if (this.actionPending() || this.removing()) return;
+  private async changeNode(action: () => Promise<boolean>): Promise<void> {
+    if (this.actionPending()) return;
     this.switchingNode.set(true);
     try {
-      await this.slideCard(0, direction * 64, 'leave');
       this.lifetime.signal.throwIfAborted();
       const navigated: boolean = await action();
       this.lifetime.signal.throwIfAborted();
       if (navigated) this.detailVisible.set(true);
       await this.waitForRender();
       this.lifetime.signal.throwIfAborted();
-      await this.slideCard(navigated ? -direction * 64 : direction * 64, 0, 'enter');
       this.focusDetail();
     } catch (error: unknown) {
       if (!this.destroyRef.destroyed) this.projects.reportError(error);
     } finally {
-      this.cardAnimation?.cancel();
-      this.cardAnimation = null;
       this.switchingNode.set(false);
     }
-  }
-
-  private async slideCard(from: number, to: number, phase: 'enter' | 'leave'): Promise<void> {
-    if (!this.appearance.state().animations || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const surface: HTMLElement | null = this.element.nativeElement.querySelector('.property-workspace');
-    if (!surface) return;
-
-    this.cardAnimation?.cancel();
-    this.cardAnimation = surface.animate(
-      [
-        { transform: `translateX(${from}px)`, opacity: phase === 'enter' ? 0 : 1 },
-        { transform: `translateX(${to}px)`, opacity: phase === 'enter' ? 1 : 0 },
-      ],
-      { duration: phase === 'enter' ? 300 : 180, easing: 'cubic-bezier(0.22, 1, 0.36, 1)', fill: 'forwards' },
-    );
-    await this.cardAnimation.finished;
   }
 
   private waitForRender(): Promise<void> {
@@ -605,33 +533,34 @@ export class PropertyEditorComponent {
     if (this.switchingSection() || this.actionPending() || this.shapeEditor()?.canLeave() === false) return false;
     if (this.sorting()) {
       this.element.nativeElement.querySelector<HTMLElement>('.property-list-footer button')?.focus();
-      this.shakePanel('.property-list-footer');
       return false;
     }
     if (!this.inheritedSelection() && this.form()?.hasChanges()) {
-      this.decisionRequired.set(true);
-      this.element.nativeElement.querySelector<HTMLElement>('.property-save-actions button')?.focus();
-      this.shakePanel('.property-save-panel');
+      this.showDraftDecision();
       return false;
     }
     return true;
   }
 
-  private shakePanel(selector: string): void {
-    this.decisionAnimation?.cancel();
-    if (!this.panelMotion() || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const panel: HTMLElement | null = this.element.nativeElement.querySelector(selector);
-    if (!panel) return;
-
-    this.decisionAnimation = panel.animate(
-      [0, -4, 4, -3, 3, -1, 0].map((distance: number): Keyframe => ({ transform: `translateX(${distance}px)` })),
-      { duration: 320, easing: 'ease-in-out' },
-    );
-  }
-
-  private clearDecision(): void {
-    this.decisionRequired.set(false);
-    this.decisionAnimation?.cancel();
+  private showDraftDecision(): void {
+    const options: ConfirmationOptions = {
+      title: this.translations.translate('editor.propertyChanges'),
+      message: { key: 'editor.unsavedChangesMessage', params: {} },
+      buttons: [
+        [
+          { label: this.translations.translate('common.cancel') },
+          { label: this.translations.translate('editor.discardChanges'), click: (): void => this.form()?.reset() },
+          {
+            label: this.translations.translate('common.save'),
+            severity: 'primary',
+            click: async (): Promise<void> => {
+              await this.form()?.commit();
+            },
+          },
+        ],
+      ],
+    };
+    this.dialogs.open(ConfirmationDialog, { size: 'compact', header: options.title, inputValues: { options } });
   }
 
   private async runAction(action: () => void | Promise<void>): Promise<void> {
@@ -669,7 +598,6 @@ export class PropertyEditorComponent {
           return;
         }
         const target: HTMLElement | null =
-          host.querySelector<HTMLElement>('[data-property-decision] button') ??
           host.querySelector<HTMLElement>('.property-detail [aria-invalid="true"]') ??
           host.querySelector<HTMLElement>('.property-detail input:not(:disabled)') ??
           host.querySelector<HTMLElement>('.property-detail');

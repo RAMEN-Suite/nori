@@ -136,6 +136,7 @@
     "saveProperty": "Save property",
     "propertyNameRequired": "Enter a property name.",
     "propertyChanges": "Property changes",
+    "unsavedChangesMessage": "Save or discard your changes before continuing.",
     "discardChanges": "Discard changes",
     "graph": "Model graph",
     "inspector": "Inspector",

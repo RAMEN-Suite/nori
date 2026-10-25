@@ -136,6 +136,7 @@
     "saveProperty": "Salva proprietà",
     "propertyNameRequired": "Inserisci un nome per la proprietà.",
     "propertyChanges": "Modifiche alla proprietà",
+    "unsavedChangesMessage": "Salva o annulla le modifiche prima di continuare.",
     "discardChanges": "Annulla modifiche",
     "graph": "Grafo del modello",
     "inspector": "Dettagli",

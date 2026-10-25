@@ -1,9 +1,7 @@
+@use "../property-panels";
+
 :host {
   display: contents;
-}
-
-.property-list-scroll .editor-list {
-  padding-inline: 0.625rem;
 }
 .property-list-scroll [suiDivider] {
   --sui-divider-margin: 0.75rem 0.875rem;

@@ -136,6 +136,7 @@
     "saveProperty": "Eigenschaft speichern",
     "propertyNameRequired": "Gib einen Namen für die Property ein.",
     "propertyChanges": "Property-Änderungen",
+    "unsavedChangesMessage": "Speichere oder verwirf deine Änderungen, bevor du fortfährst.",
     "discardChanges": "Änderungen verwerfen",
     "graph": "Modellgraph",
     "inspector": "Details",

@@ -19,7 +19,7 @@
         size="sm"
         class="property-node-back max-w-full min-w-0 justify-self-start"
         [attr.aria-label]="editing.previous() ? t('editor.backToNode', { name: editing.previous()?.name }) : t('common.back')"
-        [disabled]="controlsUnavailable() || !!removing()"
+        [inert]="controlsUnavailable()"
         (click)="back()"
       >
         <svg lucideArrowLeft class="size-4 shrink-0" aria-hidden="true"></svg>
@@ -87,8 +87,7 @@
       <nori-node-context-panel
         class="property-context col-start-1 row-start-1"
         [inert]="sorting() || switchingSection() || !!shapeEditor()?.pending()"
-        [animateChanges]="panelMotion()"
-        [disabled]="controlsUnavailable() || !!removing()"
+        [disabled]="controlsUnavailable()"
         (inspect)="inspectRefinement($event)"
       />
       <div class="property-tab-panels" [inert]="switchingSection()">
@@ -99,7 +98,6 @@
             aria-labelledby="node-shapes-tab"
             [initialArrival]="initialArrival()"
             [switchingNode]="switchingNode()"
-            [animateChanges]="panelMotion()"
             (inspectSource)="inspectNodeSource($event)"
             (inspectPropertySource)="inspectPropertySource($event)"
           />
@@ -131,7 +129,7 @@
                         [attr.aria-label]="t('editor.sortProperties')"
                         [noriTooltip]="t('editor.sortProperties')"
                         [attr.aria-pressed]="sorting()"
-                        [disabled]="controlsUnavailable() || !!removing() || sorting()"
+                        [disabled]="controlsUnavailable() || sorting()"
                         (click)="startSorting()"
                       >
                         <svg lucideArrowDownUp class="size-4" aria-hidden="true"></svg>
@@ -173,7 +171,7 @@
                               class="property-list-item property-inherited-item col-span-full flex w-full min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-[var(--nori-radius-input)] px-3 py-1"
                               [class.is-selected]="inheritedSelection() === property"
                               [attr.aria-pressed]="inheritedSelection() === property"
-                              [disabled]="controlsUnavailable() || !!removing()"
+                              [disabled]="controlsUnavailable()"
                               (click)="selectInherited(property)"
                             >
                               <nori-node-attribute
@@ -205,7 +203,7 @@
                             size="xs"
                             [value]="orderItems()"
                             [labels]="orderLabels()"
-                            [disabled]="actionPending() || !!removing()"
+                            [disabled]="actionPending()"
                             [ariaLabel]="t('editor.properties')"
                             (valueChange)="updateOrder($event)"
                           >
@@ -234,7 +232,7 @@
                                 class="property-list-item col-span-full flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-[var(--nori-radius-input)] px-3 py-1"
                                 [class.is-selected]="!inheritedSelection() && attribute()?.id === property.id"
                                 [attr.aria-pressed]="!inheritedSelection() && attribute()?.id === property.id"
-                                [disabled]="controlsUnavailable() || !!removing()"
+                                [disabled]="controlsUnavailable()"
                                 (click)="select(property.id)"
                               >
                                 <nori-node-attribute
@@ -280,14 +278,7 @@
                           </button>
                         </div>
                       } @else {
-                        <button
-                          suiButton
-                          severity="primary"
-                          size="sm"
-                          class="w-full"
-                          [disabled]="controlsUnavailable() || !!removing()"
-                          (click)="create()"
-                        >
+                        <button suiButton severity="primary" size="sm" class="w-full" [disabled]="controlsUnavailable()" (click)="create()">
                           <svg lucidePlus class="size-4" aria-hidden="true"></svg>{{ t('editor.addProperty') }}
                         </button>
                       }
@@ -314,7 +305,7 @@
                       shape="circle"
                       class="property-mobile-back hidden"
                       [attr.aria-label]="t('editor.properties')"
-                      [disabled]="controlsUnavailable() || !!removing()"
+                      [disabled]="controlsUnavailable()"
                       (click)="backToList()"
                     >
                       <svg lucideArrowLeft class="size-4" aria-hidden="true"></svg>
@@ -328,8 +319,6 @@
                     >
                       <nori-property-form
                         class="property-form-host"
-                        [animateChanges]="panelMotion()"
-                        [inert]="!!removing()"
                         [currentAttribute]="inheritedSelection()?.attribute ?? attribute()"
                         [editable]="workspace.queries.nodeEditable() && !inheritedSelection() && !switchingNode()"
                         [modelLevelIndex]="inheritedSelection()?.levelIndex ?? ownLevelIndex()"
@@ -350,8 +339,6 @@
                       variant="soft"
                       class="property-inherited-notice flex min-h-[calc(4rem+2px)] flex-wrap items-center gap-3 px-5 py-4"
                       data-nori-motion
-                      [animate.enter]="panelMotion() ? 'property-content-enter' : ''"
-                      [animate.leave]="panelMotion() ? 'property-content-leave' : ''"
                     >
                       <svg lucideInfo class="size-4 shrink-0" aria-hidden="true"></svg>
                       <span class="text-sm">{{ t('editor.inheritedPropertyHint') }}</span>
@@ -375,107 +362,70 @@
                     <section
                       class="property-surface property-save-panel bg-base-100 flex min-h-[calc(4rem+2px)] min-w-0 flex-col justify-end overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)] px-5 py-4"
                       data-nori-motion
-                      [animate.enter]="panelMotion() ? 'property-content-enter' : ''"
-                      [animate.leave]="panelMotion() ? 'property-content-leave' : ''"
-                      [noriAnimateHeight]="panelMotion()"
-                      noriHeightEasing="cubic-bezier(0.4, 0, 0.2, 1)"
-                      [class.needs-decision]="decisionRequired()"
                       [attr.aria-label]="t('editor.propertyChanges')"
                     >
                       <div class="property-save-content flex w-full shrink-0 flex-wrap items-center gap-3">
-                        @if (removing(); as property) {
-                          <div class="property-removal flex w-full flex-col gap-5">
-                            <div class="property-removal-summary w-full">
-                              <nori-confirmation-content
-                                [message]="{ key: 'editor.confirmRemoveProperty', params: { name: property.name } }"
-                              />
-                            </div>
-                            <div class="property-save-actions ml-auto flex flex-wrap justify-end gap-2" data-property-decision>
-                              <button
-                                suiButton
-                                size="sm"
-                                severity="neutral"
-                                variant="text"
-                                [disabled]="controlsUnavailable()"
-                                (click)="cancelRemoval()"
-                              >
-                                <svg lucideX class="size-4" aria-hidden="true"></svg>{{ t('common.cancel') }}
-                              </button>
-                              <button
-                                suiButton
-                                size="sm"
-                                severity="error"
-                                [loading]="actionPending()"
-                                [disabled]="controlsUnavailable()"
-                                (click)="confirmRemoval()"
-                              >
-                                <svg lucideEraser class="size-4" aria-hidden="true"></svg>{{ t('editor.removeProperty') }}
-                              </button>
-                            </div>
-                          </div>
-                        } @else {
-                          @if (attribute(); as property) {
-                            <div class="property-secondary-actions flex shrink-0 items-center gap-0.5">
-                              <button
-                                suiButton
-                                severity="neutral"
-                                variant="text"
-                                size="sm"
-                                shape="circle"
-                                [attr.aria-label]="t('editor.duplicateProperty')"
-                                [noriTooltip]="t('editor.duplicateProperty')"
-                                placement="bottom"
-                                [showDelay]="600"
-                                [disabled]="controlsUnavailable() || !!removing()"
-                                (click)="duplicate(property)"
-                              >
-                                <svg lucideCopy class="size-3.5" aria-hidden="true"></svg>
-                              </button>
-                              <button
-                                suiButton
-                                severity="error"
-                                variant="text"
-                                size="sm"
-                                shape="circle"
-                                [attr.aria-label]="t('editor.removeNamedProperty', { name: property.name })"
-                                [noriTooltip]="t('editor.removeProperty')"
-                                placement="bottom"
-                                [showDelay]="600"
-                                [disabled]="controlsUnavailable() || !!removing()"
-                                (click)="remove(property)"
-                              >
-                                <svg lucideEraser class="size-3.5" aria-hidden="true"></svg>
-                              </button>
-                            </div>
-                          }
-
-                          <div class="property-save-actions ml-auto flex flex-wrap justify-end gap-2">
+                        @if (attribute(); as property) {
+                          <div class="property-secondary-actions flex shrink-0 items-center gap-0.5">
                             <button
                               suiButton
-                              size="sm"
                               severity="neutral"
                               variant="text"
-                              [disabled]="controlsUnavailable() || (!form()?.hasChanges() && !decisionRequired())"
-                              (click)="discard()"
+                              size="sm"
+                              shape="circle"
+                              [attr.aria-label]="t('editor.duplicateProperty')"
+                              [noriTooltip]="t('editor.duplicateProperty')"
+                              placement="bottom"
+                              [showDelay]="600"
+                              [disabled]="controlsUnavailable()"
+                              (click)="duplicate(property)"
                             >
-                              <svg lucideUndo2 class="size-4" aria-hidden="true"></svg>{{ t('editor.discardChanges') }}
+                              <svg lucideCopy class="size-3.5" aria-hidden="true"></svg>
                             </button>
                             <button
                               suiButton
+                              severity="error"
+                              variant="text"
                               size="sm"
-                              severity="primary"
-                              [loading]="!!form()?.saving()"
-                              [disabled]="actionPending() || (!form()?.hasChanges() && !decisionRequired())"
-                              (click)="save()"
+                              shape="circle"
+                              [attr.aria-label]="t('editor.removeNamedProperty', { name: property.name })"
+                              [noriTooltip]="t('editor.removeProperty')"
+                              placement="bottom"
+                              [showDelay]="600"
+                              [disabled]="controlsUnavailable()"
+                              (click)="remove(property)"
                             >
-                              @if (attribute()) {
-                                <svg lucideSave class="size-4" aria-hidden="true"></svg>{{ t('editor.saveProperty') }}
-                              } @else {
-                                <svg lucidePlus class="size-4" aria-hidden="true"></svg>{{ t('editor.addProperty') }}
-                              }
+                              <svg lucideEraser class="size-3.5" aria-hidden="true"></svg>
                             </button>
                           </div>
                         }
+
+                        <div class="property-save-actions ml-auto flex flex-wrap justify-end gap-2">
+                          <button
+                            suiButton
+                            size="sm"
+                            severity="neutral"
+                            variant="text"
+                            [disabled]="controlsUnavailable() || !form()?.hasChanges()"
+                            (click)="discard()"
+                          >
+                            <svg lucideUndo2 class="size-4" aria-hidden="true"></svg>{{ t('editor.discardChanges') }}
+                          </button>
+                          <button
+                            suiButton
+                            size="sm"
+                            severity="primary"
+                            [loading]="!!form()?.saving()"
+                            [disabled]="actionPending() || !form()?.hasChanges()"
+                            (click)="save()"
+                          >
+                            @if (attribute()) {
+                              <svg lucideSave class="size-4" aria-hidden="true"></svg>{{ t('editor.saveProperty') }}
+                            } @else {
+                              <svg lucidePlus class="size-4" aria-hidden="true"></svg>{{ t('editor.addProperty') }}
+                            }
+                          </button>
+                        </div>
                       </div>
                     </section>
                   }

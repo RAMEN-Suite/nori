@@ -19,7 +19,7 @@ import {
   type WritableSignal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { TranslocoDirective } from '@jsverse/transloco';
+import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import {
   LucideArrowLeft,
   LucideChevronRight,
@@ -31,7 +31,6 @@ import {
   LucideSettings2,
   LucideTags,
   LucideUndo2,
-  LucideX,
 } from '@lucide/angular';
 import { ModelFactory, ModelRef, type Attribute, type Model, type Node, type Relation } from '@ramen-suite/core/model';
 import {
@@ -49,7 +48,8 @@ import { ProjectService } from '../../../../../services/projects/project.service
 import { WorkspaceService, type WorkspaceContext } from '../../../../../services/workspace/workspace.service';
 import { FieldValidationError } from '../../../../../models/FieldValidationError';
 import { groupBy } from '../../../../../utils/collections';
-import { ApplicationState } from '../../../../../states/application.state';
+import { DialogService } from '../../../../../services/interaction/dialog.service';
+import { ConfirmationDialog, type ConfirmationOptions } from '../../../dialogs/confirmation/confirmation.dialog';
 import { ScrollHintsComponent } from '../../../shared/scroll-hints/scroll-hints.component';
 import { NodeAttributeComponent } from '../../inspector/node-view/node-attributes/node-attribute/node-attribute.component';
 import { PropertyFormComponent } from '../property-form/property-form.component';
@@ -80,7 +80,7 @@ interface ShapeGroup {
 }
 
 type ShapeDetail = 'empty' | 'settings' | 'property' | 'shared' | 'relation';
-type ShapeRemoval = 'shape' | 'property' | 'relation' | null;
+type ShapeRemoval = 'shape' | 'property' | 'relation';
 
 @Component({
   selector: 'nori-shape-editor',
@@ -112,14 +112,14 @@ type ShapeRemoval = 'shape' | 'property' | 'relation' | null;
     LucideSettings2,
     LucideTags,
     LucideUndo2,
-    LucideX,
   ],
   templateUrl: './shape-editor.component.html',
-  styleUrls: ['../property-editor.component.scss', './shape-editor.component.scss'],
+  styleUrl: './shape-editor.component.scss',
 })
 export class ShapeEditorComponent {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
-  protected readonly appearance: ApplicationState = inject(ApplicationState);
+  private readonly dialogs: DialogService = inject(DialogService);
+  private readonly translations: TranslocoService = inject(TranslocoService);
   private readonly projects: ProjectService = inject(ProjectService);
   private readonly element: ElementRef<HTMLElement> = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly injector: Injector = inject(Injector);
@@ -128,7 +128,6 @@ export class ShapeEditorComponent {
   protected readonly relationForm: Signal<ShapeRelationFormComponent | undefined> = viewChild(ShapeRelationFormComponent);
   public readonly initialArrival: InputSignal<boolean> = input(false);
   public readonly switchingNode: InputSignal<boolean> = input(false);
-  public readonly animateChanges: InputSignal<boolean> = input(true);
   public readonly inspectSource: OutputEmitterRef<WorkspaceLocation> = output();
   public readonly inspectPropertySource: OutputEmitterRef<InheritedAttribute> = output();
   public readonly busy: WritableSignal<boolean> = signal(false);
@@ -140,13 +139,11 @@ export class ShapeEditorComponent {
   protected readonly propertyId: WritableSignal<string | null> = signal(null);
   protected readonly shared: WritableSignal<InheritedAttribute | null> = signal(null);
   protected readonly relationIndex: WritableSignal<number> = signal(-1);
-  protected readonly removing: WritableSignal<ShapeRemoval> = signal(null);
   public readonly mobileDetail: WritableSignal<boolean> = signal(false);
   protected name: string = '';
   protected readonly description: WritableSignal<string> = signal('');
   private initialDescription: string = '';
   private initialName: string = '';
-  private decisionAnimation: Animation | null = null;
 
   protected readonly trackShape: ListTrackBy<ShapeEntry> = (_index: number, entry: ShapeEntry): string =>
     `${entry.modelId}:${entry.shape.id}`;
@@ -281,22 +278,23 @@ export class ShapeEditorComponent {
         this.mobileDetail.set(true);
       });
     });
-    this.destroyRef.onDestroy((): void => this.decisionAnimation?.cancel());
   }
 
   public canLeave(): boolean {
     if (this.pending()) return false;
     if (!this.hasChanges()) return true;
-    const panel: HTMLElement | null = this.element.nativeElement.querySelector('.property-save-panel');
-    panel?.querySelector<HTMLButtonElement>('.property-save-actions button')?.focus();
-    this.decisionAnimation?.cancel();
-    if (this.appearance.state().animations && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      this.decisionAnimation =
-        panel?.animate(
-          [0, -4, 4, -3, 0].map((x: number): Keyframe => ({ transform: `translateX(${x}px)` })),
-          { duration: 280 },
-        ) ?? null;
-    }
+    const options: ConfirmationOptions = {
+      title: this.translations.translate('editor.shapes.changes'),
+      message: { key: 'editor.unsavedChangesMessage', params: {} },
+      buttons: [
+        [
+          { label: this.translations.translate('common.cancel') },
+          { label: this.translations.translate('editor.discardChanges'), click: (): void => this.discard() },
+          { label: this.translations.translate('common.save'), severity: 'primary', click: (): Promise<void> => this.save() },
+        ],
+      ],
+    };
+    this.dialogs.open(ConfirmationDialog, { size: 'compact', header: options.title, inputValues: { options } });
     return false;
   }
 
@@ -480,27 +478,39 @@ export class ShapeEditorComponent {
     else this.form()?.reset();
   }
 
-  protected requestRemoval(removal: Exclude<ShapeRemoval, null>): void {
-    if (this.canLeave()) this.removing.set(removal);
-  }
-
-  protected async confirmRemoval(): Promise<void> {
+  protected requestRemoval(removal: ShapeRemoval): void {
     const shape: AnnotationShape | undefined = this.selected()?.shape;
     const context: WorkspaceContext | null = this.workspace.context();
     const nodeId: string | null = this.workspace.store.currentNodeId();
-    if (!shape || !context || !nodeId) return;
-    await this.run(async (): Promise<void> => {
-      if (this.removing() === 'shape') {
-        await this.workspace.actions.removeAnnotationShape(shape.id);
-        if (this.isCurrentNode(context, nodeId)) this.shapeId.set(null);
-      } else if (this.removing() === 'property') {
-        await this.workspace.actions.removeShapeProperty(shape.id, this.propertyId() ?? '');
-      } else
-        await this.workspace.actions.updateAnnotationShape(shape.id, {
-          relations: shape.relations.filter((_item, index: number): boolean => index !== this.relationIndex()),
-        });
-      if (this.isCurrentNode(context, nodeId)) this.clearSelection();
-    });
+    if (!shape || !context || !nodeId || !this.canLeave()) return;
+    const propertyId: string = this.propertyId() ?? '';
+    const relationIndex: number = this.relationIndex();
+    const options: ConfirmationOptions = {
+      title: this.translations.translate('editor.shapes.removeAction'),
+      message: { key: 'editor.shapes.remove.' + removal, params: {} },
+      buttons: [
+        [
+          { label: this.translations.translate('common.cancel') },
+          {
+            label: this.translations.translate('editor.shapes.removeAction'),
+            severity: 'error',
+            click: async (): Promise<void> => {
+              if (!this.isCurrentNode(context, nodeId)) return;
+              if (removal === 'shape') await this.workspace.actions.removeAnnotationShape(shape.id);
+              else if (removal === 'property') await this.workspace.actions.removeShapeProperty(shape.id, propertyId);
+              else
+                await this.workspace.actions.updateAnnotationShape(shape.id, {
+                  relations: shape.relations.filter((_item, index: number): boolean => index !== relationIndex),
+                });
+              if (!this.isCurrentNode(context, nodeId)) return;
+              if (removal === 'shape') this.shapeId.set(null);
+              this.clearSelection();
+            },
+          },
+        ],
+      ],
+    };
+    this.dialogs.open(ConfirmationDialog, { size: 'compact', header: options.title, inputValues: { options } });
   }
 
   protected async duplicateShape(): Promise<void> {
@@ -563,12 +573,6 @@ export class ShapeEditorComponent {
     if (this.canLeave()) this.mobileDetail.set(false);
   }
 
-  public cancelRemoval(): boolean {
-    if (!this.removing() || this.pending()) return false;
-    this.removing.set(null);
-    return true;
-  }
-
   private isCurrentNode(context: WorkspaceContext, nodeId: string): boolean {
     return !this.destroyRef.destroyed && this.workspace.isCurrent(context) && this.workspace.store.currentNodeId() === nodeId;
   }
@@ -578,7 +582,6 @@ export class ShapeEditorComponent {
     this.propertyId.set(null);
     this.shared.set(null);
     this.relationIndex.set(-1);
-    this.removing.set(null);
     this.nameError.set(null);
   }
 

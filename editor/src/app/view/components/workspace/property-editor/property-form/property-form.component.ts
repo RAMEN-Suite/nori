@@ -31,11 +31,9 @@ import {
   type ListTrackBy,
   type AutocompleteOption,
 } from '@sushi-kit/angular';
-import { AnimateHeightDirective } from '../../../../../directives/animate-height.directive';
 import { FieldValidationError } from '../../../../../models/FieldValidationError';
 import { ProjectService } from '../../../../../services/projects/project.service';
 import { WorkspaceService, type WorkspaceContext } from '../../../../../services/workspace/workspace.service';
-import { ApplicationState } from '../../../../../states/application.state';
 import { descriptionValue, isDescriptionValid } from '../../../../../utils/descriptions';
 import { DescriptionFieldComponent } from '../../../shared/description-field/description-field.component';
 import { PROPERTY_NAME_MAX_LENGTH } from '../../../../../utils/model-names';
@@ -46,10 +44,8 @@ type PropertyOption = PropertyToggleOption | 'minimum' | 'maximum';
 /** Keeps property edits local until an explicit save succeeds. */
 @Component({
   selector: 'nori-property-form',
-  host: { '[class.motion-disabled]': '!motion()' },
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
-    AnimateHeightDirective,
     DescriptionFieldComponent,
     NgTemplateOutlet,
     TranslocoDirective,
@@ -66,7 +62,6 @@ type PropertyOption = PropertyToggleOption | 'minimum' | 'maximum';
   styleUrl: './property-form.component.scss',
 })
 export class PropertyFormComponent {
-  private readonly appearance: ApplicationState = inject(ApplicationState);
   private readonly workspace: WorkspaceService = inject(WorkspaceService);
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
   private readonly changeDetector: ChangeDetectorRef = inject(ChangeDetectorRef);
@@ -77,8 +72,6 @@ export class PropertyFormComponent {
   public readonly modelLevelIndex: InputSignal<number | null> = input<number | null>(null);
   public readonly shapeId: InputSignal<string | null> = input<string | null>(null);
   public readonly editable: InputSignal<boolean> = input(true);
-  public readonly animateChanges: InputSignal<boolean> = input(true);
-  protected readonly motion: Signal<boolean> = computed(() => this.appearance.state().animations && this.animateChanges());
   public readonly saved: OutputEmitterRef<string> = output();
   public readonly submitRequested: OutputEmitterRef<void> = output();
   public readonly saving: WritableSignal<boolean> = signal(false);

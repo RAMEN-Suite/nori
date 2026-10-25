@@ -1,0 +1,77 @@
+.property-workspace-panels {
+  display: contents;
+}
+
+.property-left-column {
+  grid-area: 2 / 1;
+}
+.property-right-column {
+  grid-area: 1 / 2 / span 2;
+  gap: 0;
+}
+
+.property-refinement-chip:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--refinement-colour) 20%, transparent);
+}
+
+.property-list-scroll,
+.property-detail-scroll {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.property-list-scroll .editor-list {
+  padding-inline: 0.625rem;
+}
+.property-list-item:hover:not(:disabled) {
+  background: color-mix(in oklab, var(--color-base-content) 4%, transparent);
+}
+.property-list-item.is-selected {
+  background: color-mix(in oklab, var(--color-primary) 10%, transparent);
+}
+.property-list-item:focus-visible {
+  outline: var(--sui-focus-ring-width) solid var(--sui-focus-ring-color, currentColor);
+  outline-offset: calc(-1 * var(--sui-focus-ring-offset));
+}
+
+.property-save-panel {
+  flex-shrink: 0;
+}
+
+.property-detail:focus {
+  outline: none;
+}
+@media (max-width: 640px) {
+  .property-detail-heading {
+    display: flex;
+  }
+}
+
+.property-list-scroll [suiDivider] + .editor-list {
+  margin-top: 0.5rem;
+}
+
+.property-list-scroll > [suiDivider]:first-child {
+  margin-top: 0.5rem;
+}
+
+.property-refinement-chip:focus-visible {
+  outline: var(--sui-focus-ring-width) solid var(--sui-focus-ring-color, currentColor);
+  outline-offset: var(--sui-focus-ring-offset);
+}
+
+@media (max-width: 640px) {
+  .property-right-column {
+    display: none;
+    grid-area: 1 / 1;
+  }
+  .show-detail .property-left-column {
+    display: none;
+  }
+  .show-detail .property-right-column {
+    display: flex;
+  }
+  .property-mobile-back {
+    display: inline-flex;
+  }
+}

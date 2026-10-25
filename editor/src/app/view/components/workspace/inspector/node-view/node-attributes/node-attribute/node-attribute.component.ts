@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, input, type InputSignal } from '@angular/core';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
-import { LucideCopy, LucideCopySlash, LucideKeyRound, LucideListOrdered, LucideLockKeyhole } from '@lucide/angular';
+import { LucideRepeat2, LucideRepeat1, LucideKeyRound, LucideListOrdered, LucideLockKeyhole } from '@lucide/angular';
 import { type Attribute, type Bounds } from '@ramen-suite/core/model';
 import { Badge } from '@sushi-kit/angular';
 import { TooltipDirective } from '../../../../../../../directives/tooltip.directive';
@@ -14,8 +14,8 @@ import { WorkspaceService } from '../../../../../../../services/workspace/worksp
     TranslocoDirective,
     TooltipDirective,
     Badge,
-    LucideCopy,
-    LucideCopySlash,
+    LucideRepeat2,
+    LucideRepeat1,
     LucideListOrdered,
     LucideKeyRound,
     LucideLockKeyhole,

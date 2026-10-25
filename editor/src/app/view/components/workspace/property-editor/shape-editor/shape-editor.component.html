@@ -2,7 +2,6 @@
   <div
     class="shape-panels property-workspace-panels grid min-h-0 flex-1 grid-cols-[minmax(12rem,0.65fr)_minmax(0,1.85fr)] items-stretch gap-2.5"
     [class.show-detail]="mobileDetail()"
-    [class.motion-enabled]="appearance.state().animations"
     [class.initial-arrival]="initialArrival()"
     [attr.aria-busy]="busy()"
     [inert]="pending() || switchingNode()"
@@ -171,7 +170,7 @@
                       class="property-list-item col-span-full flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-[var(--nori-radius-input)] px-3 py-1 text-left"
                       [class.is-selected]="shapeId() === entry.shape.id"
                       [attr.aria-pressed]="shapeId() === entry.shape.id"
-                      [disabled]="pending() || switchingNode() || !!removing()"
+                      [disabled]="pending() || switchingNode()"
                       (click)="choose(entry)"
                     >
                       <span class="min-w-0 truncate text-xs leading-5 font-medium">{{ entry.shape.type }}</span>
@@ -292,12 +291,10 @@
               @case ('property') {
                 @if (selected(); as entry) {
                   <nori-property-form
-                    [animateChanges]="animateChanges()"
                     [shapeId]="entry.shape.id"
                     [currentAttribute]="attribute()"
                     [editable]="editable()"
                     [modelLevelIndex]="entry.levelIndex"
-                    [inert]="!!removing()"
                     (saved)="savedProperty($event)"
                     (submitRequested)="save()"
                   />
@@ -305,7 +302,6 @@
               }
               @case ('shared') {
                 <nori-property-form
-                  [animateChanges]="animateChanges()"
                   [currentAttribute]="shared()?.attribute"
                   [editable]="false"
                   [modelLevelIndex]="shared()?.levelIndex ?? null"
@@ -319,7 +315,6 @@
                     [ownerModelId]="entry.modelId"
                     [index]="relationIndex()"
                     [editable]="editable()"
-                    [inert]="!!removing()"
                     (saved)="savedRelation($event)"
                     (submitRequested)="save()"
                   />
@@ -364,54 +359,43 @@
           class="property-save-panel bg-base-100 mt-2.5 flex min-h-16 flex-wrap items-center gap-3 rounded-[var(--nori-radius)] border border-[var(--nori-border)] px-5 py-4"
           [attr.aria-label]="t('editor.shapes.changes')"
         >
-          @if (removing(); as removal) {
-            <p class="mb-2 w-full text-sm">{{ t('editor.shapes.remove.' + removal) }}</p>
-            <div class="ml-auto flex flex-wrap gap-2">
-              <button suiButton size="sm" severity="neutral" variant="text" (click)="removing.set(null)">
-                <svg lucideX class="size-4" aria-hidden="true"></svg>{{ t('common.cancel') }}</button
-              ><button suiButton size="sm" severity="error" (click)="confirmRemoval()">
-                <svg lucideEraser class="size-4" aria-hidden="true"></svg>{{ t('editor.shapes.removeAction') }}
+          <div class="flex gap-1">
+            @if (detail() === 'settings' && selected()) {
+              <button
+                suiButton
+                size="sm"
+                shape="circle"
+                severity="neutral"
+                variant="text"
+                [attr.aria-label]="t('editor.shapes.duplicate')"
+                [noriTooltip]="t('editor.shapes.duplicate')"
+                (click)="duplicateShape()"
+              >
+                <svg lucideCopy class="size-4" aria-hidden="true"></svg>
               </button>
-            </div>
-          } @else {
-            <div class="flex gap-1">
-              @if (detail() === 'settings' && selected()) {
-                <button
-                  suiButton
-                  size="sm"
-                  shape="circle"
-                  severity="neutral"
-                  variant="text"
-                  [attr.aria-label]="t('editor.shapes.duplicate')"
-                  [noriTooltip]="t('editor.shapes.duplicate')"
-                  (click)="duplicateShape()"
-                >
-                  <svg lucideCopy class="size-4" aria-hidden="true"></svg>
-                </button>
-              }
-              @if (selected() && (detail() === 'settings' || attribute() || (detail() === 'relation' && relationIndex() >= 0))) {
-                <button
-                  suiButton
-                  size="sm"
-                  shape="circle"
-                  severity="error"
-                  variant="text"
-                  [attr.aria-label]="t('editor.shapes.removeAction')"
-                  [noriTooltip]="t('editor.shapes.removeAction')"
-                  (click)="requestRemoval(detail() === 'settings' ? 'shape' : detail() === 'relation' ? 'relation' : 'property')"
-                >
-                  <svg lucideEraser class="size-4" aria-hidden="true"></svg>
-                </button>
-              }
-            </div>
-            <div class="property-save-actions ml-auto flex flex-wrap justify-end gap-2">
-              <button suiButton size="sm" severity="neutral" variant="text" [disabled]="!hasChanges()" (click)="discard()">
-                <svg lucideUndo2 class="size-4" aria-hidden="true"></svg>{{ t('editor.discardChanges') }}</button
-              ><button suiButton size="sm" [loading]="pending()" [disabled]="!hasChanges() || !editable()" (click)="save()">
-                <svg lucideSave class="size-4" aria-hidden="true"></svg>{{ t(saveLabel()) }}
+            }
+            @if (selected() && (detail() === 'settings' || attribute() || (detail() === 'relation' && relationIndex() >= 0))) {
+              <button
+                suiButton
+                size="sm"
+                shape="circle"
+                severity="error"
+                variant="text"
+                [attr.aria-label]="t('editor.shapes.removeAction')"
+                [noriTooltip]="t('editor.shapes.removeAction')"
+                (click)="requestRemoval(detail() === 'settings' ? 'shape' : detail() === 'relation' ? 'relation' : 'property')"
+              >
+                <svg lucideEraser class="size-4" aria-hidden="true"></svg>
               </button>
-            </div>
-          }
+            }
+          </div>
+          <div class="property-save-actions ml-auto flex flex-wrap justify-end gap-2">
+            <button suiButton size="sm" severity="neutral" variant="text" [disabled]="!hasChanges()" (click)="discard()">
+              <svg lucideUndo2 class="size-4" aria-hidden="true"></svg>{{ t('editor.discardChanges') }}</button
+            ><button suiButton size="sm" [loading]="pending()" [disabled]="!hasChanges() || !editable()" (click)="save()">
+              <svg lucideSave class="size-4" aria-hidden="true"></svg>{{ t(saveLabel()) }}
+            </button>
+          </div>
         </section>
       }
     </div>

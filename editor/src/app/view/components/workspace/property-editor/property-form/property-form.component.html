@@ -52,26 +52,15 @@
         [ngTemplateOutletContext]="{ $implicit: valueOptions, label: t('editor.propertyValues') }"
       />
     </fieldset>
-    <div class="property-reveal" [noriAnimateHeight]="motion()">
-      <div>
-        @if (multiple) {
-          <div
-            class="property-reveal-content"
-            data-nori-motion
-            [animate.enter]="motion() ? 'property-form-enter' : ''"
-            [animate.leave]="motion() ? 'property-form-leave' : ''"
-          >
-            <fieldset class="property-option-group">
-              <legend class="property-group-title">{{ t('editor.propertyMultipleValues') }}</legend>
-              <ng-container
-                [ngTemplateOutlet]="optionList"
-                [ngTemplateOutletContext]="{ $implicit: multipleOptions, label: t('editor.propertyMultipleValues') }"
-              />
-            </fieldset>
-          </div>
-        }
-      </div>
-    </div>
+    @if (multiple) {
+      <fieldset class="property-option-group">
+        <legend class="property-group-title">{{ t('editor.propertyMultipleValues') }}</legend>
+        <ng-container
+          [ngTemplateOutlet]="optionList"
+          [ngTemplateOutletContext]="{ $implicit: multipleOptions, label: t('editor.propertyMultipleValues') }"
+        />
+      </fieldset>
+    }
     <fieldset class="property-option-group">
       <legend class="property-group-title">{{ t('editor.propertyBehavior') }}</legend>
       <ng-container
