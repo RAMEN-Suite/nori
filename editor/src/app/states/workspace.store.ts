@@ -18,7 +18,14 @@ export class WorkspaceStore {
   public readonly currentLevelIndex: WritableSignal<number> = signal(1);
   public readonly currentRelationId: WritableSignal<Id | null> = signal(null);
   public readonly currentNodeId: WritableSignal<Id | null> = signal(null);
-  public readonly currentNodeColors: WritableSignal<NodeColors> = signal({});
+  public readonly currentNodeColors: WritableSignal<NodeColors> = signal(
+    {},
+    {
+      equal: (previous: NodeColors, current: NodeColors): boolean =>
+        Object.keys(previous).length === Object.keys(current).length &&
+        Object.entries(previous).every(([key, colour]) => current[key] === colour),
+    },
+  );
 
   public readonly currentModelRecord: Signal<ModelRecord | null> = computed(
     (): ModelRecord | null => this.projects.recordsByLevelIndex().get(this.currentLevelIndex()) ?? null,
@@ -49,11 +56,10 @@ export class WorkspaceStore {
     });
   }
 
-  public getDraft(): RamenModel {
+  public getDraft(modelId: string | undefined = this.currentModel()?.id): RamenModel {
     const workspace: RamenModel | null = this.workspace();
-    const model: Model | null = this.currentModel();
-    if (!workspace || !model) throw new Error('No model is selected.');
-    return workspace.openLevel(model.id);
+    if (!workspace || !modelId) throw new Error('No model is selected.');
+    return this.levels.get(modelId) ?? workspace.openLevel(modelId);
   }
 
   public getWorkspace(): RamenModel {

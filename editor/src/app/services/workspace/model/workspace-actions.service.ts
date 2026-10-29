@@ -428,17 +428,18 @@ export class WorkspaceActionsService {
 
   private requireValidChange<T>(edit: (draft: RamenModel) => ModelChange<T>): void {
     const trial: RamenModel = this.store.getDraft().snapshot();
-    const levels: readonly RamenModel[] = this.store
-      .getModels()
-      .filter(RamenModelFormat.isDocument)
-      .map((model: Model): RamenModel => trial.openLevel(model.id));
-    const errors: () => readonly Diagnostic[] = (): readonly Diagnostic[] =>
+    const models: readonly Model[] = this.store.getModels().filter(RamenModelFormat.isDocument);
+    const errors: (levels: readonly RamenModel[]) => readonly Diagnostic[] = (levels): readonly Diagnostic[] =>
       levels.flatMap((level: RamenModel): readonly Diagnostic[] =>
         level.validate().diagnostics.filter((issue: Diagnostic): boolean => issue.severity === 'error'),
       );
-    const previousErrors: ReadonlySet<string> = new Set(errors().map((issue: Diagnostic): string => JSON.stringify(issue)));
+    const previousErrors: ReadonlySet<string> = new Set(
+      errors(models.map((model: Model): RamenModel => this.store.getDraft(model.id))).map((issue: Diagnostic): string =>
+        JSON.stringify(issue),
+      ),
+    );
     edit(trial);
-    const issue: Diagnostic | undefined = errors().find(
+    const issue: Diagnostic | undefined = errors(models.map((model: Model): RamenModel => trial.openLevel(model.id))).find(
       (diagnostic: Diagnostic): boolean => !previousErrors.has(JSON.stringify(diagnostic)),
     );
     if (!issue) return;
