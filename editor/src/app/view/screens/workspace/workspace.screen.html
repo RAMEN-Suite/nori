@@ -1,90 +1,109 @@
-<main *transloco="let t" class="workspace-shell">
-  <section class="workspace-canvas" data-nori-motion [attr.aria-label]="t('editor.graph')">
-    <nori-graph-view #graph [canvasPadding]="graphPadding()" (nodeSelected)="inspectorOpen.set(true)" class="block h-full" />
-  </section>
-  <nori-tool-bar
-    class="workspace-toolbar"
-    [catalogueOpen]="catalogueOpen()"
-    [levelsOpen]="levelsOpen()"
-    [inspectorOpen]="inspectorOpen()"
-    [baseNodesOpen]="baseNodesOpen()"
-    (toggleBaseNodes)="baseNodesOpen.set(!baseNodesOpen())"
-    (toggleCatalogue)="handleToggleCatalogue()"
-    (toggleLevels)="handleToggleLevels()"
-    (toggleInspector)="inspectorOpen.set(!inspectorOpen())"
-    (resetGraph)="graph.handleLayoutReset()"
-    (exportImage)="graph.handleExportImage($event)"
-    (fitGraph)="graph.handleFitView()"
-    (configureColours)="graph.handleOpenColorsDialog()"
-  />
-
+<main
+  *transloco="let t"
+  class="workspace-shell"
+  [class.editing-properties]="propertyEditing.isOpen()"
+  [class.motion-enabled]="appearance.state().animations"
+>
   <div
-    data-nori-motion
-    class="workspace-column workspace-left"
-    [class.both-open]="catalogueOpen() && baseNodesOpen() && workspace.queries.editable()"
+    class="workspace-model-view"
+    [class.is-hidden]="propertyEditing.isOpen() && !propertyEditing.closing()"
+    [inert]="propertyEditing.isOpen()"
+    [attr.aria-hidden]="propertyEditing.isOpen()"
   >
-    <div class="panel-slot top-slot" data-nori-motion>
-      <nori-editor-panel
-        class="workspace-catalogue"
-        [open]="catalogueOpen()"
-        [title]="t(workspace.store.currentLevelIndex() > 0 ? 'editor.refinements' : 'editor.baseNodes')"
-        [closeLabel]="t('editor.closeNodes')"
-        (closePanel)="catalogueOpen.set(false)"
-      >
-        <span panel-icon class="contents">
-          @if (workspace.queries.editable()) {
-            <svg lucideGitBranch class="size-4 shrink-0" aria-hidden="true"></svg>
-          } @else {
-            <svg lucideBoxes class="size-4 shrink-0" aria-hidden="true"></svg>
-          }
-        </span>
-        <nori-refinements (nodeSelected)="inspectorOpen.set(true)" class="block h-full min-h-0" />
-      </nori-editor-panel>
+    <section class="workspace-canvas" data-nori-motion [attr.aria-label]="t('editor.graph')">
+      <nori-graph-view #graph [canvasPadding]="graphPadding()" (nodeSelected)="inspectorOpen.set(true)" class="block h-full" />
+    </section>
+    <nori-tool-bar
+      class="workspace-toolbar"
+      [catalogueOpen]="catalogueOpen()"
+      [levelsOpen]="levelsOpen()"
+      [inspectorOpen]="inspectorOpen()"
+      [baseNodesOpen]="baseNodesOpen()"
+      (toggleBaseNodes)="baseNodesOpen.set(!baseNodesOpen())"
+      (toggleCatalogue)="handleToggleCatalogue()"
+      (toggleLevels)="handleToggleLevels()"
+      (toggleInspector)="inspectorOpen.set(!inspectorOpen())"
+      (resetGraph)="graph.handleLayoutReset()"
+      (exportImage)="graph.handleExportImage($event)"
+      (fitGraph)="graph.handleFitView()"
+      (configureColours)="graph.handleOpenColorsDialog()"
+    />
+
+    <div
+      data-nori-motion
+      class="workspace-column workspace-left"
+      [class.both-open]="catalogueOpen() && baseNodesOpen() && workspace.queries.editable()"
+    >
+      <div class="panel-slot top-slot" data-nori-motion>
+        <nori-editor-panel
+          class="workspace-catalogue"
+          [open]="catalogueOpen()"
+          [title]="t(workspace.store.currentLevelIndex() > 0 ? 'editor.refinements' : 'editor.baseNodes')"
+          [closeLabel]="t('editor.closeNodes')"
+          (closePanel)="catalogueOpen.set(false)"
+        >
+          <span panel-icon class="contents">
+            @if (workspace.queries.editable()) {
+              <svg lucideGitBranch class="size-4 shrink-0" aria-hidden="true"></svg>
+            } @else {
+              <svg lucideBoxes class="size-4 shrink-0" aria-hidden="true"></svg>
+            }
+          </span>
+          <nori-refinements (nodeSelected)="inspectorOpen.set(true)" class="block h-full min-h-0" />
+        </nori-editor-panel>
+      </div>
+      <div class="panel-slot bottom-slot" data-nori-motion>
+        <nori-editor-panel
+          [open]="baseNodesOpen() && workspace.queries.editable()"
+          [title]="t('editor.baseNodes')"
+          [closeLabel]="t('editor.closeBaseNodes')"
+          (closePanel)="baseNodesOpen.set(false)"
+        >
+          <svg panel-icon lucideBoxes class="size-4 shrink-0" aria-hidden="true"></svg>
+          <nori-base-nodes (nodeSelected)="inspectorOpen.set(true)" class="block h-full min-h-0" />
+        </nori-editor-panel>
+      </div>
     </div>
-    <div class="panel-slot bottom-slot" data-nori-motion>
-      <nori-editor-panel
-        [open]="baseNodesOpen() && workspace.queries.editable()"
-        [title]="t('editor.baseNodes')"
-        [closeLabel]="t('editor.closeBaseNodes')"
-        (closePanel)="baseNodesOpen.set(false)"
-      >
-        <svg panel-icon lucideBoxes class="size-4 shrink-0" aria-hidden="true"></svg>
-        <nori-base-nodes (nodeSelected)="inspectorOpen.set(true)" class="block h-full min-h-0" />
-      </nori-editor-panel>
+
+    <div
+      class="workspace-column workspace-right"
+      data-nori-motion
+      [style.--nori-levels-height]="levelsHeight()"
+      [class.levels-open]="levelsOpen()"
+    >
+      <div class="panel-slot top-slot" data-nori-motion>
+        <nori-editor-panel
+          [open]="inspectorOpen()"
+          side="right"
+          [title]="t('editor.inspector')"
+          [closeLabel]="t('editor.closeInspector')"
+          (closePanel)="inspectorOpen.set(false)"
+        >
+          <svg panel-icon lucideScanEye class="size-4 shrink-0" aria-hidden="true"></svg>
+          <div class="editor-panel-scroll absolute inset-0 overflow-auto">
+            <router-outlet class="hidden" />
+          </div>
+        </nori-editor-panel>
+      </div>
+      <div class="panel-slot bottom-slot" data-nori-motion>
+        <nori-editor-panel
+          side="right"
+          [open]="levelsOpen()"
+          [title]="t('editor.levels')"
+          [closeLabel]="t('editor.closeLevels')"
+          (closePanel)="levelsOpen.set(false)"
+        >
+          <svg panel-icon lucideLayers class="size-4 shrink-0" aria-hidden="true"></svg>
+          <nori-model-levels class="block h-full min-h-0" />
+        </nori-editor-panel>
+      </div>
     </div>
   </div>
-
-  <div
-    class="workspace-column workspace-right"
-    data-nori-motion
-    [style.--nori-levels-height]="levelsHeight()"
-    [class.levels-open]="levelsOpen()"
-  >
-    <div class="panel-slot top-slot" data-nori-motion>
-      <nori-editor-panel
-        [open]="inspectorOpen()"
-        side="right"
-        [title]="t('editor.inspector')"
-        [closeLabel]="t('editor.closeInspector')"
-        (closePanel)="inspectorOpen.set(false)"
-      >
-        <svg panel-icon lucideScanEye class="size-4 shrink-0" aria-hidden="true"></svg>
-        <div class="editor-panel-scroll absolute inset-0 overflow-auto">
-          <router-outlet class="hidden" />
-        </div>
-      </nori-editor-panel>
-    </div>
-    <div class="panel-slot bottom-slot" data-nori-motion>
-      <nori-editor-panel
-        side="right"
-        [open]="levelsOpen()"
-        [title]="t('editor.levels')"
-        [closeLabel]="t('editor.closeLevels')"
-        (closePanel)="levelsOpen.set(false)"
-      >
-        <svg panel-icon lucideLayers class="size-4 shrink-0" aria-hidden="true"></svg>
-        <nori-model-levels class="block h-full min-h-0" />
-      </nori-editor-panel>
-    </div>
-  </div>
+  @if (propertyEditing.isOpen()) {
+    <nori-property-editor
+      class="workspace-property-screen"
+      [class.is-leaving]="propertyEditing.closing()"
+      [inert]="propertyEditing.closing()"
+    />
+  }
 </main>

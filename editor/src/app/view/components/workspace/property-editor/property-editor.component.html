@@ -1,78 +1,34 @@
 <ng-container *transloco="let t">
   <section
     class="property-workspace flex h-full min-h-0 flex-col gap-2.5"
-    [class.show-detail]="editing.section() === 'shapes' ? shapeEditor()?.mobileDetail() : detailVisible()"
+    role="region"
+    aria-labelledby="node-editing-screen-title"
+    [class.show-detail]="windowsShowAnnotations() ? shapeEditor()?.mobileDetail() : detailVisible()"
     [class.motion-enabled]="appearance.state().animations"
     [class.initial-arrival]="initialArrival()"
     [class.switching-node]="switchingNode()"
-    [attr.aria-busy]="actionPending() || switchingSection()"
-    [inert]="!!form()?.saving() || savingOrder()"
+    [attr.aria-busy]="actionPending()"
   >
-    <header
-      class="property-surface property-toolbar bg-base-200 grid min-w-0 shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4 overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)] px-3.5 py-2.5"
-    >
+    <header class="property-toolbar flex min-w-0 shrink-0 flex-wrap items-center gap-4">
+      <h1 id="node-editing-screen-title" data-property-screen-heading tabindex="-1" class="min-w-0 flex-1 text-base font-semibold">
+        {{ t('editor.nodeDetails') }}
+      </h1>
       <button
         suiButton
         type="button"
+        size="sm"
         severity="neutral"
         variant="text"
-        size="sm"
-        class="property-node-back max-w-full min-w-0 justify-self-start"
-        [attr.aria-label]="editing.previous() ? t('editor.backToNode', { name: editing.previous()?.name }) : t('common.back')"
-        [inert]="controlsUnavailable()"
-        (click)="back()"
+        shape="circle"
+        [attr.aria-label]="t(graphVisible() ? 'editor.nodeWorkspace.hideGraph' : 'editor.nodeWorkspace.showGraph')"
+        [attr.aria-pressed]="graphVisible()"
+        (click)="graphVisible.set(!graphVisible())"
       >
-        <svg lucideArrowLeft class="size-4 shrink-0" aria-hidden="true"></svg>
-        <span class="truncate">{{
-          editing.previous() ? t('editor.backToNode', { name: editing.previous()?.name }) : t('common.back')
-        }}</span>
+        <svg lucideWaypoints class="size-4" aria-hidden="true"></svg>
       </button>
-      <div
-        class="property-workspace-tabs bg-base-content/5 flex shrink-0 flex-wrap items-center gap-3 rounded-[var(--nori-radius-input)] p-1"
-        role="tablist"
-        [attr.aria-label]="t('editor.nodeDetails')"
-      >
-        <button
-          type="button"
-          class="property-workspace-tab text-base-content/60 inline-flex cursor-pointer items-center gap-1.5 rounded-[var(--nori-radius-input)] px-3 py-1.5 text-xs"
-          role="tab"
-          id="node-properties-tab"
-          [attr.aria-selected]="editing.section() === 'properties'"
-          [attr.tabindex]="editing.section() === 'properties' ? 0 : -1"
-          (click)="changeSection('properties')"
-          (keydown)="handleTabKey($event)"
-          aria-controls="node-properties-panel"
-        >
-          <svg lucideList class="size-3.5" aria-hidden="true"></svg>{{ t('editor.properties') }}
-        </button>
-        @if (isAnnotation() && editing.annotationEditingEnabled) {
-          <button
-            type="button"
-            class="property-workspace-tab text-base-content/60 inline-flex cursor-pointer items-center gap-1.5 rounded-[var(--nori-radius-input)] px-3 py-1.5 text-xs"
-            role="tab"
-            [attr.aria-selected]="editing.section() === 'shapes'"
-            [attr.tabindex]="editing.section() === 'shapes' ? 0 : -1"
-            aria-controls="node-shapes-panel"
-            id="node-shapes-tab"
-            (click)="changeSection('shapes')"
-            (keydown)="handleTabKey($event)"
-          >
-            <svg lucideTags class="size-3.5" aria-hidden="true"></svg>{{ t('editor.shapes.title') }}
-          </button>
-        }
-        <button
-          type="button"
-          class="property-workspace-tab text-base-content/60 inline-flex cursor-pointer items-center gap-1.5 rounded-[var(--nori-radius-input)] px-3 py-1.5 text-xs"
-          role="tab"
-          aria-selected="false"
-          disabled
-        >
-          <svg lucideShieldCheck class="size-3.5" aria-hidden="true"></svg>{{ t('editor.constraints') }}
-        </button>
-      </div>
       <button
         type="button"
-        class="property-workspace-close text-base-content/65 inline-grid size-8 shrink-0 cursor-pointer place-items-center rounded-[var(--radius-field)]"
+        class="property-screen-close inline-grid size-8 shrink-0 cursor-pointer place-items-center rounded-[var(--radius-field)]"
         [attr.aria-label]="t('common.close')"
         [disabled]="controlsUnavailable()"
         (click)="close()"
@@ -81,358 +37,117 @@
       </button>
     </header>
 
-    <div
-      class="property-workspace-body grid min-h-0 flex-1 grid-cols-[minmax(12rem,0.65fr)_minmax(0,1.85fr)] grid-rows-[auto_minmax(0,1fr)] gap-2.5"
-    >
-      <nori-node-context-panel
-        class="property-context col-start-1 row-start-1"
-        [inert]="sorting() || switchingSection() || !!shapeEditor()?.pending()"
-        [disabled]="controlsUnavailable()"
-        (inspect)="inspectRefinement($event)"
-      />
-      <div class="property-tab-panels" [inert]="switchingSection()">
-        @if (editing.section() === 'shapes' && isAnnotation() && editing.annotationEditingEnabled) {
-          <nori-shape-editor
-            id="node-shapes-panel"
-            role="tabpanel"
-            aria-labelledby="node-shapes-tab"
-            [initialArrival]="initialArrival()"
-            [switchingNode]="switchingNode()"
-            (inspectSource)="inspectNodeSource($event)"
-            (inspectPropertySource)="inspectPropertySource($event)"
-          />
-        } @else {
-          <div
-            class="property-workspace-panels grid min-h-0 flex-1 grid-cols-[minmax(12rem,0.65fr)_minmax(0,1.85fr)] items-stretch gap-2.5"
-            id="node-properties-panel"
-            role="tabpanel"
-            aria-labelledby="node-properties-tab"
+    <div class="property-stage" [class.graph-hidden]="!graphVisible()">
+      <aside class="property-sidebar flex min-h-0 min-w-0 flex-col gap-2.5 overflow-auto">
+        <nori-node-context-panel
+          class="bg-base-100 shrink-0 rounded-[var(--nori-radius)] border border-[var(--nori-border)]"
+          [inert]="!!shapeEditor()?.pending()"
+          [disabled]="controlsUnavailable()"
+          (inspect)="inspectRefinement($event)"
+        />
+        <nav class="shrink-0 [--radius-box:var(--nori-radius)]" [attr.aria-label]="t('editor.nodeDetails')">
+          <sui-menu
+            fluid
+            size="sm"
+            severity="primary"
+            [items]="navigationItems()"
+            [disabled]="controlsUnavailable()"
+            (itemSelected)="switchSection($event)"
           >
-            <aside class="property-left-column flex min-h-0 min-w-0 flex-col gap-2.5">
-              <section
-                class="property-surface property-list bg-base-100 flex min-h-0 min-w-0 flex-1 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)]"
-                [attr.aria-label]="t('editor.properties')"
-              >
-                <div class="property-panel-content flex min-h-0 flex-1 flex-col">
-                  <header class="property-panel-heading flex min-h-14 shrink-0 items-center justify-between gap-3 pt-4 pr-3.5 pb-2 pl-5.5">
-                    <h3 class="flex min-w-0 items-center gap-2.5 text-base font-semibold select-none">
-                      <svg lucideList class="size-4 shrink-0" aria-hidden="true"></svg>{{ t('editor.properties') }}
-                    </h3>
-                    @if (workspace.queries.nodeEditable() && properties().length > 1) {
-                      <button
-                        suiButton
-                        size="sm"
-                        severity="neutral"
-                        variant="text"
-                        shape="circle"
-                        data-property-sort
-                        [attr.aria-label]="t('editor.sortProperties')"
-                        [noriTooltip]="t('editor.sortProperties')"
-                        [attr.aria-pressed]="sorting()"
-                        [disabled]="controlsUnavailable() || sorting()"
-                        (click)="startSorting()"
-                      >
-                        <svg lucideArrowDownUp class="size-4" aria-hidden="true"></svg>
-                      </button>
-                    }
-                  </header>
-                  <div class="nori-scroll-frame min-h-0 flex-1">
-                    <div
-                      cdkScrollable
-                      noriScrollOverflow
-                      #propertyScroll="scrollOverflow"
-                      class="property-list-scroll editor-panel-scroll px-2 pb-2"
-                    >
-                      @for (group of inheritedGroups(); track group.levelIndex) {
-                        <div
-                          suiDivider
-                          placement="start"
-                          class="text-base-content/60 text-xs"
-                          style="--sui-divider-margin: 0.75rem 0.875rem; margin-bottom: 0.25rem"
-                        >
-                          {{
-                            group.modelName
-                              ? t('editor.propertySource', { name: group.modelName })
-                              : t('editor.propertyLevel', { level: group.levelIndex })
-                          }}
-                        </div>
-                        <sui-list
-                          class="editor-list"
-                          size="xs"
-                          [items]="group.properties"
-                          [trackBy]="trackInheritedProperty"
-                          [dividers]="false"
-                          [rowHover]="false"
-                          [ariaLabel]="t('editor.properties')"
-                        >
-                          <ng-template suiListItem let-property>
-                            <button
-                              type="button"
-                              class="property-list-item property-inherited-item col-span-full flex w-full min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-[var(--nori-radius-input)] px-3 py-1"
-                              [class.is-selected]="inheritedSelection() === property"
-                              [attr.aria-pressed]="inheritedSelection() === property"
-                              [disabled]="controlsUnavailable()"
-                              (click)="selectInherited(property)"
-                            >
-                              <nori-node-attribute
-                                class="block min-w-0 flex-1 text-left"
-                                [attribute]="property.attribute"
-                                [modelLevelIndex]="property.levelIndex"
-                                [focusable]="false"
-                              />
-                            </button>
-                          </ng-template>
-                        </sui-list>
-                      }
-                      @if (properties().length) {
-                        <div
-                          suiDivider
-                          placement="start"
-                          class="text-base-content/60 text-xs"
-                          style="--sui-divider-margin: 0.75rem 0.875rem; margin-bottom: 0.25rem"
-                        >
-                          {{
-                            ownModelName()
-                              ? t('editor.propertySource', { name: ownModelName() })
-                              : t('editor.propertyLevel', { level: ownLevelIndex() })
-                          }}
-                        </div>
-                        @if (sorting()) {
-                          <sui-order-list
-                            class="editor-list"
-                            size="xs"
-                            [value]="orderItems()"
-                            [labels]="orderLabels()"
-                            [disabled]="actionPending()"
-                            [ariaLabel]="t('editor.properties')"
-                            (valueChange)="updateOrder($event)"
-                          >
-                            <ng-template [suiOrderListItem]="orderItems()" let-item>
-                              <nori-node-attribute
-                                class="block min-w-0 px-3 py-1 text-left"
-                                [attribute]="item.attribute"
-                                [modelLevelIndex]="ownLevelIndex()"
-                                [focusable]="false"
-                              />
-                            </ng-template>
-                          </sui-order-list>
-                        } @else {
-                          <sui-list
-                            class="editor-list"
-                            size="xs"
-                            [items]="properties()"
-                            [trackBy]="trackProperty"
-                            [dividers]="false"
-                            [rowHover]="false"
-                            [ariaLabel]="t('editor.properties')"
-                          >
-                            <ng-template suiListItem let-property>
-                              <button
-                                type="button"
-                                class="property-list-item col-span-full flex w-full min-w-0 cursor-pointer items-center gap-2 rounded-[var(--nori-radius-input)] px-3 py-1"
-                                [class.is-selected]="!inheritedSelection() && attribute()?.id === property.id"
-                                [attr.aria-pressed]="!inheritedSelection() && attribute()?.id === property.id"
-                                [disabled]="controlsUnavailable()"
-                                (click)="select(property.id)"
-                              >
-                                <nori-node-attribute
-                                  class="block min-w-0 flex-1 text-left"
-                                  [attribute]="property"
-                                  [modelLevelIndex]="ownLevelIndex()"
-                                  [focusable]="false"
-                                />
-                              </button>
-                            </ng-template>
-                          </sui-list>
-                        }
-                      }
-                      @if (!properties().length && !inheritedGroups().length) {
-                        <p class="text-base-content/50 px-3 py-2 text-xs">{{ t('editor.noProperties') }}</p>
-                      }
-                    </div>
-                    <nori-scroll-hints [up]="propertyScroll.canScrollUp()" [down]="propertyScroll.canScrollDown()" />
-                  </div>
-                  @if (workspace.queries.nodeEditable()) {
-                    <footer class="property-list-footer px-5.5 py-5">
-                      @if (sorting()) {
-                        <div class="property-order-actions flex flex-wrap justify-end gap-2">
-                          <button
-                            suiButton
-                            size="sm"
-                            severity="neutral"
-                            variant="text"
-                            [disabled]="actionPending()"
-                            (click)="cancelSorting()"
-                          >
-                            <svg lucideX class="size-4" aria-hidden="true"></svg>{{ t('common.cancel') }}
-                          </button>
-                          <button
-                            suiButton
-                            size="sm"
-                            severity="primary"
-                            [loading]="actionPending()"
-                            [disabled]="actionPending() || !orderChanged()"
-                            (click)="saveOrder()"
-                          >
-                            <svg lucideSave class="size-4" aria-hidden="true"></svg>{{ t('editor.savePropertyOrder') }}
-                          </button>
-                        </div>
-                      } @else {
-                        <button suiButton severity="primary" size="sm" class="w-full" [disabled]="controlsUnavailable()" (click)="create()">
-                          <svg lucidePlus class="size-4" aria-hidden="true"></svg>{{ t('editor.addProperty') }}
-                        </button>
-                      }
-                    </footer>
+            <ng-template [suiMenuItem]="navigationItems()" let-item>
+              <span class="flex items-center gap-3">
+                @switch (item.value) {
+                  @case ('properties') {
+                    <svg lucideList class="size-4" aria-hidden="true"></svg>
                   }
-                </div>
-              </section>
-            </aside>
-            <div class="property-right-column flex min-h-0 min-w-0 flex-col gap-2.5" [inert]="sorting()">
-              <section
-                class="property-surface property-detail bg-base-100 flex min-h-0 min-w-0 flex-1 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)]"
-                tabindex="-1"
-                [attr.aria-label]="t('editor.editProperties')"
-              >
-                <div class="property-panel-content flex min-h-0 flex-1 flex-col">
-                  <header
-                    class="property-panel-heading property-detail-heading hidden min-h-0 shrink-0 items-center justify-between gap-3 px-3.5 pt-2 pb-0"
-                  >
-                    <button
-                      suiButton
-                      severity="neutral"
-                      variant="text"
-                      size="xs"
-                      shape="circle"
-                      class="property-mobile-back hidden"
-                      [attr.aria-label]="t('editor.properties')"
-                      [disabled]="controlsUnavailable()"
-                      (click)="backToList()"
-                    >
-                      <svg lucideArrowLeft class="size-4" aria-hidden="true"></svg>
-                    </button>
-                  </header>
-                  <div class="nori-scroll-frame min-h-0 flex-1">
-                    <div
-                      noriScrollOverflow
-                      #detailScroll="scrollOverflow"
-                      class="property-detail-scroll editor-panel-scroll px-5.5 pt-4 pb-5"
-                    >
-                      <nori-property-form
-                        class="property-form-host"
-                        [currentAttribute]="inheritedSelection()?.attribute ?? attribute()"
-                        [editable]="workspace.queries.nodeEditable() && !inheritedSelection() && !switchingNode()"
-                        [modelLevelIndex]="inheritedSelection()?.levelIndex ?? ownLevelIndex()"
-                        (saved)="editing.select($event)"
-                        (submitRequested)="save()"
-                      />
-                    </div>
-                    <nori-scroll-hints [up]="detailScroll.canScrollUp()" [down]="detailScroll.canScrollDown()" />
-                  </div>
-                </div>
-              </section>
-              <div class="property-footer-dock shrink-0">
-                <div class="property-footer-content relative flow-root">
-                  @if (inheritedSelection(); as inheritedProperty) {
-                    <aside
-                      suiMessage
-                      severity="warning"
-                      variant="soft"
-                      class="property-inherited-notice flex min-h-[calc(4rem+2px)] flex-wrap items-center gap-3 px-5 py-4"
-                      data-nori-motion
-                    >
-                      <svg lucideInfo class="size-4 shrink-0" aria-hidden="true"></svg>
-                      <span class="text-sm">{{ t('editor.inheritedPropertyHint') }}</span>
-                      <button
-                        type="button"
-                        class="property-refinement-chip text-base-content inline-flex min-w-0 cursor-pointer items-center gap-1.5 rounded-full border border-[color-mix(in_oklab,var(--refinement-colour)_40%,transparent)] bg-[color-mix(in_oklab,var(--refinement-colour)_10%,transparent)] px-2.5 py-0.5 text-xs"
-                        [style.--refinement-colour]="refinementColour()"
-                        [disabled]="controlsUnavailable()"
-                        [attr.aria-label]="t('editor.openPropertySource', { name: inheritedProperty.nodeName })"
-                        (click)="inspectPropertySource(inheritedProperty)"
-                      >
-                        <span
-                          class="property-refinement-dot size-1.5 shrink-0 rounded-full bg-[var(--refinement-colour)]"
-                          aria-hidden="true"
-                        ></span>
-                        <span class="truncate">{{ inheritedProperty.nodeName }}</span>
-                      </button>
-                    </aside>
+                  @case ('shapes') {
+                    <svg lucideTags class="size-4" aria-hidden="true"></svg>
                   }
-                  @if (workspace.queries.nodeEditable() && !inheritedSelection()) {
-                    <section
-                      class="property-surface property-save-panel bg-base-100 flex min-h-[calc(4rem+2px)] min-w-0 flex-col justify-end overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)] px-5 py-4"
-                      data-nori-motion
-                      [attr.aria-label]="t('editor.propertyChanges')"
-                    >
-                      <div class="property-save-content flex w-full shrink-0 flex-wrap items-center gap-3">
-                        @if (attribute(); as property) {
-                          <div class="property-secondary-actions flex shrink-0 items-center gap-0.5">
-                            <button
-                              suiButton
-                              severity="neutral"
-                              variant="text"
-                              size="sm"
-                              shape="circle"
-                              [attr.aria-label]="t('editor.duplicateProperty')"
-                              [noriTooltip]="t('editor.duplicateProperty')"
-                              placement="bottom"
-                              [showDelay]="600"
-                              [disabled]="controlsUnavailable()"
-                              (click)="duplicate(property)"
-                            >
-                              <svg lucideCopy class="size-3.5" aria-hidden="true"></svg>
-                            </button>
-                            <button
-                              suiButton
-                              severity="error"
-                              variant="text"
-                              size="sm"
-                              shape="circle"
-                              [attr.aria-label]="t('editor.removeNamedProperty', { name: property.name })"
-                              [noriTooltip]="t('editor.removeProperty')"
-                              placement="bottom"
-                              [showDelay]="600"
-                              [disabled]="controlsUnavailable()"
-                              (click)="remove(property)"
-                            >
-                              <svg lucideEraser class="size-3.5" aria-hidden="true"></svg>
-                            </button>
-                          </div>
-                        }
-
-                        <div class="property-save-actions ml-auto flex flex-wrap justify-end gap-2">
-                          <button
-                            suiButton
-                            size="sm"
-                            severity="neutral"
-                            variant="text"
-                            [disabled]="controlsUnavailable() || !form()?.hasChanges()"
-                            (click)="discard()"
-                          >
-                            <svg lucideUndo2 class="size-4" aria-hidden="true"></svg>{{ t('editor.discardChanges') }}
-                          </button>
-                          <button
-                            suiButton
-                            size="sm"
-                            severity="primary"
-                            [loading]="!!form()?.saving()"
-                            [disabled]="actionPending() || !form()?.hasChanges()"
-                            (click)="save()"
-                          >
-                            @if (attribute()) {
-                              <svg lucideSave class="size-4" aria-hidden="true"></svg>{{ t('editor.saveProperty') }}
-                            } @else {
-                              <svg lucidePlus class="size-4" aria-hidden="true"></svg>{{ t('editor.addProperty') }}
-                            }
-                          </button>
-                        </div>
-                      </div>
-                    </section>
+                  @case ('constraints') {
+                    <svg lucideShieldCheck class="size-4" aria-hidden="true"></svg>
                   }
-                </div>
+                }
+                {{ item.label }}
+              </span>
+            </ng-template>
+          </sui-menu>
+        </nav>
+      </aside>
+      @if (graphVisible()) {
+        <nori-node-neighbourhood
+          class="property-neighbourhood"
+          [highlightedRelations]="shapeEditor()?.highlightedRelations() ?? noRelations"
+          [disabled]="controlsUnavailable()"
+          [previousName]="editing.previous()?.name ?? null"
+          [nextName]="editing.next()?.name ?? null"
+          (back)="backToNode()"
+          (forward)="forwardToNode()"
+          (inspect)="inspectNeighbour($event)"
+        />
+      }
+      <div class="property-main min-h-0 min-w-0">
+        @switch (editing.section()) {
+          @case ('shapes') {
+            @if (annotationsVisible()) {
+              <div class="annotation-workspace h-full min-h-0">
+                <nori-shape-editor
+                  [active]="true"
+                  [canActivate]="guardProperties"
+                  [switchingNode]="switchingNode()"
+                  (activated)="activateAnnotations()"
+                  (inspectSource)="inspectNodeSource($event)"
+                  (inspectPropertySource)="inspectPropertySource($event)"
+                />
               </div>
-            </div>
-          </div>
+            }
+          }
+          @case ('constraints') {
+            <section
+              class="property-surface bg-base-100 flex h-full min-h-0 flex-col overflow-auto rounded-[var(--nori-radius)] border border-[var(--nori-border)] p-5"
+              [attr.aria-label]="t('editor.constraints')"
+            >
+              <h2 class="text-base font-semibold">{{ t('editor.constraints') }}</h2>
+              <p class="text-base-content/60 mt-2 text-sm">{{ t('editor.nodeWorkspace.rulesHint') }}</p>
+              <div class="mt-5 flex flex-col gap-2">
+                @for (property of properties(); track property.id) {
+                  <button
+                    suiButton
+                    type="button"
+                    severity="neutral"
+                    variant="text"
+                    class="w-full justify-between"
+                    (click)="propertyRules(property)"
+                  >
+                    <span class="truncate">{{ property.name }}</span>
+                    <span class="text-base-content/60 text-xs">{{ t('editor.nodeWorkspace.editRules') }}</span>
+                  </button>
+                } @empty {
+                  <p class="text-base-content/60 text-sm">{{ t('editor.noProperties') }}</p>
+                }
+              </div>
+              <h3 class="mt-6 text-sm font-semibold">{{ t('editor.nodeWorkspace.modelConstraints') }}</h3>
+              <p class="text-base-content/60 mt-2 text-sm">{{ t('editor.nodeWorkspace.constraintsHint') }}</p>
+              @for (rule of nodeConstraints(); track $index) {
+                <div class="mt-3 rounded-[var(--radius-field)] border border-[var(--nori-border)] p-3">
+                  <h4 class="text-sm font-medium">{{ rule.name }}</h4>
+                  @if (rule.description || rule.message) {
+                    <p class="text-base-content/60 mt-1 text-sm">{{ rule.description || rule.message }}</p>
+                  }
+                </div>
+              } @empty {
+                <p class="text-base-content/60 mt-3 text-sm">{{ t('editor.nodeWorkspace.noConstraints') }}</p>
+              }
+            </section>
+          }
+          @default {
+            <section
+              class="property-surface property-detail property-list-window bg-base-100 flex h-full min-h-0 min-w-0 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)]"
+              tabindex="-1"
+              [attr.aria-label]="t('editor.editProperties')"
+            >
+              <nori-property-list (inspect)="inspectPropertySource($event)" (remove)="remove($event)" (duplicate)="duplicate($event)" />
+            </section>
+          }
         }
       </div>
     </div>

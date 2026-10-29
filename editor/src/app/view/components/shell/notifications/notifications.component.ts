@@ -11,8 +11,8 @@ import { ApplicationState } from '../../../../states/application.state';
   template: `
     <sui-toast
       class="nori-notifications"
-      horizontal="end"
-      vertical="bottom"
+      horizontal="center"
+      vertical="top"
       [maxVisible]="3"
       [dismissLabel]="'common.close' | transloco"
       [motion]="appearance.state().animations ? 'fade' : 'none'"

@@ -14,3 +14,10 @@
   font-weight: 600;
   user-select: none;
 }
+
+// Header spacing for panels whose body does not already provide the EditorPanel inset.
+@mixin frame {
+  @include layout;
+  flex-shrink: 0;
+  padding: 1rem 1.375rem 0.875rem;
+}

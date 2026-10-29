@@ -1,0 +1,40 @@
+<div *transloco="let t" class="flex w-full min-w-0 items-center gap-3">
+  <sui-autocomplete
+    class="min-w-0 flex-1"
+    fluid
+    size="sm"
+    forceSelection
+    openOnFocus
+    openOnClick
+    [minQueryLength]="0"
+    [delay]="0"
+    [ariaLabel]="label()"
+    [placeholder]="t('editor.searchDataTypes')"
+    [emptyMessage]="t('editor.noMatchingDataTypes')"
+    [options]="options()"
+    [value]="value()"
+    [disabled]="disabled()"
+    (valueChange)="selectType($event)"
+    (touch)="restoreType()"
+  >
+    <ng-template suiAutocompleteItem let-option
+      ><span class="text-sm">{{ option.label }}</span></ng-template
+    >
+  </sui-autocomplete>
+  <button
+    suiButton
+    type="button"
+    size="sm"
+    shape="circle"
+    [severity]="multiple() ? 'primary' : 'neutral'"
+    [variant]="multiple() ? 'soft' : 'text'"
+    class="shrink-0 select-none"
+    [attr.aria-pressed]="multiple()"
+    [disabled]="disabled()"
+    [attr.aria-label]="t('editor.propertyList.array') + ': ' + label()"
+    [noriTooltip]="t('editor.propertyList.array')"
+    (click)="arrayChange.emit(!multiple())"
+  >
+    <svg lucideList class="size-4" aria-hidden="true"></svg>
+  </button>
+</div>

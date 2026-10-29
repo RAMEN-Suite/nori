@@ -19,7 +19,7 @@ import {
 import { NgTemplateOutlet } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
-import { type Attribute, type AttributeInput, DataTypes, type DataTypeSuggestion } from '@ramen-suite/core/model';
+import { type Attribute, type AttributeInput, type Bounds, DataTypes, type DataTypeSuggestion } from '@ramen-suite/core/model';
 import {
   Card,
   Input,
@@ -27,19 +27,36 @@ import {
   List,
   ListItemTemplate,
   Autocomplete,
+  SelectButton,
   Toggle,
   type ListTrackBy,
   type AutocompleteOption,
+  type SelectButtonOption,
 } from '@sushi-kit/angular';
 import { FieldValidationError } from '../../../../../models/FieldValidationError';
 import { ProjectService } from '../../../../../services/projects/project.service';
+import { ApplicationState } from '../../../../../states/application.state';
 import { WorkspaceService, type WorkspaceContext } from '../../../../../services/workspace/workspace.service';
 import { descriptionValue, isDescriptionValid } from '../../../../../utils/descriptions';
 import { DescriptionFieldComponent } from '../../../shared/description-field/description-field.component';
 import { PROPERTY_NAME_MAX_LENGTH } from '../../../../../utils/model-names';
 
-type PropertyToggleOption = 'required' | 'multiple' | 'ordered' | 'duplicates' | 'readonly' | 'key';
+type PropertyToggleOption = 'ordered' | 'duplicates' | 'readonly' | 'key';
 type PropertyOption = PropertyToggleOption | 'minimum' | 'maximum';
+type PropertyCardinality = 'optional' | 'required' | 'list' | 'nonEmpty' | 'custom';
+
+interface CardinalityPreset {
+  readonly cardinality: Exclude<PropertyCardinality, 'custom'>;
+  readonly bounds: Bounds;
+}
+
+const CARDINALITY_PRESETS: readonly CardinalityPreset[] = [
+  { cardinality: 'optional', bounds: { lowerBound: 0, upperBound: 1 } },
+  { cardinality: 'required', bounds: { lowerBound: 1, upperBound: 1 } },
+  { cardinality: 'list', bounds: { lowerBound: 0, upperBound: -1 } },
+  { cardinality: 'nonEmpty', bounds: { lowerBound: 1, upperBound: -1 } },
+];
+const CARDINALITIES: readonly PropertyCardinality[] = ['optional', 'required', 'list', 'nonEmpty', 'custom'];
 
 /** Keeps property edits local until an explicit save succeeds. */
 @Component({
@@ -56,6 +73,7 @@ type PropertyOption = PropertyToggleOption | 'minimum' | 'maximum';
     List,
     ListItemTemplate,
     Autocomplete,
+    SelectButton,
     Toggle,
   ],
   templateUrl: './property-form.component.html',
@@ -68,6 +86,7 @@ export class PropertyFormComponent {
   private readonly projects: ProjectService = inject(ProjectService);
   private readonly translations: TranslocoService = inject(TranslocoService);
   private readonly element: ElementRef<HTMLElement> = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly appearance: ApplicationState = inject(ApplicationState);
 
   public readonly modelLevelIndex: InputSignal<number | null> = input<number | null>(null);
   public readonly shapeId: InputSignal<string | null> = input<string | null>(null);
@@ -79,8 +98,8 @@ export class PropertyFormComponent {
 
   protected readonly trackOption: ListTrackBy<PropertyOption> = (_index: number, option: PropertyOption): string => option;
 
-  protected readonly multipleOptions: readonly PropertyOption[] = ['minimum', 'maximum', 'ordered', 'duplicates'];
-  protected readonly valueOptions: readonly PropertyOption[] = ['required', 'multiple'];
+  protected readonly listOptions: readonly PropertyOption[] = ['ordered', 'duplicates'];
+  protected readonly customOptions: readonly PropertyOption[] = ['minimum', 'maximum', 'ordered', 'duplicates'];
   protected readonly usageOptions: readonly PropertyOption[] = ['readonly', 'key'];
 
   protected readonly nameMaxLength: number = PROPERTY_NAME_MAX_LENGTH;
@@ -98,7 +117,8 @@ export class PropertyFormComponent {
   protected isUnique: boolean = true;
   protected isOrdered: boolean = false;
 
-  private readonly multipleEnabled: WritableSignal<boolean> = signal(false);
+  private readonly customBounds: WritableSignal<boolean> = signal(false);
+  private readonly revision: WritableSignal<number> = signal(0);
 
   private initialValue: string = '';
   private selectedAttributeId: string | undefined;
@@ -107,6 +127,31 @@ export class PropertyFormComponent {
     JSON.stringify(this.currentAttribute()),
   );
 
+  protected readonly cardinalityOptions: Signal<readonly SelectButtonOption[]> = computed(() => {
+    this.appearance.language();
+    return CARDINALITIES.map(
+      (cardinality: PropertyCardinality): SelectButtonOption => ({
+        label: this.translations.translate(`editor.propertyCardinality.${cardinality}.label`),
+        value: cardinality,
+      }),
+    );
+  });
+  /** The current attribute with unsaved form values, for live previews outside the form. */
+  public readonly preview: Signal<Attribute | undefined> = computed((): Attribute | undefined => {
+    this.revision();
+    this.description();
+    const attribute: Attribute | undefined = this.currentAttribute();
+    if (!attribute) return undefined;
+    const input: AttributeInput = this.values();
+    return {
+      ...attribute,
+      ...input,
+      name: input.name || attribute.name,
+      typeId: input.typeId ?? attribute.typeId,
+      bounds: input.bounds ?? attribute.bounds,
+      constraints: attribute.constraints,
+    };
+  });
   protected readonly typeOptions: Signal<readonly AutocompleteOption[]> = computed((): readonly AutocompleteOption[] => {
     const options: AutocompleteOption[] = this.workspace.queries
       .dataTypeSuggestions()
@@ -165,12 +210,16 @@ export class PropertyFormComponent {
     return !this.hasChanges();
   }
 
-  protected get required(): boolean {
-    return this.lowerBound > 0;
+  protected get cardinality(): PropertyCardinality {
+    return this.customBounds() ? 'custom' : (this.presetFor(this.lowerBound, this.upperBound)?.cardinality ?? 'custom');
   }
 
   protected get multiple(): boolean {
-    return this.multipleEnabled();
+    return this.upperBound === -1 || this.upperBound > 1;
+  }
+
+  protected get boundOptions(): readonly PropertyOption[] {
+    return this.cardinality === 'custom' ? this.customOptions : this.listOptions;
   }
 
   protected get keyUnavailable(): boolean {
@@ -179,8 +228,6 @@ export class PropertyFormComponent {
 
   protected optionValue(option: PropertyToggleOption): boolean {
     const values: Record<PropertyToggleOption, boolean> = {
-      required: this.required,
-      multiple: this.multiple,
       ordered: this.isOrdered,
       duplicates: !this.isUnique,
       readonly: this.isReadOnly,
@@ -197,13 +244,30 @@ export class PropertyFormComponent {
     );
   }
 
+  protected handleName(): void {
+    this.clearFieldError('name');
+    this.markChanged();
+  }
+
+  protected handleCardinality(value: unknown): void {
+    if (value === 'custom') {
+      this.customBounds.set(true);
+      return;
+    }
+    const preset: CardinalityPreset | undefined = CARDINALITY_PRESETS.find(
+      (item: CardinalityPreset): boolean => item.cardinality === value,
+    );
+    if (!preset) return;
+    this.customBounds.set(false);
+    this.lowerBound = preset.bounds.lowerBound;
+    this.upperBound = preset.bounds.upperBound;
+    this.handleBounds();
+  }
+
   protected handleOption(option: PropertyToggleOption, value: boolean): void {
     this.clearFieldError(option);
+    this.markChanged();
     switch (option) {
-      case 'required':
-        return this.handleRequired(value);
-      case 'multiple':
-        return this.handleMultiple(value);
       case 'ordered':
         this.isOrdered = value;
         break;
@@ -233,12 +297,24 @@ export class PropertyFormComponent {
     if (typeof value !== 'string' || !this.typeOptions().some((option: AutocompleteOption): boolean => option.value === value))
       return;
     this.typeId = value;
+    this.markChanged();
   }
 
   private handleBounds(): void {
     this.clearFieldError('maximum');
     this.clearFieldError('key');
     if (this.lowerBound !== 1 || this.upperBound !== 1) this.isKey = false;
+    this.markChanged();
+  }
+
+  private markChanged(): void {
+    this.revision.update((revision: number): number => revision + 1);
+  }
+
+  private presetFor(lowerBound: number, upperBound: number): CardinalityPreset | undefined {
+    return CARDINALITY_PRESETS.find(
+      ({ bounds }: CardinalityPreset): boolean => bounds.lowerBound === lowerBound && bounds.upperBound === upperBound,
+    );
   }
 
   private async saveDraft(): Promise<void> {
@@ -269,26 +345,14 @@ export class PropertyFormComponent {
     this.typeId = attribute.typeId ?? DataTypes.String;
     this.lowerBound = attribute.bounds?.lowerBound ?? 0;
     this.upperBound = attribute.bounds?.upperBound ?? 1;
-    this.multipleEnabled.set(this.upperBound === -1 || this.upperBound > 1);
+    this.customBounds.set(!this.presetFor(this.lowerBound, this.upperBound));
     this.isKey = attribute.isKey ?? false;
     this.isReadOnly = attribute.isReadOnly ?? false;
     this.isUnique = attribute.isUnique ?? true;
     this.isOrdered = attribute.isOrdered ?? false;
     this.constraints = attribute.constraints;
+    this.markChanged();
     this.changeDetector.markForCheck();
-  }
-
-  private handleRequired(required: boolean): void {
-    this.lowerBound = required ? Math.max(1, this.lowerBound) : 0;
-    if (required && this.upperBound === 0) this.upperBound = 1;
-    this.handleBounds();
-  }
-
-  private handleMultiple(multiple: boolean): void {
-    this.multipleEnabled.set(multiple);
-    this.upperBound = multiple ? -1 : 1;
-    if (!multiple) this.lowerBound = Math.min(1, this.lowerBound);
-    this.handleBounds();
   }
 
   private async saveCurrent(nodeId: string): Promise<void> {
@@ -301,7 +365,6 @@ export class PropertyFormComponent {
       const attribute: Attribute | undefined = await this.persist(nodeId, existing, input);
       if (!this.isCurrentForm(context, nodeId, existing?.id)) return;
       this.initialValue = this.snapshot(input);
-      if (!this.hasChanges()) this.syncMultipleMode();
       if (attribute && !existing) {
         this.selectedAttributeId = attribute.id;
         this.saved.emit(attribute.id);
@@ -321,7 +384,7 @@ export class PropertyFormComponent {
   }
 
   private hasField(field: string): boolean {
-    return field === 'name' || field === 'key' || (field === 'maximum' && this.multiple);
+    return field === 'name' || field === 'key' || (field === 'maximum' && this.cardinality === 'custom');
   }
 
   private isCurrentForm(context: WorkspaceContext, nodeId: string, attributeId: string | undefined): boolean {
@@ -331,15 +394,6 @@ export class PropertyFormComponent {
       this.workspace.store.currentNodeId() === nodeId &&
       this.currentAttribute()?.id === attributeId
     );
-  }
-
-  private syncMultipleMode(): void {
-    const multiple: boolean = this.upperBound === -1 || this.upperBound > 1;
-    const host: HTMLElement = this.element.nativeElement;
-    if (!multiple && host.ownerDocument.activeElement?.id === 'property-control-maximum') {
-      host.querySelector<HTMLInputElement>('#property-control-multiple')?.focus();
-    }
-    this.multipleEnabled.set(multiple);
   }
 
   private async persist(nodeId: string, existing: Attribute | undefined, input: AttributeInput): Promise<Attribute | undefined> {

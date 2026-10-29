@@ -22,6 +22,7 @@ import { ProjectService } from '../../../services/projects/project.service';
 import { NodeEditingService } from '../../../services/workspace/editing/node-editing.service';
 import { PropertyEditingService } from '../../../services/workspace/editing/property-editing.service';
 import { WorkspaceService } from '../../../services/workspace/workspace.service';
+import { ApplicationState } from '../../../states/application.state';
 import { WindowState } from '../../../states/window.state';
 import { BaseNodesComponent } from '../../components/workspace/catalogue/base-nodes/base-nodes.component';
 import { EditorPanelComponent } from '../../components/shared/editor-panel/editor-panel.component';
@@ -29,6 +30,7 @@ import { GraphViewComponent } from '../../components/workspace/graph-view/graph-
 import { type GraphPadding } from '../../components/workspace/graph-view/graph/graph.types';
 import { ModelLevelsComponent } from '../../components/workspace/model-levels/model-levels.component';
 import { RefinementsComponent } from '../../components/workspace/catalogue/refinements/refinements.component';
+import { PropertyEditorComponent } from '../../components/workspace/property-editor/property-editor.component';
 import { ToolBarComponent } from '../../components/workspace/tool-bar/tool-bar.component';
 
 @Component({
@@ -36,6 +38,7 @@ import { ToolBarComponent } from '../../components/workspace/tool-bar/tool-bar.c
   selector: 'nori-workspace',
   imports: [
     ToolBarComponent,
+    PropertyEditorComponent,
     RefinementsComponent,
     GraphViewComponent,
     RouterOutlet,
@@ -52,6 +55,7 @@ import { ToolBarComponent } from '../../components/workspace/tool-bar/tool-bar.c
   styleUrl: './workspace.screen.scss',
 })
 export class WorkspaceScreen implements OnInit {
+  protected readonly appearance: ApplicationState = inject(ApplicationState);
   private readonly windowState: WindowState = inject(WindowState);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   private readonly navigation: NavigationService = inject(NavigationService);

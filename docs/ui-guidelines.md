@@ -6,9 +6,9 @@ Shared rules for Nori panels, dialogs and lists. Use public Sushi APIs and token
 
 - Use semantic buttons, links, headings, groups and lists. Icon-only controls need accessible names; decorative icons are hidden from assistive technology. Avoid nested buttons and hover-only actions.
 - Reuse panel/dialog frames, typography, list spacing and tooltips. Comparable bordered lists use `styles/_surface-list.scss` mixins with Sushi List; keep dimensions in shared styles rather than repeating numbers here.
-- Unexpected errors use the shared bottom-right Toast outlet. Native dialogs and the property workspace host the outlet inside their focus scope; otherwise the app shell owns it. Field validation stays beside the input.
+- Unexpected errors appear at the top centre below the main toolbar, 30rem wide with responsive viewport limits, at title-bar height plus the 4.5rem editor chrome height. Action errors dismiss automatically after 6 seconds; Sushi pauses the timer while the message is hovered or focused, and manual dismissal remains available. Use Sushi's `horizontal="center"`, `vertical="top"`, width and block-offset tokens. Native dialogs and the property workspace host the outlet inside their focus scope; otherwise the app shell owns it. Field validation stays beside the input.
 - Keep focus visible without clipping it. Support keyboard navigation, long/translatable text, small viewports and zoom.
-- Panels inside the node editing workspace share a 280ms initial entrance without staggered delays; subsequent content, footer and selection changes do not animate. The main workspace retains its original panel motion.
+- The node editing screen uses the same shared keyframes and tokens as ordinary dialogs: a subtle scale from 98% over 400ms, becoming opaque early, and a 100ms exit. Panels, content and footer do not animate separately inside it; graph nodes use the same appearance animation as the main graph. The main workspace retains its original panel motion.
 - Keep headings and bottom actions fixed; scroll the content area. Use shared scroll hints only when content overflows, with room for the scrollbar and focus rings.
 - Respect reduced motion and the user's animation preference. Keep shared motion in its owner; dialog windows enter as one surface using shared motion tokens: a subtle scale from 98% over 400ms without overshoot, becoming opaque early, and a 100ms exit. Start window movement after initial positioning; do not animate dialog contents separately.
 
@@ -33,17 +33,24 @@ The fixed type scale is defined once in `editor/src/styles/tailwind.css`. Use Ta
 - SVG text also reads the shared tokens; graph geometry remains in scene coordinates. Export copies computed text styles.
 - Keyboard focus uses `--sui-focus-ring-width`, `--sui-focus-ring-color` and `--sui-focus-ring-offset`. Derive necessary inset offsets from these tokens. Graph selection, erase feedback and domain highlights remain separate states, not replacements for keyboard focus.
 
+## Panel headings
+
+- All workspace panels, including the node editing screen, follow the main editor's panel heading style. Reuse `styles/_panel-heading.scss` (`layout` and `title`); `frame` supplies the matching inset when the panel has no existing `EditorPanel` content inset.
+- Use a semantic `h2`, `text-base` / `--text-base`, semibold weight, and a decorative Lucide icon at `size-4`. Centre the icon and title vertically with the shared 0.625rem gap. Do not make the graph heading smaller or lighter than Properties or other panel headings.
+- Keep panel headings fixed above scrolling content. Place optional actions on the right without shifting the title's left edge.
+- Property sections use Sushi Accordion with independent expansion and preserved content. Combine every inherited property in one “Inherited properties” section regardless of its source model; retain source identity for read-only details and tooltips. Keep the own-model section separate, including its creation row. Collapsing a section must preserve drafts; validation focus reopens the relevant section. Align category titles with the panel heading inset, indent their contents a little further, and use the public separated-accordion gap token between categories. Inherited property actions are View (Eye) followed by Go to source node (ArrowUpRight).
+
 ## Dialogs and forms
 
 - Use short, specific sentence-case titles that describe the task or decision. Plain titles have no decorative icon or forced uppercase. Avoid generic “Warning” and “Are you sure?”.
-- Centre ordinary dialogs and respect the viewport. Use shared compact/form sizing; the property workspace is a dedicated overlay, not a nested dialog.
+- Centre ordinary dialogs and respect the viewport. Use shared compact/form sizing; the property workspace is a dedicated editing screen.
 - Follow the node-colours dialog's calm style: clear introduction, thin bordered content area and compact actions. Use feedback boxes for feedback, not decorative instructions.
 - Keep labels above full-width controls, validation inline and near its context, and enough inset for focus rings. Use `nori-field-label` for field labels (0.875rem, medium) and `nori-field-optional` inline for optional markers. Hints and counters use smaller, regular text. Translate all visible text.
 - Definition descriptions use the shared field with 1rem input text, smaller hints/counters, and the Core `DESCRIPTION_MAX_LENGTH` limit, counting Unicode code points. Show the counter and over-limit errors beside the textarea; never truncate pasted or imported text. Project descriptions use the same field and UI limit; Core treats project metadata separately from model definitions.
 - Enter in a form input submits through the same guarded save/create action as its footer button. Autocomplete/select controls handle selection first; multiline fields keep Enter for new lines.
 - Put actions bottom right: neutral Cancel first, one specific primary action last. Use Sushi button size `sm` and a matching leading Lucide icon; destructive actions use error styling and Eraser. Avoid vague OK/Yes/No labels.
 - Immediately applied settings/colours use contextual reset actions, without Save/Cancel. Settings and colours may close on backdrop click; editing and confirmation dialogs remain protected, especially while pending.
-- Node name and description open together in the shared dialog above the property workspace. Keep the dialog host inside that workspace's focus scope; Escape closes only the top dialog and restores focus to its trigger.
+- Node name and description open together in the shared dialog above the property workspace. Keep the dialog host on the editing screen; Escape closes only the top dialog and restores focus to its trigger.
 
 ## Removal and inspection
 
@@ -61,6 +68,7 @@ The fixed type scale is defined once in `editor/src/styles/tailwind.css`. Use Ta
 - `TooltipDirective` only aliases Sushi inputs. `noriTooltipSuspended` maps to the native `disabled` input for file-dialog actions and node transitions.
 - Refinement creation uses `suiAccordionActions`. Keep actions outside the trigger and heading, with normal Tab order.
 - Use Sushi’s native tab focus styles. Catalogue accordions retain the inset focus-offset token to keep outlines visible.
+- Inline property rows use a circular Sushi `sm` icon button for Multiple values, with `aria-pressed`, primary active styling and a short translated descriptive tooltip. Use Sushi's native button feedback; do not add local state animations or delay persistence. Reuse cached Core level instances and their revision-aware validation results, and avoid graph notifications when colours have not changed. Focus within a row highlights the whole row, including drag handles and actions.
 - Property datatype autocomplete opens all known types on focus/click, filters immediately and uses `forceSelection`. Only a confirmed known type updates the draft; Escape or blur discards unconfirmed text.
 - Translate control labels, empty states, number-step labels and OrderList announcements through public inputs.
 - The colour dialog keeps its size observer for centring after content changes. Removal details keep their measured opening sequence; both layouts have been checked with Sushi 0.2.0. Do not remove this positioning logic without checking the replacement.

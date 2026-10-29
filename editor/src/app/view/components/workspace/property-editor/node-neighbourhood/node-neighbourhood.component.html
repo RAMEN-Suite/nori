@@ -1,0 +1,97 @@
+<section
+  *transloco="let t"
+  class="property-surface bg-base-100 flex h-full min-h-0 min-w-0 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)]"
+  aria-labelledby="node-neighbourhood-title"
+>
+  <header class="property-panel-heading">
+    <h2 id="node-neighbourhood-title"><svg lucideWaypoints class="size-4 shrink-0" aria-hidden="true"></svg>{{ t('editor.graph') }}</h2>
+  </header>
+  <div #graphHost class="neighbourhood-host relative min-h-0 flex-1 overflow-hidden">
+    <svg
+      #canvas
+      class="nori-graph-preview neighbourhood-canvas"
+      tabindex="0"
+      role="group"
+      [attr.aria-label]="t('editor.neighbourhood.navigationHint')"
+      (keydown)="handleGraphKey($event)"
+    ></svg>
+    @if (previousName() || nextName()) {
+      <div
+        class="bg-base-100 absolute bottom-3 left-3 flex items-center gap-1 rounded-[var(--nori-radius)] border border-[var(--nori-border)] p-1"
+        role="group"
+        [attr.aria-label]="t('editor.nodeWorkspace.history')"
+      >
+        <button
+          suiButton
+          type="button"
+          size="sm"
+          severity="neutral"
+          variant="text"
+          shape="circle"
+          [disabled]="disabled() || !previousName()"
+          [attr.aria-label]="previousName() ? t('editor.backToNode', { name: previousName() }) : t('common.back')"
+          [noriTooltip]="previousName() ? t('editor.backToNode', { name: previousName() }) : t('common.back')"
+          (click)="back.emit()"
+        >
+          <svg lucideArrowLeft class="size-4" aria-hidden="true"></svg>
+        </button>
+        <button
+          suiButton
+          type="button"
+          size="sm"
+          severity="neutral"
+          variant="text"
+          shape="circle"
+          [disabled]="disabled() || !nextName()"
+          [attr.aria-label]="nextName() ? t('editor.nodeWorkspace.forwardTo', { name: nextName() }) : t('editor.nodeWorkspace.forward')"
+          [noriTooltip]="nextName() ? t('editor.nodeWorkspace.forwardTo', { name: nextName() }) : t('editor.nodeWorkspace.forward')"
+          (click)="forward.emit()"
+        >
+          <svg lucideArrowRight class="size-4" aria-hidden="true"></svg>
+        </button>
+      </div>
+    }
+    <div
+      class="graph-viewport-controls bg-base-100 absolute right-3 bottom-3 flex items-center gap-1 rounded-[var(--nori-radius)] border border-[var(--nori-border)] p-1"
+      role="group"
+      [attr.aria-label]="t('editor.graph')"
+    >
+      <button
+        suiButton
+        type="button"
+        size="sm"
+        severity="neutral"
+        variant="text"
+        shape="circle"
+        [attr.aria-label]="t('editor.neighbourhood.zoomOut')"
+        (click)="zoom(0.8)"
+      >
+        <svg lucideMinus class="size-4" aria-hidden="true"></svg>
+      </button>
+      <button
+        suiButton
+        type="button"
+        size="sm"
+        severity="neutral"
+        variant="text"
+        shape="circle"
+        [attr.aria-label]="t('editor.neighbourhood.zoomIn')"
+        (click)="zoom(1.25)"
+      >
+        <svg lucidePlus class="size-4" aria-hidden="true"></svg>
+      </button>
+      <button
+        suiButton
+        type="button"
+        size="sm"
+        severity="neutral"
+        variant="text"
+        shape="circle"
+        [attr.aria-label]="t('editor.fit')"
+        (click)="fit()"
+      >
+        <svg lucideScan class="size-4" aria-hidden="true"></svg>
+      </button>
+    </div>
+  </div>
+</section>

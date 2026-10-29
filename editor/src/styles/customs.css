@@ -33,13 +33,13 @@ body {
   --nori-selection-color: var(--color-primary);
   --nori-project-card-height: 38rem;
   --nori-chrome-height: 4.5rem;
-  --nori-property-workspace-inset: clamp(1.5rem, 6dvh, 3.5rem);
   --nori-dialog-enter-duration: 400ms;
   --nori-dialog-exit-duration: 100ms;
   --nori-dialog-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --nori-dialog-width: 36rem;
   --nori-dialog-width-compact: 28rem;
-  --nori-notification-width: 26rem;
+  --nori-notification-width: 30rem;
+  --nori-notification-top: calc(var(--title-bar-height) + var(--nori-chrome-height));
   --nori-radius-preview: 0.5rem;
   --nori-preview-border: color-mix(in oklab, var(--color-base-content) 18%, transparent);
   --nori-preview-opacity: 0.8;
@@ -57,7 +57,7 @@ body {
 /* Editable text follows one role; compact Sushi buttons, badges and search controls retain their sizes. */
 .nori-dialog-content :is([suiInput], [suiTextarea], input[role="combobox"]),
 .project-form :is([suiInput], [suiTextarea], input[role="combobox"]),
-.property-detail :is([suiInput], [suiTextarea], input[role="combobox"]) {
+.property-detail:not(.property-list-window) :is([suiInput], [suiTextarea], input[role="combobox"]) {
   font-size: var(--text-base);
   line-height: var(--text-base--line-height);
   font-weight: var(--font-weight-normal);
@@ -182,7 +182,7 @@ html:active-view-transition-type(open-workspace)::view-transition-old(project-li
 
 sui-toast.nori-notifications {
   --sui-toast-width: var(--nori-notification-width);
-  --sui-toast-offset-block: 1rem;
+  --sui-toast-offset-block: var(--nori-notification-top);
   --sui-toast-z-index: 2000;
 }
 
@@ -320,22 +320,15 @@ sui-toast.nori-notifications {
   }
 }
 
-.nori-property-workspace-backdrop {
-  background: rgb(0 0 0 / 40%);
-  backdrop-filter: blur(3px);
-}
-.nori-property-workspace-overlay {
-  color: var(--color-base-content);
-}
-
-.nori-property-workspace-overlay :is([role="dialog"], [role="tabpanel"]):focus {
-  outline: none;
-}
-
 .nori-settings-host {
   --sui-dialog-viewport-gap: 2.5rem;
 }
 
 .nori-intro-active [data-nori-motion] {
   animation-play-state: paused !important;
+}
+
+/* Match Sushi's full-row hover when a property control or drag handle has focus. */
+.property-list-window li:focus-within {
+  background: var(--sui-color-hover);
 }

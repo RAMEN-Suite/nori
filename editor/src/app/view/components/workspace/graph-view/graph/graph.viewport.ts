@@ -12,8 +12,8 @@ import {
 } from './graph.types';
 
 interface ViewportCallbacks {
-  readonly onTransformChange: () => void;
-  readonly onTransformEnd: () => void;
+  readonly onTransformChange?: () => void;
+  readonly onTransformEnd?: () => void;
 }
 
 /** Owns graph zoom, view-box resizing and viewport fitting; the caller owns persistence. */
@@ -38,10 +38,10 @@ export class GraphViewport {
       .on('zoom', (event: ZoomEvent): void => {
         this.currentTransform = event.transform;
         this.root.attr('transform', event.transform.toString());
-        this.callbacks.onTransformChange();
+        this.callbacks.onTransformChange?.();
       })
       .on('end', (event: ZoomEvent): void => {
-        if (event.sourceEvent) this.callbacks.onTransformEnd();
+        if (event.sourceEvent) this.callbacks.onTransformEnd?.();
       });
     this.svg.call(this.zoom).on('dblclick.zoom', null);
 
@@ -61,6 +61,12 @@ export class GraphViewport {
     if (target) this.applyTransform(d3.zoomIdentity.translate(target.x, target.y).scale(target.scale), duration);
   }
 
+  public zoomBy(factor: number, duration: number): void {
+    this.svg.interrupt();
+    if (duration === 0) this.svg.call(this.zoom.scaleBy, factor);
+    else this.svg.transition().duration(duration).ease(d3.easeCubicInOut).call(this.zoom.scaleBy, factor);
+  }
+
   public applyTransform(transform: ZoomTransform, duration: number): void {
     this.svg.interrupt();
     if (duration === 0) {
@@ -72,7 +78,7 @@ export class GraphViewport {
       .duration(duration)
       .ease(d3.easeCubicInOut)
       .call(this.zoom.transform, transform)
-      .on('end', (): void => this.callbacks.onTransformEnd());
+      .on('end', (): void => this.callbacks.onTransformEnd?.());
   }
 
   public destroy(): void {

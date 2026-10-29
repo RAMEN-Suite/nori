@@ -279,7 +279,7 @@
     "propertyInvalidBounds": "Il numero minimo deve essere almeno 0. Il massimo non può essere inferiore al minimo; lascialo vuoto per valori illimitati.",
     "propertyKeyBounds": "Una proprietà chiave deve avere esattamente un valore. Imposta sia il minimo sia il massimo su 1.",
     "propertyChangeInvalid": "Questa modifica renderebbe il modello non valido: {{reason}}",
-    "propertyValues": "Valori",
+    "propertyValues": "Numero di valori",
     "propertyBehavior": "Utilizzo",
     "propertyName": "Nome della proprietà",
     "dataType": "Tipo di dato",
@@ -329,14 +329,6 @@
     "modelNodeCount": "{{count}} nodi",
     "propertyDefinition": "Definizione",
     "propertyOptions": {
-      "required": {
-        "label": "Richiedi un valore",
-        "hint": "Deve essere specificato almeno un valore."
-      },
-      "multiple": {
-        "label": "Consenti più valori",
-        "hint": "Questa proprietà può contenere più di un valore."
-      },
       "ordered": {
         "label": "Mantieni l’ordine dei valori",
         "hint": "La posizione di ogni valore è significativa."
@@ -367,17 +359,13 @@
     "shapes": {
       "title": "Annotazioni",
       "edit": "Modifica annotazioni",
-      "settings": "Impostazioni dell’annotazione",
-      "content": "Contenuto dell’annotazione",
       "details": "Dettagli dell’annotazione",
       "name": "Nome dell’annotazione",
       "nameHint": "Il nome deve essere univoco per questo nodo, incluse le annotazioni ereditate.",
       "fromNode": "Proprietà condivise del nodo",
       "onShape": "Proprietà dell’annotazione",
-      "relations": "Relazioni",
       "empty": "Nessuna annotazione definita per questo nodo.",
       "selectShape": "Seleziona un’annotazione o creane una.",
-      "selectItem": "Seleziona una proprietà o una regola di relazione da modificare.",
       "create": "Crea annotazione",
       "save": "Salva annotazione",
       "duplicate": "Duplica annotazione",
@@ -402,8 +390,6 @@
       "changes": "Modifiche all’annotazione",
       "nameTaken": "Un’annotazione con questo nome esiste già sul nodo o sui suoi antenati.",
       "relationRules": "Regole di relazione",
-      "rulesHint": "{{count}} regole · Definisci le relazioni consentite e il numero richiesto.",
-      "propertiesHint": "{{count}} proprietà proprie · Aggiungi campi se le proprietà condivise del nodo non bastano.",
       "openSource": "Apri le annotazioni su {{name}}",
       "find": "Cerca un’annotazione…",
       "noMatches": "Nessuna annotazione corrispondente.",
@@ -416,8 +402,19 @@
         "teiHint": "Piccolo esempio ispirato a TEI. Aggiunge solo i nomi delle annotazioni.",
         "textEditor": "Editor di testo",
         "textEditorHint": "Mapping predefinito dell’editor di testo. Include level, cols e rows come proprietà intere facoltative.",
-        "tei": "TEI"
-      }
+        "tei": "TEI",
+        "open": "Aggiungi da vocabolario"
+      },
+      "findOrCreate": "Cerca o crea…",
+      "createNamed": "Crea: {{name}}",
+      "openNamed": "Apri: {{name}}",
+      "nameRequired": "Inserisci un nome per l’annotazione.",
+      "counts": "{{properties}} P · {{rules}} R",
+      "propertyOf": "Proprietà di {{name}}",
+      "sharedProperty": "Proprietà condivisa del nodo",
+      "ruleOf": "Regola di relazione di {{name}}",
+      "closeDetail": "Chiudi",
+      "rulesIntro": "Quali relazioni modellate può impostare questa annotazione."
     },
     "description": {
       "add": "Aggiungi descrizione",
@@ -426,6 +423,70 @@
       "label": "Descrizione",
       "tooLong": "Usa al massimo {{maximum}} caratteri.",
       "edit": "Modifica descrizione"
+    },
+    "propertyCardinality": {
+      "optional": {
+        "label": "Facoltativo",
+        "hint": "Nessun valore o un valore."
+      },
+      "required": {
+        "label": "Obbligatorio",
+        "hint": "Esattamente un valore."
+      },
+      "list": {
+        "label": "Elenco",
+        "hint": "Un numero qualsiasi di valori, anche nessuno."
+      },
+      "nonEmpty": {
+        "label": "Non vuoto",
+        "hint": "Almeno un valore, senza limite massimo."
+      },
+      "custom": {
+        "label": "Personalizzato",
+        "hint": "Imposta tu il minimo e il massimo."
+      }
+    },
+    "propertyShorthand": {
+      "label": "Nuova proprietà",
+      "placeholder": "Nuova proprietà, ad es. tags: String[0..*]",
+      "format": "Usa nome, nome: Tipo oppure nome: Tipo[min..max].",
+      "unknownType": "Tipo di dati sconosciuto {{type}}.",
+      "bounds": "Il massimo deve essere almeno 1 e non inferiore al minimo."
+    },
+    "backToGraph": "Torna al grafo",
+    "neighbourhood": {
+      "title": "Dintorni",
+      "label": "Collegamenti diretti di questo nodo. Un altro nodo si apre qui.",
+      "empty": "Questo nodo non ha ancora relazioni.",
+      "zoomIn": "Ingrandisci",
+      "zoomOut": "Riduci",
+      "navigationHint": "Grafo del modello. Scorri per ingrandire, trascina per spostare. Tastiera: più, meno e 0 per adattare."
+    },
+    "propertyList": {
+      "own": "Definite su questo nodo",
+      "details": "Impostazioni per {{name}}",
+      "array": "Consenti più valori",
+      "newName": "Nuova proprietà…",
+      "list": "Lista",
+      "multipleValues": "Più valori",
+      "singleValue": "Valore singolo",
+      "valueMode": "Numero di valori",
+      "inherited": "Proprietà ereditate",
+      "view": "Visualizza {{name}}",
+      "jumpToNode": "Vai al nodo {{name}}",
+      "viewTitle": "Visualizza proprietà"
+    },
+    "nodeWorkspace": {
+      "hideGraph": "Nascondi il grafo del modello",
+      "showGraph": "Mostra il grafo del modello",
+      "history": "Navigazione tra nodi",
+      "forwardTo": "Avanti a {{name}}",
+      "rulesHint": "Modifica requisiti, limiti e regole di utilizzo nelle impostazioni di ogni proprietà.",
+      "editRules": "Modifica regole",
+      "modelConstraints": "Vincoli del modello",
+      "constraintsHint": "Qui sono mostrate le regole esistenti, incluse quelle ereditate. La modifica delle espressioni dei vincoli non è ancora disponibile.",
+      "noConstraints": "Nessun vincolo del modello definito.",
+      "forward": "Avanti"
     }
   }
 }

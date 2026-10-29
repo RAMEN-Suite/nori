@@ -13,7 +13,7 @@
           name="name"
           [maxlength]="nameMaxLength"
           [(ngModel)]="name"
-          (ngModelChange)="clearFieldError('name')"
+          (ngModelChange)="handleName()"
           [invalid]="!!nameError()"
           [touched]="!!nameError()"
           [attr.aria-invalid]="nameError() ? 'true' : null"
@@ -46,18 +46,25 @@
     </fieldset>
     <nori-description-field inputId="property-description" [(value)]="description" [disabled]="!editable()" />
     <fieldset class="property-option-group">
-      <legend class="property-group-title">{{ t('editor.propertyValues') }}</legend>
-      <ng-container
-        [ngTemplateOutlet]="optionList"
-        [ngTemplateOutletContext]="{ $implicit: valueOptions, label: t('editor.propertyValues') }"
+      <legend id="property-cardinality-label" class="property-group-title">{{ t('editor.propertyValues') }}</legend>
+      <sui-select-button
+        size="sm"
+        severity="neutral"
+        ariaLabelledby="property-cardinality-label"
+        aria-describedby="property-cardinality-hint"
+        [options]="cardinalityOptions()"
+        [value]="cardinality"
+        [disabled]="!editable()"
+        (valueChange)="handleCardinality($event)"
       />
+      <p id="property-cardinality-hint" class="property-hint mt-2">{{ t('editor.propertyCardinality.' + cardinality + '.hint') }}</p>
     </fieldset>
-    @if (multiple) {
+    @if (multiple || cardinality === 'custom') {
       <fieldset class="property-option-group">
         <legend class="property-group-title">{{ t('editor.propertyMultipleValues') }}</legend>
         <ng-container
           [ngTemplateOutlet]="optionList"
-          [ngTemplateOutletContext]="{ $implicit: multipleOptions, label: t('editor.propertyMultipleValues') }"
+          [ngTemplateOutletContext]="{ $implicit: boundOptions, label: t('editor.propertyMultipleValues') }"
         />
       </fieldset>
     }

@@ -13,38 +13,11 @@ import {
   type Signal,
   type WritableSignal,
 } from '@angular/core';
-import { CdkScrollable } from '@angular/cdk/scrolling';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
-import {
-  LucideArrowDownUp,
-  LucideInfo,
-  LucideSave,
-  LucideUndo2,
-  LucideEraser,
-  LucideCopy,
-  LucidePlus,
-  LucideArrowLeft,
-  LucideList,
-  LucideTags,
-  LucideShieldCheck,
-  LucideX,
-} from '@lucide/angular';
-import type { Attribute } from '@ramen-suite/core/model';
+import { LucideList, LucideTags, LucideShieldCheck, LucideWaypoints, LucideX } from '@lucide/angular';
+import { type Attribute, type Constraint } from '@ramen-suite/core/model';
 import { RAMEN_ELEMENT } from '@ramen-suite/core/ramen';
-import {
-  Button,
-  Divider,
-  Message,
-  List,
-  ListItemTemplate,
-  OrderList,
-  OrderListItemTemplate,
-  type ListTrackBy,
-  type OrderListLabels,
-  type OrderListReorderEvent,
-} from '@sushi-kit/angular';
-import { ScrollOverflowDirective } from '../../../../directives/scroll-overflow.directive';
-import { TooltipDirective } from '../../../../directives/tooltip.directive';
+import { Button, Menu, MenuItemTemplate, type MenuItem } from '@sushi-kit/angular';
 import type { InheritedAttribute, NodeDefinition } from '../../../../models/WorkspaceDetails';
 import type { WorkspaceLocation } from '../../../../models/WorkspaceLocation';
 import { DialogService } from '../../../../services/interaction/dialog.service';
@@ -52,64 +25,39 @@ import { ProjectService } from '../../../../services/projects/project.service';
 import { PropertyEditingService } from '../../../../services/workspace/editing/property-editing.service';
 import { WorkspaceService, type WorkspaceContext } from '../../../../services/workspace/workspace.service';
 import { ApplicationState } from '../../../../states/application.state';
-import { groupBy } from '../../../../utils/collections';
-import { ScrollHintsComponent } from '../../shared/scroll-hints/scroll-hints.component';
 import { ConfirmationDialog, type ConfirmationOptions } from '../../dialogs/confirmation/confirmation.dialog';
-import { NodeAttributeComponent } from '../inspector/node-view/node-attributes/node-attribute/node-attribute.component';
 import { NotificationsComponent } from '../../shell/notifications/notifications.component';
 import { DialogHostComponent } from '../../shell/dialog-host/dialog-host.component';
 import { NodeContextPanelComponent } from './node-context-panel/node-context-panel.component';
+import { NodeNeighbourhoodComponent } from './node-neighbourhood/node-neighbourhood.component';
 import { ShapeEditorComponent } from './shape-editor/shape-editor.component';
-import { PropertyFormComponent } from './property-form/property-form.component';
+import { PropertyDetailsDialog } from '../../dialogs/property-details/property-details.dialog';
+import { PropertyListComponent } from './property-list/property-list.component';
 
-interface PropertyOrderItem {
-  readonly label: string;
-  readonly value: string;
-  readonly attribute: Attribute;
-}
-
-interface InheritedPropertyGroup {
-  readonly levelIndex: number;
-  readonly modelName: string | null;
-  readonly properties: readonly InheritedAttribute[];
-}
-
-/** Coordinates property drafts, explicit save decisions and inherited-node navigation. */
+/**
+ * Lays out the node column (context, neighbourhood, properties, annotations) beside the editing windows.
+ * Coordinates property drafts, explicit save decisions and node navigation.
+ */
 @Component({
   selector: 'nori-property-editor',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { '(keydown.escape)': 'handleEscape($event)' },
   imports: [
-    CdkScrollable,
-    OrderList,
-    OrderListItemTemplate,
-    LucideArrowDownUp,
     LucideX,
     TranslocoDirective,
     Button,
-    Message,
-    LucideInfo,
-    Divider,
-    List,
-    ListItemTemplate,
-    LucideCopy,
-    LucideSave,
-    LucideUndo2,
-    LucideEraser,
-    LucidePlus,
-    LucideArrowLeft,
+    Menu,
+    MenuItemTemplate,
     LucideList,
     LucideTags,
     LucideShieldCheck,
-    PropertyFormComponent,
+    LucideWaypoints,
+    PropertyListComponent,
     ShapeEditorComponent,
     NodeContextPanelComponent,
+    NodeNeighbourhoodComponent,
     NotificationsComponent,
     DialogHostComponent,
-    NodeAttributeComponent,
-    ScrollOverflowDirective,
-    ScrollHintsComponent,
-    TooltipDirective,
   ],
   templateUrl: './property-editor.component.html',
   styleUrl: './property-editor.component.scss',
@@ -125,246 +73,113 @@ export class PropertyEditorComponent {
   private readonly injector: Injector = inject(Injector);
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
 
-  private readonly nodePanel: Signal<NodeContextPanelComponent | undefined> = viewChild(NodeContextPanelComponent);
   protected readonly shapeEditor: Signal<ShapeEditorComponent | undefined> = viewChild(ShapeEditorComponent);
-  protected readonly form: Signal<PropertyFormComponent | undefined> = viewChild(PropertyFormComponent);
-  private readonly orderList: Signal<OrderList<PropertyOrderItem> | undefined> = viewChild(OrderList<PropertyOrderItem>);
-
-  protected readonly trackProperty: ListTrackBy<Attribute> = (_index: number, property: Attribute): string => property.id;
-  protected readonly trackInheritedProperty: ListTrackBy<InheritedAttribute> = (
-    _index: number,
-    property: InheritedAttribute,
-  ): string => `${property.modelId}:${property.attribute.id}`;
-
-  protected readonly savingOrder: WritableSignal<boolean> = signal(false);
+  private readonly propertyList: Signal<PropertyListComponent | undefined> = viewChild(PropertyListComponent);
   protected readonly switchingNode: WritableSignal<boolean> = signal(false);
-  protected readonly switchingSection: WritableSignal<boolean> = signal(false);
   protected readonly initialArrival: WritableSignal<boolean> = signal(true);
   protected readonly detailVisible: WritableSignal<boolean> = signal(true);
-  private readonly orderDraft: WritableSignal<readonly Attribute[] | null> = signal(null);
   private readonly lifetime: AbortController = new AbortController();
-
-  protected readonly inheritedSelection: Signal<InheritedAttribute | null> = computed(
-    () =>
-      [...this.workspace.queries.inheritedAttributes().values()]
-        .flat()
-        .find((property: InheritedAttribute): boolean => property.attribute.id === this.editing.current()?.attributeId) ?? null,
-  );
 
   protected readonly properties: Signal<readonly Attribute[]> = computed(
     () => this.workspace.queries.currentNode()?.attributes ?? [],
   );
-  protected readonly sorting: Signal<boolean> = computed(() => this.orderDraft() !== null);
-  private readonly sortedProperties: Signal<readonly Attribute[]> = computed(() => this.orderDraft() ?? this.properties());
-  protected readonly orderItems: Signal<readonly PropertyOrderItem[]> = computed(() =>
-    this.sortedProperties().map(
-      (attribute: Attribute): PropertyOrderItem => ({ value: attribute.id, label: attribute.name, attribute }),
-    ),
-  );
-  protected readonly orderLabels: Signal<Partial<OrderListLabels<PropertyOrderItem>>> = computed(() => {
-    this.appearance.language();
-    return {
-      reorder: (item: PropertyOrderItem): string => this.translations.translate('editor.reorderProperty', { name: item.label }),
-      moveUp: this.translations.translate('editor.propertyOrder.up'),
-      moveDown: this.translations.translate('editor.propertyOrder.down'),
-      moveToTop: this.translations.translate('editor.propertyOrder.top'),
-      moveToBottom: this.translations.translate('editor.propertyOrder.bottom'),
-      empty: this.translations.translate('editor.noProperties'),
-      instructions: this.translations.translate('editor.propertyOrder.instructions'),
-      moved: (event: OrderListReorderEvent<PropertyOrderItem>, count: number): string =>
-        this.translations.translate('editor.propertyOrder.moved', {
-          name: event.item.label,
-          position: event.currentIndex + 1,
-          count,
-        }),
-    };
-  });
-  protected readonly orderChanged: Signal<boolean> = computed(() =>
-    this.sortedProperties().some((property: Attribute, index: number): boolean => property.id !== this.properties()[index]?.id),
-  );
   protected readonly controlsUnavailable: Signal<boolean> = computed(
     () => this.dialogs.pending() || this.editing.changingNode() || this.switchingNode(),
   );
-  protected readonly actionPending: Signal<boolean> = computed(
-    () => this.controlsUnavailable() || !!this.form()?.saving() || this.savingOrder(),
-  );
+  protected readonly actionPending: Signal<boolean> = computed(() => this.controlsUnavailable() || !!this.propertyList()?.busy());
 
-  protected readonly inheritedGroups: Signal<readonly InheritedPropertyGroup[]> = computed(() => {
-    const inherited: readonly InheritedAttribute[] = [...this.workspace.queries.inheritedAttributes().values()].flat();
-    const groups: ReadonlyMap<number, readonly InheritedAttribute[]> = groupBy(
-      inherited,
-      (property: InheritedAttribute): number => property.levelIndex,
-    );
-
-    return [...groups]
-      .sort(([left], [right]): number => left - right)
-      .map(
-        ([levelIndex, properties]): InheritedPropertyGroup => ({
-          levelIndex,
-          modelName: this.projects.recordsByLevelIndex().get(levelIndex)?.name ?? null,
-          properties,
-        }),
-      );
-  });
-  protected readonly ownLevelIndex: Signal<number> = computed(
-    () => this.workspace.queries.nodeOwner()?.levelIndex ?? this.workspace.store.currentLevelIndex(),
-  );
-  protected readonly ownModelName: Signal<string | null> = computed(() => this.workspace.queries.nodeOwner()?.name ?? null);
-  protected readonly refinementColour: Signal<string> = computed(() => this.nodePanel()?.colour() ?? 'var(--color-base-content)');
   protected readonly isAnnotation: Signal<boolean> = computed(
     (): boolean =>
       this.workspace.queries.currentNode()?.id === RAMEN_ELEMENT.ANNOTATION ||
       this.workspace.queries.currentNodeChain().some((base): boolean => base.node.id === RAMEN_ELEMENT.ANNOTATION),
   );
-
-  protected readonly attribute: Signal<Attribute | undefined> = computed(() =>
-    this.workspace.queries.currentNode()?.attributes.find((attribute) => attribute.id === this.editing.current()?.attributeId),
+  protected readonly annotationsVisible: Signal<boolean> = computed(
+    () => this.editing.annotationEditingEnabled && this.isAnnotation(),
   );
+  protected readonly windowsShowAnnotations: Signal<boolean> = computed(
+    () => this.annotationsVisible() && this.editing.section() === 'shapes',
+  );
+  protected readonly graphVisible: WritableSignal<boolean> = signal(true);
+  protected readonly navigationItems: Signal<readonly MenuItem[]> = computed(() => {
+    this.appearance.language();
+    return [
+      {
+        label: this.translations.translate('editor.properties'),
+        value: 'properties',
+        active: this.editing.section() === 'properties',
+      },
+      {
+        label: this.translations.translate('editor.shapes.title'),
+        value: 'shapes',
+        active: this.windowsShowAnnotations(),
+        disabled: !this.annotationsVisible(),
+      },
+      {
+        label: this.translations.translate('editor.constraints'),
+        value: 'constraints',
+        active: this.editing.section() === 'constraints',
+      },
+    ];
+  });
+  protected readonly nodeConstraints: Signal<readonly Constraint[]> = computed(() => [
+    ...this.workspace.queries.currentNodeChain().flatMap((base) => base.node.constraints ?? []),
+    ...(this.workspace.queries.currentNode()?.constraints ?? []),
+  ]);
+
+  protected switchSection(value: unknown): void {
+    if (value !== 'properties' && value !== 'shapes' && value !== 'constraints') return;
+    if (value === 'shapes' && !this.annotationsVisible()) return;
+    if (!this.canRunAction()) return;
+    this.initialArrival.set(false);
+    this.editing.section.set(value);
+  }
+
+  protected propertyRules(property: Attribute): void {
+    this.dialogs.open(PropertyDetailsDialog, {
+      headerKey: 'editor.editProperties',
+      inputValues: { attribute: property, editable: this.workspace.queries.nodeEditable() },
+    });
+  }
+
+  protected readonly noRelations: ReadonlySet<string> = new Set();
+  protected readonly guardProperties: () => boolean = (): boolean => this.canRunAction();
 
   public constructor() {
+    afterNextRender((): void => {
+      this.element.nativeElement.querySelector<HTMLElement>('[data-property-screen-heading]')?.focus({ preventScroll: true });
+    });
     this.destroyRef.onDestroy((): void => {
       this.lifetime.abort();
     });
     effect((): void => {
       if (!this.editing.changingNode() && !this.editing.current()) this.editing.close();
     });
+    effect((): void => {
+      if (!this.annotationsVisible() && this.editing.section() === 'shapes') this.editing.section.set('properties');
+    });
   }
 
-  protected changeSection(section: 'properties' | 'shapes'): void {
-    if (section === 'shapes' && !this.editing.annotationEditingEnabled) return;
-    if (this.editing.section() === section) return;
-    this.runWithCleanDraft((): Promise<void> => this.activateSection(section));
+  protected activateAnnotations(): void {
+    this.initialArrival.set(false);
+    this.editing.section.set('shapes');
   }
 
-  protected async handleTabKey(event: KeyboardEvent): Promise<void> {
-    if (
-      !this.editing.annotationEditingEnabled ||
-      !this.isAnnotation() ||
-      !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)
-    )
-      return;
-    event.preventDefault();
-    if (!this.canRunAction()) return;
-    let section: 'properties' | 'shapes' = this.editing.section() === 'properties' ? 'shapes' : 'properties';
-    if (event.key === 'Home') section = 'properties';
-    if (event.key === 'End') section = 'shapes';
-    await this.activateSection(section);
-    if (this.destroyRef.destroyed) return;
-    afterNextRender(
-      (): void => {
-        if (!this.destroyRef.destroyed)
-          this.element.nativeElement.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')?.focus();
-      },
-      { injector: this.injector },
-    );
-  }
-
-  private async activateSection(section: 'properties' | 'shapes'): Promise<void> {
-    if (this.editing.section() === section || this.switchingSection()) return;
-    this.switchingSection.set(true);
-    try {
-      this.lifetime.signal.throwIfAborted();
-      this.initialArrival.set(false);
-      this.editing.section.set(section);
-      await this.waitForRender();
-      this.lifetime.signal.throwIfAborted();
-    } catch (error: unknown) {
-      if (!this.destroyRef.destroyed) this.projects.reportError(error);
-    } finally {
-      this.switchingSection.set(false);
-    }
+  protected inspectNeighbour(nodeId: string): void {
+    const projectId: string | undefined = this.workspace.context()?.projectId;
+    if (!projectId) return;
+    const location: WorkspaceLocation = { projectId, levelIndex: this.workspace.store.currentLevelIndex(), nodeId };
+    this.runWithCleanDraft(() => this.changeNode(() => this.editing.inspect(location)));
   }
 
   public close(): void {
     this.runWithCleanDraft((): void => this.editing.close());
   }
 
-  protected async save(): Promise<void> {
-    if (this.actionPending()) return;
-    const activeElement: Element | null = this.element.nativeElement.ownerDocument.activeElement;
-    const saved: boolean = (await this.form()?.commit()) !== false;
-    if (this.destroyRef.destroyed) return;
-    if (!saved) {
-      this.focusDetail();
-      return;
-    }
-    this.restoreEditingFocus(activeElement);
-  }
-
-  protected discard(): void {
-    if (this.actionPending()) return;
-    this.form()?.reset();
-  }
-
-  protected back(): void {
-    if (this.editing.previous()) this.backToNode();
-    else this.close();
-  }
-
   public handleEscape(event: Event): void {
     if (this.dialogs.current()) return;
     event.preventDefault();
     event.stopPropagation();
-    if (this.switchingSection()) return;
-    if (this.sorting()) this.cancelSorting();
-    else this.close();
-  }
-
-  protected select(attributeId: string | null): void {
-    if (this.sorting()) {
-      this.canRunAction();
-      return;
-    }
-    if (attributeId !== null && attributeId === this.editing.current()?.attributeId && !this.inheritedSelection()) {
-      this.detailVisible.set(true);
-      this.focusDetail();
-      return;
-    }
-    this.runWithCleanDraft((): void => this.selectOwnProperty(attributeId));
-  }
-
-  protected startSorting(): void {
-    if (this.sorting() || !this.workspace.queries.nodeEditable() || this.properties().length < 2) return;
-    if (!this.canRunAction()) return;
-    this.orderDraft.set([...this.properties()]);
-    afterNextRender((): void => this.orderList()?.focus(), { injector: this.injector });
-  }
-
-  protected cancelSorting(): void {
-    if (this.actionPending()) return;
-    this.orderDraft.set(null);
-    this.focusOrderControl('[data-property-sort]');
-  }
-
-  protected async saveOrder(): Promise<void> {
-    const nodeId: string | null = this.workspace.store.currentNodeId();
-    const context: WorkspaceContext | null = this.workspace.context();
-    if (!nodeId || !context || !this.sorting() || !this.orderChanged() || this.actionPending()) return;
-    const draft: readonly Attribute[] = this.sortedProperties();
-    const ids: string[] = draft.map((property: Attribute): string => property.id);
-
-    this.savingOrder.set(true);
-    this.orderDraft.set(null);
-
-    try {
-      await this.workspace.actions.reorderAttributes(nodeId, ids);
-    } catch (error: unknown) {
-      if (this.isCurrentNode(context, nodeId)) {
-        this.orderDraft.set(draft);
-        this.projects.reportError(error);
-      }
-    } finally {
-      this.savingOrder.set(false);
-      if (this.isCurrentNode(context, nodeId)) {
-        if (this.sorting()) afterNextRender((): void => this.orderList()?.focus(), { injector: this.injector });
-        else this.focusOrderControl('[data-property-sort]');
-      }
-    }
-  }
-
-  protected updateOrder(items: readonly PropertyOrderItem[]): void {
-    if (!this.sorting() || this.actionPending()) return;
-    this.orderDraft.set(items.map((item: PropertyOrderItem): Attribute => item.attribute));
+    this.close();
   }
 
   protected inspectRefinement(refinement: NodeDefinition): void {
@@ -387,28 +202,12 @@ export class PropertyEditorComponent {
     this.runWithCleanDraft(() => this.changeNode(() => this.editing.inspect(location, property.attribute.id)));
   }
 
+  protected forwardToNode(): void {
+    this.runWithCleanDraft(() => this.changeNode(() => this.editing.forward()));
+  }
+
   protected backToNode(): void {
     this.runWithCleanDraft(() => this.changeNode(() => this.editing.back()));
-  }
-
-  protected create(): void {
-    this.runWithCleanDraft(async (): Promise<void> => {
-      this.selectOwnProperty(null);
-      await this.waitForRender();
-      this.form()?.reset();
-      this.focusDetail(true);
-    });
-  }
-
-  protected selectInherited(property: InheritedAttribute): void {
-    this.runWithCleanDraft((): void => {
-      this.editing.select(property.attribute.id);
-      this.detailVisible.set(true);
-    });
-  }
-
-  protected backToList(): void {
-    this.runWithCleanDraft((): void => this.detailVisible.set(false));
   }
 
   protected remove(property: Attribute): void {
@@ -448,15 +247,6 @@ export class PropertyEditorComponent {
     await this.workspace.actions.removeAttribute(nodeId, property.id);
     if (!this.isCurrentNode(context, nodeId)) return;
     this.editing.select(nextId);
-  }
-
-  private focusOrderControl(selector: string): void {
-    afterNextRender(
-      (): void => {
-        if (!this.destroyRef.destroyed) this.element.nativeElement.querySelector<HTMLElement>(selector)?.focus();
-      },
-      { injector: this.injector },
-    );
   }
 
   private isCurrentNode(context: WorkspaceContext, nodeId: string): boolean {
@@ -521,6 +311,7 @@ export class PropertyEditorComponent {
   }
 
   private selectOwnProperty(attributeId: string | null): void {
+    this.editing.section.set('properties');
     this.detailVisible.set(true);
     this.editing.select(attributeId);
   }
@@ -530,37 +321,9 @@ export class PropertyEditorComponent {
   }
 
   private canRunAction(): boolean {
-    if (this.switchingSection() || this.actionPending() || this.shapeEditor()?.canLeave() === false) return false;
-    if (this.sorting()) {
-      this.element.nativeElement.querySelector<HTMLElement>('.property-list-footer button')?.focus();
+    if (this.actionPending() || this.propertyList()?.guardLeave() === false || this.shapeEditor()?.canLeave() === false)
       return false;
-    }
-    if (!this.inheritedSelection() && this.form()?.hasChanges()) {
-      this.showDraftDecision();
-      return false;
-    }
     return true;
-  }
-
-  private showDraftDecision(): void {
-    const options: ConfirmationOptions = {
-      title: this.translations.translate('editor.propertyChanges'),
-      message: { key: 'editor.unsavedChangesMessage', params: {} },
-      buttons: [
-        [
-          { label: this.translations.translate('common.cancel') },
-          { label: this.translations.translate('editor.discardChanges'), click: (): void => this.form()?.reset() },
-          {
-            label: this.translations.translate('common.save'),
-            severity: 'primary',
-            click: async (): Promise<void> => {
-              await this.form()?.commit();
-            },
-          },
-        ],
-      ],
-    };
-    this.dialogs.open(ConfirmationDialog, { size: 'compact', header: options.title, inputValues: { options } });
   }
 
   private async runAction(action: () => void | Promise<void>): Promise<void> {
@@ -572,16 +335,12 @@ export class PropertyEditorComponent {
     }
   }
 
-  private restoreEditingFocus(previous: Element | null): void {
-    afterNextRender(
-      (): void => {
-        if (this.destroyRef.destroyed) return;
-        const panel: HTMLElement | null = this.element.nativeElement.querySelector<HTMLElement>('.property-detail');
-        const target: HTMLElement | null = previous instanceof HTMLElement && panel?.contains(previous) ? previous : panel;
-        target?.focus({ preventScroll: true });
-      },
-      { injector: this.injector },
-    );
+  private focusSelectedProperty(): boolean {
+    const propertyId: string | null | undefined = this.editing.current()?.attributeId;
+    const list: PropertyListComponent | undefined = this.propertyList();
+    if (!propertyId || !list) return false;
+    list.focusProperty(propertyId);
+    return true;
   }
 
   private focusDetail(selectName: boolean = false): void {
@@ -590,13 +349,7 @@ export class PropertyEditorComponent {
       (): void => {
         if (this.destroyRef.destroyed) return;
         const host: HTMLElement = this.element.nativeElement;
-        if (!this.detailVisible() && window.matchMedia('(max-width: 640px)').matches) {
-          const selected: HTMLElement | null =
-            host.querySelector<HTMLElement>('.property-list button[aria-pressed="true"]') ??
-            host.querySelector<HTMLElement>('.property-list button');
-          selected?.focus();
-          return;
-        }
+        if (this.focusSelectedProperty()) return;
         const target: HTMLElement | null =
           host.querySelector<HTMLElement>('.property-detail [aria-invalid="true"]') ??
           host.querySelector<HTMLElement>('.property-detail input:not(:disabled)') ??

@@ -1,0 +1,65 @@
+@use "../../../../../../styles/panel-heading";
+
+:host {
+  --property-actions-width: calc(var(--size-field, 0.25rem) * 24 + 1.5rem);
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+}
+.property-panel-heading {
+  @include panel-heading.frame;
+}
+.property-panel-heading h2 {
+  @include panel-heading.title;
+}
+.property-groups {
+  --sui-focus-ring-offset: calc(-1 * var(--sui-focus-ring-width));
+  --sui-accordion-background: transparent;
+  --sui-accordion-border-color: transparent;
+  --sui-accordion-content-color: inherit;
+  --sui-accordion-trigger-padding-inline: 0;
+  --sui-accordion-panel-padding-inline: 0.5rem;
+  --sui-accordion-gap: 1rem;
+  --sui-accordion-panel-padding-bottom: 0;
+}
+sui-order-list {
+  --sui-order-list-row-padding: 0 0.25rem;
+  --sui-order-list-row-gap: 0.375rem;
+  --sui-order-list-row-hover-background: var(--sui-color-hover);
+}
+.property-row,
+.inherited-row {
+  display: grid;
+  grid-template-columns: minmax(9rem, 1fr) 10rem var(--property-actions-width);
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.375rem;
+}
+.property-row {
+  padding-block: 0.375rem;
+}
+.inherited-row:hover,
+.new-property-row:hover,
+.inherited-row:focus-within,
+.new-property-row:focus-within {
+  background: var(--sui-color-hover);
+}
+.inherited-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.inherited-row {
+  padding: 0.375rem 0.25rem 0.375rem 2.125rem;
+}
+.inherited-actions {
+  width: 100%;
+}
+.new-property-row {
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr);
+  gap: 0.375rem;
+  align-items: center;
+  padding-inline: 0.25rem;
+}

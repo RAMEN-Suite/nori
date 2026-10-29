@@ -1,4 +1,5 @@
-nori-graph {
+nori-graph,
+.nori-graph-preview {
   position: relative;
   display: block;
   height: 100%;
@@ -21,6 +22,7 @@ nori-graph {
     animation: graph-node-arrive 500ms var(--graph-arrival-delay, 180ms) var(--nori-editor-ease) backwards;
   }
   .node-body {
+    outline: none;
     fill: color-mix(in oklab, var(--g-node-fill, var(--color-base-300)) var(--nori-graph-node-tint), var(--color-base-100));
     stroke: var(--g-node-fill, var(--color-base-300));
     stroke-width: 1.5;

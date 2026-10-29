@@ -279,7 +279,7 @@
     "propertyInvalidBounds": "Die Mindestanzahl muss mindestens 0 sein. Die Höchstanzahl darf nicht kleiner sein; lass sie für unbegrenzt viele Werte leer.",
     "propertyKeyBounds": "Eine Schlüsseleigenschaft muss genau einen Wert haben. Setze Minimum und Maximum auf 1.",
     "propertyChangeInvalid": "Diese Änderung würde das Modell ungültig machen: {{reason}}",
-    "propertyValues": "Werte",
+    "propertyValues": "Anzahl der Werte",
     "propertyBehavior": "Verwendung",
     "propertyName": "Name der Eigenschaft",
     "dataType": "Datentyp",
@@ -329,14 +329,6 @@
     "modelNodeCount": "{{count}} Knoten",
     "propertyDefinition": "Definition",
     "propertyOptions": {
-      "required": {
-        "label": "Wert erforderlich",
-        "hint": "Mindestens ein Wert muss angegeben werden."
-      },
-      "multiple": {
-        "label": "Mehrere Werte erlauben",
-        "hint": "Diese Eigenschaft kann mehr als einen Wert enthalten."
-      },
       "ordered": {
         "label": "Reihenfolge beibehalten",
         "hint": "Die Position der einzelnen Werte ist von Bedeutung."
@@ -367,17 +359,13 @@
     "shapes": {
       "title": "Annotationen",
       "edit": "Annotationen bearbeiten",
-      "settings": "Annotationseinstellungen",
-      "content": "Annotationsinhalt",
       "details": "Annotationsdetails",
       "name": "Name der Annotation",
       "nameHint": "Der Name muss für diesen Knoten einschließlich geerbter Annotationen eindeutig sein.",
       "fromNode": "Gemeinsame Node-Properties",
       "onShape": "Eigenschaften dieser Annotation",
-      "relations": "Relationen",
       "empty": "Für diesen Knoten sind noch keine Annotationen definiert.",
       "selectShape": "Wähle eine Annotation aus oder erstelle eine.",
-      "selectItem": "Wähle eine Property oder Relationsregel zum Bearbeiten aus.",
       "create": "Annotation erstellen",
       "save": "Annotation speichern",
       "duplicate": "Annotation duplizieren",
@@ -402,8 +390,6 @@
       "changes": "Annotationsänderungen",
       "nameTaken": "Eine Annotation mit diesem Namen existiert bereits an diesem Knoten oder seinen Vorfahren.",
       "relationRules": "Relationsregeln",
-      "rulesHint": "{{count}} Regeln · Bestimme erlaubte Relationen und ihre erforderliche Anzahl.",
-      "propertiesHint": "{{count}} eigene Properties · Ergänze Felder, wenn die gemeinsamen Node-Properties nicht ausreichen.",
       "openSource": "Annotationen auf {{name}} öffnen",
       "find": "Annotation suchen…",
       "noMatches": "Keine passenden Annotationen.",
@@ -416,8 +402,19 @@
         "teiHint": "Kleines, an TEI angelehntes Beispiel. Fügt nur Annotationsnamen hinzu.",
         "textEditor": "Texteditor",
         "textEditorHint": "Standard-Mapping des Texteditors. Enthält level, cols und rows als optionale Integer-Properties.",
-        "tei": "TEI"
-      }
+        "tei": "TEI",
+        "open": "Aus Vokabular hinzufügen"
+      },
+      "findOrCreate": "Suchen oder neu anlegen…",
+      "createNamed": "Anlegen: {{name}}",
+      "openNamed": "Öffnen: {{name}}",
+      "nameRequired": "Gib einen Namen für die Annotation ein.",
+      "counts": "{{properties}} P · {{rules}} R",
+      "propertyOf": "Property von {{name}}",
+      "sharedProperty": "Gemeinsame Node-Property",
+      "ruleOf": "Relationsregel von {{name}}",
+      "closeDetail": "Schließen",
+      "rulesIntro": "Welche modellierten Relationen diese Annotation setzen darf."
     },
     "description": {
       "add": "Beschreibung hinzufügen",
@@ -426,6 +423,70 @@
       "label": "Beschreibung",
       "tooLong": "Verwende höchstens {{maximum}} Zeichen.",
       "edit": "Beschreibung bearbeiten"
+    },
+    "propertyCardinality": {
+      "optional": {
+        "label": "Optional",
+        "hint": "Kein oder ein Wert."
+      },
+      "required": {
+        "label": "Pflicht",
+        "hint": "Genau ein Wert."
+      },
+      "list": {
+        "label": "Liste",
+        "hint": "Beliebig viele Werte, auch keiner."
+      },
+      "nonEmpty": {
+        "label": "Nicht leer",
+        "hint": "Mindestens ein Wert, nach oben offen."
+      },
+      "custom": {
+        "label": "Eigene",
+        "hint": "Mindest- und Höchstanzahl frei festlegen."
+      }
+    },
+    "propertyShorthand": {
+      "label": "Neue Property",
+      "placeholder": "Neue Property, z. B. tags: String[0..*]",
+      "format": "Schreibweise: name, name: Typ oder name: Typ[min..max].",
+      "unknownType": "Unbekannter Datentyp {{type}}.",
+      "bounds": "Die Höchstanzahl muss mindestens 1 und darf nicht kleiner als die Mindestanzahl sein."
+    },
+    "backToGraph": "Zurück zum Graph",
+    "neighbourhood": {
+      "title": "Umgebung",
+      "label": "Direkte Verbindungen dieses Knotens. Ein anderer Knoten öffnet sich hier.",
+      "empty": "Dieser Knoten hat noch keine Relationen.",
+      "zoomIn": "Vergrößern",
+      "zoomOut": "Verkleinern",
+      "navigationHint": "Modellgraph. Mit Scrollen zoomen, durch Ziehen verschieben. Tastatur: Plus, Minus und 0 zum Einpassen."
+    },
+    "propertyList": {
+      "own": "An diesem Knoten definiert",
+      "details": "Einstellungen für {{name}}",
+      "array": "Mehrere Werte erlauben",
+      "newName": "Neue Property…",
+      "list": "Liste",
+      "multipleValues": "Mehrere Werte",
+      "singleValue": "Einzelwert",
+      "valueMode": "Wertanzahl",
+      "inherited": "Geerbte Eigenschaften",
+      "view": "{{name}} ansehen",
+      "jumpToNode": "Zum Knoten {{name}}",
+      "viewTitle": "Eigenschaft ansehen"
+    },
+    "nodeWorkspace": {
+      "hideGraph": "Modellgraph ausblenden",
+      "showGraph": "Modellgraph einblenden",
+      "history": "Knotennavigation",
+      "forwardTo": "Vorwärts zu {{name}}",
+      "rulesHint": "Pflichtwerte, Grenzen und Nutzungsregeln lassen sich in den Einstellungen der jeweiligen Eigenschaft bearbeiten.",
+      "editRules": "Regeln bearbeiten",
+      "modelConstraints": "Modell-Constraints",
+      "constraintsHint": "Hier stehen vorhandene Regeln einschließlich geerbter Regeln. Eigene Constraint-Ausdrücke lassen sich hier noch nicht bearbeiten.",
+      "noConstraints": "Keine Modell-Constraints definiert.",
+      "forward": "Vorwärts"
     }
   }
 }

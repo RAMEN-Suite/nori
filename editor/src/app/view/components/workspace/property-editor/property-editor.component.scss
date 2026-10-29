@@ -1,91 +1,98 @@
 @use "./property-panels";
 
 :host {
-  --nori-panel-enter-duration: 280ms;
-  --nori-panel-ease: cubic-bezier(0.22, 1, 0.36, 1);
   display: block;
   width: 100%;
   height: 100%;
   min-width: 0;
 }
-.property-tab-panels {
+
+.property-workspace {
+  display: grid;
+  grid-template-rows: calc(var(--nori-chrome-height) - 0.5rem) minmax(0, 1fr);
+  gap: 0.625rem;
+}
+.property-workspace > :is(nori-dialog-host, nori-notifications) {
   display: contents;
 }
-.property-toolbar > .property-workspace-close {
-  justify-self: end;
-}
-.property-workspace-close:hover:not(:disabled) {
-  background: color-mix(in oklab, currentColor 12%, transparent);
-}
-.property-workspace-close:focus-visible {
-  outline: var(--sui-focus-ring-width) solid var(--sui-focus-ring-color, currentColor);
-  outline-offset: var(--sui-focus-ring-offset);
-}
-.property-workspace-tab:hover:not(:disabled):not([aria-selected="true"]) {
-  background: var(--sui-color-hover);
-  color: var(--color-base-content);
-}
-.property-workspace-tab[aria-selected="true"] {
+.property-toolbar {
+  align-self: stretch;
+  height: 100%;
+  padding-inline: 1.25rem 1rem;
+  border: 1px solid var(--nori-border);
+  border-radius: var(--nori-radius);
   background: var(--color-base-100);
-  color: var(--color-base-content);
-}
-.property-workspace-tab:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-.property-workspace-tab:focus-visible {
-  outline: var(--sui-focus-ring-width) solid var(--sui-focus-ring-color, currentColor);
-  outline-offset: var(--sui-focus-ring-offset);
-}
-.motion-enabled.initial-arrival :is(.property-toolbar, .property-context, .property-list, .property-right-column) {
-  animation: property-panel-arrive var(--nori-panel-enter-duration) var(--nori-panel-ease) backwards;
-}
-@keyframes property-panel-arrive {
-  from {
-    transform: translateY(0.5rem);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .motion-enabled.initial-arrival :is(.property-toolbar, .property-context, .property-list, .property-right-column) {
-    animation: none;
-  }
 }
 
+.property-stage {
+  display: grid;
+  min-height: 0;
+  grid-template-columns: minmax(14rem, 16rem) minmax(30rem, 1fr) minmax(16rem, 0.55fr);
+  gap: 0.625rem;
+}
+.property-stage.graph-hidden {
+  grid-template-columns: minmax(14rem, 16rem) minmax(0, 1fr);
+}
+.property-sidebar {
+  grid-column: 1;
+  grid-row: 1;
+}
+.property-main {
+  grid-column: 2;
+  grid-row: 1;
+}
+.property-neighbourhood {
+  grid-column: 3;
+  grid-row: 1;
+}
+.annotation-workspace {
+  container-type: inline-size;
+  display: grid;
+  grid-template-areas: "annotations windows";
+  grid-template-columns: minmax(10rem, 0.65fr) minmax(0, 1fr);
+  gap: 0.625rem;
+}
+@media (max-width: 1100px) {
+  .property-stage {
+    grid-template-columns: 14rem minmax(0, 1fr);
+    overflow: auto;
+  }
+  .property-neighbourhood {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    min-height: 18rem;
+  }
+}
 @media (max-width: 640px) {
-  .property-workspace-body {
+  .property-stage,
+  .property-stage.graph-hidden {
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+  }
+  .property-main {
+    min-height: 30rem;
+  }
+  .property-sidebar,
+  .property-neighbourhood {
+    flex-shrink: 0;
+  }
+  .annotation-workspace {
+    grid-template-areas: "annotations" "windows";
     grid-template-columns: minmax(0, 1fr);
   }
-  .show-detail .property-workspace-body {
-    grid-template-rows: minmax(0, 1fr);
-  }
-  .show-detail .property-context {
-    display: none;
-  }
-  .property-toolbar {
-    grid-template-columns: 2rem minmax(0, 1fr) 2rem;
-    gap: 0.5rem;
-  }
-  .property-workspace-tabs {
-    justify-content: center;
-    gap: 0.5rem;
-  }
-  .property-workspace-tab {
-    padding-inline: 0.5rem;
-  }
-  .property-node-back {
-    padding-inline: 0.5rem;
-  }
-  .property-node-back span {
-    display: none;
-  }
 }
 
-.property-footer-content > * {
-  margin-top: 0.625rem;
+.property-screen-close {
+  color: inherit;
+  background: transparent;
+  border: 0;
+  padding: 0;
 }
-.property-order-actions > button {
-  flex: 1 1 auto;
+.property-screen-close:hover:not(:disabled) {
+  background: color-mix(in oklab, currentColor 12%, transparent);
+}
+.property-screen-close:focus-visible {
+  outline: var(--sui-focus-ring-width) solid var(--sui-focus-ring-color, currentColor);
+  outline-offset: var(--sui-focus-ring-offset);
 }

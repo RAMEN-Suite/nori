@@ -279,7 +279,7 @@
     "propertyInvalidBounds": "The minimum count must be at least 0. The maximum must be at least the minimum; leave it empty for unlimited values.",
     "propertyKeyBounds": "A key property must have exactly one value. Set both minimum and maximum to 1.",
     "propertyChangeInvalid": "This change would make the model invalid: {{reason}}",
-    "propertyValues": "Values",
+    "propertyValues": "Number of values",
     "propertyBehavior": "Usage",
     "propertyName": "Property name",
     "dataType": "Data type",
@@ -329,14 +329,6 @@
     "modelNodeCount": "{{count}} Nodes",
     "propertyDefinition": "Definition",
     "propertyOptions": {
-      "required": {
-        "label": "Require a value",
-        "hint": "At least one value must be provided."
-      },
-      "multiple": {
-        "label": "Allow multiple values",
-        "hint": "Store more than one value in this property."
-      },
       "ordered": {
         "label": "Preserve value order",
         "hint": "The position of each value matters."
@@ -367,17 +359,13 @@
     "shapes": {
       "title": "Annotations",
       "edit": "Edit annotations",
-      "settings": "Annotation settings",
-      "content": "Annotation content",
       "details": "Annotation details",
       "name": "Annotation name",
       "nameHint": "Use a unique name on this node, including inherited annotations.",
       "fromNode": "Shared node properties",
       "onShape": "Annotation properties",
-      "relations": "Relations",
       "empty": "No annotations defined for this node yet.",
       "selectShape": "Select an annotation or create one.",
-      "selectItem": "Select a property or relation rule to edit.",
       "create": "Create annotation",
       "save": "Save annotation",
       "duplicate": "Duplicate annotation",
@@ -402,8 +390,6 @@
       "changes": "Annotation changes",
       "nameTaken": "An annotation with this name already exists on the node or its ancestors.",
       "relationRules": "Relation rules",
-      "rulesHint": "{{count}} rules · Define which relations are allowed and how many are required.",
-      "propertiesHint": "{{count}} own properties · Add fields when the shared node properties are not enough.",
       "openSource": "Open annotations on {{name}}",
       "find": "Find an annotation…",
       "noMatches": "No matching annotations.",
@@ -416,8 +402,19 @@
         "teiHint": "Small TEI-inspired starter set. Adds annotation names only.",
         "textEditor": "Text editor",
         "textEditorHint": "Default text editor mapping. Includes level, cols and rows as optional integer properties.",
-        "tei": "TEI"
-      }
+        "tei": "TEI",
+        "open": "Add from vocabulary"
+      },
+      "findOrCreate": "Find or create…",
+      "createNamed": "Create: {{name}}",
+      "openNamed": "Open: {{name}}",
+      "nameRequired": "Enter a name for the annotation.",
+      "counts": "{{properties}} P · {{rules}} R",
+      "propertyOf": "Property of {{name}}",
+      "sharedProperty": "Shared node property",
+      "ruleOf": "Relation rule of {{name}}",
+      "closeDetail": "Close",
+      "rulesIntro": "Which modelled relations this annotation may set."
     },
     "description": {
       "add": "Add description",
@@ -426,6 +423,70 @@
       "label": "Description",
       "tooLong": "Use no more than {{maximum}} characters.",
       "edit": "Edit description"
+    },
+    "propertyCardinality": {
+      "optional": {
+        "label": "Optional",
+        "hint": "No value or one value."
+      },
+      "required": {
+        "label": "Required",
+        "hint": "Exactly one value."
+      },
+      "list": {
+        "label": "List",
+        "hint": "Any number of values, including none."
+      },
+      "nonEmpty": {
+        "label": "Non-empty",
+        "hint": "At least one value, no upper limit."
+      },
+      "custom": {
+        "label": "Custom",
+        "hint": "Set the minimum and maximum yourself."
+      }
+    },
+    "propertyShorthand": {
+      "label": "New property",
+      "placeholder": "New property, e.g. tags: String[0..*]",
+      "format": "Use name, name: Type or name: Type[min..max].",
+      "unknownType": "Unknown data type {{type}}.",
+      "bounds": "The maximum must be at least 1 and not below the minimum."
+    },
+    "backToGraph": "Back to graph",
+    "neighbourhood": {
+      "title": "Neighbourhood",
+      "label": "Direct connections of this node. Another node opens here.",
+      "empty": "This node has no relations yet.",
+      "zoomIn": "Zoom in",
+      "zoomOut": "Zoom out",
+      "navigationHint": "Model graph. Scroll to zoom, drag to pan. Keyboard: plus, minus and 0 to fit."
+    },
+    "propertyList": {
+      "own": "Defined on this node",
+      "details": "Settings for {{name}}",
+      "array": "Allow multiple values",
+      "newName": "New property…",
+      "list": "List",
+      "multipleValues": "Multiple values",
+      "singleValue": "Single value",
+      "valueMode": "Value count",
+      "inherited": "Inherited properties",
+      "view": "View {{name}}",
+      "jumpToNode": "Go to {{name}}",
+      "viewTitle": "View property"
+    },
+    "nodeWorkspace": {
+      "hideGraph": "Hide model graph",
+      "showGraph": "Show model graph",
+      "history": "Node navigation",
+      "forwardTo": "Forward to {{name}}",
+      "rulesHint": "Set value requirements, limits and usage rules in each property’s settings.",
+      "editRules": "Edit rules",
+      "modelConstraints": "Model constraints",
+      "constraintsHint": "Existing rules, including inherited rules, are shown here. Editing custom constraint expressions is not available yet.",
+      "noConstraints": "No model constraints defined.",
+      "forward": "Forward"
     }
   }
 }

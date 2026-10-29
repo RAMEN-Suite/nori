@@ -57,6 +57,27 @@ export function buildModelGraph(
   return { nodes: [...nodes.values()], links };
 }
 
+/** Builds the graph shown for a model; visible references are kept only while the model still permits them. */
+export function buildVisibleModelGraph(
+  model: Model | null,
+  models: readonly Model[],
+  visibleNodeRefs: readonly string[],
+  permittedRefs: ReadonlySet<string>,
+): GraphData {
+  return buildModelGraph(
+    model,
+    models,
+    visibleNodeRefs.filter((ref: string): boolean => permittedRefs.has(ref)),
+  );
+}
+
+/** Keeps one node, its direct relations and their other endpoints. */
+export function buildNeighbourhoodGraph(data: GraphData, nodeId: string): GraphData {
+  const links: GraphLink[] = data.links.filter((link: GraphLink): boolean => link.source === nodeId || link.target === nodeId);
+  const ids: Set<string> = new Set([nodeId, ...links.flatMap((link: GraphLink): string[] => [link.source, link.target])]);
+  return { nodes: data.nodes.filter((node: GraphNode): boolean => ids.has(node.id)), links };
+}
+
 function projectReference(ref: string, currentModelId: string, models: ReadonlyMap<string, Model>): GraphNode | null {
   if (!ModelRef.isQualified(ref)) return null;
   const { modelId, refId } = ModelRef.splitQualified(ref);

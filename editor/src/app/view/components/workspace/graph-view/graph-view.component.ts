@@ -15,7 +15,7 @@ import { TranslocoDirective } from '@jsverse/transloco';
 import { LucideMousePointer2, LucidePlus } from '@lucide/angular';
 import { ModelRef, type Model, type NodeSuggestion } from '@ramen-suite/core/model';
 import { Button } from '@sushi-kit/angular';
-import { areGraphsEqual, buildModelGraph, type GraphData } from './graph/model-graph';
+import { areGraphsEqual, buildVisibleModelGraph, type GraphData } from './graph/model-graph';
 import { DialogService, type DialogRef } from '../../../../services/interaction/dialog.service';
 import { NodeEditingService } from '../../../../services/workspace/editing/node-editing.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
@@ -58,15 +58,10 @@ export class GraphViewComponent {
     (): GraphData => {
       const model: Model | null = this.workspace.store.currentModel();
       const visible: readonly string[] = this.workspace.store.currentModelRecord()?.view?.visibleNodeRefs ?? [];
-      const allowed: Set<string> = new Set(
+      const permitted: ReadonlySet<string> = new Set(
         this.workspace.queries.nodeSuggestions().map((node: NodeSuggestion): string => node.ref),
       );
-
-      return buildModelGraph(
-        model,
-        this.workspace.store.getModels(),
-        visible.filter((ref: string): boolean => allowed.has(ref)),
-      );
+      return buildVisibleModelGraph(model, this.workspace.store.getModels(), visible, permitted);
     },
     { equal: areGraphsEqual },
   );

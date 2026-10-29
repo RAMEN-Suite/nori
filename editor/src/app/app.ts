@@ -54,7 +54,7 @@ export class App {
           message: error,
           severity: 'error',
           variant: 'soft',
-          duration: 0,
+          duration: 6000,
         });
         this.projects.error.set(null);
       });
