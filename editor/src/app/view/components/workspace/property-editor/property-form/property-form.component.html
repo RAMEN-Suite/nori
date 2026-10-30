@@ -36,6 +36,7 @@
           [delay]="0"
           [placeholder]="t('editor.searchDataTypes')"
           [emptyMessage]="t('editor.noMatchingDataTypes')"
+          [suggestionsMessage]="suggestionsMessage"
           [disabled]="!editable()"
           [ariaLabel]="t('editor.dataType')"
           [options]="typeOptions()"
@@ -77,9 +78,10 @@
     </fieldset>
   </fieldset>
   <ng-template #optionList let-options let-label="label">
+    @let optionItems = options === usageOptions ? usageOptions : boundOptions;
     <sui-card size="xs" variant="border">
-      <sui-list size="xs" [items]="options" [trackBy]="trackOption" [ariaLabel]="label" [dividers]="true" [rowHover]="false">
-        <ng-template suiListItem let-option let-first="first" let-last="last">
+      <sui-list size="xs" [items]="optionItems" [trackBy]="trackOption" [ariaLabel]="label" [dividers]="true" [rowHover]="false">
+        <ng-template [suiListItem]="optionItems" let-option let-first="first" let-last="last">
           <label
             class="property-option-row col-span-full"
             [class.has-previous]="!first"

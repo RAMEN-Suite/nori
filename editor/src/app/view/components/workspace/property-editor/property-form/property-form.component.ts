@@ -96,6 +96,9 @@ export class PropertyFormComponent {
   public readonly saving: WritableSignal<boolean> = signal(false);
   public readonly currentAttribute: InputSignal<Attribute | undefined> = input();
 
+  protected readonly suggestionsMessage: (count: number) => string = (count: number): string =>
+    this.translations.translate(count === 1 ? 'common.suggestionOne' : 'common.suggestionMany', { count });
+
   protected readonly trackOption: ListTrackBy<PropertyOption> = (_index: number, option: PropertyOption): string => option;
 
   protected readonly listOptions: readonly PropertyOption[] = ['ordered', 'duplicates'];

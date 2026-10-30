@@ -12,7 +12,7 @@
     <div class="impact-actions">
       <div class="impact-list">
         <sui-list size="xs" [items]="impactActions()" [dividers]="false" [rowHover]="false">
-          <ng-template suiListItem let-action>
+          <ng-template [suiListItem]="impactActions()" let-action>
             <button
               suiButton
               size="sm"
@@ -58,7 +58,7 @@
             [attr.aria-label]="t(impactLabels[selected].title)"
           >
             <sui-list size="xs" [items]="entries()" [dividers]="false" [rowHover]="false">
-              <ng-template suiListItem let-entry>
+              <ng-template [suiListItem]="entries()" let-entry>
                 @if (entry.kind === 'group') {
                   <h4 class="impact-group col-span-full" [class.impact-group-subsequent]="entry.subsequent">
                     {{ t('editor.removalLevelGroup', { name: entry.level.modelName }) }}
@@ -73,7 +73,7 @@
                     class="impact-detail-entry col-span-full"
                     [attr.aria-label]="
                       t(selected === 'levels' ? 'editor.inspectRemovalLevel' : 'editor.inspectRemovalItem', {
-                        name: selected === 'levels' ? item.modelName : item.name,
+                        name: impactName(item),
                       })
                     "
                     [disabled]="dialogs.pending() || !item.location"
@@ -93,7 +93,7 @@
                       }
                     </span>
                     <span class="min-w-0 flex-1 text-left">
-                      @if (selected === 'levels') {
+                      @if (isAffectedLevel(item)) {
                         <span class="text-sm font-medium break-words">{{ item.modelName }}</span>
                         <span class="impact-node-meta mt-1 flex flex-wrap gap-x-1 gap-y-0.5 text-xs font-normal">
                           <span
@@ -107,7 +107,7 @@
                             })
                           }}</span>
                         </span>
-                      } @else if (selected === 'nodes') {
+                      } @else if (isAffectedNode(item)) {
                         <span class="text-sm font-medium break-words">{{ item.name }}</span>
                         <span class="impact-node-meta mt-1 flex flex-wrap gap-x-1 gap-y-0.5 text-xs font-normal">
                           <span
@@ -130,7 +130,7 @@
                             })
                           }}</span>
                         </span>
-                      } @else {
+                      } @else if (isAffectedRelation(item)) {
                         <span class="flex flex-wrap items-center gap-1.5 text-sm font-medium break-words">
                           <span>{{ item.from }}</span>
                           <svg lucideArrowRight class="text-base-content/45 size-3.5 shrink-0" aria-hidden="true"></svg>

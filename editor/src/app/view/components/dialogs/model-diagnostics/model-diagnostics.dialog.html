@@ -3,7 +3,7 @@
     <p class="text-sm font-medium">{{ workspace.store.currentModel()?.name }}</p>
     <div class="flex min-w-0 flex-col gap-3">
       <sui-list size="xs" [items]="workspace.queries.validation()?.diagnostics ?? []" [dividers]="false" [rowHover]="false">
-        <ng-template suiListItem let-diagnostic>
+        <ng-template [suiListItem]="workspace.queries.validation()?.diagnostics ?? []" let-diagnostic>
           <div suiMessage class="col-span-full" [severity]="diagnostic.severity === 'error' ? 'error' : 'warning'" variant="soft">
             <p class="text-sm leading-relaxed">{{ diagnostic.message }}</p>
           </div>

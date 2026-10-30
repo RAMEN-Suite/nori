@@ -2,13 +2,14 @@ import {
   ChangeDetectionStrategy,
   Component,
   input,
+  inject,
   output,
   viewChild,
   type InputSignal,
   type OutputEmitterRef,
   type Signal,
 } from '@angular/core';
-import { TranslocoDirective } from '@jsverse/transloco';
+import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { LucideList } from '@lucide/angular';
 import { TooltipDirective } from '../../../../../../directives/tooltip.directive';
 import { Autocomplete, AutocompleteItemTemplate, Button, type AutocompleteOption } from '@sushi-kit/angular';
@@ -20,6 +21,9 @@ import { Autocomplete, AutocompleteItemTemplate, Button, type AutocompleteOption
   templateUrl: './property-type.component.html',
 })
 export class PropertyTypeComponent {
+  private readonly translations: TranslocoService = inject(TranslocoService);
+  protected readonly suggestionsMessage: (count: number) => string = (count: number): string =>
+    this.translations.translate(count === 1 ? 'common.suggestionOne' : 'common.suggestionMany', { count });
   private readonly autocomplete: Signal<Autocomplete | undefined> = viewChild(Autocomplete);
   public readonly options: InputSignal<readonly AutocompleteOption[]> = input.required();
   public readonly value: InputSignal<string> = input.required();

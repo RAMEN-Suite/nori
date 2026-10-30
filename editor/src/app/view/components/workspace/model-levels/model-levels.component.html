@@ -10,7 +10,7 @@
         [dividers]="false"
         [rowHover]="false"
       >
-        <ng-template suiListItem let-record>
+        <ng-template [suiListItem]="levels()" let-record>
           <div class="editor-list-row" [class.selected]="workspace.store.currentLevelIndex() === record.levelIndex" data-nori-motion>
             @if (editingId() === record.modelId) {
               <div class="editor-name-editor">

@@ -12,7 +12,9 @@
     "save": "Save",
     "actionFailed": "Action could not be completed",
     "notifications": "Notifications",
-    "removalImpact": "Affected items"
+    "removalImpact": "Affected items",
+    "suggestionOne": "{{count}} suggestion available.",
+    "suggestionMany": "{{count}} suggestions available."
   },
   "home": {
     "windowTitle": "Modelling Data with Nori",

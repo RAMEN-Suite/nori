@@ -43,7 +43,7 @@
         [dividers]="false"
         [rowHover]="false"
       >
-        <ng-template suiListItem let-project>
+        <ng-template [suiListItem]="projectList()" let-project>
           <div class="project-row">
             <button
               suiButton

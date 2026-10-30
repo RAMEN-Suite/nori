@@ -28,7 +28,7 @@
             [rowHover]="false"
             [ariaLabel]="t('editor.shapes.title')"
           >
-            <ng-template suiListItem let-entry>
+            <ng-template [suiListItem]="group.entries" let-entry>
               @let current = active() && shapeId() === entry.shape.id;
               <button
                 type="button"
@@ -188,7 +188,7 @@
                     [dividers]="false"
                     [ariaLabel]="t('editor.shapes.fromNode')"
                   >
-                    <ng-template suiListItem let-property>
+                    <ng-template [suiListItem]="sharedProperties()" let-property>
                       <button
                         type="button"
                         class="property-list-item property-inherited-item col-span-full flex w-full cursor-pointer rounded-[var(--nori-radius-input)] px-3 py-1 text-left"
@@ -215,7 +215,7 @@
                     [dividers]="false"
                     [ariaLabel]="t('editor.shapes.onShape')"
                   >
-                    <ng-template suiListItem let-property>
+                    <ng-template [suiListItem]="entry.shape.properties" let-property>
                       @let current = detail() === 'property' && propertyId() === property.id;
                       <button
                         type="button"
@@ -252,7 +252,7 @@
                     [dividers]="false"
                     [ariaLabel]="t('editor.shapes.relationRules')"
                   >
-                    <ng-template suiListItem let-rule let-index="index">
+                    <ng-template [suiListItem]="entry.shape.relations" let-rule let-index="index">
                       @let current = detail() === 'relation' && relationIndex() === index;
                       <button
                         type="button"

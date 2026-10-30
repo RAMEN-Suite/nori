@@ -184,6 +184,22 @@ export class ConfirmationContentComponent {
     await this.review.inspect(location, { selection, scrollTop: this.detailViewport()?.nativeElement.scrollTop ?? 0 });
   }
 
+  protected impactName(item: AffectedItem): string {
+    return 'name' in item ? item.name : item.modelName;
+  }
+
+  protected isAffectedLevel(item: AffectedItem): item is AffectedModelLevel {
+    return 'nodeCount' in item;
+  }
+
+  protected isAffectedNode(item: AffectedItem): item is AffectedNode {
+    return 'propertyCount' in item;
+  }
+
+  protected isAffectedRelation(item: AffectedItem): item is AffectedRelation {
+    return 'from' in item;
+  }
+
   protected impactLabel(action: ImpactAction): string {
     const labels: { singular: string; plural: string; title: string } = this.impactLabels[action.kind];
     return action.count === 1 ? labels.singular : labels.plural;

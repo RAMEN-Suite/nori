@@ -28,7 +28,7 @@
                 [dividers]="false"
                 [rowHover]="false"
               >
-                <ng-template suiListItem let-node>
+                <ng-template [suiListItem]="group.nodes" let-node>
                   <div class="editor-list-row" [class.selected]="workspace.store.currentNodeId() === node.ref">
                     <button
                       suiButton

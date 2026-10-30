@@ -56,7 +56,7 @@
                   [dividers]="false"
                   [rowHover]="false"
                 >
-                  <ng-template suiListItem let-item>
+                  <ng-template [suiListItem]="group.items" let-item>
                     <div
                       class="editor-list-row"
                       [class.selected]="workspace.store.currentNodeId() === item.value"

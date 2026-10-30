@@ -4,7 +4,7 @@
     <div class="nori-scroll-frame">
       <div noriScrollOverflow #colourScroll="scrollOverflow" class="colour-list min-w-0">
         <sui-list size="xs" [items]="nodes()" [dividers]="false" [rowHover]="false">
-          <ng-template suiListItem let-option>
+          <ng-template [suiListItem]="nodes()" let-option>
             @let colour = colours()[option.id] ?? '#789cc2';
             <button
               suiButton

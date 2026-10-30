@@ -22,7 +22,7 @@
             [rowHover]="false"
             [ariaLabel]="label"
           >
-            <ng-template suiListItem let-item>
+            <ng-template [suiListItem]="group.properties" let-item>
               <button type="button" class="property-entry col-span-full" (click)="propertyEditing.open(item.attribute.id)">
                 <nori-node-attribute
                   class="block w-full"

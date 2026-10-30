@@ -3,7 +3,7 @@
   <div class="nori-scroll-frame overflow-clip rounded-[var(--nori-radius-input)] border border-[var(--nori-border)]">
     <div noriScrollOverflow #vocabularyScroll="scrollOverflow" class="editor-panel-scroll max-h-56 p-2">
       <sui-list size="xs" [items]="vocabularies" [rowHover]="false" [dividers]="false" [ariaLabel]="t('editor.shapes.vocabularies.title')">
-        <ng-template suiListItem let-vocabulary>
+        <ng-template [suiListItem]="vocabularies" let-vocabulary>
           <div class="col-span-full min-w-0">
             <div class="flex items-center gap-2">
               <button
@@ -44,7 +44,7 @@
                   [dividers]="false"
                   [ariaLabel]="t(vocabulary.nameKey)"
                 >
-                  <ng-template suiListItem let-annotation>
+                  <ng-template [suiListItem]="vocabulary.annotations" let-annotation>
                     <label
                       class="vocabulary-choice col-span-full"
                       [attr.aria-disabled]="disabled() || existingTypes().includes(annotation.type)"

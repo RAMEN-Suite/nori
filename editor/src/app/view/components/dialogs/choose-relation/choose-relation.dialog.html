@@ -7,7 +7,7 @@
     </div>
     <p class="text-base-content/65 text-sm leading-relaxed">{{ t('editor.chooseRelationHint') }}</p>
     <sui-list [items]="choices()" [dividers]="false" [rowHover]="false">
-      <ng-template suiListItem let-choice>
+      <ng-template [suiListItem]="choices()" let-choice>
         <button
           suiButton
           size="sm"
