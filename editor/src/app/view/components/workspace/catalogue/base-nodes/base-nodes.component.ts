@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { LucideChevronRight, LucideGitBranch, LucideTrash, LucidePlus } from '@lucide/angular';
+import { LucideBox, LucideChevronRight, LucideGitBranch, LucideTrash, LucidePlus } from '@lucide/angular';
 import { type NodeSuggestion, type Relation } from '@ramen-suite/core/model';
 import {
   Accordion,
@@ -55,6 +55,7 @@ interface BaseNodeGroup {
     List,
     ListItemTemplate,
     TooltipDirective,
+    LucideBox,
     LucideChevronRight,
     LucideGitBranch,
     LucideTrash,

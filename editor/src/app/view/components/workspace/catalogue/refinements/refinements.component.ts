@@ -16,7 +16,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { LucideChevronRight, LucideCopy, LucidePlus, LucideTrash } from '@lucide/angular';
+import { LucideBox, LucideChevronRight, LucideCopy, LucidePlus, LucideTrash } from '@lucide/angular';
 import { ModelRef, type Node } from '@ramen-suite/core/model';
 import {
   Accordion,
@@ -75,6 +75,7 @@ interface MutableNodeGroup extends Omit<NodeGroup, 'items'> {
     AccordionActionsTemplate,
     AccordionHeaderTemplate,
     AccordionIndicatorTemplate,
+    LucideBox,
     LucideChevronRight,
     LucideCopy,
     LucideTrash,
