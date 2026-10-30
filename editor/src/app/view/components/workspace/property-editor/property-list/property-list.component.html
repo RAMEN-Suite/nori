@@ -60,101 +60,103 @@
         [label]="ownModelName() ? t('editor.propertySource', { name: ownModelName() }) : t('editor.propertyLevel', { level: ownLevel() })"
         [preserveContent]="true"
       >
-        <sui-order-list
-          size="sm"
-          [value]="items()"
-          [labels]="orderLabels()"
-          [ariaLabel]="t('editor.properties')"
-          [reorderable]="workspace.queries.nodeEditable() && !draft() && !newName().trim()"
-          (reordered)="reorder($event)"
-        >
-          <ng-template [suiOrderListItem]="items()" let-item>
-            @let property = item.attribute;
-            <div
-              class="property-row"
-              [attr.data-property-id]="property.id"
-              [class.is-selected]="editing.current()?.attributeId === property.id"
-            >
-              <div class="name-field min-w-0">
-                <input
-                  suiInput
-                  fluid
-                  size="sm"
-                  class="text-sm"
-                  maxlength="40"
-                  [attr.aria-label]="t('editor.propertyName') + ': ' + property.name"
-                  [disabled]="!workspace.queries.nodeEditable()"
-                  [ngModel]="name(property)"
-                  (ngModelChange)="changeName(property, $event)"
-                  (blur)="saveName(property)"
-                  (keydown.enter)="saveName(property, $event)"
-                  (keydown.escape)="cancel($event)"
-                  [invalid]="error()?.id === property.id && error()?.field === 'name'"
-                  [attr.aria-invalid]="error()?.id === property.id && error()?.field === 'name' ? 'true' : null"
-                  [attr.aria-describedby]="
-                    error()?.id === property.id && error()?.field === 'name' ? 'list-name-error-' + property.id : null
-                  "
-                />
-                @if (error()?.id === property.id && error()?.field === 'name') {
-                  <p [id]="'list-name-error-' + property.id" class="text-error mt-1 text-xs" role="alert">{{ error()?.message }}</p>
-                }
-              </div>
-              <div class="type-field min-w-0">
-                <nori-property-type
-                  [options]="types()"
-                  [value]="property.typeId"
-                  [multiple]="isArray(property)"
-                  [label]="t('editor.dataType') + ': ' + property.name"
-                  [disabled]="!workspace.queries.nodeEditable()"
-                  (typeChange)="changeType(property, $event)"
-                  (arrayChange)="changeArray(property, $event)"
-                />
-                @if (error()?.id === property.id && error()?.field !== 'name') {
-                  <p class="text-error mt-1 text-xs" role="alert">{{ error()?.message }}</p>
-                }
-              </div>
-              <div class="row-actions flex items-center gap-0.5 pl-5">
-                <button
-                  suiButton
-                  size="sm"
-                  severity="neutral"
-                  variant="text"
-                  shape="circle"
-                  [attr.aria-label]="t('editor.propertyList.details', { name: property.name })"
-                  [noriTooltip]="t('editor.propertyList.details', { name: property.name })"
-                  (click)="details(property)"
-                >
-                  <svg lucideSettings2 class="size-4" aria-hidden="true"></svg>
-                </button>
-
-                @if (workspace.queries.nodeEditable()) {
+        @if (items().length) {
+          <sui-order-list
+            size="sm"
+            [value]="items()"
+            [labels]="orderLabels()"
+            [ariaLabel]="t('editor.properties')"
+            [reorderable]="workspace.queries.nodeEditable() && !draft() && !newName().trim()"
+            (reordered)="reorder($event)"
+          >
+            <ng-template [suiOrderListItem]="items()" let-item>
+              @let property = item.attribute;
+              <div
+                class="property-row"
+                [attr.data-property-id]="property.id"
+                [class.is-selected]="editing.current()?.attributeId === property.id"
+              >
+                <div class="name-field min-w-0">
+                  <input
+                    suiInput
+                    fluid
+                    size="sm"
+                    class="text-sm"
+                    maxlength="40"
+                    [attr.aria-label]="t('editor.propertyName') + ': ' + property.name"
+                    [disabled]="!workspace.queries.nodeEditable()"
+                    [ngModel]="name(property)"
+                    (ngModelChange)="changeName(property, $event)"
+                    (blur)="saveName(property)"
+                    (keydown.enter)="saveName(property, $event)"
+                    (keydown.escape)="cancel($event)"
+                    [invalid]="error()?.id === property.id && error()?.field === 'name'"
+                    [attr.aria-invalid]="error()?.id === property.id && error()?.field === 'name' ? 'true' : null"
+                    [attr.aria-describedby]="
+                      error()?.id === property.id && error()?.field === 'name' ? 'list-name-error-' + property.id : null
+                    "
+                  />
+                  @if (error()?.id === property.id && error()?.field === 'name') {
+                    <p [id]="'list-name-error-' + property.id" class="text-error mt-1 text-xs" role="alert">{{ error()?.message }}</p>
+                  }
+                </div>
+                <div class="type-field min-w-0">
+                  <nori-property-type
+                    [options]="types()"
+                    [value]="property.typeId"
+                    [multiple]="isArray(property)"
+                    [label]="t('editor.dataType') + ': ' + property.name"
+                    [disabled]="!workspace.queries.nodeEditable()"
+                    (typeChange)="changeType(property, $event)"
+                    (arrayChange)="changeArray(property, $event)"
+                  />
+                  @if (error()?.id === property.id && error()?.field !== 'name') {
+                    <p class="text-error mt-1 text-xs" role="alert">{{ error()?.message }}</p>
+                  }
+                </div>
+                <div class="row-actions flex items-center gap-0.5 pl-5">
                   <button
                     suiButton
                     size="sm"
                     severity="neutral"
                     variant="text"
                     shape="circle"
-                    [attr.aria-label]="t('editor.duplicateProperty')"
-                    (click)="requestAction(property, 'duplicate')"
+                    [attr.aria-label]="t('editor.propertyList.details', { name: property.name })"
+                    [noriTooltip]="t('editor.propertyList.details', { name: property.name })"
+                    (click)="details(property)"
                   >
-                    <svg lucideCopy class="size-3.5" aria-hidden="true"></svg>
+                    <svg lucideSettings2 class="size-4" aria-hidden="true"></svg>
                   </button>
-                  <button
-                    suiButton
-                    size="sm"
-                    severity="error"
-                    variant="text"
-                    shape="circle"
-                    [attr.aria-label]="t('editor.removeNamedProperty', { name: property.name })"
-                    (click)="requestAction(property, 'remove')"
-                  >
-                    <svg lucideEraser class="size-4" aria-hidden="true"></svg>
-                  </button>
-                }
+
+                  @if (workspace.queries.nodeEditable()) {
+                    <button
+                      suiButton
+                      size="sm"
+                      severity="neutral"
+                      variant="text"
+                      shape="circle"
+                      [attr.aria-label]="t('editor.duplicateProperty')"
+                      (click)="requestAction(property, 'duplicate')"
+                    >
+                      <svg lucideCopy class="size-3.5" aria-hidden="true"></svg>
+                    </button>
+                    <button
+                      suiButton
+                      size="sm"
+                      severity="error"
+                      variant="text"
+                      shape="circle"
+                      [attr.aria-label]="t('editor.removeNamedProperty', { name: property.name })"
+                      (click)="requestAction(property, 'remove')"
+                    >
+                      <svg lucideEraser class="size-4" aria-hidden="true"></svg>
+                    </button>
+                  }
+                </div>
               </div>
-            </div>
-          </ng-template>
-        </sui-order-list>
+            </ng-template>
+          </sui-order-list>
+        }
         @if (workspace.queries.nodeEditable()) {
           <div class="new-property-row">
             <span class="text-base-content/40 text-center text-sm" aria-hidden="true">+</span>
