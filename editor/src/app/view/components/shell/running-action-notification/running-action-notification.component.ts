@@ -17,9 +17,9 @@ import { RunningActionService } from '../../../../services/workspace/workflows/r
         [attr.aria-label]="t(action.titleKey)"
       >
         <span class="action-icon" aria-hidden="true"><svg [lucideIcon]="action.icon" class="size-4"></svg></span>
-        <span class="min-w-0 flex-1 sm:me-3">
-          <span class="block text-sm font-medium" role="status">{{ t(action.titleKey) }}</span>
-          <span class="text-base-content/60 mt-0.5 block text-xs">{{ t(action.descriptionKey) }}</span>
+        <span class="action-content flex-1">
+          <span class="feedback-title" role="status">{{ t(action.titleKey) }}</span>
+          <span class="feedback-description">{{ t(action.descriptionKey) }}</span>
         </span>
         <button
           suiButton
@@ -37,7 +37,7 @@ import { RunningActionService } from '../../../../services/workspace/workflows/r
           size="sm"
           severity="neutral"
           variant="text"
-          shape="square"
+          shape="circle"
           [disabled]="actions.pending()"
           [attr.aria-label]="t('editor.cancelRunningAction')"
           (click)="actions.cancel()"

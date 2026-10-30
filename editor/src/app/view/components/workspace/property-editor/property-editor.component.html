@@ -152,8 +152,6 @@
       </div>
     </div>
     <nori-dialog-host />
-    @if (!dialogs.current()) {
-      <nori-notifications />
-    }
+    <nori-notifications context="node-editor" />
   </section>
 </ng-container>

@@ -2,8 +2,9 @@ import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, injec
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { LucideShieldCheck } from '@lucide/angular';
 import { type Diagnostic } from '@ramen-suite/core/model';
-import { Button, ToastService } from '@sushi-kit/angular';
+import { Button } from '@sushi-kit/angular';
 import { TooltipDirective } from '../../../../directives/tooltip.directive';
+import { NotificationService } from '../../../../services/interaction/notification.service';
 import { DialogService } from '../../../../services/interaction/dialog.service';
 import { ShortcutService } from '../../../../services/interaction/shortcut.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
@@ -19,7 +20,7 @@ export class ModelValidationComponent {
   protected readonly shortcuts: ShortcutService = inject(ShortcutService);
   private readonly workspace: WorkspaceService = inject(WorkspaceService);
   private readonly dialogs: DialogService = inject(DialogService);
-  private readonly toasts: ToastService = inject(ToastService);
+  private readonly notifications: NotificationService = inject(NotificationService);
   private readonly translations: TranslocoService = inject(TranslocoService);
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
 
@@ -52,17 +53,16 @@ export class ModelValidationComponent {
     this.dismissToast();
     if (!findings.length) return;
 
-    this.toastId = this.toasts.show({
+    this.toastId = this.notifications.show({
       title: this.translations.translate('editor.validationTitle'),
       message: this.translations.translate('editor.validationSummary', { count: findings.length, message: findings[0]?.message }),
-      severity: findings.some((finding: Diagnostic): boolean => finding.severity === 'error') ? 'error' : 'warning',
-      variant: 'soft',
+      status: findings.some((finding: Diagnostic): boolean => finding.severity === 'error') ? 'error' : 'warning',
       action: { label: this.translations.translate('editor.showFindings'), run: (): void => this.handleShowDetails() },
     });
   }
 
   private dismissToast(): void {
-    if (this.toastId) this.toasts.dismiss(this.toastId);
+    if (this.toastId) this.notifications.dismiss(this.toastId);
     this.toastId = null;
   }
 }

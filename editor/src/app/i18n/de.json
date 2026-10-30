@@ -10,11 +10,16 @@
     "back": "Zurück",
     "cancel": "Abbrechen",
     "save": "Speichern",
-    "actionFailed": "Aktion nicht möglich",
     "notifications": "Benachrichtigungen",
     "removalImpact": "Betroffene Elemente",
     "suggestionOne": "{{count}} Vorschlag verfügbar.",
-    "suggestionMany": "{{count}} Vorschläge verfügbar."
+    "suggestionMany": "{{count}} Vorschläge verfügbar.",
+    "notificationTitles": {
+      "error": "Aktion nicht möglich",
+      "warning": "Bitte prüfen",
+      "info": "Information",
+      "success": "Erledigt"
+    }
   },
   "home": {
     "windowTitle": "Daten modellieren mit Nori",

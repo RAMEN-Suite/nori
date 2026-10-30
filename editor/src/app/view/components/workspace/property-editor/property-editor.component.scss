@@ -8,8 +8,10 @@
 }
 
 .property-workspace {
+  --nori-node-toolbar-height: calc(var(--nori-chrome-height) - 0.5rem);
+  position: relative;
   display: grid;
-  grid-template-rows: calc(var(--nori-chrome-height) - 0.5rem) minmax(0, 1fr);
+  grid-template-rows: var(--nori-node-toolbar-height) minmax(0, 1fr);
   gap: 0.625rem;
 }
 .property-workspace > :is(nori-dialog-host, nori-notifications) {

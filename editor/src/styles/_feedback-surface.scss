@@ -1,0 +1,53 @@
+// Shared surface and status treatment for transient messages and resumable actions.
+@mixin surface {
+  --feedback-colour: var(--color-error);
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.625rem;
+  border: 1px solid var(--nori-border);
+  border-radius: var(--nori-radius);
+  background: var(--sui-color-overlay);
+  color: var(--color-base-content);
+  box-shadow: none;
+
+  &[data-severity="warning"] {
+    --feedback-colour: var(--color-warning);
+  }
+  &[data-severity="info"] {
+    --feedback-colour: var(--color-info);
+  }
+  &[data-severity="success"] {
+    --feedback-colour: var(--color-success);
+  }
+}
+
+@mixin icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--nori-radius-input);
+  color: var(--feedback-colour);
+  background: color-mix(in oklab, var(--feedback-colour) 10%, transparent);
+}
+
+@mixin content {
+  display: grid;
+  min-width: 0;
+  gap: 0.125rem;
+  overflow-wrap: anywhere;
+
+  .feedback-title {
+    font-size: var(--text-sm);
+    line-height: var(--text-sm--line-height);
+    font-weight: var(--font-weight-semibold);
+  }
+  .feedback-description {
+    font-size: var(--text-xs);
+    line-height: var(--text-xs--line-height);
+    font-weight: var(--font-weight-normal);
+  }
+}

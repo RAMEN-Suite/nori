@@ -10,11 +10,16 @@
     "back": "Indietro",
     "cancel": "Annulla",
     "save": "Salva",
-    "actionFailed": "Impossibile completare l’azione",
     "notifications": "Notifiche",
     "removalImpact": "Elementi interessati",
     "suggestionOne": "{{count}} suggerimento disponibile.",
-    "suggestionMany": "{{count}} suggerimenti disponibili."
+    "suggestionMany": "{{count}} suggerimenti disponibili.",
+    "notificationTitles": {
+      "error": "Impossibile completare l’azione",
+      "warning": "Da verificare",
+      "info": "Informazione",
+      "success": "Operazione completata"
+    }
   },
   "home": {
     "windowTitle": "Modellazione dei dati con Nori",

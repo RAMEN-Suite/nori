@@ -38,8 +38,8 @@ body {
   --nori-dialog-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --nori-dialog-width: 36rem;
   --nori-dialog-width-compact: 28rem;
-  --nori-notification-width: 30rem;
-  --nori-notification-top: calc(var(--title-bar-height) + var(--nori-chrome-height));
+  --nori-notification-width: 36rem;
+  --nori-notification-top: calc(var(--title-bar-height) + var(--nori-chrome-height) + 1.25rem);
   --nori-radius-preview: 0.5rem;
   --nori-preview-border: color-mix(in oklab, var(--color-base-content) 18%, transparent);
   --nori-preview-opacity: 0.8;
@@ -178,12 +178,6 @@ html:active-view-transition-type(open-workspace)::view-transition-old(project-li
     opacity: 0;
     transform: scale(0.96) translateY(-0.5rem);
   }
-}
-
-sui-toast.nori-notifications {
-  --sui-toast-width: var(--nori-notification-width);
-  --sui-toast-offset-block: var(--nori-notification-top);
-  --sui-toast-z-index: 2000;
 }
 
 .editor-panel-scroll {

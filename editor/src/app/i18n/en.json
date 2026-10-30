@@ -10,11 +10,16 @@
     "back": "Back",
     "cancel": "Cancel",
     "save": "Save",
-    "actionFailed": "Action could not be completed",
     "notifications": "Notifications",
     "removalImpact": "Affected items",
     "suggestionOne": "{{count}} suggestion available.",
-    "suggestionMany": "{{count}} suggestions available."
+    "suggestionMany": "{{count}} suggestions available.",
+    "notificationTitles": {
+      "error": "Action could not be completed",
+      "warning": "Please check",
+      "info": "Information",
+      "success": "Done"
+    }
   },
   "home": {
     "windowTitle": "Modelling Data with Nori",

@@ -9,8 +9,7 @@ import {
   untracked,
 } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { TranslocoService } from '@jsverse/transloco';
-import { ToastService } from '@sushi-kit/angular';
+import { NotificationService } from './services/interaction/notification.service';
 import { PropertyEditingService } from './services/workspace/editing/property-editing.service';
 import { DialogService } from './services/interaction/dialog.service';
 import { NotificationsComponent } from './view/components/shell/notifications/notifications.component';
@@ -30,13 +29,11 @@ export class App {
   protected readonly propertyEditing: PropertyEditingService = inject(PropertyEditingService);
   protected readonly dialogs: DialogService = inject(DialogService);
   private readonly projects: ProjectService = inject(ProjectService);
-  private readonly toasts: ToastService = inject(ToastService);
-  private readonly translations: TranslocoService = inject(TranslocoService);
+  private readonly notifications: NotificationService = inject(NotificationService);
   protected readonly editorState: ApplicationState = inject(ApplicationState);
   private readonly document: Document = inject(DOCUMENT);
   private readonly injector: Injector = inject(Injector);
 
-  private errorToastId: string | null = null;
   protected readonly isElectronRuntime: boolean = !!window.electron;
 
   public constructor() {
@@ -48,13 +45,9 @@ export class App {
       if (!error) return;
 
       untracked((): void => {
-        if (this.errorToastId) this.toasts.dismiss(this.errorToastId);
-        this.errorToastId = this.toasts.show({
-          title: this.translations.translate('common.actionFailed'),
+        this.notifications.show({
           message: error,
-          severity: 'error',
-          variant: 'soft',
-          duration: 6000,
+          status: 'error',
         });
         this.projects.error.set(null);
       });
