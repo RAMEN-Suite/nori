@@ -22,6 +22,10 @@ Shared rules for Nori panels, dialogs and lists. Use public Sushi APIs and token
 - Windows unfold horizontally like the toolbar (360ms entry, 200ms exit) without scaling text. Respect reduced motion and the app animation setting. The notification service owns auto-dismissal and pauses the timer while hovered or focused; a manual close action remains available.
 - Input validation and resumable workflows retain their own contextual UI. A status notification supplements those interactions rather than replacing field errors or workflow controls.
 
+## Keyboard shortcuts
+
+Keep default assignments and platform conventions documented in the [keyboard shortcut review](keyboard-shortcuts.md). Protect native text editing and focused-widget keys; use the platform's primary modifier consistently in matching, visible labels and `aria-keyshortcuts`. Preserve remapping and saved custom bindings.
+
 ## Typography and scale
 
 The fixed type scale is defined once in `editor/src/styles/tailwind.css`. Use Tailwind text utilities in templates and the corresponding `--text-*` tokens in component styles; do not add local font sizes in px/pt, intermediate rem sizes, or viewport-based font-size formulas.

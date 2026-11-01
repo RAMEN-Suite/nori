@@ -11,7 +11,7 @@ import {
   type Signal,
   type WritableSignal,
 } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import {
   LucideMousePointer2,
@@ -90,7 +90,6 @@ export class ToolBarComponent {
   protected readonly projects: ProjectService = inject(ProjectService);
   private readonly propertyEditing: PropertyEditingService = inject(PropertyEditingService);
   private readonly dialogs: DialogService = inject(DialogService);
-  private readonly router: Router = inject(Router);
   private readonly export: ExportService = inject(ExportService);
   protected readonly shortcuts: ShortcutService = inject(ShortcutService);
 
@@ -140,9 +139,6 @@ export class ToolBarComponent {
     undo: (): void => this.handleUndo(),
     redo: (): void => this.handleRedo(),
     redoAlternative: (): void => this.handleRedo(),
-    back: (): void => {
-      void this.router.navigate(['/']).catch((error: unknown): void => this.projects.reportError(error));
-    },
     exportSvg: (): void => this.handleExportImage('svg'),
     exportPng: (): void => this.handleExportImage('png'),
     settings: (): void => {
@@ -216,7 +212,11 @@ export class ToolBarComponent {
       event.isComposing ||
       !!this.dialogs.current() ||
       !!this.propertyEditing.current() ||
-      this.isTextInput(event.target)
+      this.isTextInput(event.target) ||
+      (event.target instanceof Element &&
+        !!event.target.closest(
+          '[role="menu"], [role="listbox"], [role="tree"], [role="grid"], [role="tablist"], [role="slider"], [role="spinbutton"], [role="radiogroup"]',
+        ))
     );
   }
 

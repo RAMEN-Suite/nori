@@ -89,7 +89,9 @@ export class SettingsDialog {
   protected readonly shortcutGroups: readonly ShortcutGroup[] = SHORTCUT_CATEGORIES.map(
     (category: ShortcutCategory): ShortcutGroup => ({
       category,
-      shortcuts: EDITOR_SHORTCUTS.filter((shortcut: ShortcutDefinition): boolean => shortcut.category === category),
+      shortcuts: EDITOR_SHORTCUTS.filter(
+        (shortcut: ShortcutDefinition): boolean => shortcut.category === category && this.shortcutService.available(shortcut.id),
+      ),
     }),
   );
   protected readonly recording: WritableSignal<ShortcutAction | null> = signal(null);
@@ -106,7 +108,7 @@ export class SettingsDialog {
       return;
     }
     if (event.repeat || event.isComposing) return;
-    const binding: string | null = ShortcutBindings.fromEvent(event);
+    const binding: string | null = this.shortcutService.fromEvent(event);
     if (!binding) return;
     if (!ShortcutBindings.isValid(binding)) {
       this.shortcutError.set(this.translations.translate('settings.unsupportedShortcut'));

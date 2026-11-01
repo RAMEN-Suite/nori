@@ -17,8 +17,7 @@ export type ShortcutAction =
   | 'settings'
   | 'undo'
   | 'redo'
-  | 'redoAlternative'
-  | 'back';
+  | 'redoAlternative';
 
 export type ShortcutCategory = 'views' | 'graph' | 'project' | 'navigation';
 export const SHORTCUT_CATEGORIES: readonly ShortcutCategory[] = ['views', 'graph', 'project', 'navigation'];
@@ -58,7 +57,6 @@ export const SHORTCUT_DEFINITIONS: Readonly<Record<ShortcutAction, Omit<Shortcut
   undo: { category: 'graph', key: 'mod+z', label: 'editor.undoRelation' },
   redo: { category: 'graph', key: 'mod+shift+z', label: 'editor.redoRelation' },
   redoAlternative: { category: 'graph', key: 'mod+y', label: 'editor.redoRelationAlternative' },
-  back: { category: 'navigation', key: 'alt+arrowleft', label: 'common.back' },
 };
 
 export const EDITOR_SHORTCUTS: readonly ShortcutDefinition[] = Object.keys(SHORTCUT_DEFINITIONS)

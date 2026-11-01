@@ -1,4 +1,4 @@
-import { EDITOR_SHORTCUTS, type ShortcutOverrides } from './definitions';
+import { EDITOR_SHORTCUTS, type ShortcutOverrides, type ShortcutDefinition } from './definitions';
 
 /** Encodes keyboard events and formats or restores canonical shortcut bindings. */
 export class ShortcutBindings {
@@ -32,9 +32,11 @@ export class ShortcutBindings {
     pagedown: 'PageDown',
   };
 
-  public static fromEvent(event: KeyboardEvent): string | null {
+  public static fromEvent(event: KeyboardEvent, isMac: boolean = false): string | null {
     const key: string = event.key.toLowerCase();
-    if (event.isComposing || ShortcutBindings.IGNORED_KEYS.has(key)) return null;
+    if (event.isComposing || ShortcutBindings.IGNORED_KEYS.has(key) || event.getModifierState('AltGraph')) return null;
+    // The primary command modifier is Cmd on macOS and Ctrl elsewhere.
+    if (isMac ? event.ctrlKey : event.metaKey) return null;
     return [event.ctrlKey || event.metaKey ? 'mod' : '', event.altKey ? 'alt' : '', event.shiftKey ? 'shift' : '', key]
       .filter(Boolean)
       .join('+');
@@ -51,25 +53,25 @@ export class ShortcutBindings {
     });
   }
 
-  public static display(binding: string): string {
-    return binding.split('+').map(ShortcutBindings.keyLabel).join(' + ');
+  public static display(binding: string, isMac: boolean = false): string {
+    return binding
+      .split('+')
+      .map((key: string): string => (key === 'mod' ? (isMac ? 'Cmd' : 'Ctrl') : ShortcutBindings.keyLabel(key)))
+      .join(' + ');
   }
 
-  public static aria(binding: string): string {
-    const keys: string[] = binding.split('+');
-    const modifiers: readonly string[] = keys.includes('mod') ? ['control', 'meta'] : [''];
-    return modifiers
-      .map((modifier: string): string =>
-        keys.map((key: string): string => ShortcutBindings.keyLabel(key === 'mod' ? modifier : key)).join('+'),
-      )
-      .join(' ');
+  public static aria(binding: string, isMac: boolean = false): string {
+    return binding
+      .split('+')
+      .map((key: string): string => ShortcutBindings.keyLabel(key === 'mod' ? (isMac ? 'meta' : 'control') : key))
+      .join('+');
   }
 
-  public static restore(stored: unknown): ShortcutOverrides {
+  public static restore(stored: unknown, definitions: readonly ShortcutDefinition[] = EDITOR_SHORTCUTS): ShortcutOverrides {
     if (!stored || typeof stored !== 'object') return {};
     const overrides: ShortcutOverrides = {};
     const used: Set<string> = new Set();
-    for (const shortcut of EDITOR_SHORTCUTS) {
+    for (const shortcut of definitions) {
       const storedId: string | undefined = [shortcut.id, ...(shortcut.legacyIds ?? [])].find((id: string): boolean =>
         Object.hasOwn(stored, id),
       );
