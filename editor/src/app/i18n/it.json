@@ -71,7 +71,6 @@
     },
     "appearance": "Aspetto",
     "shortcuts": "Scorciatoie da tastiera",
-    "shortcutsDescription": "Seleziona una scorciatoia e premi la combinazione di tasti desiderata per modificarla. Le modifiche vengono salvate automaticamente.",
     "recordShortcut": "Premi i tasti…",
     "shortcutConflict": "Questa scorciatoia è già assegnata a «{{action}}».",
     "unsupportedShortcut": "Questa combinazione di tasti non è supportata.",

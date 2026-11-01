@@ -71,7 +71,6 @@
     },
     "appearance": "Aussehen",
     "shortcuts": "Tastenkürzel",
-    "shortcutsDescription": "Wähle ein Tastenkürzel aus und drücke die gewünschte Tastenkombination. Deine Änderungen werden automatisch gespeichert.",
     "recordShortcut": "Tasten drücken…",
     "shortcutConflict": "Dieses Kürzel ist bereits für „{{action}}“ vergeben.",
     "unsupportedShortcut": "Diese Tastenkombination wird nicht unterstützt.",

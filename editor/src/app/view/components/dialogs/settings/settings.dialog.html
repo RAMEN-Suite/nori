@@ -34,7 +34,7 @@
                 <svg lucidePalette class="size-4 opacity-60" aria-hidden="true"></svg>{{ t('settings.theme') }}
               </legend>
               <sui-card size="xs" variant="border">
-                <sui-list size="xs" [items]="themes" [ariaLabel]="t('settings.theme')" [dividers]="true" [rowHover]="true">
+                <sui-list size="xs" [items]="themes" [ariaLabel]="t('settings.theme')" [dividers]="false" [rowHover]="true">
                   <ng-template [suiListItem]="themes" let-theme>
                     <label class="settings-row">
                       <span
@@ -73,7 +73,7 @@
                 <svg lucideSlidersHorizontal class="size-4 opacity-60" aria-hidden="true"></svg>{{ t('settings.behaviour') }}
               </h3>
               <sui-card size="xs" variant="border">
-                <sui-list size="xs" [items]="animationSettings" [ariaLabel]="t('settings.behaviour')" [dividers]="true" [rowHover]="true">
+                <sui-list size="xs" [items]="animationSettings" [ariaLabel]="t('settings.behaviour')" [dividers]="false" [rowHover]="true">
                   <ng-template [suiListItem]="animationSettings">
                     <label class="settings-row">
                       <span class="settings-visual" aria-hidden="true">
@@ -107,7 +107,6 @@
       <div class="settings-page">
         <div class="nori-scroll-frame flex-1">
           <div noriScrollOverflow #shortcutScroll="scrollOverflow" class="settings-scroll editor-panel-scroll flex min-w-0 flex-col gap-7">
-            <p class="text-base-content/65 mb-1 text-xs leading-relaxed">{{ t('settings.shortcutsDescription') }}</p>
             @if (shortcutError(); as error) {
               <p class="text-error text-xs" role="alert">{{ error }}</p>
             }
@@ -167,7 +166,7 @@
     <ng-template suiTab value="help" [label]="t('settings.help')">
       <div class="settings-page">
         <div class="nori-scroll-frame flex-1">
-          <div noriScrollOverflow #helpScroll="scrollOverflow" class="settings-scroll editor-panel-scroll flex min-w-0 flex-col gap-6">
+          <div noriScrollOverflow #helpScroll="scrollOverflow" class="settings-scroll editor-panel-scroll flex min-w-0 flex-col gap-7">
             <section class="settings-help-section" aria-labelledby="settings-support">
               <h3 id="settings-support" class="flex items-center gap-2 text-sm font-medium">
                 <svg lucideMail class="size-4 opacity-60" aria-hidden="true"></svg>{{ t('settings.support') }}

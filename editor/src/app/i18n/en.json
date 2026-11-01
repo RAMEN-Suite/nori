@@ -71,7 +71,6 @@
     },
     "appearance": "Appearance",
     "shortcuts": "Keyboard shortcuts",
-    "shortcutsDescription": "Choose a shortcut and press your preferred key combination to change it. Your changes are saved automatically.",
     "recordShortcut": "Press keys…",
     "shortcutConflict": "This shortcut is already assigned to “{{action}}”.",
     "unsupportedShortcut": "This key combination is not supported.",
