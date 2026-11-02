@@ -331,3 +331,34 @@ await test('validation remains non-blocking; a real create command holds executi
   assert.equal(actions.current()?.owner, 'model-validation');
   injector.destroy();
 });
+
+await test('Escape cancellation releases only the visible action and cannot interrupt execution', async (): Promise<void> => {
+  const { injector, actions }: ReturnType<typeof setup> = setup();
+  let cancelled: number = 0;
+  assert.equal(actions.cancelCurrent(), false);
+  const validation: string = actions.publish(review());
+  actions.publish(
+    review({
+      owner: 'removal-review',
+      cancel: (): void => {
+        cancelled++;
+      },
+    }),
+  );
+  assert.equal(actions.cancelCurrent(), true);
+  assert.equal(cancelled, 1);
+  assert.equal(actions.current()?.id, validation);
+  let finish: () => void = (): void => undefined;
+  const waiting: Promise<void> = new Promise((resolve): void => {
+    finish = resolve;
+  });
+  actions.publish(review({ run: (): Promise<void> => waiting }));
+  const running: Promise<void> = actions.run(current(actions));
+  assert.equal(actions.cancelCurrent(), false);
+  assert.ok(actions.current());
+  finish();
+  await running;
+  assert.equal(actions.cancelCurrent(), true);
+  assert.equal(actions.current(), null);
+  injector.destroy();
+});

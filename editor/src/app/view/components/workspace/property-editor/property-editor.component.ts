@@ -20,6 +20,8 @@ import { RAMEN_ELEMENT } from '@ramen-suite/core/ramen';
 import { Button, Menu, MenuItemTemplate, type MenuItem } from '@sushi-kit/angular';
 import type { InheritedAttribute, NodeDefinition } from '../../../../models/WorkspaceDetails';
 import type { WorkspaceLocation } from '../../../../models/WorkspaceLocation';
+import { ActionFeedbackService } from '../../../../services/interaction/action-feedback.service';
+import { InteractionStateService } from '../../../../services/interaction/interaction-state.service';
 import { DialogService } from '../../../../services/interaction/dialog.service';
 import { ProjectService } from '../../../../services/projects/project.service';
 import { PropertyEditingService } from '../../../../services/workspace/editing/property-editing.service';
@@ -68,6 +70,8 @@ export class PropertyEditorComponent {
   protected readonly editing: PropertyEditingService = inject(PropertyEditingService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   protected readonly appearance: ApplicationState = inject(ApplicationState);
+  private readonly feedback: ActionFeedbackService = inject(ActionFeedbackService);
+  private readonly interactions: InteractionStateService = inject(InteractionStateService);
   protected readonly dialogs: DialogService = inject(DialogService);
   private readonly translations: TranslocoService = inject(TranslocoService);
   private readonly projects: ProjectService = inject(ProjectService);
@@ -181,6 +185,7 @@ export class PropertyEditorComponent {
     if (this.dialogs.current()) return;
     event.preventDefault();
     event.stopPropagation();
+    if (this.interactions.current().phase === 'executing' || this.feedback.cancelCurrent()) return;
     this.close();
   }
 

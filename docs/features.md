@@ -82,7 +82,7 @@ Refine creates a local type based on the chosen definition. Duplicate creates an
 | Connect | Uses source then target selection or a drag; double-click requests a self-relationship |
 | Erase   | Requests a removal preview; clicking does not immediately delete                       |
 
-Core determines permitted relationships. A compatible relationship is created directly when unambiguous; multiple choices open a chooser. Invalid directions and duplicate relationships report a status instead of creating an edge. Escape leaves the tool mode. Undo/Redo covers committed model changes; see [Model history](#model-history).
+Core determines permitted relationships. A compatible relationship is created directly when unambiguous; multiple choices open a chooser. Invalid directions and duplicate relationships report a status instead of creating an edge. Outside dialogs and focused input widgets, Escape cancels the visible prepared action first, then leaves an active graph tool, then clears the inspector selection. Each press handles only one of these states; executing changes cannot be interrupted. Undo/Redo covers committed model changes; see [Model history](#model-history).
 
 Pan/zoom changes the viewport. Fit brings the current graph into view without rearranging nodes; Reset layout recalculates positions. Graph positions and viewport are saved as view preferences. Panel visibility changes available canvas space without changing the model.
 

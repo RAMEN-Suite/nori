@@ -39,6 +39,8 @@ import { toCamelName } from '../../../../utils/model-names';
 import { TooltipDirective } from '../../../../directives/tooltip.directive';
 import { type Manifest } from '../../../../models/Manifest';
 import { type ShortcutAction } from '../../../../utils/shortcuts/definitions';
+import { ActionFeedbackService } from '../../../../services/interaction/action-feedback.service';
+import { NavigationService } from '../../../../services/interaction/navigation.service';
 import { DialogService } from '../../../../services/interaction/dialog.service';
 import { ExportService } from '../../../../services/persistence/export.service';
 import { ShortcutService } from '../../../../services/interaction/shortcut.service';
@@ -96,6 +98,8 @@ export class ToolBarComponent {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   protected readonly projects: ProjectService = inject(ProjectService);
   private readonly propertyEditing: PropertyEditingService = inject(PropertyEditingService);
+  private readonly feedback: ActionFeedbackService = inject(ActionFeedbackService);
+  private readonly navigation: NavigationService = inject(NavigationService);
   private readonly dialogs: DialogService = inject(DialogService);
   private readonly export: ExportService = inject(ExportService);
   protected readonly shortcuts: ShortcutService = inject(ShortcutService);
@@ -187,7 +191,7 @@ export class ToolBarComponent {
 
     if (event.key === 'Escape') {
       event.preventDefault();
-      this.graphTools.exit();
+      this.handleEscape(event);
       return;
     }
     const action: ShortcutAction | null = this.shortcuts.resolve(event);
@@ -195,6 +199,23 @@ export class ToolBarComponent {
 
     event.preventDefault();
     this.actions[action]();
+  }
+
+  private handleEscape(event: KeyboardEvent): void {
+    if (this.interactions.current().phase === 'executing') return;
+    if (this.feedback.cancelCurrent()) return;
+    if (this.graphTools.tool() !== 'select' || this.graphTools.source()) {
+      this.graphTools.exit();
+      return;
+    }
+    if (!this.workspace.store.currentNodeId() && !this.workspace.store.currentRelationId()) return;
+    void this.navigation
+      .navigateToLevel(this.workspace.store.currentLevelIndex())
+      .then((): void => {
+        const target: EventTarget | null = event.target;
+        if (document.activeElement === target && (target instanceof HTMLElement || target instanceof SVGElement)) target.blur();
+      })
+      .catch((error: unknown): void => this.projects.reportError(error));
   }
 
   protected handleEditProject(): void {

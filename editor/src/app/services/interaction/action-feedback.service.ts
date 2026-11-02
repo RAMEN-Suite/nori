@@ -47,6 +47,13 @@ export class ActionFeedbackService {
     );
   }
 
+  public cancelCurrent(): boolean {
+    const action: ActionFeedback | null = this.current();
+    if (!action || this.pending()) return false;
+    this.cancel(action);
+    return true;
+  }
+
   public cancel(action: ActionFeedback): void {
     if (this.current() !== action || this.pending()) return;
     action.cancel();
