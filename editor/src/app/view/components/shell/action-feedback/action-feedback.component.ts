@@ -1,10 +1,15 @@
-import { ChangeDetectionStrategy, Component, inject, input, type InputSignal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, type InputSignal, type Signal } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
 import { LucideDynamicIcon, LucideX } from '@lucide/angular';
 import { Button } from '@sushi-kit/angular';
 import { FeedbackComponent } from '../../shared/feedback/feedback.component';
 import { ActionFeedbackService } from '../../../../services/interaction/action-feedback.service';
 import { ApplicationState } from '../../../../states/application.state';
+import {
+  InteractionStateService,
+  type InteractionAttention,
+  type InteractionState,
+} from '../../../../services/interaction/interaction-state.service';
 
 /** The only action outlet in the active view; status and action never share state or timers. */
 @Component({
@@ -14,13 +19,16 @@ import { ApplicationState } from '../../../../states/application.state';
   imports: [FeedbackComponent, TranslocoPipe, Button, LucideDynamicIcon, LucideX],
   template: `
     @if (actions.current(); as action) {
+      @let conflict = attention();
       <nori-feedback
         class="action-window"
         [class.node-editor]="context() === 'node-editor'"
+        [class.attention-odd]="appearance.state().animations && conflict !== null && conflict.sequence % 2 === 1"
+        [class.attention-even]="appearance.state().animations && conflict !== null && conflict.sequence % 2 === 0"
         kind="action"
         [severity]="action.severity"
         [title]="action.title"
-        [description]="action.description"
+        [description]="conflict ? (attentionMessage() | transloco) : action.description"
         [icon]="action.icon"
         [animate.enter]="appearance.state().animations ? 'feedback-enter' : ''"
         [animate.leave]="appearance.state().animations ? 'feedback-leave' : ''"
@@ -62,4 +70,15 @@ export class ActionFeedbackComponent {
   public readonly context: InputSignal<'workspace' | 'node-editor'> = input<'workspace' | 'node-editor'>('workspace');
   protected readonly actions: ActionFeedbackService = inject(ActionFeedbackService);
   protected readonly appearance: ApplicationState = inject(ApplicationState);
+  private readonly interactions: InteractionStateService = inject(InteractionStateService);
+  protected readonly attention: Signal<InteractionAttention | null> = computed(() => {
+    const state: InteractionState = this.interactions.current();
+    const attention: InteractionAttention | null = this.interactions.attention();
+    return state.phase !== 'ready' && state.owner === this.actions.current()?.owner && state.id === attention?.interactionId
+      ? attention
+      : null;
+  });
+  protected readonly attentionMessage: Signal<string> = computed(() =>
+    this.interactions.current().phase === 'executing' ? 'editor.operationInProgress' : 'editor.resolvePendingAction',
+  );
 }

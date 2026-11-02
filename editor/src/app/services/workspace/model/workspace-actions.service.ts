@@ -33,6 +33,7 @@ import { type GraphView, type ModelRecord, type NodeColors, type ViewSettings } 
 import { ProjectService } from '../../projects/project.service';
 import { RelationHistoryService } from './relation-history.service';
 import { WorkspaceStore } from '../../../states/workspace.store';
+import { InteractionStateService } from '../../interaction/interaction-state.service';
 import { PROPERTY_NAME_MAX_LENGTH } from '../../../utils/model-names';
 
 export type CreateLevelInput = Required<Pick<ModelInput, 'name' | 'uri' | 'version'>> & Pick<ModelInput, 'description'>;
@@ -46,19 +47,25 @@ export class WorkspaceActionsService {
   private readonly translations: TranslocoService = inject(TranslocoService);
   private readonly relationHistory: RelationHistoryService = inject(RelationHistoryService);
 
+  private readonly interactions: InteractionStateService = inject(InteractionStateService);
+
   private pendingSave: Promise<void> = Promise.resolve();
 
   public async createNode(input: CreateNodeInput): Promise<Node> {
-    this.requireAvailableNodeName(input.name);
-    const change: ModelChange<Node> = this.store
-      .getDraft()
-      .createNode({ name: input.name, description: input.description, refines: input.baseNodeId });
-    await this.saveWorkspace();
+    return this.mutate(async (): Promise<Node> => {
+      this.requireAvailableNodeName(input.name);
+      const change: ModelChange<Node> = this.store
+        .getDraft()
+        .createNode({ name: input.name, description: input.description, refines: input.baseNodeId });
+      await this.saveWorkspace();
 
-    return change.element;
+      return change.element;
+    });
   }
 
   public async updateNode(nodeId: string, patch: UpdateNodeInput): Promise<void> {
+    this.interactions.assertCanMutate();
+
     if (patch.name !== undefined) this.requireAvailableNodeName(patch.name, nodeId);
     await this.persistValidatedChange((draft: RamenModel): ModelChange<Node> => draft.updateNode(nodeId, patch));
   }
@@ -75,39 +82,49 @@ export class WorkspaceActionsService {
   }
 
   public previewNodeRemoval(nodeId: string): NodeRemovalPreview {
+    this.interactions.assertCanMutate();
+
     return this.store.getDraft().previewNodeRemoval(nodeId);
   }
 
   public async removeNode(nodeId: string, cascade: boolean = false): Promise<void> {
-    this.store.getDraft().removeNode(nodeId, { cascade });
-    await this.saveWorkspace();
+    return this.mutate(async (): Promise<void> => {
+      this.store.getDraft().removeNode(nodeId, { cascade });
+      await this.saveWorkspace();
+    });
   }
 
   public async duplicateNode(nodeId: string): Promise<Node> {
-    const draft: RamenModel = this.store.getDraft();
-    const node: Node | undefined = draft.getNode(nodeId);
-    if (!node) throw new Error('The selected node no longer exists.');
-    const copy: Node = draft.createNode({
-      name: this.getAvailableNodeName(`${node.name}Copy`),
-      refines: node.superTypes[0],
-      constraints: node.constraints,
-    }).element;
-    for (const attribute of node.attributes) {
-      const { id: _id, ...input } = attribute;
-      draft.createAttribute(copy, input);
-    }
-    this.duplicateRelations(draft, node, copy);
-    await this.saveWorkspace();
+    return this.mutate(async (): Promise<Node> => {
+      const draft: RamenModel = this.store.getDraft();
+      const node: Node | undefined = draft.getNode(nodeId);
+      if (!node) throw new Error('The selected node no longer exists.');
+      const copy: Node = draft.createNode({
+        name: this.getAvailableNodeName(`${node.name}Copy`),
+        refines: node.superTypes[0],
+        constraints: node.constraints,
+      }).element;
+      for (const attribute of node.attributes) {
+        const { id: _id, ...input } = attribute;
+        draft.createAttribute(copy, input);
+      }
+      this.duplicateRelations(draft, node, copy);
+      await this.saveWorkspace();
 
-    return copy;
+      return copy;
+    });
   }
 
   public async createAttribute(nodeId: string, input: AttributeInput): Promise<Attribute> {
+    this.interactions.assertCanMutate();
+
     this.requirePropertyNameLength(input.name);
     return this.persistValidatedChange((draft: RamenModel): ModelChange<Attribute> => draft.createAttribute(nodeId, input));
   }
 
   public async updateAttribute(nodeId: string, attributeId: string, patch: UpdateAttributeInput): Promise<void> {
+    this.interactions.assertCanMutate();
+
     const currentName: string | undefined = this.store
       .getDraft()
       .getNode(nodeId)
@@ -119,6 +136,8 @@ export class WorkspaceActionsService {
   }
 
   public async duplicateAttribute(nodeId: string, attributeId: string): Promise<Attribute> {
+    this.interactions.assertCanMutate();
+
     const draft: RamenModel = this.store.getDraft();
     const attribute: Attribute | undefined = draft
       .getNode(nodeId)
@@ -147,40 +166,48 @@ export class WorkspaceActionsService {
   }
 
   public async reorderAttributes(nodeId: string, ids: readonly string[]): Promise<void> {
-    const projectId: string | null = this.projects.selectedProjectId();
-    const modelId: string | undefined = this.store.currentModel()?.id;
-    const models: readonly Model[] = this.store.getModels();
-    const model: Model | undefined = models.find((item: Model): boolean => item.id === modelId);
-    const node: Node | undefined = model?.classifiers.find((item): item is Node => item.kind === 'Node' && item.id === nodeId);
-    if (!model || !node) throw new Error(this.translations.translate('editor.propertyOrderChanged'));
-    const ordered: Attribute[] = this.orderAttributes(node.attributes, ids);
-    if (ordered.every((attribute: Attribute, index: number): boolean => attribute.id === node.attributes[index]?.id)) return;
+    return this.mutate(async (): Promise<void> => {
+      const projectId: string | null = this.projects.selectedProjectId();
+      const modelId: string | undefined = this.store.currentModel()?.id;
+      const models: readonly Model[] = this.store.getModels();
+      const model: Model | undefined = models.find((item: Model): boolean => item.id === modelId);
+      const node: Node | undefined = model?.classifiers.find((item): item is Node => item.kind === 'Node' && item.id === nodeId);
+      if (!model || !node) throw new Error(this.translations.translate('editor.propertyOrderChanged'));
+      const ordered: Attribute[] = this.orderAttributes(node.attributes, ids);
+      if (ordered.every((attribute: Attribute, index: number): boolean => attribute.id === node.attributes[index]?.id)) return;
 
-    const updated: Model = {
-      ...model,
-      classifiers: model.classifiers.map((item) => (item.id === nodeId ? { ...node, attributes: ordered } : item)),
-    };
-    this.store.restoreModels(models.map((item: Model): Model => (item.id === modelId ? updated : item)));
-    try {
-      await this.saveWorkspace();
-    } catch (error: unknown) {
-      if (this.projects.selectedProjectId() === projectId && this.store.currentModel()?.id === modelId) {
-        this.store.restoreModels(models);
+      const updated: Model = {
+        ...model,
+        classifiers: model.classifiers.map((item) => (item.id === nodeId ? { ...node, attributes: ordered } : item)),
+      };
+      this.store.restoreModels(models.map((item: Model): Model => (item.id === modelId ? updated : item)));
+      try {
+        await this.saveWorkspace();
+      } catch (error: unknown) {
+        if (this.projects.selectedProjectId() === projectId && this.store.currentModel()?.id === modelId) {
+          this.store.restoreModels(models);
+        }
+        throw error;
       }
-      throw error;
-    }
+    });
   }
 
   public async removeAttribute(nodeId: string, attributeId: string): Promise<void> {
-    this.store.getDraft().removeAttribute(nodeId, attributeId);
-    await this.saveWorkspace();
+    return this.mutate(async (): Promise<void> => {
+      this.store.getDraft().removeAttribute(nodeId, attributeId);
+      await this.saveWorkspace();
+    });
   }
 
   public async createAnnotationShape(input: AnnotationShapeInput): Promise<AnnotationShape> {
+    this.interactions.assertCanMutate();
+
     return this.persistValidatedChange((draft: RamenModel): ModelChange<AnnotationShape> => draft.createAnnotationShape(input));
   }
 
   public async createAnnotationShapes(inputs: readonly AnnotationShapeInput[]): Promise<readonly AnnotationShape[]> {
+    this.interactions.assertCanMutate();
+
     if (!inputs.length) return [];
     return this.persistValidatedChange(
       (draft: RamenModel): ModelChange<readonly AnnotationShape[]> => ({
@@ -191,16 +218,22 @@ export class WorkspaceActionsService {
   }
 
   public async updateAnnotationShape(shapeId: string, input: AnnotationShapeUpdate): Promise<AnnotationShape> {
+    this.interactions.assertCanMutate();
+
     return this.persistValidatedChange(
       (draft: RamenModel): ModelChange<AnnotationShape> => draft.updateAnnotationShape(shapeId, input),
     );
   }
 
   public async removeAnnotationShape(shapeId: string): Promise<void> {
+    this.interactions.assertCanMutate();
+
     await this.persistValidatedChange((draft: RamenModel): ModelChange<AnnotationShape> => draft.removeAnnotationShape(shapeId));
   }
 
   public async saveShapeProperty(shapeId: string, input: AttributeInput, attributeId?: string): Promise<Attribute> {
+    this.interactions.assertCanMutate();
+
     this.requirePropertyNameLength(input.name);
     const shape: AnnotationShape = this.requireShape(shapeId);
     const current: Attribute | undefined = shape.properties.find((item: Attribute): boolean => item.id === attributeId);
@@ -227,6 +260,8 @@ export class WorkspaceActionsService {
   }
 
   public async removeShapeProperty(shapeId: string, attributeId: string): Promise<void> {
+    this.interactions.assertCanMutate();
+
     const shape: AnnotationShape = this.requireShape(shapeId);
     await this.updateAnnotationShape(shapeId, {
       properties: shape.properties.filter((item: Attribute): boolean => item.id !== attributeId),
@@ -243,83 +278,105 @@ export class WorkspaceActionsService {
   }
 
   private async persistValidatedChange<T>(edit: (draft: RamenModel) => ModelChange<T>): Promise<T> {
-    this.requireValidChange(edit);
-    const models: readonly Model[] = this.store.getModels();
-    const projectId: string | null = this.projects.selectedProjectId();
-    const modelId: string | undefined = this.store.currentModel()?.id;
-    const result: T = edit(this.store.getDraft()).element;
+    return this.mutate(async (): Promise<T> => {
+      this.requireValidChange(edit);
+      const models: readonly Model[] = this.store.getModels();
+      const projectId: string | null = this.projects.selectedProjectId();
+      const modelId: string | undefined = this.store.currentModel()?.id;
+      const result: T = edit(this.store.getDraft()).element;
 
-    try {
-      await this.saveWorkspace();
-      return result;
-    } catch (error: unknown) {
-      if (this.projects.selectedProjectId() === projectId && this.store.currentModel()?.id === modelId)
-        this.store.restoreModels(models);
-      throw error;
-    }
+      try {
+        await this.saveWorkspace();
+        return result;
+      } catch (error: unknown) {
+        if (this.projects.selectedProjectId() === projectId && this.store.currentModel()?.id === modelId)
+          this.store.restoreModels(models);
+        throw error;
+      }
+    });
   }
 
   public async createRelation(input: RelationInput): Promise<Relation> {
-    const before: readonly Model[] = this.relationHistory.capture();
-    const draft: RamenModel = this.store.getDraft();
-    const relation: Relation = draft.createRelation(input).element;
-    this.relationHistory.record(draft.getModel().id, before);
-    await this.saveWorkspace();
+    return this.mutate(async (): Promise<Relation> => {
+      const before: readonly Model[] = this.relationHistory.capture();
+      const draft: RamenModel = this.store.getDraft();
+      const relation: Relation = draft.createRelation(input).element;
+      this.relationHistory.record(draft.getModel().id, before);
+      await this.saveWorkspace();
 
-    return relation;
+      return relation;
+    });
   }
 
   public async updateRelation(relationId: string, patch: UpdateRelationInput): Promise<void> {
+    this.interactions.assertCanMutate();
+
     await this.persistValidatedChange((draft: RamenModel): ModelChange<Relation> => draft.updateRelation(relationId, patch));
   }
 
   public async undoRelation(): Promise<void> {
-    await this.relationHistory.undo((): Promise<void> => this.saveWorkspace());
+    return this.mutate(async (): Promise<void> => {
+      await this.relationHistory.undo((): Promise<void> => this.saveWorkspace());
+    });
   }
 
   public async redoRelation(): Promise<void> {
-    await this.relationHistory.redo((): Promise<void> => this.saveWorkspace());
+    return this.mutate(async (): Promise<void> => {
+      await this.relationHistory.redo((): Promise<void> => this.saveWorkspace());
+    });
   }
 
   public previewRelationRemoval(id: string): RelationRemovalPreview {
+    this.interactions.assertCanMutate();
+
     return this.store.getDraft().previewRelationRemoval(id);
   }
 
   public async removeRelation(id: string, cascade: boolean = false): Promise<void> {
-    const before: readonly Model[] = this.relationHistory.capture();
-    const draft: RamenModel = this.store.getDraft();
-    draft.removeRelation(id, { cascade });
-    this.relationHistory.record(draft.getModel().id, before);
-    await this.saveWorkspace();
+    return this.mutate(async (): Promise<void> => {
+      const before: readonly Model[] = this.relationHistory.capture();
+      const draft: RamenModel = this.store.getDraft();
+      draft.removeRelation(id, { cascade });
+      this.relationHistory.record(draft.getModel().id, before);
+      await this.saveWorkspace();
+    });
   }
 
   public async createLevel(input: CreateLevelInput): Promise<number> {
-    const parent: RamenModel | null = this.store.getCreationParent();
-    const next: RamenModel = parent ? parent.createNextLevel(input) : RamenModel.create(input);
-    this.store.addLevel(next);
-    await this.saveWorkspace();
+    return this.mutate(async (): Promise<number> => {
+      const parent: RamenModel | null = this.store.getCreationParent();
+      const next: RamenModel = parent ? parent.createNextLevel(input) : RamenModel.create(input);
+      this.store.addLevel(next);
+      await this.saveWorkspace();
 
-    return this.projects.recordsByModelId().get(next.getModel().id)?.levelIndex ?? 1;
+      return this.projects.recordsByModelId().get(next.getModel().id)?.levelIndex ?? 1;
+    });
   }
 
   public async updateLevel(levelIndex: number, input: UpdateLevelInput): Promise<void> {
-    const record: ModelRecord = this.requireModelRecord(levelIndex);
-    this.store.getWorkspace().openLevel(record.gmodel.id).updateModel(input);
-    await this.saveWorkspace();
+    return this.mutate(async (): Promise<void> => {
+      const record: ModelRecord = this.requireModelRecord(levelIndex);
+      this.store.getWorkspace().openLevel(record.gmodel.id).updateModel(input);
+      await this.saveWorkspace();
+    });
   }
 
   public previewLevelRemoval(levelIndex: number): ModelRemovalPreview {
+    this.interactions.assertCanMutate();
+
     const record: ModelRecord = this.requireModelRecord(levelIndex);
     return this.store.getParentLevel(record.gmodel.id).previewNextLevelRemoval(record.gmodel.id);
   }
 
   public async removeLevel(levelIndex: number, cascade: boolean = false): Promise<void> {
-    const record: ModelRecord = this.requireModelRecord(levelIndex);
-    const removed: ModelRemovalPreview = this.store
-      .getParentLevel(record.gmodel.id)
-      .removeNextLevel(record.gmodel.id, { cascade });
-    this.store.removeLevels(removed.models.map((model): string => model.id));
-    await this.saveWorkspace();
+    return this.mutate(async (): Promise<void> => {
+      const record: ModelRecord = this.requireModelRecord(levelIndex);
+      const removed: ModelRemovalPreview = this.store
+        .getParentLevel(record.gmodel.id)
+        .removeNextLevel(record.gmodel.id, { cascade });
+      this.store.removeLevels(removed.models.map((model): string => model.id));
+      await this.saveWorkspace();
+    });
   }
 
   public async updateNodeColors(recordId: string, colours: NodeColors): Promise<void> {
@@ -337,6 +394,8 @@ export class WorkspaceActionsService {
   }
 
   public previewVisibleNodeRemoval(reference: string): RelationRemovalPreview {
+    this.interactions.assertCanMutate();
+
     const draft: RamenModel = this.store.getDraft();
     const affected: Map<string, WorkspaceElement> = new Map();
     for (const relation of draft.getModel().relations) {
@@ -349,22 +408,26 @@ export class WorkspaceActionsService {
   }
 
   public async removeVisibleNode(reference: string, cascade: boolean = false): Promise<void> {
-    const record: ModelRecord | null = this.store.currentModelRecord();
-    if (!record) return;
-    const draft: RamenModel = this.store.getDraft();
-    const connected: Relation[] = draft
-      .getModel()
-      .relations.filter((relation: Relation): boolean => relation.from.nodeId === reference || relation.to.nodeId === reference);
-    if (connected.length && !cascade) throw new Error(this.translations.translate('editor.baseNodeConnected'));
+    return this.mutate(async (): Promise<void> => {
+      const record: ModelRecord | null = this.store.currentModelRecord();
+      if (!record) return;
+      const draft: RamenModel = this.store.getDraft();
+      const connected: Relation[] = draft
+        .getModel()
+        .relations.filter(
+          (relation: Relation): boolean => relation.from.nodeId === reference || relation.to.nodeId === reference,
+        );
+      if (connected.length && !cascade) throw new Error(this.translations.translate('editor.baseNodeConnected'));
 
-    for (const relation of connected) {
-      if (draft.getModel().relations.some((item: Relation): boolean => item.id === relation.id)) {
-        draft.removeRelation(relation.id, { cascade: true });
+      for (const relation of connected) {
+        if (draft.getModel().relations.some((item: Relation): boolean => item.id === relation.id)) {
+          draft.removeRelation(relation.id, { cascade: true });
+        }
       }
-    }
-    if (connected.length) await this.saveWorkspace();
-    await this.saveView(record.modelId, {
-      visibleNodeRefs: (record.view?.visibleNodeRefs ?? []).filter((ref: string): boolean => ref !== reference),
+      if (connected.length) await this.saveWorkspace();
+      await this.saveView(record.modelId, {
+        visibleNodeRefs: (record.view?.visibleNodeRefs ?? []).filter((ref: string): boolean => ref !== reference),
+      });
     });
   }
 
@@ -372,12 +435,18 @@ export class WorkspaceActionsService {
     await this.saveView(recordId, { graph });
   }
 
-  public async saveWorkspace(): Promise<void> {
+  private async saveWorkspace(): Promise<void> {
     this.store.notifyChange();
     const projectId: string | null = this.projects.selectedProjectId();
     if (!projectId) throw new Error('No project is selected.');
     const models: readonly Model[] = this.store.getModels();
     await this.enqueueSave((): Promise<void> => this.projects.saveModels(projectId, models));
+  }
+
+  private mutate<T>(operation: () => Promise<T>): Promise<T> {
+    const projectId: string | null = this.projects.selectedProjectId();
+    if (!projectId) throw new Error('No project is selected.');
+    return this.interactions.mutate(projectId, operation);
   }
 
   private requireModelRecord(levelIndex: number): ModelRecord {

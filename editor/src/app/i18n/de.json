@@ -316,6 +316,8 @@
     "refinesLabel": "Verfeinert",
     "backToNode": "Zurück zu {{name}}",
     "runningDeletion": "Löschung vorbereitet",
+    "resolvePendingAction": "Setze die ausstehende Aktion fort oder brich sie ab, bevor du Änderungen machst.",
+    "operationInProgress": "Warte, bis die laufende Aktion abgeschlossen ist.",
     "runningDeletionHint": "Sieh Dir den Graphen an und setze danach die Löschprüfung fort.",
     "resumeAction": "Fortsetzen",
     "cancelRunningAction": "Aktion abbrechen",

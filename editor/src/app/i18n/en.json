@@ -316,6 +316,8 @@
     "refinesLabel": "Refines",
     "backToNode": "Back to {{name}}",
     "runningDeletion": "Deletion prepared",
+    "resolvePendingAction": "Resume or cancel the pending action before editing.",
+    "operationInProgress": "Wait for the current operation to finish.",
     "runningDeletionHint": "Inspect your graph, then return to review the deletion.",
     "resumeAction": "Resume",
     "cancelRunningAction": "Cancel action",

@@ -6,6 +6,7 @@ import { type CreateManifest, type Manifest, type UpdateManifest } from '../../m
 import { type ModelRecord, type ViewSettings } from '../../models/ModelRecord';
 import { indexBy } from '../../utils/collections';
 import { readProjectForEditing, type ImportedProject } from '../../utils/project-import';
+import { InteractionBlockedError } from '../../models/InteractionBlockedError';
 import { ProjectRepositoryService } from './project-repository.service';
 
 /** Coordinates project loading and mutations, exposing the selected project’s reactive state. */
@@ -47,6 +48,7 @@ export class ProjectService {
   }
 
   public reportError(error: unknown): void {
+    if (error instanceof InteractionBlockedError && error.explainedByAction) return;
     this.error.set(error instanceof Error ? error.message : 'The operation could not be completed.');
   }
 

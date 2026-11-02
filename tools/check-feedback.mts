@@ -2,51 +2,104 @@ import '@angular/compiler';
 import assert from 'node:assert/strict';
 import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { test, type TestContext } from 'node:test';
 import { createEnvironmentInjector, Injector, type EnvironmentInjector } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
-import { buildSync } from 'esbuild';
+import { RamenModel, RAMEN_ELEMENT } from '@ramen-suite/core/ramen';
+import { build, type OnResolveArgs, type OnResolveResult, type PluginBuild } from 'esbuild';
 import type { ActionFeedback, ActionFeedbackOptions } from '../editor/src/app/services/interaction/action-feedback.service';
 import type * as ActionModule from '../editor/src/app/services/interaction/action-feedback.service';
+import type * as InteractionModule from '../editor/src/app/services/interaction/interaction-state.service';
+import type * as CommandsModule from '../editor/src/app/services/workspace/model/workspace-actions.service';
+import type * as ProjectModule from '../editor/src/app/services/projects/project.service';
+import type * as StoreModule from '../editor/src/app/states/workspace.store';
+import type * as HistoryModule from '../editor/src/app/services/workspace/model/relation-history.service';
+import type * as BlockedModule from '../editor/src/app/models/InteractionBlockedError';
 import type * as StatusModule from '../editor/src/app/services/interaction/notification.service';
 
-type FeedbackModule = typeof ActionModule & typeof StatusModule;
+type FeedbackModule = typeof ActionModule &
+  typeof StatusModule &
+  typeof InteractionModule &
+  typeof CommandsModule &
+  typeof ProjectModule &
+  typeof StoreModule &
+  typeof HistoryModule &
+  typeof BlockedModule;
 mkdirSync('.angular', { recursive: true });
 const directory: string = mkdtempSync('.angular/feedback-check-');
 const target: string = join(directory, 'feedback.mjs');
-buildSync({
+process.on('exit', (): void => rmSync(directory, { recursive: true, force: true }));
+await build({
   stdin: {
     contents: `export * from './editor/src/app/services/interaction/action-feedback.service';
-      export * from './editor/src/app/services/interaction/notification.service';`,
+      export * from './editor/src/app/services/interaction/notification.service';
+      export * from './editor/src/app/services/interaction/interaction-state.service';
+      export * from './editor/src/app/services/workspace/model/workspace-actions.service';
+      export * from './editor/src/app/services/projects/project.service';
+      export * from './editor/src/app/states/workspace.store';
+      export * from './editor/src/app/services/workspace/model/relation-history.service';
+      export * from './editor/src/app/models/InteractionBlockedError';`,
     resolveDir: process.cwd(),
     loader: 'ts',
   },
   bundle: true,
   packages: 'external',
+  plugins: [
+    {
+      name: 'bundle-core-schema',
+      setup(build: PluginBuild): void {
+        build.onResolve(
+          { filter: /^@ramen-suite\/core\/schemas\// },
+          (args: OnResolveArgs): OnResolveResult => ({
+            path: fileURLToPath(import.meta.resolve(args.path)),
+          }),
+        );
+      },
+    },
+  ],
   platform: 'node',
   format: 'esm',
   outfile: target,
 });
-const { ActionFeedbackService, NotificationService }: FeedbackModule = (await import(
-  pathToFileURL(target).href
-)) as FeedbackModule;
-process.on('exit', (): void => rmSync(directory, { recursive: true, force: true }));
+const {
+  ActionFeedbackService,
+  NotificationService,
+  InteractionStateService,
+  WorkspaceActionsService,
+  ProjectService,
+  WorkspaceStore,
+  RelationHistoryService,
+  InteractionBlockedError,
+}: FeedbackModule = (await import(pathToFileURL(target).href)) as FeedbackModule;
 
-function setup(): {
+function setup(overrides: { projects?: object; store?: object } = {}): {
   injector: EnvironmentInjector;
   actions: InstanceType<FeedbackModule['ActionFeedbackService']>;
   statuses: InstanceType<FeedbackModule['NotificationService']>;
+  interactions: InstanceType<FeedbackModule['InteractionStateService']>;
+  commands: InstanceType<FeedbackModule['WorkspaceActionsService']>;
 } {
   const injector: EnvironmentInjector = createEnvironmentInjector(
     [
       ActionFeedbackService,
       NotificationService,
+      InteractionStateService,
+      WorkspaceActionsService,
+      { provide: ProjectService, useValue: overrides.projects ?? { selectedProjectId: (): string => 'project' } },
+      { provide: WorkspaceStore, useValue: overrides.store ?? {} },
+      { provide: RelationHistoryService, useValue: {} },
       { provide: TranslocoService, useValue: { translate: (key: string): string => key } },
     ],
     Injector.NULL as EnvironmentInjector,
   );
-  return { injector, actions: injector.get(ActionFeedbackService), statuses: injector.get(NotificationService) };
+  return {
+    injector,
+    actions: injector.get(ActionFeedbackService),
+    statuses: injector.get(NotificationService),
+    interactions: injector.get(InteractionStateService),
+    commands: injector.get(WorkspaceActionsService),
+  };
 }
 
 function current(actions: InstanceType<FeedbackModule['ActionFeedbackService']>): ActionFeedback {
@@ -132,5 +185,163 @@ await test('pending work cannot run twice or be cancelled; failure becomes statu
   assert.equal(actions.pending(), false);
   assert.equal(statuses.current()?.message, 'Retry');
   assert.equal(actions.current()?.id, action.id);
+  injector.destroy();
+});
+
+function modelCommands(commands: InstanceType<FeedbackModule['WorkspaceActionsService']>): (() => unknown)[] {
+  return [
+    (): unknown => commands.createNode({ name: 'New', baseNodeId: 'base' }),
+    (): unknown => commands.updateNode('node', { name: 'Changed' }),
+    (): unknown => commands.removeNode('node'),
+    (): unknown => commands.duplicateNode('node'),
+    (): unknown => commands.createAttribute('node', { name: 'p', typeId: 'String' }),
+    (): unknown => commands.updateAttribute('node', 'p', { name: 'Changed' }),
+    (): unknown => commands.duplicateAttribute('node', 'p'),
+    (): unknown => commands.reorderAttributes('node', []),
+    (): unknown => commands.removeAttribute('node', 'p'),
+    (): unknown => commands.createAnnotationShape({ nodeId: 'node', type: 'p' }),
+    (): unknown => commands.createAnnotationShapes([]),
+    (): unknown => commands.updateAnnotationShape('shape', { type: 'p' }),
+    (): unknown => commands.removeAnnotationShape('shape'),
+    (): unknown => commands.saveShapeProperty('shape', { name: 'p', typeId: 'String' }),
+    (): unknown => commands.removeShapeProperty('shape', 'p'),
+    (): unknown => commands.createRelation({ from: { nodeId: 'a' }, to: { nodeId: 'b' } }),
+    (): unknown => commands.updateRelation('relation', { name: 'Changed' }),
+    (): unknown => commands.removeRelation('relation'),
+    (): unknown => commands.undoRelation(),
+    (): unknown => commands.redoRelation(),
+    (): unknown => commands.createLevel({ name: 'New', uri: 'urn:new', version: '1.0.0' }),
+    (): unknown => commands.updateLevel(1, { name: 'New', uri: 'urn:new', version: '1.0.0' }),
+    (): unknown => commands.removeLevel(1),
+    (): unknown => commands.removeVisibleNode('node'),
+    (): unknown => commands.previewNodeRemoval('node'),
+    (): unknown => commands.previewRelationRemoval('relation'),
+    (): unknown => commands.previewLevelRemoval(1),
+    (): unknown => commands.previewVisibleNodeRemoval('node'),
+  ];
+}
+
+await test('decision blocks every model command before any store access, preserving the decision', async (): Promise<void> => {
+  const { injector, interactions, commands }: ReturnType<typeof setup> = setup();
+  const handle: ReturnType<typeof interactions.beginDecision> = interactions.beginDecision(
+    'removal-review',
+    'project',
+    'revision',
+  );
+  const edits: (() => unknown)[] = modelCommands(commands);
+  for (const edit of edits)
+    await assert.rejects(async (): Promise<void> => {
+      await edit();
+    }, InteractionBlockedError);
+  assert.equal(interactions.current().phase, 'decision');
+  assert.equal(interactions.attention()?.interactionId, handle.id);
+  assert.equal(interactions.attention()?.sequence, edits.length);
+  interactions.end(handle);
+  assert.equal(handle.signal.aborted, true);
+  assert.equal(interactions.current().phase, 'ready');
+  injector.destroy();
+});
+
+await test('execution blocks competing edits and double resume; failures restore the decision for retry', async (): Promise<void> => {
+  const { injector, interactions }: ReturnType<typeof setup> = setup();
+  const handle: ReturnType<typeof interactions.beginDecision> = interactions.beginDecision(
+    'removal-review',
+    'project',
+    'revision',
+  );
+  let finish: (() => void) | undefined;
+  const wait: Promise<void> = new Promise((resolve): void => {
+    finish = resolve;
+  });
+  const execution: Promise<boolean> = interactions.executeDecision(handle, async (): Promise<void> => {
+    await wait;
+    throw new Error('Retry');
+  });
+  assert.equal(interactions.current().phase, 'executing');
+  await assert.rejects(() => interactions.mutate('project', (): Promise<void> => Promise.resolve()), InteractionBlockedError);
+  assert.equal(await interactions.executeDecision(handle, (): Promise<void> => Promise.resolve()), false);
+  finish?.();
+  await assert.rejects(execution, /Retry/);
+  assert.equal(interactions.current().phase, 'decision');
+  assert.equal(handle.signal.aborted, false);
+  assert.equal(await interactions.executeDecision(handle, (): Promise<void> => Promise.resolve()), true);
+  assert.equal(interactions.current().phase, 'ready');
+  injector.destroy();
+});
+
+await test('context invalidation aborts pending work; stale completions cannot revive or clear another decision', async (): Promise<void> => {
+  const { injector, interactions }: ReturnType<typeof setup> = setup();
+  const old: ReturnType<typeof interactions.beginDecision> = interactions.beginDecision('removal-review', 'project', 'revision');
+  let reject: ((error: Error) => void) | undefined;
+  const wait: Promise<void> = new Promise((_resolve, rejectOperation): void => {
+    reject = rejectOperation;
+  });
+  const execution: Promise<boolean> = interactions.executeDecision(old, (): Promise<void> => wait);
+  interactions.end(old);
+  const next: ReturnType<typeof interactions.beginDecision> = interactions.beginDecision(
+    'removal-review',
+    'another-project',
+    'new-revision',
+  );
+  reject?.(new Error('Old operation'));
+  await assert.rejects(execution, /Old operation/);
+  interactions.end(old);
+  const state: ReturnType<typeof interactions.current> = interactions.current();
+  assert.ok(state.phase === 'decision');
+  assert.equal(state.id, next.id);
+  assert.equal(old.signal.aborted, true);
+  interactions.end(next);
+  injector.destroy();
+});
+
+await test('ordinary mutations hold the gate until persistence completes and release it after failure', async (): Promise<void> => {
+  const { injector, interactions }: ReturnType<typeof setup> = setup();
+  let finish: (() => void) | undefined;
+  const wait: Promise<void> = new Promise((resolve): void => {
+    finish = resolve;
+  });
+  const execution: Promise<void> = interactions.mutate('project', (): Promise<void> => wait);
+  assert.equal(interactions.current().phase, 'executing');
+  await assert.rejects(() => interactions.mutate('project', (): Promise<void> => Promise.resolve()), InteractionBlockedError);
+  finish?.();
+  await execution;
+  assert.equal(interactions.current().phase, 'ready');
+  await assert.rejects(
+    () => interactions.mutate('project', (): Promise<void> => Promise.reject(new Error('Save failed'))),
+    /Save failed/,
+  );
+  assert.equal(interactions.current().phase, 'ready');
+  injector.destroy();
+});
+
+await test('validation remains non-blocking; a real create command holds execution until its save completes', async (): Promise<void> => {
+  const draft: RamenModel = RamenModel.create('Command gate test');
+  let finish: (() => void) | undefined;
+  const wait: Promise<void> = new Promise((resolve): void => {
+    finish = resolve;
+  });
+  const { injector, commands, interactions, actions }: ReturnType<typeof setup> = setup({
+    projects: { selectedProjectId: (): string => 'project', saveModels: (): Promise<void> => wait },
+    store: {
+      getDraft: (): RamenModel => draft,
+      getModels: (): ReturnType<RamenModel['getModels']> => draft.getModels(),
+      currentModelRecord: (): null => null,
+      notifyChange: (): void => undefined,
+    },
+  });
+  actions.publish(review());
+  const creating: ReturnType<typeof commands.createNode> = commands.createNode({
+    name: 'Person',
+    baseNodeId: RAMEN_ELEMENT.ENTITY,
+  });
+  assert.equal(interactions.current().phase, 'executing');
+  assert.equal(draft.getModel().classifiers.filter((item): boolean => item.kind === 'Node').length, 1);
+  await assert.rejects(() => commands.createNode({ name: 'Blocked', baseNodeId: RAMEN_ELEMENT.ENTITY }), InteractionBlockedError);
+  assert.equal(draft.getModel().classifiers.filter((item): boolean => item.kind === 'Node').length, 1);
+  finish?.();
+  const created: Awaited<typeof creating> = await creating;
+  assert.equal(created.name, 'Person');
+  assert.equal(interactions.current().phase, 'ready');
+  assert.equal(actions.current()?.owner, 'model-validation');
   injector.destroy();
 });

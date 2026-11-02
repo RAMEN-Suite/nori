@@ -11,3 +11,29 @@
 .action-window.node-editor {
   position: absolute;
 }
+
+// Alternate the name to replay attention on another rejected command without timers or remounting the window.
+@each $name in (odd, even) {
+  .attention-#{$name} {
+    animation: action-attention-#{$name} 240ms ease-in-out;
+  }
+  @keyframes action-attention-#{$name} {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    25%,
+    75% {
+      transform: translateX(-0.15rem);
+    }
+    50% {
+      transform: translateX(0.15rem);
+    }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .attention-odd,
+  .attention-even {
+    animation: none;
+  }
+}

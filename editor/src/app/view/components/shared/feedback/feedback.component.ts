@@ -30,8 +30,8 @@ import { type FeedbackKind, type FeedbackSeverity } from '../../../../models/Fee
       aria-atomic="true"
     >
       <span class="feedback-icon" aria-hidden="true"><svg [lucideIcon]="resolvedIcon()" class="size-4"></svg></span>
-      <div class="feedback-content">
-        <strong class="feedback-title" [attr.role]="kind() === 'action' ? 'status' : null">{{ title() }}</strong>
+      <div class="feedback-content" [attr.role]="kind() === 'action' ? 'status' : null" aria-atomic="true">
+        <strong class="feedback-title">{{ title() }}</strong>
         @if (description()) {
           <span class="feedback-description">{{ description() }}</span>
         }

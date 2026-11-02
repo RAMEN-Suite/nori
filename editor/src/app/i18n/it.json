@@ -315,6 +315,8 @@
     "refinesLabel": "Affina",
     "backToNode": "Torna a {{name}}",
     "runningDeletion": "Eliminazione preparata",
+    "resolvePendingAction": "Riprendi o annulla l’azione in sospeso prima di modificare.",
+    "operationInProgress": "Attendi il completamento dell’operazione in corso.",
     "runningDeletionHint": "Esamina il grafo, poi torna per rivedere l’eliminazione.",
     "resumeAction": "Riprendi",
     "cancelRunningAction": "Annulla azione",

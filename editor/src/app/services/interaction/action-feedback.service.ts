@@ -1,10 +1,11 @@
 import { computed, inject, Injectable, signal, type Signal, type WritableSignal } from '@angular/core';
 import { type LucideIconData } from '@lucide/angular';
-import { type FeedbackSeverity } from '../../models/Feedback';
+import { type ActionFeedbackOwner, type FeedbackSeverity } from '../../models/Feedback';
+import { InteractionBlockedError } from '../../models/InteractionBlockedError';
 import { NotificationService } from './notification.service';
 
 export interface ActionFeedbackOptions {
-  readonly owner: 'model-validation' | 'removal-review';
+  readonly owner: ActionFeedbackOwner;
   readonly title: string;
   readonly description: string;
   readonly severity: FeedbackSeverity;
@@ -58,6 +59,7 @@ export class ActionFeedbackService {
     try {
       await action.run();
     } catch (error: unknown) {
+      if (error instanceof InteractionBlockedError && error.explainedByAction) return;
       this.notifications.show({ status: 'error', message: error instanceof Error ? error.message : String(error) });
     } finally {
       this.running.set(null);
