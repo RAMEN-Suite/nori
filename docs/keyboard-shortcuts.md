@@ -35,7 +35,7 @@ These letters are application choices, not shortcuts mandated by an accessibilit
 | Alternative Redo  | Ctrl+Y, Windows/Linux | Keep. Do not resolve the default Cmd+Y on macOS, where Chrome uses it for History; hide that redundant default row there. An existing alternative custom binding is retained. |
 | Cancel graph mode | Escape                | Keep. Does not replace a configurable letter command; dialogs and focused widgets retain their own Escape handling.                                                           |
 
-The project overview is reached with the visible Back button. There is no Back hotkey: Alt+Left stays available for native browser history navigation. Old saved `back` overrides are ignored without affecting the remaining bindings.
+The editor's visible Back button returns to the start screen. There is no Back hotkey: Alt+Left stays available for native browser history navigation. Old saved `back` overrides are ignored without affecting the remaining bindings.
 
 ## Compatibility
 

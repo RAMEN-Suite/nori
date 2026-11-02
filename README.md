@@ -4,6 +4,7 @@ A browser and desktop editor for multi-level modelling across heterogeneous doma
 
 ## Documentation
 
+- [Features and behaviour](docs/features.md): screen flows, model concepts, save rules and pending decisions.
 - [Build and distribution](docs/deployment.md): prerequisites and browser, macOS and Windows builds.
 - [Coding conventions](docs/coding-conventions.md): code style, types, async work and verification.
 - [Editor guide](docs/editor-components.md): architecture, ownership and extension paths.
@@ -29,7 +30,7 @@ For browser development, use `npm run start:editor` and open `http://localhost:4
 npm run verify
 ```
 
-This runs lint, formatting, TypeScript checks and both builds, including Angular templates. Behavioural verification is still required for changed workflows; there is no automated scenario suite yet.
+This runs lint, formatting, TypeScript checks and both builds, including Angular templates. Run `npm run test:feedback` and `npm run test:import` for interaction/command and import regression checks. These service-level checks run separately from `verify`; changed UI workflows still need browser/desktop verification.
 
 For production builds and desktop packaging, follow [Build and distribution](docs/deployment.md).
 

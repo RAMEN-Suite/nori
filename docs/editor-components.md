@@ -1,109 +1,112 @@
 # Editor guide
 
-Start with [Coding conventions](coding-conventions.md) and [UI guidelines](ui-guidelines.md). Paths below are relative to `editor/src/app` unless stated otherwise.
+[Features and behaviour](features.md) is the functional contract. [UI guidelines](ui-guidelines.md) defines presentation; [Coding conventions](coding-conventions.md) defines implementation style. Paths below are relative to `editor/src/app` unless stated otherwise.
 
-## Structure and owners
+## Owners
 
-Keep `view`, `services`, `states`, `models`, `directives`, `guards` and `utils` separate. Group features within those roles. `view/screens` composes complete application views; `view/components` groups projects, workspace features, dialogs, shell and shared UI. Keep private children beneath their feature; move them to shared only when genuinely reusable.
+| Responsibility                          | Owner                                                                             |
+| --------------------------------------- | --------------------------------------------------------------------------------- |
+| Schema, references and model semantics  | RAMEN Core                                                                        |
+| Project selection and local records     | `ProjectService`, `ProjectRepositoryService`, `AppDatabase`                       |
+| Loaded model facades and selection      | `WorkspaceStore`                                                                  |
+| Derived model information               | `WorkspaceQueriesService`                                                         |
+| Model mutation and persistence boundary | `WorkspaceActionsService`                                                         |
+| Command permissions and active decision | `InteractionStateService`                                                         |
+| Timed status / persistent action slot   | `NotificationService` / `ActionFeedbackService`                                   |
+| Validation review / paused removal      | `ModelValidationFeedbackService` / `RunningActionService`, `RemovalReviewService` |
+| Graph mode and contextual hint          | `GraphToolsService`                                                               |
+| Routes, dialogs and shortcut bindings   | `NavigationService`, `DialogService`, `ShortcutService`                           |
+| Property workspace and internal history | `PropertyEditingService`, `PropertyEditorComponent`                               |
+| Canvas, geometry and viewport           | `GraphComponent`, `GraphRenderer`, graph helpers, `GraphViewport`                 |
+| Shared panel and overflow UI            | `EditorPanelComponent`, `ScrollOverflowDirective`, `ScrollHintsComponent`         |
 
-| Responsibility                       | Owner                                                                                                                             |
-| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| Schema rules and model validation    | RAMEN Core                                                                                                                        |
-| Workspace state, reads and mutations | `WorkspaceStore`, `WorkspaceQueriesService`, `WorkspaceActionsService`; accessed through `WorkspaceService.store/queries/actions` |
-| Project selection and persistence    | `ProjectService`, `ProjectRepositoryService`, `AppDatabase` migrations                                                            |
-| Node/relation/property workflows     | Editing services under `services/workspace/editing`                                                                               |
-| Resumable actions and removal review | `RunningActionService`, `RemovalReviewService`                                                                                    |
-| Navigation, dialogs and shortcuts    | Services under `services/interaction`                                                                                             |
-| Panel placement and canvas space     | `WorkspaceScreen`                                                                                                                 |
-| Shared panel and scroll behaviour    | `EditorPanelComponent`, `ScrollOverflowDirective`, `ScrollHintsComponent`                                                         |
-| Graph rendering and interaction      | `GraphComponent`, `GraphRenderer`, `GraphViewport`, layout/geometry/export helpers                                                |
-| Property workspace                   | `PropertyEditingService`, `PropertyEditorComponent`, `PropertyFormComponent`                                                      |
-| Inspector                            | Node/relation views and attribute components                                                                                      |
-| Languages and pure helpers           | `i18n/languages.ts`, `utils`, `utils/shortcuts`                                                                                   |
+Keep `view`, `services`, `states`, `models`, `directives`, `guards` and `utils` separate. Screens compose views; components own their local interface; services own workflows. State-independent calculations belong in pure helpers. `WorkspaceService.store/queries/actions` is the component-facing workspace facade.
 
-`services/projects` owns projects; `services/persistence` owns file export and preferences; `services/workspace/model` owns workspace actions, queries and history. State containers belong in `states`; data contracts in `models`. Use small pure helpers such as `groupBy` for shared collection operations. Do not duplicate Core rules in components.
+## Entry and project lifecycle
 
-## Following and adding a model operation
+- `HomeScreen` owns first-navigation intro and JSON file selection. `ProjectEntryScreen` keeps Create/Open cards mounted when revealing the alternative, preserving drafts and search.
+- Project components submit through `ProjectService`; `ProjectRepositoryService` owns database transactions and import ordering. Schema changes are versioned migrations in `AppDatabase`.
+- `WorkspaceScreen` synchronises project, level and selected node/relation with the route. Leaving it clears the selected project and invalidates project-scoped workflows. Node/level navigation within it retains the workspace.
+- Project metadata is stored separately from Core model metadata. Do not propagate a project rename into model identity or URI.
 
-1. Start at the component handler. Use an editing service when dialogs, selection or a multistep workflow are involved.
-2. Put model mutations in `WorkspaceActionsService`, derived UI data in queries and state-independent calculations in model helpers. Use the corresponding Core API and validate a trial change before mutation.
-3. Persist through `saveWorkspace` and `ProjectService`; the repository owns atomic database operations. Add database changes as versioned migrations in `AppDatabase`.
-4. Capture workspace context before awaiting and verify it before applying results. `WorkspaceService.isCurrent` checks project and model together.
-5. Add translations and verify the relevant success, validation, stale-context and persistence paths.
+Identity fields are not interchangeable:
 
-**Identities are different:** `record.modelId` is the IndexedDB record key, `record.gmodel.id` is the Core model identity, `levelIndex` is Nori's ordered display position, and qualified references identify declarations across models. A level index is not inheritance depth. Keep legacy storage names inside migrations.
+| Field               | Meaning                                            |
+| ------------------- | -------------------------------------------------- |
+| `record.modelId`    | IndexedDB record key                               |
+| `record.gmodel.id`  | Core model identity                                |
+| `levelIndex`        | Ordered navigation position, not inheritance depth |
+| Qualified reference | Declaring model plus element identity              |
 
-## Adding a hotkey or language
+## Adding a model command
 
-For a hotkey:
+1. Use an editing service when the command involves a chooser, confirmation or navigation.
+2. Implement the mutation in `WorkspaceActionsService`, using the public Core API. Enter `InteractionStateService.mutate()` before touching Core, history or storage; delegate-only entry points and removal previews also check availability.
+3. Validate a trial change where the existing action uses `persistValidatedChange`. Do not worsen imported diagnostics. Keep `saveWorkspace()` private and persist through `ProjectService`/the repository.
+4. Capture project/model identity before awaiting and verify it before restoring state, selection or UI. Roll back failed validated edits only while that captured context is still current.
+5. Translate feedback and verify success, refusal, invalid input, save failure and stale completion.
 
-1. Extend `ShortcutAction` and `SHORTCUT_DEFINITIONS` in `utils/shortcuts/definitions.ts`; use the binding helpers.
-2. Connect execution in `ToolBarComponent.actions`, keeping the same pending/editability guards as the visible action.
-3. Add labels in every registered language. Use `ShortcutService.display/aria`; do not repeat default bindings in templates.
-4. Check reassignment, collisions, reload/reset and execution in text inputs, dialogs and the property workspace. Escape and Tab remain reserved during capture.
+`WorkspaceStore.getDraft()` returns the cached facade for a level. Reuse it so Core's revision-aware validation/advisor cache remains effective. Trial validation still checks every editable model. Keep structural equality on unchanged graph/colour signals to avoid unnecessary redraws.
 
-Bindings use lowercase keys, for example `shift+r` or `mod+z`; `mod` means Control or Command. `ShortcutService` owns resolution and persistence, Settings owns capture, and the toolbar executes actions.
+## Feedback and interaction
 
-For a language, extend `TranslationLanguage` and `Languages.translations` in `i18n/languages.ts`, import its JSON and add the language-option label in all translations. Registration drives loading and Settings options. Check dynamic keys before deleting apparently unused strings.
+- `NotificationService.show()` accepts status content only and manages replacement, timeout and hover/focus pause. `NotificationsComponent` renders that slot.
+- `ActionFeedbackService.publish()` updates one registration per typed feature owner. Removal review has priority over model validation. `release(id)` ends a registration; `run()` prevents duplicate button execution but grants no editing permission. There is no action timer or per-feature button-style override.
+- `ActionFeedbackComponent` is the only action renderer. Mount it and the status outlet in either the main editor or node editor, never both views simultaneously. `FeedbackComponent` owns presentation, not workflow state.
+- `InteractionStateService` owns `ready`, `decision` and `executing`, including identity, project, revision and abort signal. Stale handles cannot release or restore a newer interaction. `BlockingActionOwner` excludes validation review.
+- `RunningActionService.start()` captures the revision and registers a decision. Resume enters execution before checking the revision and invokes the restoration callback with its abort signal. Completion releases it; failure restores the decision. `RemovalReviewService` stores route, consequence selection and scroll position. The callback must honour cancellation before restoring UI.
+- An `InteractionBlockedError` from an action-owned conflict updates that action's attention signal. `ProjectService.reportError()` does not turn it into a second status. Native forms may show the instruction locally. `PropertyEditorComponent.runPendingAction()` currently re-emits dialog errors as plain statuses; that path can repeat a refusal message and needs a dedicated follow-up if changed.
+- Validation review is owned by a root service, not toolbar lifetime. Its signature includes project, model and diagnostics; closing suppresses the unchanged signature. It survives inspector/property/dialog transitions but ends on resolution or context loss.
 
-## Adding UI or graph behaviour
-
-- Build panels with `EditorPanelComponent`; let `WorkspaceScreen` own placement, animation and occupied graph space. Open ordinary dialogs through `DialogService`, reusing pending/error state.
-- Place the actual scrolling element and `ScrollHintsComponent` in one `nori-scroll-frame` cell. `ScrollOverflowDirective` owns overflow measurement and observes direct content children.
-- Keep Base Nodes and Refinements separate because their data and actions differ; share visual primitives rather than a component with many modes.
-- Add SVG drawing to `GraphRenderer`, geometry/layout to their helpers and viewport behaviour to `GraphViewport`. Keep editing rules in Core and editing services. Check fit and saved viewport with panels open and closed.
-- Use `NavigationService` for node/relation navigation; do not write selection signals directly from graph elements. Node and relation selection clear each other.
-- `GraphImageExport` prepares SVG/PNG independently of zoom and panels; `ExportService` owns saving images and JSON. Keep rasterisation and file dialogs separate from SVG preparation.
-
-## Brand assets
-
-- Preserve the supplied sources: `editor/public/images/nori-logo-clean.svg` for small displays and favicons, and `nori-logo-worn.svg` for large displays and desktop icons. `HomeScreen` uses the clean mark as a theme-aware mask; other screens retain their back controls.
-- `icons/icon.icon` owns native macOS light/dark variants. Keep PNG, ICO and ICNS fallbacks consistent with it. Do not call `app.dock.setIcon` in a packaged app, because that replaces the native appearance variants. Development uses `icons/icon-mac.png`. See [Build and distribution](deployment.md) for platform prerequisites.
-- `LogoIntroComponent` plays `editor/public/videos/nori-intro.webm` on the initial home route only. Preserve the supplied video timing. Returning from the workspace skips the intro; reduced motion, disabled animations and playback errors also reveal the home screen. Home animations resume when the video ends, with a short fade to the mounted content.
-- `BrandIllustrationComponent` owns the home network and its ambient motion. Keep the circular portraits’ framing consistent with the landscape artwork. The desktop title bar owns the version display.
+The user-visible lifecycle and cancellation rules are defined in [Feedback and pending decisions](features.md#feedback-and-pending-decisions); keep changes consistent with that contract.
 
 ## Property workspace and resumable workflows
 
-The property workspace occupies its own screen inside `WorkspaceScreen`. The model view stays mounted, hidden and inert while editing, preserving the graph viewport and panel state. There is no overlay or backdrop. `WorkspaceStore.getDraft()` returns the existing level facade so Core can reuse its revision-aware validation/advisor cache. Trial edits compare against the cached live-level diagnostics while still validating every editable level after the change. Unchanged node colours do not trigger graph redraws. `PropertyEditingService` owns opening, selection and navigation history; `PropertyEditorComponent` lays out panels and coordinates decisions. `PropertyListComponent` edits name, data type and single/multiple value mode inline, persists the actual model order through Sushi OrderList drag handles, movement menus and keyboard shortcuts, and keeps all inherited properties read-only in one combined inherited group. Both the inherited group and the own-model group use Sushi Accordion and preserve their content while collapsed. The compact `PropertyTypeComponent` shows a datatype autocomplete and a circular Sushi List icon button for Multiple values, with primary active styling, aria-pressed and a short translated descriptive tooltip. The type column keeps a compact width and the property name receives the remaining space. Sushi owns autocomplete selection, including keyboard handling. Nori does not insert interactive buttons into options or capture keyboard events; it closes after the library completes a changed selection. Inline saves run through one sequential mutation queue, yielding a paint before synchronous model validation so the selection appears immediately; a timer fallback keeps saves running in hidden windows. The list and editable fields stay enabled during saves, preserving focus and stable rows; each name draft has its own property ID. Dialog and removal actions await pending saves. Required status and custom limits stay in the standard-width details dialog. Compact text fields and the Multiple values button use Sushi sm sizing, without the full form typography override. Sushi OrderList hover colours cover each complete row including its handle; rows have no divider borders. Name edits save on Enter or blur; Escape cancels the active draft. Validation stays beside the field. `PropertyDetailsDialog` reuses `PropertyFormComponent` for descriptions, custom bounds, flags and constraints; the form owns local drafts and validation.
+The node workspace stays inside `WorkspaceScreen`; the main graph remains mounted, hidden and inert. `PropertyEditingService` owns the selected node/property, section and internal Back/Forward history. `PropertyEditorComponent` coordinates navigation and draft guards. The neighbourhood graph reuses `GraphRenderer`/`GraphViewport`; its pan/zoom never overwrites the main viewport.
 
-- Layout: a top panel with a page heading, graph visibility toggle and Close; below, a persistent sidebar contains separate panels for node context and a Sushi Menu for Properties, Annotations and Constraints. The middle shows only the selected area, and the right contains the interactive neighbourhood graph. The graph starts visible, with Back/Forward controls shown after internal navigation; the page header no longer contains Back. Navigation retains the selected area where supported and resolves drafts before leaving. Annotations are available for annotation nodes; their list, catalogue and details stay together in the middle. The Constraints area opens existing property rules in the standard details dialog and lists existing node constraints, including inherited rules; editing custom constraint expressions is not implemented. The editor retains the main screen's outer insets. Narrow screens stack the graph below the work area.
-- Each window keeps its own footer: duplicate/remove on the left, save/discard on the right, or the read-only notice instead. Keep internal scrolling with shared hints. The form host is a block so overflow measurements follow expanding groups. Only the initial panel entrance animates, respecting motion preferences; node, window and footer changes update without secondary motion.
-- `NodeNeighbourhoodComponent` draws the selected node and its direct relationships read-only with `GraphRenderer`, the saved graph positions and node colours. It uses the same `GraphViewport` as the main graph for scroll/pinch zoom, panning and fitting; its viewport changes do not overwrite the main graph view. Plus/minus buttons and keyboard +, -, 0 provide zoom and fit. It filters the canvas graph from `buildVisibleModelGraph` through `buildNeighbourhoodGraph`, retaining only the selected node, its incident relationships and their endpoints. Graph nodes use the main graph’s appearance animation. The shared graph styles apply through `.nori-graph-preview` and load with the workspace graph behind the editing screen. Selecting another node opens it in the same workspace with the return path; the relations of the selected annotation, or of its open rule, are highlighted.
-- Removal Removal uses the shared confirmation dialog above the workspace. Cancel preserves the form; successful removal selects the next property, then the previous one if necessary. Direct property constraints are removed with their owner. Field validation stays beside its control; unexpected save errors use the shared Toast outlet. Failed property saves restore the model and retain the form draft for retry.
-- The active list uses Sushi `OrderList` with stable property IDs, its drag handles, movement menu and keyboard shortcuts. Moves persist immediately. There is no second property list or separate sorting mode.
-- Own properties are editable; inherited/base properties are read-only. Group them by source model and keep stable IDs for rows. An inherited selection shows a yellow notice at the bottom of the property window explaining that it cannot be edited here; its source chip opens the declaring node and the exact property in the same editor, preserving the return path. Inspector and editor share `NodeAttributeComponent` without nested interactive controls.
-- Property changes stay local until Save succeeds. The window footer offers Save and Discard changes. Switching selection, closing or navigating with a draft opens the shared confirmation dialog with Cancel, Discard and Save; invalid drafts remain visible with inline errors. Save and Discard only resolve the draft and keep the current property open; blocked actions are never queued or resumed automatically. Block concurrent edits with `inert` during persistence while keeping the existing field and panel appearance; only the save control shows loading. Do not toggle every control into a disabled visual state for a brief save.
-- An always-present blank row creates properties. Enter saves and focuses the refreshed blank name field; leaving the name field for a control outside this row saves without stealing focus. Moving between its name, datatype and array controls keeps the draft local. Blank names create nothing. Escape clears the draft. Creation errors stay at the new name field. Successful creation selects the new property and resets the row to String/single value. Selecting an owned property focuses its name in the list; inherited properties open read-only details.
-- New properties persist when their inline row is submitted. Duplication immediately persists and selects a copy with a free name, preserved settings and a cleared key flag. Resolve any existing draft before duplicating. Ignore asynchronous results after the editor is destroyed or its project, model, node or property changes. New/renamed names are limited to 40 characters; imported names remain intact and duplicate suffixes reserve space.
-- Keep the key option visible. A node can have at most one key across its inheritance chain, and key bounds must be exactly `1..1`. Disable ineligible key controls with the existing key name or a required/single-value explanation. The number of values is one Sushi `SelectButton` with the presets Optional `0..1`, Required `1`, List `0..*`, Non-empty `1..*` and Custom; bounds that match no preset select Custom. Custom shows the minimum/maximum limits, and order/duplicate settings appear for multiple values. Keep limits editable without collapsing their group; an empty maximum means unlimited.
-- `_property-panels.scss` owns the list, scrolling and focus rules shared by property and annotation views; `PropertyEditorComponent` owns the grid areas. `NodeContextPanelComponent` owns the node title, base-type hint and refinement navigation. `ShapeEditorComponent` uses `display: contents` and places its list in the `annotations` area and its windows in the `windows` area. Its annotation list uses the same compact rows and source-model dividers as the Properties list, including inherited definitions. Opening the workspace never starts an annotation draft. The annotation window keeps the name and description draft and lists shared properties, own properties and relation rules; selecting one opens the detail window beside it, which reuses `PropertyFormComponent` or `ShapeRelationFormComponent` with its own save. `canLeave('detail')` resolves only the detail draft; leaving the annotation resolves both. The list footer field filters the list and creates: submitting an unknown name persists the annotation and opens it, an exact match opens the existing annotation, and an empty submission opens the settings form for a new one. `AnnotationVocabulariesComponent` sits in a Sushi Popover beside that field; adding a selection or a whole vocabulary skips existing names, persists the batch together and closes the popover. Presets live in `annotation-vocabularies.ts`. The text editor preset follows its default name mapping; `head.level` and `cell.cols/rows` are optional Integer properties until the editor contract specifies stricter rules. The TEI-inspired sample contains names only, without TEI attributes or XML rules. Shared/owned properties and relation rules open only on request; `PropertyFormComponent.shapeId` routes property saves through the shape actions. Inherited shapes and shared node properties are read-only. Shape edits validate a trial change and restore the workspace if persistence fails. Relation rules select existing edges and a combined cardinality; they do not create graph edges.
-- Escape closes the top confirmation dialog or popover, or cancels sorting first, otherwise closes the workspace; toolbar shortcuts stay blocked while it is open. Opening motion respects reduced motion and the animation preference.
+| Editing path                            | Owner and save boundary                                                              |
+| --------------------------------------- | ------------------------------------------------------------------------------------ |
+| Inline property name/type/multiple mode | `PropertyListComponent`; name on Enter/blur, confirmed control changes immediately   |
+| Blank property row                      | `PropertyListComponent`; submit or leave the row's name field; empty creates nothing |
+| Reordering                              | Sushi OrderList plus `reorderAttributes`; persist actual property IDs/order          |
+| Advanced property details               | `PropertyDetailsDialog` + `PropertyFormComponent`; explicit Save, local form draft   |
+| Shape settings                          | `ShapeEditorComponent`; explicit Save                                                |
+| Shape-owned property/relation detail    | `PropertyFormComponent.shapeId` / `ShapeRelationFormComponent`; separate Save        |
 
-To make inspection resumable, call `RunningActionService.start` with project ID, icon, severity, translated title/hint and an async resume callback. Honour its abort signal before restoring UI. One action is active at a time; model writes invalidate it, while navigation and view preferences do not. Resume rechecks persisted revisions. Model changes must pass through `ProjectService` so invalidation remains consistent.
+Inline writes use one sequential queue. Keep row IDs, focus and scroll stable; wait for saves before details, duplication or removal. Do not globally disable/recreate the list for a brief write. The paint yield before synchronous Core validation has a hidden-window fallback; it is not a replacement animation.
 
-`RemovalReviewService` retains the confirmation route, selected consequence list and scroll position. The property workspace keeps an internal node-history stack: the refinement chip opens the ancestor in the same editing screen, and Back restores the previous route and selected property. Resolve unsaved edits in a confirmation dialog before switching. The neighbourhood uses the same history. Node navigation updates the existing workspace without animating its panels; Close in the top panel returns to the graph; the node-history Back action is separate. This does not create a paused running action. Keep graph components independent of these restoration details.
+Guard departure according to the actual draft owner. Inline invalid names stay focused rather than opening a fictitious global Save workflow. Property detail dialogs own their Save/Cancel. Shape navigation resolves detail/settings drafts with scoped Save/Discard/Cancel; invalid drafts remain visible. Never replay a blocked edit automatically after resolving a prepared action.
 
-## Runtime and verification notes
+`NodeContextPanelComponent` opens the shared name/description dialog. `_property-panels.scss` owns shared list/window structure. Read-only inherited details retain declaration identity so navigation can reopen the exact source property.
 
-- There is no persistent automated scenario suite yet. Verify mutations, draft resolution, stale context and migrations with behavioural checks; builds alone do not cover these paths.
-- CI checks lint, formatting, types and builds. RAMEN Core is resolved from npm through the lockfile; no sibling repository provisioning is required.
-- Home, project entry and workspace screens load through route-level dynamic imports. Keep their entry points lazy; the initial bundle and all component styles must stay within the existing budgets. Use shared layout utilities for structural styles and scoped CSS for component state, motion and responsive overrides.
-- CommonJS imports in `short-unique-id`, `iwanthue`, ELK and the `json-schema-library` dependencies in Core are explicitly accepted in `angular.json`. Their installed distributions do not provide native ESM for these imports. Replacing them requires checks of ID compatibility, colour generation, graph layouts and schema validation. Default palettes are fixed values; load the palette generator only on demand. ELK calculations run in the shipped worker, terminated with the graph component.
-- Desktop routes keep the absolute `index.html` entry URL through `DesktopLocationStrategy`. Relative fragment URLs resolve against the document's `./` base and can drop the entry file, breaking native reload. Browser routes retain their normal strategy.
-- The desktop window stays hidden until the first activated route renders and signals readiness through the validated main-frame IPC bridge. Keep startup performance separate from intro timing.
+`AnnotationVocabulariesComponent` supplies preset selection through a Popover. Presets live in `annotation-vocabularies.ts`; adding a batch skips existing types. Shape rules resolve existing model relationships, not new edges. `features.ts` enables the editor in standard builds; `features.signed.ts` disables it in signed distributions while retaining model data.
 
-## Repairable project imports
+## Graph and shared UI
 
-`utils/project-import.ts` validates untrusted input against the RAMEN file schema shipped by the installed Core package, then reconstructs model declarations by their original owners. This Nori adapter deliberately permits semantic validation findings; Core's strict `RamenModel.import()` and export contract remain unchanged. Every supplied model and annotation is retained, and missing dependencies are never substituted with the packaged reference model.
+- `WorkspaceScreen` owns panel placement and occupied canvas space. `EditorPanelComponent` supplies a shared frame; put the scrolling element and its shared hints in one `nori-scroll-frame` cell.
+- Base Nodes and Refinements have different data/actions. Share visual primitives instead of combining them into a large mode-dependent component.
+- SVG drawing belongs in `GraphRenderer`; geometry/layout in helpers; pan/zoom/fit in `GraphViewport`. ELK calculations run in a worker that terminates with the graph.
+- Route selections through `NavigationService`; node and relation selections clear each other. Preserve the viewport when opening the node workspace.
+- `GraphImageExport` captures SVG/PNG independently of viewport and panels. `ExportService` owns the file picker/download fallback; keep rasterisation separate from file-dialog logic.
+- Ordinary dialogs use `DialogService` and its pending/error state. Confirmation details retain their measured opening sequence. Operation success closes the dialog; failure keeps its local feedback available.
 
-Invalid projects open through `RamenModel.load()` and use the existing model-validation status and diagnostics dialog. Primitive data types remain selectable when Core cannot provide suggestions for an invalid project. Files with an unsupported schema, malformed structure, unknown declaration owners, duplicate model identities, a missing/non-RAMEN root, or cyclic model imports are rejected before persistence. Resolving missing dependencies through a dedicated UI is not implemented yet. Export still requires a valid project.
+## Import and export boundary
 
-Run `npm run test:import` to check valid/annotation round trips, semantic failures, a repair, preserved declarations, non-mutating reads and structural rejection cases. Fixtures and their expected behaviour live in `examples/import-models`.
+`utils/project-import.ts` validates the published Core transport schema and reconstructs declarations by owner without requiring semantic validity. It rejects unsafe structure/ownership before persistence. It neither substitutes dependencies nor changes Core's strict `RamenModel.import()`.
 
-## Feedback service boundaries
+`WorkspaceStore` restores editable facades through `RamenModel.load()` and exposes their diagnostics. Export remains strict and checks that every stored branch is included before writing. See the [functional import contract](features.md#importing-and-exporting-models) and [fixtures](../examples/import-models/README.md).
 
-The lifecycle contract lives in [Generic feedback](ui-guidelines.md#generic-feedback). `NotificationService` owns only timed status messages. `ActionFeedbackService` arbitrates one persistent action slot; `ActionFeedbackComponent` is its only renderer, mounted in either the general editor or the node editor. `ModelValidationFeedbackService` and `RunningActionService` register and explicitly release their own tasks; they do not own separate notification windows. `GraphToolsService` owns contextual hints. `FeedbackComponent` remains presentation-only.
+## Extending shortcuts and languages
 
-Leaving `WorkspaceScreen` clears the selected project, which invalidates project-scoped actions. Moving between nodes and the property editor keeps the workspace and its tasks alive. Tests for these service semantics use `npm run test:feedback`; import checks remain in `npm run test:import`.
+For a shortcut, extend `ShortcutAction`/`SHORTCUT_DEFINITIONS`, bind execution in the toolbar and reuse the command's normal guards. Add labels for every language and use `ShortcutService.display/aria`; never repeat default bindings in templates. Check remapping, conflicts, focus, dialogs and text editing. [Keyboard shortcut review](keyboard-shortcuts.md) defines the defaults.
 
-`InteractionStateService` is the authoritative gate for model commands (`ready` / `decision` / `executing`). `WorkspaceActionsService` enters it before mutating Core or history and holds execution through persistence. `RunningActionService` owns the prepared removal's feature data and uses an interaction identity/revision/signal to resume safely. Action feedback only presents the matching task and attention cue. View-only navigation and graph preferences are permitted while a decision is pending. See the binding interaction rules in the UI guidelines.
+For a language, register it in `i18n/languages.ts`, add its JSON and all language-option labels. Update every registered language for new product strings, including singular/plural counts. Check dynamic translation keys before deleting entries.
+
+## Assets, runtime and verification
+
+- Preserve `editor/public/images/nori-logo-clean.svg` for small marks and `nori-logo-worn.svg` for large/native assets. `LogoIntroComponent` owns the supplied video; `BrandIllustrationComponent` owns home artwork/motion.
+- `icons/icon.icon` owns native macOS appearance variants. Do not replace packaged dock icons programmatically. Packaging and signing are documented in [Build and distribution](deployment.md).
+- The desktop stays hidden until the first rendered route sends validated readiness IPC. `DesktopLocationStrategy` retains the absolute `index.html` entry for reload; browser routing stays separate.
+- RAMEN Core comes from npm/lockfile; no sibling checkout/build is needed. Keep route-level imports lazy and respect bundle/style budgets.
+- Run `npm run verify` for lint, formatting, types and both builds. Run `npm run test:feedback` and `npm run test:import` separately for interaction/command and exchange regression checks. These are service-level checks, not an automated browser suite.
+- Verify changed workflows with the keyboard, real drafts, persistence failures, navigation, reduced motion and the relevant desktop/browser surface. A successful build does not establish those behaviours.

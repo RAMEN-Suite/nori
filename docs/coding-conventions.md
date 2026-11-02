@@ -1,6 +1,6 @@
 # Coding conventions
 
-Shared coding style for Nori and related libraries. General principles transfer to other languages; the TypeScript and Angular rules describe this project's stack. See the [Editor guide](editor-components.md) for ownership and extension paths, and [UI guidelines](ui-guidelines.md) for presentation.
+Shared coding style for Nori and related libraries. General principles transfer to other languages; the TypeScript and Angular rules describe this project's stack. See [Features and behaviour](features.md) for the functional contract, the [Editor guide](editor-components.md) for ownership and extension paths, and [UI guidelines](ui-guidelines.md) for presentation.
 
 ## Keep the design simple
 
@@ -81,7 +81,7 @@ Use guard clauses instead of deeply nested branches. Extract meaningful operatio
 ## Verification and commits
 
 - Run `npm run verify`: lint, formatting, all TypeScript checks and both builds. Configuration files are authoritative; update docs and tooling together.
-- Test observable behaviour and actual regression risks, especially mutations, persistence, migrations, concurrency and public APIs. Compilation alone is not a behavioural test.
+- Run `npm run test:feedback` and `npm run test:import` for the service/command and import checks, separately from `verify`. Test observable behaviour and actual regression risks, especially mutations, persistence, migrations, concurrency and public APIs. Compilation alone is not a behavioural test.
 - For UI changes, check keyboard navigation, focus, long/translatable text, overflow and reduced motion. See [UI guidelines](ui-guidelines.md).
 - Keep changes reviewable. Use Commitlint-validated `type(scope): description`; scopes are `editor`, `desktop`, `tools`, `deps`, `release`.
 - Report checks not run and unresolved warnings honestly. Keep supported Node/npm versions and the lockfile consistent with CI.
