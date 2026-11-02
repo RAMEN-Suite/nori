@@ -12,7 +12,7 @@ A browser and desktop editor for multi-level modelling across heterogeneous doma
 
 ## Development
 
-Use the Node.js version in [`.nvmrc`](.nvmrc) and npm requirements in [`package.json`](package.json). Nori currently depends on a built sibling checkout at `../ramen-core`; install its dependencies and build it first.
+Use the Node.js version in [`.nvmrc`](.nvmrc) and npm requirements in [`package.json`](package.json). RAMEN Core is installed from npm as `@ramen-suite/core` (0.1.0 or a compatible patch release). No sibling checkout or separate Core build is needed.
 
 ```sh
 npm ci

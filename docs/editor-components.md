@@ -86,7 +86,7 @@ To make inspection resumable, call `RunningActionService.start` with project ID,
 ## Runtime and verification notes
 
 - There is no persistent automated scenario suite yet. Verify mutations, draft resolution, stale context and migrations with behavioural checks; builds alone do not cover these paths.
-- CI checks lint, formatting, types and builds but still needs provisioning for the built sibling `../ramen-core`; see the README installation prerequisites.
+- CI checks lint, formatting, types and builds. RAMEN Core is resolved from npm through the lockfile; no sibling repository provisioning is required.
 - Home, project entry and workspace screens load through route-level dynamic imports. Keep their entry points lazy; the initial bundle and all component styles must stay within the existing budgets. Use shared layout utilities for structural styles and scoped CSS for component state, motion and responsive overrides.
 - CommonJS imports in `short-unique-id`, `iwanthue`, ELK and the `json-schema-library` dependencies in Core are explicitly accepted in `angular.json`. Their installed distributions do not provide native ESM for these imports. Replacing them requires checks of ID compatibility, colour generation, graph layouts and schema validation. Default palettes are fixed values; load the palette generator only on demand. ELK calculations run in the shipped worker, terminated with the graph component.
 - Desktop routes keep the absolute `index.html` entry URL through `DesktopLocationStrategy`. Relative fragment URLs resolve against the document's `./` base and can drop the entry file, breaking native reload. Browser routes retain their normal strategy.

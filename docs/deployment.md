@@ -14,14 +14,13 @@ Run the commands from the Nori repository root unless stated otherwise.
 ## Prepare your machine
 
 1. Install Node.js as specified in [`.nvmrc`](../.nvmrc) and npm according to the `engines` requirements in [`package.json`](../package.json).
-2. Place the RAMEN Core repository next to Nori at `../ramen-core`. Nori currently uses that local package. In the Core directory, run `npm ci` and `npm run build`.
-3. Back in Nori, install dependencies:
+2. Install dependencies. This includes the published `@ramen-suite/core` package; a local Core checkout or build is not required:
 
    ```sh
    npm ci
    ```
 
-4. For a desktop build, also download the Electron runtime:
+3. For a desktop build, also download the Electron runtime:
 
    ```sh
    npm run setup:electron
