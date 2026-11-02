@@ -30,7 +30,8 @@
     "open": "Open project",
     "create": "Create project",
     "import": "Import model",
-    "importError": "The model could not be imported."
+    "importError": "The model could not be imported.",
+    "importFileError": "This file cannot be opened: {{message}}"
   },
   "settings": {
     "repository": "Questions & issues on GitHub",

@@ -1,0 +1,215 @@
+{
+  "$schema": "https://ramen-schema.org/ramen/1.0.0/file.schema.json",
+  "id": "import-demo-model-0001",
+  "project": {
+    "name": "Import Demo 05-missing-dependency",
+    "description": "Kleine Briefedition für Import- und Reparaturtests."
+  },
+  "models": [
+    {
+      "$schema": "https://ramen-schema.org/ramen/1.0.0/project.schema.json",
+      "$id": "urn:rmf:model:import-demo-model-0001",
+      "id": "import-demo-model-0001",
+      "version": "1.0.0",
+      "kind": "Model",
+      "name": "Import Demo",
+      "description": "Kleine Briefedition für Import- und Reparaturtests.",
+      "imports": [
+        {
+          "modelUri": "https://ramen-schema.org/ramen/1.0.0/model.json",
+          "modelId": "lW611f30a2ky4276g3l8N",
+          "version": "1.0.0",
+          "name": "RAMEN"
+        }
+      ],
+      "ext": {}
+    }
+  ],
+  "classifiers": [
+    {
+      "kind": "Node",
+      "id": "rqNw4zb7z7tSQslw",
+      "name": "Letter",
+      "description": "Ein Brief mit Titel und zugehörigem Text.",
+      "superTypes": ["lW611f30a2ky4276g3l8N:aP3xK8nV1qR6tY2uZ9wB"],
+      "attributes": [
+        {
+          "id": "ZtOO3Nc7ScHvXocc",
+          "name": "title",
+          "typeId": "String",
+          "bounds": {
+            "lowerBound": 1,
+            "upperBound": 1
+          },
+          "isKey": false,
+          "isReadOnly": false,
+          "isUnique": true,
+          "isOrdered": true,
+          "constraints": [],
+          "ext": {}
+        }
+      ],
+      "constraints": [],
+      "ext": {},
+      "modelId": "import-demo-model-0001"
+    },
+    {
+      "kind": "Node",
+      "id": "CEdtuUuZDh0kBrae",
+      "name": "Text",
+      "description": "Transkription eines Briefs.",
+      "superTypes": ["lW611f30a2ky4276g3l8N:Z4kq1M8sV0bN2xR7pT6u"],
+      "attributes": [
+        {
+          "id": "meeQfi3bXht2YiRV",
+          "name": "text",
+          "typeId": "String",
+          "bounds": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "isKey": false,
+          "isReadOnly": false,
+          "isUnique": true,
+          "isOrdered": true,
+          "constraints": [],
+          "ext": {}
+        },
+        {
+          "id": "ddudAi93JV74Xslf",
+          "name": "sourceUrl",
+          "typeId": "String",
+          "bounds": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "isKey": false,
+          "isReadOnly": false,
+          "isUnique": true,
+          "isOrdered": true,
+          "constraints": [],
+          "ext": {}
+        }
+      ],
+      "constraints": [],
+      "ext": {},
+      "modelId": "import-demo-model-0001"
+    },
+    {
+      "kind": "Node",
+      "id": "T5VQfcinI0xgwh3U",
+      "name": "Person",
+      "superTypes": ["lW611f30a2ky4276g3l8N:n7Vb2Qx0Lm9P3sT6yK1h"],
+      "attributes": [
+        {
+          "id": "zwhkCFVIZev88HDg",
+          "name": "name",
+          "typeId": "String",
+          "bounds": {
+            "lowerBound": 0,
+            "upperBound": 1
+          },
+          "isKey": false,
+          "isReadOnly": false,
+          "isUnique": true,
+          "isOrdered": true,
+          "constraints": [],
+          "ext": {}
+        }
+      ],
+      "constraints": [],
+      "ext": {},
+      "modelId": "import-demo-model-0001"
+    }
+  ],
+  "relations": [
+    {
+      "kind": "Relation",
+      "id": "OBV82hmZSsqI3obt",
+      "superTypes": ["lW611f30a2ky4276g3l8N:K0mT3aL7vQ9pX4sN1cDz"],
+      "name": "PART_OF",
+      "from": {
+        "id": "3mZ4t4a5BNJx0Wjy",
+        "nodeId": "CEdtuUuZDh0kBrae",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "constraints": [],
+        "ext": {}
+      },
+      "to": {
+        "id": "7CbxRiC8ZYGNg74q",
+        "nodeId": "rqNw4zb7z7tSQslw",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "constraints": [],
+        "ext": {}
+      },
+      "constraints": [],
+      "ext": {},
+      "modelId": "import-demo-model-0001"
+    },
+    {
+      "kind": "Relation",
+      "id": "oucJd7bOcqLhO3QP",
+      "superTypes": ["lW611f30a2ky4276g3l8N:pX4sN1cDzK0mT3aL7vQ9"],
+      "name": "HAS_ANNOTATION",
+      "from": {
+        "id": "5mTSlgeXnfIiLF0L",
+        "nodeId": "CEdtuUuZDh0kBrae",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "constraints": [],
+        "ext": {}
+      },
+      "to": {
+        "id": "mQQAkO33WKqTFNCE",
+        "nodeId": "lW611f30a2ky4276g3l8N:m2Xv8qL0sP6tN1yK7rB3",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "constraints": [],
+        "ext": {}
+      },
+      "constraints": [],
+      "ext": {},
+      "modelId": "import-demo-model-0001"
+    },
+    {
+      "kind": "Relation",
+      "id": "I2DLOIOLnvgfOMAM",
+      "superTypes": ["lW611f30a2ky4276g3l8N:mR0sT6yK1nB3xV7pQ2xL9"],
+      "name": "REFERS_TO",
+      "from": {
+        "id": "T6PLpuL72rOwdgiE",
+        "nodeId": "lW611f30a2ky4276g3l8N:m2Xv8qL0sP6tN1yK7rB3",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "constraints": [],
+        "ext": {}
+      },
+      "to": {
+        "id": "9o44UA21PDjxs1VT",
+        "nodeId": "T5VQfcinI0xgwh3U",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "constraints": [],
+        "ext": {}
+      },
+      "constraints": [],
+      "ext": {},
+      "modelId": "import-demo-model-0001"
+    }
+  ],
+  "annotations": []
+}

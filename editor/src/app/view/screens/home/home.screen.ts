@@ -16,6 +16,7 @@ import { environment } from '../../../../environments/environment';
 import { ExternalLinkDirective } from '../../../directives/external-link.directive';
 import { NavigationService } from '../../../services/interaction/navigation.service';
 import { ProjectService } from '../../../services/projects/project.service';
+import { ProjectImportError } from '../../../utils/project-import';
 import { ApplicationState } from '../../../states/application.state';
 import { LogoIntroComponent } from '../../components/projects/logo-intro/logo-intro.component';
 import { WindowState } from '../../../states/window.state';
@@ -104,8 +105,12 @@ export class HomeScreen implements OnInit {
       const contents: unknown = JSON.parse(await file.text());
       const projectId: string = await this.projects.importProject(contents);
       await this.navigation.navigateToProject(projectId);
-    } catch {
-      this.importError.set(this.translations.translate('home.importError'));
+    } catch (error: unknown) {
+      this.importError.set(
+        error instanceof ProjectImportError
+          ? this.translations.translate('home.importFileError', { message: error.message })
+          : this.translations.translate('home.importError'),
+      );
     } finally {
       this.importing.set(false);
     }

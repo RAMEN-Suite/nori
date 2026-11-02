@@ -91,3 +91,11 @@ To make inspection resumable, call `RunningActionService.start` with project ID,
 - CommonJS imports in `short-unique-id`, `iwanthue`, ELK and the `json-schema-library` dependencies in Core are explicitly accepted in `angular.json`. Their installed distributions do not provide native ESM for these imports. Replacing them requires checks of ID compatibility, colour generation, graph layouts and schema validation. Default palettes are fixed values; load the palette generator only on demand. ELK calculations run in the shipped worker, terminated with the graph component.
 - Desktop routes keep the absolute `index.html` entry URL through `DesktopLocationStrategy`. Relative fragment URLs resolve against the document's `./` base and can drop the entry file, breaking native reload. Browser routes retain their normal strategy.
 - The desktop window stays hidden until the first activated route renders and signals readiness through the validated main-frame IPC bridge. Keep startup performance separate from intro timing.
+
+## Repairable project imports
+
+`utils/project-import.ts` validates untrusted input against the RAMEN file schema shipped by the installed Core package, then reconstructs model declarations by their original owners. This Nori adapter deliberately permits semantic validation findings; Core's strict `RamenModel.import()` and export contract remain unchanged. Every supplied model and annotation is retained, and missing dependencies are never substituted with the packaged reference model.
+
+Invalid projects open through `RamenModel.load()` and use the existing model-validation status and diagnostics dialog. Primitive data types remain selectable when Core cannot provide suggestions for an invalid project. Files with an unsupported schema, malformed structure, unknown declaration owners, duplicate model identities, a missing/non-RAMEN root, or cyclic model imports are rejected before persistence. Resolving missing dependencies through a dedicated UI is not implemented yet. Export still requires a valid project.
+
+Run `npm run test:import` to check valid/annotation round trips, semantic failures, a repair, preserved declarations, non-mutating reads and structural rejection cases. Fixtures and their expected behaviour live in `examples/import-models`.

@@ -1,10 +1,11 @@
 import { computed, effect, inject, Injectable, type Signal, signal, type WritableSignal } from '@angular/core';
-import { type Model, type ProjectMetadata } from '@ramen-suite/core/model';
+import { type Model } from '@ramen-suite/core/model';
 import { RamenModel, RAMEN_MODEL } from '@ramen-suite/core/ramen';
 import { Subject, type Observable } from 'rxjs';
 import { type CreateManifest, type Manifest, type UpdateManifest } from '../../models/Manifest';
 import { type ModelRecord, type ViewSettings } from '../../models/ModelRecord';
 import { indexBy } from '../../utils/collections';
+import { readProjectForEditing, type ImportedProject } from '../../utils/project-import';
 import { ProjectRepositoryService } from './project-repository.service';
 
 /** Coordinates project loading and mutations, exposing the selected project’s reactive state. */
@@ -104,9 +105,7 @@ export class ProjectService {
   }
 
   public async importProject(input: unknown): Promise<string> {
-    const draft: RamenModel = RamenModel.import(input);
-    const model: Model = draft.getModel();
-    const project: ProjectMetadata | undefined = draft.getProjectMetadata();
+    const { root: model, models, project }: ImportedProject = readProjectForEditing(input);
     const inputManifest: CreateManifest = {
       name: project?.name ?? model.name,
       description: project?.description ?? '',
@@ -114,7 +113,7 @@ export class ProjectService {
       metamodelId: RAMEN_MODEL.id,
       metamodelVersion: RAMEN_MODEL.version,
     };
-    const manifest: Manifest = await this.persistProject(inputManifest, draft.getModels());
+    const manifest: Manifest = await this.persistProject(inputManifest, models);
     return manifest.projectId;
   }
 

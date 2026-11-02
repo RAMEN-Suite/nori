@@ -1,5 +1,6 @@
 import { computed, inject, Injectable, type Signal } from '@angular/core';
 import {
+  DataTypes,
   ModelRef,
   type DataTypeSuggestion,
   type Model,
@@ -78,7 +79,9 @@ export class WorkspaceQueriesService {
     this.validation()?.valid ? this.store.getDraft().suggestNodes() : [],
   );
   public readonly dataTypeSuggestions: Signal<readonly DataTypeSuggestion[]> = computed((): readonly DataTypeSuggestion[] =>
-    this.validation()?.valid ? this.store.getDraft().suggestDataTypes() : [],
+    this.validation()?.valid
+      ? this.store.getDraft().suggestDataTypes()
+      : Object.values(DataTypes).map((type): DataTypeSuggestion => ({ dataTypeId: type, ref: type, name: type, baseType: type })),
   );
 
   public resolveNodeLabel(reference: string): string {

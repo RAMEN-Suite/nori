@@ -30,7 +30,8 @@
     "open": "Projekt öffnen",
     "create": "Projekt erstellen",
     "import": "Modell importieren",
-    "importError": "Das Modell konnte nicht importiert werden."
+    "importError": "Das Modell konnte nicht importiert werden.",
+    "importFileError": "Diese Datei kann nicht geöffnet werden: {{message}}"
   },
   "settings": {
     "repository": "Fragen & Fehler im Repository",

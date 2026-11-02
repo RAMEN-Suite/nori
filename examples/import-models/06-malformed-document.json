@@ -1,0 +1,346 @@
+{
+  "$schema": "https://ramen-schema.org/ramen/1.0.0/file.schema.json",
+  "id": "import-demo-model-0001",
+  "project": {
+    "name": "Import Demo 06-malformed-document",
+    "description": "Kleine Briefedition für Import- und Reparaturtests."
+  },
+  "models": [
+    {
+      "$schema": "https://ramen-schema.org/model/1.0.0/schema.json",
+      "$id": "https://ramen-schema.org/ramen/1.0.0/model.json",
+      "id": "lW611f30a2ky4276g3l8N",
+      "version": "1.0.0",
+      "kind": "Model",
+      "name": "RAMEN",
+      "description": "Base model for digital editions, defining collections, content, entities and annotations and the relations between them.",
+      "imports": [],
+      "ext": {}
+    },
+    {
+      "$schema": "https://ramen-schema.org/ramen/1.0.0/project.schema.json",
+      "$id": "urn:rmf:model:import-demo-model-0001",
+      "id": "import-demo-model-0001",
+      "version": "1.0.0",
+      "kind": "Model",
+      "name": "Import Demo",
+      "description": "Kleine Briefedition für Import- und Reparaturtests.",
+      "imports": [
+        {
+          "modelUri": "https://ramen-schema.org/ramen/1.0.0/model.json",
+          "modelId": "lW611f30a2ky4276g3l8N",
+          "version": "1.0.0",
+          "name": "RAMEN"
+        }
+      ],
+      "ext": {}
+    }
+  ],
+  "classifiers": "This must be an array",
+  "relations": [
+    {
+      "kind": "Relation",
+      "id": "V7pQ2xL9mR0sT6yK1nB3",
+      "superTypes": [],
+      "name": "PART_OF",
+      "description": "Places a collection within a collection.",
+      "from": {
+        "nodeId": "aP3xK8nV1qR6tY2uZ9wB",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "id": "11882a4a1a1a92f0"
+      },
+      "to": {
+        "nodeId": "aP3xK8nV1qR6tY2uZ9wB",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "id": "5296ec802aed7bb1"
+      },
+      "modelId": "lW611f30a2ky4276g3l8N"
+    },
+    {
+      "kind": "Relation",
+      "id": "K0mT3aL7vQ9pX4sN1cDz",
+      "superTypes": [],
+      "name": "PART_OF",
+      "description": "Places a content item within a collection.",
+      "from": {
+        "nodeId": "Z4kq1M8sV0bN2xR7pT6u",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "id": "ed2832e9484cc9ee"
+      },
+      "to": {
+        "nodeId": "aP3xK8nV1qR6tY2uZ9wB",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "id": "357d8ae975078df2"
+      },
+      "modelId": "lW611f30a2ky4276g3l8N"
+    },
+    {
+      "kind": "Relation",
+      "id": "sT6yK1nB3xV7pQ2L9mR0",
+      "superTypes": [],
+      "name": "HAS_ANNOTATION",
+      "description": "Attaches an annotation to a collection.",
+      "from": {
+        "nodeId": "aP3xK8nV1qR6tY2uZ9wB",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "id": "f203ff8cc45e18d6"
+      },
+      "to": {
+        "nodeId": "m2Xv8qL0sP6tN1yK7rB3",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "id": "4a61755cb3d9a650"
+      },
+      "modelId": "lW611f30a2ky4276g3l8N"
+    },
+    {
+      "kind": "Relation",
+      "id": "pX4sN1cDzK0mT3aL7vQ9",
+      "superTypes": [],
+      "name": "HAS_ANNOTATION",
+      "description": "Attaches an annotation to a content item.",
+      "from": {
+        "nodeId": "Z4kq1M8sV0bN2xR7pT6u",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "id": "e8124ac0f6affeeb"
+      },
+      "to": {
+        "nodeId": "m2Xv8qL0sP6tN1yK7rB3",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "id": "9d1fb8a998d44055"
+      },
+      "modelId": "lW611f30a2ky4276g3l8N"
+    },
+    {
+      "kind": "Relation",
+      "id": "Q2yT6vL9mR0sT6yK1nB3",
+      "superTypes": [],
+      "name": "HAS_ANNOTATION",
+      "description": "Attaches an annotation to an entity.",
+      "from": {
+        "nodeId": "n7Vb2Qx0Lm9P3sT6yK1h",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "id": "01eff83f221ab3ff"
+      },
+      "to": {
+        "nodeId": "m2Xv8qL0sP6tN1yK7rB3",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "id": "09d895defd083d74"
+      },
+      "modelId": "lW611f30a2ky4276g3l8N"
+    },
+    {
+      "kind": "Relation",
+      "id": "xL9mR0sT6yK1nB3xV7pQ",
+      "superTypes": [],
+      "name": "HAS_ANNOTATION",
+      "description": "Attaches an annotation to an annotation.",
+      "from": {
+        "nodeId": "m2Xv8qL0sP6tN1yK7rB3",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "id": "f782e8c214c6de2a"
+      },
+      "to": {
+        "nodeId": "m2Xv8qL0sP6tN1yK7rB3",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "id": "e8762d26b8de4a64"
+      },
+      "modelId": "lW611f30a2ky4276g3l8N"
+    },
+    {
+      "kind": "Relation",
+      "id": "tN1yK7rB3m2Xv8qL0sP6",
+      "superTypes": [],
+      "name": "REFERS_TO",
+      "description": "Links an annotation to a collection that it refers to.",
+      "from": {
+        "nodeId": "m2Xv8qL0sP6tN1yK7rB3",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "id": "c7eb6cb19894f86b"
+      },
+      "to": {
+        "nodeId": "aP3xK8nV1qR6tY2uZ9wB",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "id": "5a3c92c63ec68015"
+      },
+      "modelId": "lW611f30a2ky4276g3l8N"
+    },
+    {
+      "kind": "Relation",
+      "id": "vQ9pX4sN1cDzK0mT3aL7",
+      "superTypes": [],
+      "name": "REFERS_TO",
+      "description": "Links an annotation to a content item that it refers to.",
+      "from": {
+        "nodeId": "m2Xv8qL0sP6tN1yK7rB3",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "id": "c1ce93334b435f1a"
+      },
+      "to": {
+        "nodeId": "Z4kq1M8sV0bN2xR7pT6u",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "id": "ec5e8fa8a5ccc88c"
+      },
+      "modelId": "lW611f30a2ky4276g3l8N"
+    },
+    {
+      "kind": "Relation",
+      "id": "mR0sT6yK1nB3xV7pQ2xL9",
+      "superTypes": [],
+      "name": "REFERS_TO",
+      "description": "Links an annotation to an entity that it refers to.",
+      "from": {
+        "nodeId": "m2Xv8qL0sP6tN1yK7rB3",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "id": "828ed555908f66ce"
+      },
+      "to": {
+        "nodeId": "n7Vb2Qx0Lm9P3sT6yK1h",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "id": "421b47ea683a1a02"
+      },
+      "modelId": "lW611f30a2ky4276g3l8N"
+    },
+    {
+      "kind": "Relation",
+      "id": "OBV82hmZSsqI3obt",
+      "superTypes": ["lW611f30a2ky4276g3l8N:K0mT3aL7vQ9pX4sN1cDz"],
+      "name": "PART_OF",
+      "from": {
+        "id": "3mZ4t4a5BNJx0Wjy",
+        "nodeId": "CEdtuUuZDh0kBrae",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "constraints": [],
+        "ext": {}
+      },
+      "to": {
+        "id": "7CbxRiC8ZYGNg74q",
+        "nodeId": "rqNw4zb7z7tSQslw",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "constraints": [],
+        "ext": {}
+      },
+      "constraints": [],
+      "ext": {},
+      "modelId": "import-demo-model-0001"
+    },
+    {
+      "kind": "Relation",
+      "id": "oucJd7bOcqLhO3QP",
+      "superTypes": ["lW611f30a2ky4276g3l8N:pX4sN1cDzK0mT3aL7vQ9"],
+      "name": "HAS_ANNOTATION",
+      "from": {
+        "id": "5mTSlgeXnfIiLF0L",
+        "nodeId": "CEdtuUuZDh0kBrae",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "constraints": [],
+        "ext": {}
+      },
+      "to": {
+        "id": "mQQAkO33WKqTFNCE",
+        "nodeId": "lW611f30a2ky4276g3l8N:m2Xv8qL0sP6tN1yK7rB3",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "constraints": [],
+        "ext": {}
+      },
+      "constraints": [],
+      "ext": {},
+      "modelId": "import-demo-model-0001"
+    },
+    {
+      "kind": "Relation",
+      "id": "I2DLOIOLnvgfOMAM",
+      "superTypes": ["lW611f30a2ky4276g3l8N:mR0sT6yK1nB3xV7pQ2xL9"],
+      "name": "REFERS_TO",
+      "from": {
+        "id": "T6PLpuL72rOwdgiE",
+        "nodeId": "lW611f30a2ky4276g3l8N:m2Xv8qL0sP6tN1yK7rB3",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "constraints": [],
+        "ext": {}
+      },
+      "to": {
+        "id": "9o44UA21PDjxs1VT",
+        "nodeId": "T5VQfcinI0xgwh3U",
+        "bounds": {
+          "lowerBound": 0,
+          "upperBound": -1
+        },
+        "constraints": [],
+        "ext": {}
+      },
+      "constraints": [],
+      "ext": {},
+      "modelId": "import-demo-model-0001"
+    }
+  ],
+  "annotations": []
+}
