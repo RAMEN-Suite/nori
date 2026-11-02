@@ -54,10 +54,17 @@ export class ShortcutBindings {
   }
 
   public static display(binding: string, isMac: boolean = false): string {
-    return binding
-      .split('+')
-      .map((key: string): string => (key === 'mod' ? (isMac ? 'Cmd' : 'Ctrl') : ShortcutBindings.keyLabel(key)))
-      .join(' + ');
+    const keys: string[] = binding.split('+');
+    if (isMac) {
+      const symbols: Readonly<Record<string, string>> = { mod: '⌘', alt: '⌥', shift: '⇧' };
+      return [
+        ...['alt', 'shift', 'mod'].filter((key: string): boolean => keys.includes(key)),
+        ...keys.filter((key: string): boolean => !Object.hasOwn(symbols, key)),
+      ]
+        .map((key: string): string => symbols[key] ?? ShortcutBindings.keyLabel(key))
+        .join('\u202f');
+    }
+    return keys.map((key: string): string => (key === 'mod' ? 'Ctrl' : ShortcutBindings.keyLabel(key))).join(' + ');
   }
 
   public static aria(binding: string, isMac: boolean = false): string {
