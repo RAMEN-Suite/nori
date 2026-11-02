@@ -37,7 +37,12 @@ import { type FeedbackKind, type FeedbackSeverity } from '../../../../models/Fee
         }
       </div>
       @if (kind() !== 'hint') {
-        <div class="feedback-actions"><ng-content select="[feedbackActions]" /></div>
+        <div class="feedback-actions">
+          @if (kind() === 'action') {
+            <ng-content select="[feedbackActions]" />
+          }
+          <ng-content select="[feedbackDismiss]" />
+        </div>
       }
     </div>
   `,

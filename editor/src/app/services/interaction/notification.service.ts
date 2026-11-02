@@ -1,6 +1,5 @@
 import { DestroyRef, inject, Injectable, signal, type Signal, type WritableSignal } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
-import { type ToastAction } from '@sushi-kit/angular';
 
 import { type FeedbackSeverity } from '../../models/Feedback';
 
@@ -10,7 +9,7 @@ export interface NotificationOptions {
   readonly status: NotificationStatus;
   readonly message: string;
   readonly title?: string;
-  readonly action?: ToastAction;
+  readonly action?: never;
 }
 
 export interface StatusNotification extends NotificationOptions {
@@ -65,11 +64,6 @@ export class NotificationService {
     if (this.pauses === 0) return;
     this.pauses -= 1;
     this.schedule();
-  }
-
-  public runAction(notification: StatusNotification): void {
-    notification.action?.run();
-    if (notification.action?.dismiss !== false) this.dismiss(notification.id);
   }
 
   private schedule(): void {

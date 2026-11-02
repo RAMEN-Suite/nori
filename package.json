@@ -37,7 +37,8 @@
     "setup:electron": "node node_modules/electron/install.js",
     "prepare": "git config core.hooksPath .githooks",
     "ng": "ng",
-    "test:import": "node tools/check-project-import.mts"
+    "test:import": "node tools/check-project-import.mts",
+    "test:feedback": "node tools/check-feedback.mts"
   },
   "dependencies": {
     "@angular/aria": "^22.2.1",

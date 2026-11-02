@@ -1,68 +1,25 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, untracked, type Signal } from '@angular/core';
-import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
-import { LucideShieldCheck } from '@lucide/angular';
+import { ChangeDetectionStrategy, Component, inject, type Signal } from '@angular/core';
+import { TranslocoDirective } from '@jsverse/transloco';
+import { LucideShieldAlert, LucideShieldCheck } from '@lucide/angular';
 import { type Diagnostic } from '@ramen-suite/core/model';
 import { Button } from '@sushi-kit/angular';
 import { TooltipDirective } from '../../../../directives/tooltip.directive';
-import { NotificationService } from '../../../../services/interaction/notification.service';
-import { DialogService } from '../../../../services/interaction/dialog.service';
 import { ShortcutService } from '../../../../services/interaction/shortcut.service';
-import { WorkspaceService } from '../../../../services/workspace/workspace.service';
-import { ModelDiagnosticsDialog } from '../../dialogs/model-diagnostics/model-diagnostics.dialog';
+import { ModelValidationFeedbackService } from '../../../../services/workspace/model/model-validation-feedback.service';
 
 @Component({
   selector: 'nori-model-validation',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslocoDirective, Button, TooltipDirective, LucideShieldCheck],
+  imports: [TranslocoDirective, Button, TooltipDirective, LucideShieldCheck, LucideShieldAlert],
   templateUrl: './model-validation.component.html',
 })
 export class ModelValidationComponent {
   protected readonly shortcuts: ShortcutService = inject(ShortcutService);
-  private readonly workspace: WorkspaceService = inject(WorkspaceService);
-  private readonly dialogs: DialogService = inject(DialogService);
-  private readonly notifications: NotificationService = inject(NotificationService);
-  private readonly translations: TranslocoService = inject(TranslocoService);
-  private readonly destroyRef: DestroyRef = inject(DestroyRef);
-
-  private toastId: string | null = null;
-  private previousFindings: string = '';
-
-  protected readonly findings: Signal<readonly Diagnostic[]> = computed(
-    (): readonly Diagnostic[] => this.workspace.queries.validation()?.diagnostics ?? [],
-  );
-  protected readonly hasErrors: Signal<boolean> = computed((): boolean =>
-    this.findings().some((finding: Diagnostic): boolean => finding.severity === 'error'),
-  );
-
-  public constructor() {
-    effect((): void => {
-      const findings: readonly Diagnostic[] = this.findings();
-      const signature: string = JSON.stringify([this.workspace.store.currentModel()?.id, findings]);
-      if (signature === this.previousFindings) return;
-      this.previousFindings = signature;
-      untracked((): void => this.announce(findings));
-    });
-    this.destroyRef.onDestroy((): void => this.dismissToast());
-  }
+  private readonly feedback: ModelValidationFeedbackService = inject(ModelValidationFeedbackService);
+  protected readonly findings: Signal<readonly Diagnostic[]> = this.feedback.findings;
+  protected readonly hasErrors: Signal<boolean> = this.feedback.hasErrors;
 
   protected handleShowDetails(): void {
-    this.dialogs.open(ModelDiagnosticsDialog, { size: 'compact', headerKey: 'editor.validationTitle' });
-  }
-
-  private announce(findings: readonly Diagnostic[]): void {
-    this.dismissToast();
-    if (!findings.length) return;
-
-    this.toastId = this.notifications.show({
-      title: this.translations.translate('editor.validationTitle'),
-      message: this.translations.translate('editor.validationSummary', { count: findings.length, message: findings[0]?.message }),
-      status: findings.some((finding: Diagnostic): boolean => finding.severity === 'error') ? 'error' : 'warning',
-      action: { label: this.translations.translate('editor.showFindings'), run: (): void => this.handleShowDetails() },
-    });
-  }
-
-  private dismissToast(): void {
-    if (this.toastId) this.notifications.dismiss(this.toastId);
-    this.toastId = null;
+    this.feedback.showDetails();
   }
 }

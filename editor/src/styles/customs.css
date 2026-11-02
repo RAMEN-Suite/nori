@@ -39,6 +39,7 @@ body {
   --nori-dialog-width: 36rem;
   --nori-dialog-width-compact: 28rem;
   --nori-notification-width: 36rem;
+  --nori-action-bottom: 3.5rem;
   --nori-notification-top: calc(var(--title-bar-height) + var(--nori-chrome-height) + 1.25rem);
   --nori-radius-preview: 0.5rem;
   --nori-preview-border: color-mix(in oklab, var(--color-base-content) 18%, transparent);

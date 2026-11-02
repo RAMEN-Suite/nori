@@ -2,7 +2,7 @@
   *transloco="let t"
   suiButton
   [severity]="findings().length ? (hasErrors() ? 'error' : 'warning') : 'neutral'"
-  [variant]="findings().length ? 'soft' : 'text'"
+  variant="text"
   size="sm"
   shape="circle"
   [attr.aria-keyshortcuts]="shortcuts.aria('validation')"
@@ -12,5 +12,9 @@
   [showDelay]="600"
   (click)="handleShowDetails()"
 >
-  <svg lucideShieldCheck class="size-4" aria-hidden="true"></svg>
+  @if (findings().length) {
+    <svg lucideShieldAlert class="size-4" aria-hidden="true"></svg>
+  } @else {
+    <svg lucideShieldCheck class="size-4" aria-hidden="true"></svg>
+  }
 </button>

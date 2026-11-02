@@ -99,3 +99,9 @@ To make inspection resumable, call `RunningActionService.start` with project ID,
 Invalid projects open through `RamenModel.load()` and use the existing model-validation status and diagnostics dialog. Primitive data types remain selectable when Core cannot provide suggestions for an invalid project. Files with an unsupported schema, malformed structure, unknown declaration owners, duplicate model identities, a missing/non-RAMEN root, or cyclic model imports are rejected before persistence. Resolving missing dependencies through a dedicated UI is not implemented yet. Export still requires a valid project.
 
 Run `npm run test:import` to check valid/annotation round trips, semantic failures, a repair, preserved declarations, non-mutating reads and structural rejection cases. Fixtures and their expected behaviour live in `examples/import-models`.
+
+## Feedback service boundaries
+
+The lifecycle contract lives in [Generic feedback](ui-guidelines.md#generic-feedback). `NotificationService` owns only timed status messages. `ActionFeedbackService` arbitrates one persistent action slot; `ActionFeedbackComponent` is its only renderer, mounted in either the general editor or the node editor. `ModelValidationFeedbackService` and `RunningActionService` register and explicitly release their own tasks; they do not own separate notification windows. `GraphToolsService` owns contextual hints. `FeedbackComponent` remains presentation-only.
+
+Leaving `WorkspaceScreen` clears the selected project, which invalidates project-scoped actions. Moving between nodes and the property editor keeps the workspace and its tasks alive. Tests for these service semantics use `npm run test:feedback`; import checks remain in `npm run test:import`.

@@ -1,6 +1,9 @@
-import { inject, Injectable, signal, type Signal, type WritableSignal } from '@angular/core';
+import { effect, inject, Injectable, signal, untracked, type Signal, type WritableSignal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { type LucideIconData } from '@lucide/angular';
+import { LucideArrowLeft, type LucideIconData } from '@lucide/angular';
+import { TranslocoService } from '@jsverse/transloco';
+import { ApplicationState } from '../../../states/application.state';
+import { ActionFeedbackService } from '../../interaction/action-feedback.service';
 import { ProjectService } from '../../projects/project.service';
 
 export interface RunningActionOptions {
@@ -21,6 +24,10 @@ interface RunningAction extends RunningActionOptions {
 @Injectable({ providedIn: 'root' })
 export class RunningActionService {
   private readonly projects: ProjectService = inject(ProjectService);
+  private readonly feedback: ActionFeedbackService = inject(ActionFeedbackService);
+  private readonly translations: TranslocoService = inject(TranslocoService);
+  private readonly appearance: ApplicationState = inject(ApplicationState);
+  private feedbackId: string | null = null;
 
   private readonly active: WritableSignal<RunningAction | null> = signal(null);
   private readonly working: WritableSignal<boolean> = signal(false);
@@ -31,6 +38,15 @@ export class RunningActionService {
   public constructor() {
     this.projects.modelChanges$.pipe(takeUntilDestroyed()).subscribe((projectId: string): void => {
       if (this.active()?.projectId === projectId) this.discard();
+    });
+    effect((): void => {
+      const action: RunningAction | null = this.active();
+      const projectId: string | null = this.projects.selectedProjectId();
+      this.appearance.language();
+      untracked((): void => {
+        if (action && action.projectId !== projectId) this.discard();
+        else if (action) this.present(action);
+      });
     });
   }
 
@@ -76,5 +92,21 @@ export class RunningActionService {
     this.request++;
     this.active()?.controller.abort();
     this.active.set(null);
+    if (this.feedbackId) this.feedback.release(this.feedbackId);
+    this.feedbackId = null;
+  }
+
+  private present(action: RunningAction): void {
+    this.feedbackId = this.feedback.publish({
+      owner: 'removal-review',
+      icon: action.icon,
+      severity: action.severity,
+      title: this.translations.translate(action.titleKey),
+      description: this.translations.translate(action.descriptionKey),
+      label: this.translations.translate('editor.resumeAction'),
+      buttonIcon: LucideArrowLeft.icon,
+      run: (): Promise<void> => this.resume(),
+      cancel: (): void => this.cancel(),
+    });
   }
 }

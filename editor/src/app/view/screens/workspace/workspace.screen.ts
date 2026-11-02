@@ -5,6 +5,7 @@ import {
   effect,
   inject,
   type OnInit,
+  type OnDestroy,
   signal,
   type Signal,
   type WritableSignal,
@@ -54,7 +55,7 @@ import { ToolBarComponent } from '../../components/workspace/tool-bar/tool-bar.c
   templateUrl: './workspace.screen.html',
   styleUrl: './workspace.screen.scss',
 })
-export class WorkspaceScreen implements OnInit {
+export class WorkspaceScreen implements OnInit, OnDestroy {
   protected readonly appearance: ApplicationState = inject(ApplicationState);
   private readonly windowState: WindowState = inject(WindowState);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
@@ -119,6 +120,10 @@ export class WorkspaceScreen implements OnInit {
   public ngOnInit(): void {
     this.syncSelectionFromRoute();
     void this.projects.refreshManifests().catch((error: unknown): void => this.projects.reportError(error));
+  }
+
+  public ngOnDestroy(): void {
+    this.projects.selectProject(null);
   }
 
   protected handleToggleCatalogue(): void {

@@ -1,55 +1,18 @@
+@use "../../../../../styles/feedback-motion";
+
 .notification-region {
-  display: grid;
+  display: contents;
+}
+.notification-window {
   position: fixed;
   z-index: 2000;
   top: var(--nori-notification-top);
   left: 50%;
   translate: -50% 0;
   width: min(var(--nori-notification-width), calc(100% - 2rem));
-  pointer-events: none;
-}
-.notification-region.node-editor {
-  position: absolute;
-  top: calc(var(--nori-node-toolbar-height) + 1rem);
-}
-.notification-window {
-  grid-area: 1 / 1;
-  width: 100%;
   pointer-events: auto;
 }
-.notification-enter {
-  animation: notification-enter 360ms var(--nori-editor-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
-}
-.notification-leave {
-  pointer-events: none;
-  animation: notification-exit 200ms var(--nori-editor-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
-}
-@keyframes notification-enter {
-  from {
-    clip-path: inset(0 48% round var(--nori-radius));
-    opacity: 0;
-  }
-  25% {
-    opacity: 1;
-  }
-  to {
-    clip-path: inset(0 0 round var(--nori-radius));
-    opacity: 1;
-  }
-}
-@keyframes notification-exit {
-  from {
-    clip-path: inset(0 0 round var(--nori-radius));
-    opacity: 1;
-  }
-  to {
-    clip-path: inset(0 48% round var(--nori-radius));
-    opacity: 0;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .notification-enter,
-  .notification-leave {
-    animation: none;
-  }
+.notification-window.node-editor {
+  position: absolute;
+  top: calc(var(--nori-node-toolbar-height) + 1rem);
 }

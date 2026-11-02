@@ -26,6 +26,7 @@ import { PropertyEditingService } from '../../../../services/workspace/editing/p
 import { WorkspaceService, type WorkspaceContext } from '../../../../services/workspace/workspace.service';
 import { ApplicationState } from '../../../../states/application.state';
 import { ConfirmationDialog, type ConfirmationOptions } from '../../dialogs/confirmation/confirmation.dialog';
+import { ActionFeedbackComponent } from '../../shell/action-feedback/action-feedback.component';
 import { NotificationsComponent } from '../../shell/notifications/notifications.component';
 import { DialogHostComponent } from '../../shell/dialog-host/dialog-host.component';
 import { NodeContextPanelComponent } from './node-context-panel/node-context-panel.component';
@@ -57,6 +58,7 @@ import { PropertyListComponent } from './property-list/property-list.component';
     NodeContextPanelComponent,
     NodeNeighbourhoodComponent,
     NotificationsComponent,
+    ActionFeedbackComponent,
     DialogHostComponent,
   ],
   templateUrl: './property-editor.component.html',

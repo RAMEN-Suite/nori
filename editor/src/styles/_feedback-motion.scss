@@ -1,0 +1,36 @@
+.feedback-enter {
+  animation: feedback-enter 360ms var(--nori-editor-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
+}
+.feedback-leave {
+  pointer-events: none;
+  animation: feedback-exit 200ms var(--nori-editor-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;
+}
+@keyframes feedback-enter {
+  from {
+    clip-path: inset(0 48% round var(--nori-radius));
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  to {
+    clip-path: inset(0 0 round var(--nori-radius));
+    opacity: 1;
+  }
+}
+@keyframes feedback-exit {
+  from {
+    clip-path: inset(0 0 round var(--nori-radius));
+    opacity: 1;
+  }
+  to {
+    clip-path: inset(0 48% round var(--nori-radius));
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .feedback-enter,
+  .feedback-leave {
+    animation: none;
+  }
+}

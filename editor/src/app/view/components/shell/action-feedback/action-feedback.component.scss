@@ -1,0 +1,13 @@
+@use "../../../../../styles/feedback-motion";
+
+.action-window {
+  position: fixed;
+  z-index: 2000;
+  bottom: var(--nori-action-bottom);
+  left: 50%;
+  translate: -50% 0;
+  width: min(var(--nori-notification-width), calc(100% - 2rem));
+}
+.action-window.node-editor {
+  position: absolute;
+}

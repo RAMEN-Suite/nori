@@ -21,40 +21,24 @@ import { ApplicationState } from '../../../../states/application.state';
   host: { style: 'display: contents' },
   imports: [FeedbackComponent, Button, TranslocoPipe, LucideX],
   template: `
-    <section
-      class="notification-region"
-      [class.node-editor]="context() === 'node-editor'"
-      [attr.aria-label]="'common.notifications' | transloco"
-    >
+    <section class="notification-region" [attr.aria-label]="'common.notifications' | transloco">
       @if (notifications.current(); as notification) {
         <nori-feedback
           class="notification-window"
+          [class.node-editor]="context() === 'node-editor'"
           kind="status"
           [severity]="notification.status"
           [title]="notification.title"
           [description]="notification.message"
-          [animate.enter]="appearance.state().animations ? 'notification-enter' : ''"
-          [animate.leave]="appearance.state().animations ? 'notification-leave' : ''"
+          [animate.enter]="appearance.state().animations ? 'feedback-enter' : ''"
+          [animate.leave]="appearance.state().animations ? 'feedback-leave' : ''"
           (pointerenter)="setInteraction('hover', true)"
           (pointerleave)="setInteraction('hover', false)"
           (focusin)="setInteraction('focus', true)"
           (focusout)="handleFocusOut($event)"
         >
-          @if (notification.action; as action) {
-            <button
-              feedbackActions
-              suiButton
-              type="button"
-              size="sm"
-              variant="outlined"
-              severity="neutral"
-              (click)="notifications.runAction(notification)"
-            >
-              {{ action.label }}
-            </button>
-          }
           <button
-            feedbackActions
+            feedbackDismiss
             suiButton
             type="button"
             size="sm"
