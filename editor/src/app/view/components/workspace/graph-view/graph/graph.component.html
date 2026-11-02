@@ -30,18 +30,7 @@
   }
 }
 @if (graphTools.tool() !== 'select') {
-  <p
-    *transloco="let t"
-    class="graph-tool-hint bg-base-100 absolute bottom-12 left-1/2 flex max-w-[min(24rem,80vw)] -translate-x-1/2 items-center gap-3 rounded-[var(--nori-radius-input)] border border-[var(--nori-border)] px-3 py-2 text-center text-sm wrap-anywhere whitespace-pre-line"
-    role="status"
-    data-nori-motion
-  >
-    @if (graphTools.tool() === 'connect' && graphTools.source(); as source) {
-      <span>{{ t('editor.connectionSourceHint', { name: workspace.store.getDraft().getNode(source)?.name }) }}</span>
-    } @else {
-      <span>{{ t(graphTools.tool() === 'connect' ? 'editor.connectHint' : 'editor.eraseHint') }}</span>
-    }
-  </p>
+  <nori-graph-mode-hint class="graph-tool-hint" data-nori-motion />
 }
 @if (nodeActionsPosition(); as position) {
   @if (workspace.store.currentNodeId(); as nodeId) {

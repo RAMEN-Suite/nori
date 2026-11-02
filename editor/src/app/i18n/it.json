@@ -213,9 +213,9 @@
     "chooseRelationHint": "Scegli cosa rappresenta la nuova relazione.",
     "noRelation": "Non è consentita alcuna relazione tra questi nodi in questa direzione.",
     "confirmRemoveConnection": "Eliminare {{name}} da {{from}} a {{to}}? Verranno eliminate anche tutte le relazioni che la raffinano.",
-    "connectHint": "Seleziona un nodo di origine e uno di destinazione oppure trascina per creare una relazione.\nFai doppio clic per una relazione del nodo con sé stesso.",
+    "connectHint": "Seleziona due nodi o trascina per collegarli",
     "eraseHint": "Fai clic sul nodo o sulla relazione da eliminare.",
-    "connectionSourceHint": "{{name}} è selezionato. Scegli il nodo di destinazione.",
+    "connectionSourceHint": "Scegli il nodo di destinazione per {{name}}",
     "undoRelation": "Annulla modifica alla relazione",
     "redoRelation": "Ripeti modifica alla relazione",
     "saveProject": "Salva progetto",
@@ -493,6 +493,7 @@
       "constraintsHint": "Qui sono mostrate le regole esistenti, incluse quelle ereditate. La modifica delle espressioni dei vincoli non è ancora disponibile.",
       "noConstraints": "Nessun vincolo del modello definito.",
       "forward": "Avanti"
-    }
+    },
+    "connectSelfHint": "Fai doppio clic su un nodo per collegarlo a sé stesso."
   }
 }

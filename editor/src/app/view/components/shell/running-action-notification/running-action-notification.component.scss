@@ -1,7 +1,4 @@
-@use "../../../../../styles/feedback-surface";
-
 .running-action-notification {
-  @include feedback-surface.surface;
   position: fixed;
   z-index: 20;
   bottom: 3.5rem;
@@ -11,12 +8,6 @@
   max-width: calc(100vw - 2rem);
   animation: action-enter 220ms ease-out;
 }
-.action-content {
-  @include feedback-surface.content;
-}
-.action-icon {
-  @include feedback-surface.icon;
-}
 @keyframes action-enter {
   from {
     opacity: 0;
@@ -25,11 +16,6 @@
   to {
     opacity: 1;
     translate: 0 0;
-  }
-}
-@media (max-width: 600px) {
-  .running-action-notification {
-    flex-wrap: wrap;
   }
 }
 :host-context(html[data-motion="off"]) .running-action-notification {

@@ -213,9 +213,9 @@
     "chooseRelationHint": "Choose what the new relationship represents.",
     "noRelation": "No relationship is permitted between these nodes in this direction.",
     "confirmRemoveConnection": "Remove {{name}} from {{from}} to {{to}}? Any relationships that refine it will also be removed.",
-    "connectHint": "Select a source and target or drag a relationship.\nDouble-click for a self-relationship.",
+    "connectHint": "Select two nodes or drag to connect",
     "eraseHint": "Click the node or relationship you want to remove.",
-    "connectionSourceHint": "{{name}} is selected. Choose the target node.",
+    "connectionSourceHint": "Choose a target node for {{name}}",
     "undoRelation": "Undo relationship change",
     "redoRelation": "Redo relationship change",
     "saveProject": "Save project",
@@ -493,6 +493,7 @@
       "constraintsHint": "Existing rules, including inherited rules, are shown here. Editing custom constraint expressions is not available yet.",
       "noConstraints": "No model constraints defined.",
       "forward": "Forward"
-    }
+    },
+    "connectSelfHint": "Double-click a node to connect it to itself."
   }
 }

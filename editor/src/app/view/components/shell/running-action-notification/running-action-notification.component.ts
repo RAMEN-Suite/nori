@@ -1,27 +1,27 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { LucideArrowLeft, LucideDynamicIcon, LucideX } from '@lucide/angular';
+import { LucideArrowLeft, LucideX } from '@lucide/angular';
 import { Button } from '@sushi-kit/angular';
+import { FeedbackComponent } from '../../shared/feedback/feedback.component';
 import { RunningActionService } from '../../../../services/workspace/workflows/running-action.service';
 
 @Component({
   selector: 'nori-running-action-notification',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslocoDirective, Button, LucideArrowLeft, LucideDynamicIcon, LucideX],
+  imports: [FeedbackComponent, TranslocoDirective, Button, LucideArrowLeft, LucideX],
   template: `
     @if (actions.current(); as action) {
-      <aside
+      <nori-feedback
         *transloco="let t"
         class="running-action-notification"
-        [attr.data-severity]="action.severity"
-        [attr.aria-label]="t(action.titleKey)"
+        kind="action"
+        [severity]="action.severity"
+        [title]="t(action.titleKey)"
+        [description]="t(action.descriptionKey)"
+        [icon]="action.icon"
       >
-        <span class="action-icon" aria-hidden="true"><svg [lucideIcon]="action.icon" class="size-4"></svg></span>
-        <span class="action-content flex-1">
-          <span class="feedback-title" role="status">{{ t(action.titleKey) }}</span>
-          <span class="feedback-description">{{ t(action.descriptionKey) }}</span>
-        </span>
         <button
+          feedbackActions
           suiButton
           size="sm"
           severity="neutral"
@@ -33,6 +33,7 @@ import { RunningActionService } from '../../../../services/workspace/workflows/r
           <svg lucideArrowLeft class="size-4" aria-hidden="true"></svg>{{ t('editor.resumeAction') }}
         </button>
         <button
+          feedbackActions
           suiButton
           size="sm"
           severity="neutral"
@@ -44,7 +45,7 @@ import { RunningActionService } from '../../../../services/workspace/workflows/r
         >
           <svg lucideX class="size-4" aria-hidden="true"></svg>
         </button>
-      </aside>
+      </nori-feedback>
     }
   `,
   styleUrl: './running-action-notification.component.scss',

@@ -9,8 +9,9 @@ import {
   type InputSignal,
 } from '@angular/core';
 import { TranslocoPipe } from '@jsverse/transloco';
-import { LucideCircleCheck, LucideCircleX, LucideInfo, LucideTriangleAlert, LucideX } from '@lucide/angular';
+import { LucideX } from '@lucide/angular';
 import { Button } from '@sushi-kit/angular';
+import { FeedbackComponent } from '../../shared/feedback/feedback.component';
 import { NotificationService } from '../../../../services/interaction/notification.service';
 import { ApplicationState } from '../../../../states/application.state';
 
@@ -18,7 +19,7 @@ import { ApplicationState } from '../../../../states/application.state';
   selector: 'nori-notifications',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { style: 'display: contents' },
-  imports: [Button, TranslocoPipe, LucideCircleCheck, LucideCircleX, LucideInfo, LucideTriangleAlert, LucideX],
+  imports: [FeedbackComponent, Button, TranslocoPipe, LucideX],
   template: `
     <section
       class="notification-region"
@@ -26,52 +27,34 @@ import { ApplicationState } from '../../../../states/application.state';
       [attr.aria-label]="'common.notifications' | transloco"
     >
       @if (notifications.current(); as notification) {
-        <div
+        <nori-feedback
           class="notification-window"
-          [attr.data-severity]="notification.status"
+          kind="status"
+          [severity]="notification.status"
+          [title]="notification.title"
+          [description]="notification.message"
           [animate.enter]="appearance.state().animations ? 'notification-enter' : ''"
           [animate.leave]="appearance.state().animations ? 'notification-leave' : ''"
-          [attr.role]="notification.status === 'error' || notification.status === 'warning' ? 'alert' : 'status'"
-          aria-atomic="true"
           (pointerenter)="setInteraction('hover', true)"
           (pointerleave)="setInteraction('hover', false)"
           (focusin)="setInteraction('focus', true)"
           (focusout)="handleFocusOut($event)"
         >
-          <span class="notification-icon" aria-hidden="true">
-            @switch (notification.status) {
-              @case ('error') {
-                <svg lucideCircleX class="size-4"></svg>
-              }
-              @case ('warning') {
-                <svg lucideTriangleAlert class="size-4"></svg>
-              }
-              @case ('info') {
-                <svg lucideInfo class="size-4"></svg>
-              }
-              @case ('success') {
-                <svg lucideCircleCheck class="size-4"></svg>
-              }
-            }
-          </span>
-          <span class="notification-content">
-            <strong class="feedback-title">{{ notification.title }}</strong>
-            <span class="feedback-description">{{ notification.message }}</span>
-            @if (notification.action; as action) {
-              <button
-                suiButton
-                type="button"
-                size="sm"
-                variant="outlined"
-                severity="neutral"
-                class="justify-self-start"
-                (click)="notifications.runAction(notification)"
-              >
-                {{ action.label }}
-              </button>
-            }
-          </span>
+          @if (notification.action; as action) {
+            <button
+              feedbackActions
+              suiButton
+              type="button"
+              size="sm"
+              variant="outlined"
+              severity="neutral"
+              (click)="notifications.runAction(notification)"
+            >
+              {{ action.label }}
+            </button>
+          }
           <button
+            feedbackActions
             suiButton
             type="button"
             size="sm"
@@ -83,7 +66,7 @@ import { ApplicationState } from '../../../../states/application.state';
           >
             <svg lucideX class="size-4" aria-hidden="true"></svg>
           </button>
-        </div>
+        </nori-feedback>
       }
     </section>
   `,

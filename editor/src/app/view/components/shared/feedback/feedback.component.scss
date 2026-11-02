@@ -1,0 +1,49 @@
+@use "../../../../../styles/feedback-surface";
+
+:host {
+  display: block;
+  min-width: 0;
+}
+.feedback-frame {
+  @include feedback-surface.surface;
+}
+.feedback-frame[data-kind="status"] {
+  border-color: color-mix(in oklab, var(--feedback-colour) 25%, var(--nori-border));
+  background: color-mix(in oklab, var(--feedback-colour) 10%, var(--sui-color-overlay));
+
+  .feedback-title {
+    color: var(--feedback-colour);
+  }
+}
+.feedback-frame[data-kind="hint"] {
+  background: color-mix(in oklab, var(--feedback-colour) 6%, var(--sui-color-overlay));
+}
+.feedback-icon {
+  @include feedback-surface.icon;
+}
+.feedback-content {
+  @include feedback-surface.content;
+  flex: 1;
+}
+.feedback-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+
+  &:empty {
+    display: none;
+  }
+}
+@media (max-width: 40rem) {
+  .feedback-frame {
+    flex-wrap: wrap;
+  }
+  .feedback-content {
+    flex-basis: calc(100% - 3rem);
+  }
+  .feedback-actions {
+    flex-wrap: wrap;
+    margin-left: 2.625rem;
+  }
+}

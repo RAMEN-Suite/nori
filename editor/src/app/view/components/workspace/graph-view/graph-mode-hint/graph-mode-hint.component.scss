@@ -1,0 +1,10 @@
+:host {
+  display: block;
+  position: absolute;
+  bottom: 3rem;
+  left: 50%;
+  translate: -50% 0;
+  width: max-content;
+  max-width: min(32rem, calc(100% - 2rem));
+  pointer-events: none;
+}

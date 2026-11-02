@@ -4,7 +4,7 @@
   display: flex;
   align-items: center;
   gap: 0.875rem;
-  padding: 0.625rem;
+  padding: 0.625rem 1rem;
   border: 1px solid var(--nori-border);
   border-radius: var(--nori-radius);
   background: var(--sui-color-overlay);
@@ -29,7 +29,7 @@
   flex-shrink: 0;
   width: 1.75rem;
   height: 1.75rem;
-  border-radius: var(--nori-radius-input);
+  border-radius: 50%;
   color: var(--feedback-colour);
   background: color-mix(in oklab, var(--feedback-colour) 10%, transparent);
 }

@@ -1,5 +1,3 @@
-@use "../../../../../styles/feedback-surface";
-
 .notification-region {
   display: grid;
   position: fixed;
@@ -15,23 +13,9 @@
   top: calc(var(--nori-node-toolbar-height) + 1rem);
 }
 .notification-window {
-  @include feedback-surface.surface;
-  border-color: color-mix(in oklab, var(--feedback-colour) 25%, var(--nori-border));
-  background: color-mix(in oklab, var(--feedback-colour) 10%, var(--sui-color-overlay));
-  display: grid;
   grid-area: 1 / 1;
-  grid-template-columns: auto minmax(0, 1fr) auto;
   width: 100%;
   pointer-events: auto;
-}
-.notification-content {
-  @include feedback-surface.content;
-}
-.notification-content .feedback-title {
-  color: var(--feedback-colour);
-}
-.notification-icon {
-  @include feedback-surface.icon;
 }
 .notification-enter {
   animation: notification-enter 360ms var(--nori-editor-ease, cubic-bezier(0.22, 1, 0.36, 1)) both;

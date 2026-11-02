@@ -213,9 +213,9 @@
     "chooseRelationHint": "Wähle die Bedeutung der neuen Beziehung.",
     "noRelation": "Für diese Richtung ist keine Beziehung zwischen den Knoten erlaubt.",
     "confirmRemoveConnection": "Möchtest Du {{name}} von {{from}} zu {{to}} entfernen? Beziehungen, die sie verfeinern, werden ebenfalls entfernt.",
-    "connectHint": "Start und Ziel auswählen oder eine Beziehung ziehen.\nDoppelklick für eine Selbstbeziehung.",
+    "connectHint": "Zwei Knoten auswählen oder eine Verbindung ziehen",
     "eraseHint": "Klicke auf den Node oder die Beziehung, die Du entfernen möchtest.",
-    "connectionSourceHint": "{{name}} ist ausgewählt. Wähle den Zielknoten.",
+    "connectionSourceHint": "Zielknoten für {{name}} wählen",
     "undoRelation": "Beziehungsänderung rückgängig machen",
     "redoRelation": "Beziehungsänderung wiederholen",
     "saveProject": "Projekt speichern",
@@ -493,6 +493,7 @@
       "constraintsHint": "Hier stehen vorhandene Regeln einschließlich geerbter Regeln. Eigene Constraint-Ausdrücke lassen sich hier noch nicht bearbeiten.",
       "noConstraints": "Keine Modell-Constraints definiert.",
       "forward": "Vorwärts"
-    }
+    },
+    "connectSelfHint": "Doppelklicke auf einen Knoten, um ihn mit sich selbst zu verbinden."
   }
 }

@@ -2,7 +2,9 @@ import { DestroyRef, inject, Injectable, signal, type Signal, type WritableSigna
 import { TranslocoService } from '@jsverse/transloco';
 import { type ToastAction } from '@sushi-kit/angular';
 
-export type NotificationStatus = 'error' | 'warning' | 'info' | 'success';
+import { type FeedbackSeverity } from '../../models/Feedback';
+
+export type NotificationStatus = FeedbackSeverity;
 
 export interface NotificationOptions {
   readonly status: NotificationStatus;

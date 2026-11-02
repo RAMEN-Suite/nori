@@ -35,6 +35,7 @@ import { type GraphTool, GraphToolsService } from '../../../../../services/works
 import { NodeEditingService } from '../../../../../services/workspace/editing/node-editing.service';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
 import { ApplicationState } from '../../../../../states/application.state';
+import { GraphModeHintComponent } from '../graph-mode-hint/graph-mode-hint.component';
 import { NodeActionsComponent } from '../node-actions/node-actions.component';
 import { RelationActionsComponent } from '../relation-actions/relation-actions.component';
 import { GraphAutoLayout, type NodePosition } from './graph.auto-layout';
@@ -66,7 +67,15 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'nori-graph',
   encapsulation: ViewEncapsulation.None,
-  imports: [TranslocoDirective, NodeActionsComponent, RelationActionsComponent, FormsModule, Input, AutoselectDirective],
+  imports: [
+    GraphModeHintComponent,
+    TranslocoDirective,
+    NodeActionsComponent,
+    RelationActionsComponent,
+    FormsModule,
+    Input,
+    AutoselectDirective,
+  ],
   templateUrl: './graph.component.html',
   styleUrl: './graph.component.scss',
 })
