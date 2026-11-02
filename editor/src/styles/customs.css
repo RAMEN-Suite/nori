@@ -54,10 +54,10 @@ body {
   --radius-field: var(--nori-radius-input);
 }
 
-/* Editable text follows one role; compact Sushi buttons, badges and search controls retain their sizes. */
-.nori-dialog-content :is([suiInput], [suiTextarea], input[role="combobox"]),
-.project-form :is([suiInput], [suiTextarea], input[role="combobox"]),
-.property-detail:not(.property-list-window) :is([suiInput], [suiTextarea], input[role="combobox"]) {
+/* Editable text follows one role; compact Sushi controls, including colour pickers, retain their sizes. */
+.nori-dialog-content :is([suiInput], [suiTextarea], input[role="combobox"]):not(sui-color-picker *),
+.project-form :is([suiInput], [suiTextarea], input[role="combobox"]):not(sui-color-picker *),
+.property-detail:not(.property-list-window) :is([suiInput], [suiTextarea], input[role="combobox"]):not(sui-color-picker *) {
   font-size: var(--text-base);
   line-height: var(--text-base--line-height);
   font-weight: var(--font-weight-normal);
