@@ -54,9 +54,9 @@ export const SHORTCUT_DEFINITIONS: Readonly<Record<ShortcutAction, Omit<Shortcut
   exportSvg: { category: 'project', key: 'shift+s', label: 'editor.exportSvg' },
   exportPng: { category: 'project', key: 'shift+p', label: 'editor.exportPng' },
   settings: { category: 'navigation', key: ',', label: 'common.settings' },
-  undo: { category: 'graph', key: 'mod+z', label: 'editor.undoRelation' },
-  redo: { category: 'graph', key: 'mod+shift+z', label: 'editor.redoRelation' },
-  redoAlternative: { category: 'graph', key: 'mod+y', label: 'editor.redoRelationAlternative' },
+  undo: { category: 'graph', key: 'mod+z', label: 'editor.undoModel' },
+  redo: { category: 'graph', key: 'mod+shift+z', label: 'editor.redoModel' },
+  redoAlternative: { category: 'graph', key: 'mod+y', label: 'editor.redoModelAlternative' },
 };
 
 export const EDITOR_SHORTCUTS: readonly ShortcutDefinition[] = Object.keys(SHORTCUT_DEFINITIONS)

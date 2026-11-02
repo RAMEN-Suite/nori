@@ -1,20 +1,17 @@
 import '@angular/compiler';
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
-import { join } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
 import { test, type TestContext } from 'node:test';
 import { createEnvironmentInjector, Injector, type EnvironmentInjector } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { RamenModel, RAMEN_ELEMENT } from '@ramen-suite/core/ramen';
-import { build, type OnResolveArgs, type OnResolveResult, type PluginBuild } from 'esbuild';
+import { editorTestModule } from './testing/editor-test-module.mts';
 import type { ActionFeedback, ActionFeedbackOptions } from '../editor/src/app/services/interaction/action-feedback.service';
 import type * as ActionModule from '../editor/src/app/services/interaction/action-feedback.service';
 import type * as InteractionModule from '../editor/src/app/services/interaction/interaction-state.service';
 import type * as CommandsModule from '../editor/src/app/services/workspace/model/workspace-actions.service';
 import type * as ProjectModule from '../editor/src/app/services/projects/project.service';
 import type * as StoreModule from '../editor/src/app/states/workspace.store';
-import type * as HistoryModule from '../editor/src/app/services/workspace/model/relation-history.service';
+import type * as HistoryModule from '../editor/src/app/services/workspace/model/model-history.service';
 import type * as BlockedModule from '../editor/src/app/models/InteractionBlockedError';
 import type * as StatusModule from '../editor/src/app/services/interaction/notification.service';
 
@@ -26,42 +23,6 @@ type FeedbackModule = typeof ActionModule &
   typeof StoreModule &
   typeof HistoryModule &
   typeof BlockedModule;
-mkdirSync('.angular', { recursive: true });
-const directory: string = mkdtempSync('.angular/feedback-check-');
-const target: string = join(directory, 'feedback.mjs');
-process.on('exit', (): void => rmSync(directory, { recursive: true, force: true }));
-await build({
-  stdin: {
-    contents: `export * from './editor/src/app/services/interaction/action-feedback.service';
-      export * from './editor/src/app/services/interaction/notification.service';
-      export * from './editor/src/app/services/interaction/interaction-state.service';
-      export * from './editor/src/app/services/workspace/model/workspace-actions.service';
-      export * from './editor/src/app/services/projects/project.service';
-      export * from './editor/src/app/states/workspace.store';
-      export * from './editor/src/app/services/workspace/model/relation-history.service';
-      export * from './editor/src/app/models/InteractionBlockedError';`,
-    resolveDir: process.cwd(),
-    loader: 'ts',
-  },
-  bundle: true,
-  packages: 'external',
-  plugins: [
-    {
-      name: 'bundle-core-schema',
-      setup(build: PluginBuild): void {
-        build.onResolve(
-          { filter: /^@ramen-suite\/core\/schemas\// },
-          (args: OnResolveArgs): OnResolveResult => ({
-            path: fileURLToPath(import.meta.resolve(args.path)),
-          }),
-        );
-      },
-    },
-  ],
-  platform: 'node',
-  format: 'esm',
-  outfile: target,
-});
 const {
   ActionFeedbackService,
   NotificationService,
@@ -69,9 +30,26 @@ const {
   WorkspaceActionsService,
   ProjectService,
   WorkspaceStore,
-  RelationHistoryService,
+  ModelHistoryService,
   InteractionBlockedError,
-}: FeedbackModule = (await import(pathToFileURL(target).href)) as FeedbackModule;
+}: FeedbackModule = await editorTestModule<FeedbackModule>([
+  './editor/src/app/services/interaction/action-feedback.service',
+  './editor/src/app/services/interaction/notification.service',
+  './editor/src/app/services/interaction/interaction-state.service',
+  './editor/src/app/services/workspace/model/workspace-actions.service',
+  './editor/src/app/services/projects/project.service',
+  './editor/src/app/states/workspace.store',
+  './editor/src/app/services/workspace/model/model-history.service',
+  './editor/src/app/models/InteractionBlockedError',
+]);
+
+const mockHistory: object = {
+  capture: (): object => ({}),
+  record: (): void => undefined,
+  rollback: (): void => undefined,
+  undo: (): void => undefined,
+  redo: (): void => undefined,
+};
 
 function setup(overrides: { projects?: object; store?: object } = {}): {
   injector: EnvironmentInjector;
@@ -86,9 +64,17 @@ function setup(overrides: { projects?: object; store?: object } = {}): {
       NotificationService,
       InteractionStateService,
       WorkspaceActionsService,
-      { provide: ProjectService, useValue: overrides.projects ?? { selectedProjectId: (): string => 'project' } },
+      {
+        provide: ProjectService,
+        useValue: {
+          loadedProjectId: (): string => 'project',
+          records: (): readonly never[] => [],
+          selectedProjectId: (): string => 'project',
+          ...overrides.projects,
+        },
+      },
       { provide: WorkspaceStore, useValue: overrides.store ?? {} },
-      { provide: RelationHistoryService, useValue: {} },
+      { provide: ModelHistoryService, useValue: mockHistory },
       { provide: TranslocoService, useValue: { translate: (key: string): string => key } },
     ],
     Injector.NULL as EnvironmentInjector,
@@ -208,8 +194,8 @@ function modelCommands(commands: InstanceType<FeedbackModule['WorkspaceActionsSe
     (): unknown => commands.createRelation({ from: { nodeId: 'a' }, to: { nodeId: 'b' } }),
     (): unknown => commands.updateRelation('relation', { name: 'Changed' }),
     (): unknown => commands.removeRelation('relation'),
-    (): unknown => commands.undoRelation(),
-    (): unknown => commands.redoRelation(),
+    (): unknown => commands.undo(),
+    (): unknown => commands.redo(),
     (): unknown => commands.createLevel({ name: 'New', uri: 'urn:new', version: '1.0.0' }),
     (): unknown => commands.updateLevel(1, { name: 'New', uri: 'urn:new', version: '1.0.0' }),
     (): unknown => commands.removeLevel(1),

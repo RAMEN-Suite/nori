@@ -4,21 +4,22 @@
 
 ## Owners
 
-| Responsibility                          | Owner                                                                             |
-| --------------------------------------- | --------------------------------------------------------------------------------- |
-| Schema, references and model semantics  | RAMEN Core                                                                        |
-| Project selection and local records     | `ProjectService`, `ProjectRepositoryService`, `AppDatabase`                       |
-| Loaded model facades and selection      | `WorkspaceStore`                                                                  |
-| Derived model information               | `WorkspaceQueriesService`                                                         |
-| Model mutation and persistence boundary | `WorkspaceActionsService`                                                         |
-| Command permissions and active decision | `InteractionStateService`                                                         |
-| Timed status / persistent action slot   | `NotificationService` / `ActionFeedbackService`                                   |
-| Validation review / paused removal      | `ModelValidationFeedbackService` / `RunningActionService`, `RemovalReviewService` |
-| Graph mode and contextual hint          | `GraphToolsService`                                                               |
-| Routes, dialogs and shortcut bindings   | `NavigationService`, `DialogService`, `ShortcutService`                           |
-| Property workspace and internal history | `PropertyEditingService`, `PropertyEditorComponent`                               |
-| Canvas, geometry and viewport           | `GraphComponent`, `GraphRenderer`, graph helpers, `GraphViewport`                 |
-| Shared panel and overflow UI            | `EditorPanelComponent`, `ScrollOverflowDirective`, `ScrollHintsComponent`         |
+| Responsibility                               | Owner                                                                             |
+| -------------------------------------------- | --------------------------------------------------------------------------------- |
+| Schema, references and model semantics       | RAMEN Core                                                                        |
+| Project selection and local records          | `ProjectService`, `ProjectRepositoryService`, `AppDatabase`                       |
+| Loaded model facades and selection           | `WorkspaceStore`                                                                  |
+| Derived model information                    | `WorkspaceQueriesService`                                                         |
+| Model mutation and persistence boundary      | `WorkspaceActionsService`                                                         |
+| Successful-command snapshots and restoration | `ModelHistoryService`                                                             |
+| Command permissions and active decision      | `InteractionStateService`                                                         |
+| Timed status / persistent action slot        | `NotificationService` / `ActionFeedbackService`                                   |
+| Validation review / paused removal           | `ModelValidationFeedbackService` / `RunningActionService`, `RemovalReviewService` |
+| Graph mode and contextual hint               | `GraphToolsService`                                                               |
+| Routes, dialogs and shortcut bindings        | `NavigationService`, `DialogService`, `ShortcutService`                           |
+| Property workspace and internal history      | `PropertyEditingService`, `PropertyEditorComponent`                               |
+| Canvas, geometry and viewport                | `GraphComponent`, `GraphRenderer`, graph helpers, `GraphViewport`                 |
+| Shared panel and overflow UI                 | `EditorPanelComponent`, `ScrollOverflowDirective`, `ScrollHintsComponent`         |
 
 Keep `view`, `services`, `states`, `models`, `directives`, `guards` and `utils` separate. Screens compose views; components own their local interface; services own workflows. State-independent calculations belong in pure helpers. `WorkspaceService.store/queries/actions` is the component-facing workspace facade.
 
@@ -42,11 +43,19 @@ Identity fields are not interchangeable:
 
 1. Use an editing service when the command involves a chooser, confirmation or navigation.
 2. Implement the mutation in `WorkspaceActionsService`, using the public Core API. Enter `InteractionStateService.mutate()` before touching Core, history or storage; delegate-only entry points and removal previews also check availability.
-3. Validate a trial change where the existing action uses `persistValidatedChange`. Do not worsen imported diagnostics. Keep `saveWorkspace()` private and persist through `ProjectService`/the repository.
+3. Validate a trial change where the existing action uses `persistValidatedChange`. Do not worsen imported diagnostics. The common mutation wrapper captures history before editing, records only after successful persistence and restores the snapshot on failure. Keep `saveWorkspace()` private.
 4. Capture project/model identity before awaiting and verify it before restoring state, selection or UI. Roll back failed validated edits only while that captured context is still current.
 5. Translate feedback and verify success, refusal, invalid input, save failure and stale completion.
 
 `WorkspaceStore.getDraft()` returns the cached facade for a level. Reuse it so Core's revision-aware validation/advisor cache remains effective. Trial validation still checks every editable model. Keep structural equality on unchanged graph/colour signals to avoid unnecessary redraws.
+
+## Model history
+
+`ModelHistoryService` replaces the relationship-only history. It stores up to 50 immutable before/after workspace snapshots per project session. Record through the common `WorkspaceActionsService.mutate()` wrapper, not inside individual commands. Batch/cascade operations therefore remain one step. Undo/Redo use the interaction gate directly and never record restoration as a new edit.
+
+`ProjectService.projectSelectionChanges$` clears the timeline and advances its session identity synchronously. Snapshots include all model branches, selected model/element and per-level view preferences. Signature checks reject an unrecorded external change; session checks reject stale completions after project exit/re-entry. No-op/failed commands leave the timeline unchanged.
+
+Restoration persists models before moving either history stack, then navigates by Core model identity rather than obsolete level indexes. `recoveredViews` restores preferences only for recreated records; existing camera/palette preferences remain current. A failed save restores the live model and retains the cursor. Post-commit manifest-refresh errors are reported separately so a committed edit is not falsely rolled back. The history is not persisted or exported.
 
 ## Feedback and interaction
 
@@ -108,5 +117,5 @@ For a language, register it in `i18n/languages.ts`, add its JSON and all languag
 - `icons/icon.icon` owns native macOS appearance variants. Do not replace packaged dock icons programmatically. Packaging and signing are documented in [Build and distribution](deployment.md).
 - The desktop stays hidden until the first rendered route sends validated readiness IPC. `DesktopLocationStrategy` retains the absolute `index.html` entry for reload; browser routing stays separate.
 - RAMEN Core comes from npm/lockfile; no sibling checkout/build is needed. Keep route-level imports lazy and respect bundle/style budgets.
-- Run `npm run verify` for lint, formatting, types and both builds. Run `npm run test:feedback` and `npm run test:import` separately for interaction/command and exchange regression checks. These are service-level checks, not an automated browser suite.
+- Run `npm run verify` for lint, formatting, types and both builds. Run `npm run test:feedback`, `npm run test:history` and `npm run test:import` separately for interaction/command, history and exchange regression checks. These are service-level checks, not an automated browser suite.
 - Verify changed workflows with the keyboard, real drafts, persistence failures, navigation, reduced motion and the relevant desktop/browser surface. A successful build does not establish those behaviours.

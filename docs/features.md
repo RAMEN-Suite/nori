@@ -82,7 +82,7 @@ Refine creates a local type based on the chosen definition. Duplicate creates an
 | Connect | Uses source then target selection or a drag; double-click requests a self-relationship |
 | Erase   | Requests a removal preview; clicking does not immediately delete                       |
 
-Core determines permitted relationships. A compatible relationship is created directly when unambiguous; multiple choices open a chooser. Invalid directions and duplicate relationships report a status instead of creating an edge. Escape leaves the tool mode. Undo/Redo currently covers relationships only.
+Core determines permitted relationships. A compatible relationship is created directly when unambiguous; multiple choices open a chooser. Invalid directions and duplicate relationships report a status instead of creating an edge. Escape leaves the tool mode. Undo/Redo covers committed model changes; see [Model history](#model-history).
 
 Pan/zoom changes the viewport. Fit brings the current graph into view without rearranging nodes; Reset layout recalculates positions. Graph positions and viewport are saved as view preferences. Panel visibility changes available canvas space without changing the model.
 
@@ -132,6 +132,16 @@ The Constraints area opens property rules in the details dialog and displays nod
 
 Definition descriptions use the shared 2,000-code-point limit and visible counter. Project descriptions use the same UI limit but remain project metadata. A description is optional; saving an empty description removes its content rather than inventing placeholder text.
 
+## Model history
+
+Undo/Redo records the last 50 successful model changes in the current project session. Node, property, annotation, relationship and model-level changes share one timeline across levels. A cascaded removal is one step: Undo restores the removed definitions, properties, constraints, relationships and dependent levels together. Recreated levels recover their captured graph preferences.
+
+Use the toolbar controls or Ctrl/Cmd+Z and Ctrl/Cmd+Shift+Z (Ctrl+Y is an alternative on Windows/Linux). Native text editing keeps its own Undo; global model shortcuts stay blocked in forms and the node workspace. Navigation to another level does not clear the model timeline; Undo returns to the restored model and restores a still-existing selection.
+
+A new committed change after Undo clears Redo. No-op, refused and failed commands do not add steps or clear Redo. Failed Undo/Redo restores the live model and retains the same step for retry. An external unrecorded model change disables the stale history chain rather than overwriting it.
+
+History is cleared on project exit/change or reload; it is not stored in the project export. Project metadata, project deletion, viewport, palette and other view preferences do not create steps. Prepared decisions and running operations use the same central command gate for Undo/Redo as for other model edits. Project removal still has no trash or Undo.
+
 ## Feedback and pending decisions
 
 | Element | Purpose                           | Lifetime                                                                              |
@@ -162,4 +172,4 @@ Shortcut capture reports invalid/conflicting assignments; Escape cancels capture
 
 ## Current boundaries
 
-There is no record-data editor, dependency-recovery UI, arbitrary constraint-expression editor, project trash, general edit undo or complete TEI P5 import. Signed builds hide annotation editing. Branching model export may be rejected until Core can represent the complete workspace. Do not describe these as available features.
+There is no record-data editor, dependency-recovery UI, arbitrary constraint-expression editor, project trash or complete TEI P5 import. Signed builds hide annotation editing. Branching model export may be rejected until Core can represent the complete workspace. Do not describe these as available features.

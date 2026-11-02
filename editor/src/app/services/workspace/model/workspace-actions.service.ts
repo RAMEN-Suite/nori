@@ -31,7 +31,7 @@ import {
 import { FieldValidationError } from '../../../models/FieldValidationError';
 import { type GraphView, type ModelRecord, type NodeColors, type ViewSettings } from '../../../models/ModelRecord';
 import { ProjectService } from '../../projects/project.service';
-import { RelationHistoryService } from './relation-history.service';
+import { ModelHistoryService, type HistorySnapshot } from './model-history.service';
 import { WorkspaceStore } from '../../../states/workspace.store';
 import { InteractionStateService } from '../../interaction/interaction-state.service';
 import { PROPERTY_NAME_MAX_LENGTH } from '../../../utils/model-names';
@@ -45,7 +45,7 @@ export class WorkspaceActionsService {
   private readonly projects: ProjectService = inject(ProjectService);
   private readonly store: WorkspaceStore = inject(WorkspaceStore);
   private readonly translations: TranslocoService = inject(TranslocoService);
-  private readonly relationHistory: RelationHistoryService = inject(RelationHistoryService);
+  private readonly history: ModelHistoryService = inject(ModelHistoryService);
 
   private readonly interactions: InteractionStateService = inject(InteractionStateService);
 
@@ -167,7 +167,6 @@ export class WorkspaceActionsService {
 
   public async reorderAttributes(nodeId: string, ids: readonly string[]): Promise<void> {
     return this.mutate(async (): Promise<void> => {
-      const projectId: string | null = this.projects.selectedProjectId();
       const modelId: string | undefined = this.store.currentModel()?.id;
       const models: readonly Model[] = this.store.getModels();
       const model: Model | undefined = models.find((item: Model): boolean => item.id === modelId);
@@ -181,14 +180,7 @@ export class WorkspaceActionsService {
         classifiers: model.classifiers.map((item) => (item.id === nodeId ? { ...node, attributes: ordered } : item)),
       };
       this.store.restoreModels(models.map((item: Model): Model => (item.id === modelId ? updated : item)));
-      try {
-        await this.saveWorkspace();
-      } catch (error: unknown) {
-        if (this.projects.selectedProjectId() === projectId && this.store.currentModel()?.id === modelId) {
-          this.store.restoreModels(models);
-        }
-        throw error;
-      }
+      await this.saveWorkspace();
     });
   }
 
@@ -280,28 +272,16 @@ export class WorkspaceActionsService {
   private async persistValidatedChange<T>(edit: (draft: RamenModel) => ModelChange<T>): Promise<T> {
     return this.mutate(async (): Promise<T> => {
       this.requireValidChange(edit);
-      const models: readonly Model[] = this.store.getModels();
-      const projectId: string | null = this.projects.selectedProjectId();
-      const modelId: string | undefined = this.store.currentModel()?.id;
       const result: T = edit(this.store.getDraft()).element;
-
-      try {
-        await this.saveWorkspace();
-        return result;
-      } catch (error: unknown) {
-        if (this.projects.selectedProjectId() === projectId && this.store.currentModel()?.id === modelId)
-          this.store.restoreModels(models);
-        throw error;
-      }
+      await this.saveWorkspace();
+      return result;
     });
   }
 
   public async createRelation(input: RelationInput): Promise<Relation> {
     return this.mutate(async (): Promise<Relation> => {
-      const before: readonly Model[] = this.relationHistory.capture();
       const draft: RamenModel = this.store.getDraft();
       const relation: Relation = draft.createRelation(input).element;
-      this.relationHistory.record(draft.getModel().id, before);
       await this.saveWorkspace();
 
       return relation;
@@ -314,16 +294,21 @@ export class WorkspaceActionsService {
     await this.persistValidatedChange((draft: RamenModel): ModelChange<Relation> => draft.updateRelation(relationId, patch));
   }
 
-  public async undoRelation(): Promise<void> {
-    return this.mutate(async (): Promise<void> => {
-      await this.relationHistory.undo((): Promise<void> => this.saveWorkspace());
-    });
+  public undo(): Promise<void> {
+    return this.restoreHistory('undo');
   }
 
-  public async redoRelation(): Promise<void> {
-    return this.mutate(async (): Promise<void> => {
-      await this.relationHistory.redo((): Promise<void> => this.saveWorkspace());
-    });
+  public redo(): Promise<void> {
+    return this.restoreHistory('redo');
+  }
+
+  private restoreHistory(direction: 'undo' | 'redo'): Promise<void> {
+    const projectId: string | null = this.projects.selectedProjectId();
+    if (!projectId) return Promise.resolve();
+    return this.interactions.mutate(
+      projectId,
+      (): Promise<void> => this.history[direction]((views): Promise<void> => this.saveWorkspace(views)),
+    );
   }
 
   public previewRelationRemoval(id: string): RelationRemovalPreview {
@@ -334,10 +319,8 @@ export class WorkspaceActionsService {
 
   public async removeRelation(id: string, cascade: boolean = false): Promise<void> {
     return this.mutate(async (): Promise<void> => {
-      const before: readonly Model[] = this.relationHistory.capture();
       const draft: RamenModel = this.store.getDraft();
       draft.removeRelation(id, { cascade });
-      this.relationHistory.record(draft.getModel().id, before);
       await this.saveWorkspace();
     });
   }
@@ -435,18 +418,28 @@ export class WorkspaceActionsService {
     await this.saveView(recordId, { graph });
   }
 
-  private async saveWorkspace(): Promise<void> {
+  private async saveWorkspace(recoveredViews?: ReadonlyMap<string, ViewSettings>): Promise<void> {
     this.store.notifyChange();
     const projectId: string | null = this.projects.selectedProjectId();
     if (!projectId) throw new Error('No project is selected.');
     const models: readonly Model[] = this.store.getModels();
-    await this.enqueueSave((): Promise<void> => this.projects.saveModels(projectId, models));
+    await this.enqueueSave((): Promise<void> => this.projects.saveModels(projectId, models, recoveredViews));
   }
 
   private mutate<T>(operation: () => Promise<T>): Promise<T> {
     const projectId: string | null = this.projects.selectedProjectId();
     if (!projectId) throw new Error('No project is selected.');
-    return this.interactions.mutate(projectId, operation);
+    return this.interactions.mutate(projectId, async (): Promise<T> => {
+      const before: HistorySnapshot = this.history.capture();
+      try {
+        const result: T = await operation();
+        this.history.record(before);
+        return result;
+      } catch (error: unknown) {
+        this.history.rollback(before);
+        throw error;
+      }
+    });
   }
 
   private requireModelRecord(levelIndex: number): ModelRecord {

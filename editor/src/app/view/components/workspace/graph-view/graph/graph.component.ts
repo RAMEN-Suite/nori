@@ -294,7 +294,7 @@ export class GraphComponent implements AfterViewInit {
     const recordId: string | null = record?.modelId ?? null;
 
     const changedLevel: boolean = this.recordId !== recordId;
-    const saved: GraphView | undefined = changedLevel ? record?.view?.graph : undefined;
+    const saved: GraphView | undefined = record?.view?.graph;
     const previous: RenderModel | undefined = changedLevel ? undefined : this.renderModel;
     const viewport: ViewportSize = getViewportSize(this.getHostElement());
     const model: RenderModel = buildRenderModel({
@@ -314,7 +314,7 @@ export class GraphComponent implements AfterViewInit {
     this.updateNodeColors();
     this.refreshHover();
 
-    this.restoreViewport(saved, !previous?.nodes.length, needsFit);
+    this.restoreViewport(changedLevel ? saved : undefined, !previous?.nodes.length, needsFit);
     if (record) this.saveView();
   }
 
@@ -325,13 +325,7 @@ export class GraphComponent implements AfterViewInit {
     const added: PositionedNode[] = [];
     for (const node of model.nodes) {
       const position: { x: number; y: number } | undefined = previous?.nodesById.get(node.id) ?? saved?.positions[node.id];
-      const collides: boolean =
-        !!position &&
-        retained.some(
-          (other: PositionedNode): boolean =>
-            Math.abs(other.x - position.x) < GRAPH_NODE_WIDTH + 16 && Math.abs(other.y - position.y) < 80,
-        );
-      if (position && !collides) {
+      if (position) {
         setNodePosition(node, position.x, position.y);
         retained.push(node);
       } else added.push(node);
@@ -766,12 +760,16 @@ export class GraphComponent implements AfterViewInit {
 
   private saveView(): void {
     if (!this.renderModel || !this.recordId) return;
-    const positions: GraphView['positions'] = Object.fromEntries(
-      this.renderModel.nodes.map((node: PositionedNode): [string, { x: number; y: number }] => [
-        node.id,
-        { x: node.x, y: node.y },
-      ]),
-    );
+    // Keep coordinates for temporarily absent nodes (hidden or removed and later restored).
+    const positions: GraphView['positions'] = {
+      ...this.workspace.store.currentModelRecord()?.view?.graph?.positions,
+      ...Object.fromEntries(
+        this.renderModel.nodes.map((node: PositionedNode): [string, { x: number; y: number }] => [
+          node.id,
+          { x: node.x, y: node.y },
+        ]),
+      ),
+    };
     const graph: GraphView = {
       positions,
       viewport: { x: this.viewTransform.x, y: this.viewTransform.y, scale: this.viewTransform.k },

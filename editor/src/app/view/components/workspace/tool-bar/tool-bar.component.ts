@@ -14,6 +14,10 @@ import {
 import { RouterLink } from '@angular/router';
 import { TranslocoDirective } from '@jsverse/transloco';
 import {
+  LucideUndo2,
+  LucideRedo2,
+  LucideDynamicIcon,
+  type LucideIconData,
   LucideMousePointer2,
   LucideArrowLeft,
   LucideDownload,
@@ -41,6 +45,8 @@ import { ShortcutService } from '../../../../services/interaction/shortcut.servi
 import { ProjectService } from '../../../../services/projects/project.service';
 import { GraphToolsService } from '../../../../services/workspace/editing/graph-tools.service';
 import { PropertyEditingService } from '../../../../services/workspace/editing/property-editing.service';
+import { ModelHistoryService } from '../../../../services/workspace/model/model-history.service';
+import { InteractionStateService } from '../../../../services/interaction/interaction-state.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { ModelDiagnosticsDialog } from '../../dialogs/model-diagnostics/model-diagnostics.dialog';
 import { ProjectEditDialog } from '../../dialogs/project-edit/project-edit.dialog';
@@ -54,6 +60,7 @@ import { type GraphImageFormat } from '../graph-view/graph/graph.image-export';
   selector: 'nori-tool-bar',
   host: { '(document:keydown)': 'handleShortcut($event)' },
   imports: [
+    LucideDynamicIcon,
     ModelValidationComponent,
     Button,
     Card,
@@ -92,6 +99,8 @@ export class ToolBarComponent {
   private readonly dialogs: DialogService = inject(DialogService);
   private readonly export: ExportService = inject(ExportService);
   protected readonly shortcuts: ShortcutService = inject(ShortcutService);
+  protected readonly interactions: InteractionStateService = inject(InteractionStateService);
+  private readonly history: ModelHistoryService = inject(ModelHistoryService);
 
   public readonly catalogueOpen: InputSignal<boolean> = input(true);
   public readonly levelsOpen: InputSignal<boolean> = input(false);
@@ -109,6 +118,29 @@ export class ToolBarComponent {
   protected readonly imageFormats: readonly MenuItem<GraphImageFormat>[] = [
     { label: 'SVG', value: 'svg' },
     { label: 'PNG', value: 'png' },
+  ];
+
+  protected readonly historyActions: readonly {
+    id: 'undo' | 'redo';
+    label: string;
+    icon: LucideIconData;
+    available: Signal<boolean>;
+    run: () => void;
+  }[] = [
+    {
+      id: 'undo',
+      label: 'editor.undoModel',
+      icon: LucideUndo2.icon,
+      available: this.history.canUndo,
+      run: (): void => this.handleUndo(),
+    },
+    {
+      id: 'redo',
+      label: 'editor.redoModel',
+      icon: LucideRedo2.icon,
+      available: this.history.canRedo,
+      run: (): void => this.handleRedo(),
+    },
   ];
 
   protected readonly exporting: WritableSignal<boolean> = signal(false);
@@ -196,13 +228,13 @@ export class ToolBarComponent {
   protected handleUndo(): void {
     if (this.graphTools.pending()) return;
     this.graphTools.cancel();
-    void this.workspace.actions.undoRelation().catch((error: unknown): void => this.projects.reportError(error));
+    void this.workspace.actions.undo().catch((error: unknown): void => this.projects.reportError(error));
   }
 
   protected handleRedo(): void {
     if (this.graphTools.pending()) return;
     this.graphTools.cancel();
-    void this.workspace.actions.redoRelation().catch((error: unknown): void => this.projects.reportError(error));
+    void this.workspace.actions.redo().catch((error: unknown): void => this.projects.reportError(error));
   }
 
   private isShortcutBlocked(event: KeyboardEvent): boolean {

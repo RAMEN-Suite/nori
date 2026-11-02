@@ -25,6 +25,26 @@
         {{ projects.selectedManifest()?.name }}
       </button>
       <div suiDivider orientation="vertical" class="mx-1 my-0 h-6 self-center" style="--sui-divider-margin: 0" aria-hidden="true"></div>
+      @for (item of historyActions; track item.id) {
+        <button
+          suiButton
+          type="button"
+          severity="neutral"
+          variant="text"
+          size="sm"
+          shape="circle"
+          [attr.aria-label]="t(item.label)"
+          [attr.aria-keyshortcuts]="shortcuts.aria(item.id)"
+          [noriTooltip]="t(item.label) + ' (' + shortcuts.display(item.id) + ')'"
+          placement="bottom"
+          [showDelay]="600"
+          [disabled]="!item.available() || interactions.current().phase === 'executing'"
+          (click)="item.run()"
+        >
+          <svg [lucideIcon]="item.icon" class="size-4" aria-hidden="true"></svg>
+        </button>
+      }
+      <div suiDivider orientation="vertical" class="mx-1 my-0 h-6 self-center" style="--sui-divider-margin: 0" aria-hidden="true"></div>
       <button
         suiButton
         severity="neutral"

@@ -14,6 +14,9 @@ import { ProjectRepositoryService } from './project-repository.service';
 export class ProjectService {
   private readonly repository: ProjectRepositoryService = inject(ProjectRepositoryService);
 
+  private readonly projectSelectionChanges: Subject<string | null> = new Subject<string | null>();
+  public readonly projectSelectionChanges$: Observable<string | null> = this.projectSelectionChanges.asObservable();
+
   private readonly modelChanges: Subject<string> = new Subject<string>();
   public readonly modelChanges$: Observable<string> = this.modelChanges.asObservable();
   public readonly manifests: WritableSignal<Manifest[]> = signal([]);
@@ -57,7 +60,9 @@ export class ProjectService {
   }
 
   public selectProject(id: string | null): void {
+    if (id === this.selectedProjectId()) return;
     this.selectedProjectId.set(id);
+    this.projectSelectionChanges.next(id);
   }
 
   public async refreshManifests(): Promise<void> {
@@ -92,11 +97,20 @@ export class ProjectService {
     return this.repository.revision(id);
   }
 
-  public async saveModels(projectId: string, models: readonly Model[]): Promise<void> {
-    const records: ModelRecord[] = await this.repository.saveModels(projectId, models);
+  public async saveModels(
+    projectId: string,
+    models: readonly Model[],
+    recoveredViews?: ReadonlyMap<string, ViewSettings>,
+  ): Promise<void> {
+    const records: ModelRecord[] = await this.repository.saveModels(projectId, models, recoveredViews);
     this.modelChanges.next(projectId);
     if (projectId === this.selectedProjectId()) this.records.set(records);
-    await this.refreshManifests();
+    try {
+      await this.refreshManifests();
+    } catch (error: unknown) {
+      // The model transaction is committed; a list-refresh error must not masquerade as a failed save.
+      this.reportError(error);
+    }
   }
 
   public async updateView(id: string, patch: Partial<ViewSettings>): Promise<void> {

@@ -30,7 +30,7 @@ For browser development, use `npm run start:editor` and open `http://localhost:4
 npm run verify
 ```
 
-This runs lint, formatting, TypeScript checks and both builds, including Angular templates. Run `npm run test:feedback` and `npm run test:import` for interaction/command and import regression checks. These service-level checks run separately from `verify`; changed UI workflows still need browser/desktop verification.
+This runs lint, formatting, TypeScript checks and both builds, including Angular templates. Run `npm run test:feedback`, `npm run test:history` and `npm run test:import` for interaction/command, history and import regression checks. These service-level checks run separately from `verify`; changed UI workflows still need browser/desktop verification.
 
 For production builds and desktop packaging, follow [Build and distribution](docs/deployment.md).
 

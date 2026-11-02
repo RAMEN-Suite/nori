@@ -107,7 +107,11 @@ export class ProjectRepositoryService {
     });
   }
 
-  public async saveModels(projectId: string, models: readonly Model[]): Promise<ModelRecord[]> {
+  public async saveModels(
+    projectId: string,
+    models: readonly Model[],
+    recoveredViews?: ReadonlyMap<string, ViewSettings>,
+  ): Promise<ModelRecord[]> {
     return database.transaction('rw', database.manifests, database.models, async (): Promise<ModelRecord[]> => {
       if (!(await this.find(projectId))) throw new Error('Project not found.');
 
@@ -118,7 +122,10 @@ export class ProjectRepositoryService {
         const old: ModelRecord | undefined = byId.get(model.id);
         return old
           ? { ...old, levelIndex, gmodel: model, name: model.name, revision: old.revision + 1, updatedAt: timestamp }
-          : this.createRecord(projectId, model, levelIndex, timestamp);
+          : {
+              ...this.createRecord(projectId, model, levelIndex, timestamp),
+              view: structuredClone(recoveredViews?.get(model.id)),
+            };
       });
 
       await this.replaceRecords(projectId, records);
