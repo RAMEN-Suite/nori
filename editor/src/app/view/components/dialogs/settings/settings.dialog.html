@@ -107,9 +107,6 @@
       <div class="settings-page">
         <div class="nori-scroll-frame flex-1">
           <div noriScrollOverflow #shortcutScroll="scrollOverflow" class="settings-scroll editor-panel-scroll flex min-w-0 flex-col gap-7">
-            @if (shortcutError(); as error) {
-              <p class="text-error text-xs" role="alert">{{ error }}</p>
-            }
             @for (group of shortcutGroups; track group.category) {
               <section class="flex flex-col gap-3" [attr.aria-labelledby]="'shortcuts-' + group.category">
                 <h3 class="flex items-center gap-2 text-sm font-medium" [id]="'shortcuts-' + group.category">
@@ -132,21 +129,42 @@
                 <sui-card size="xs" variant="border">
                   <div class="flex flex-col gap-2 p-1">
                     @for (shortcut of group.shortcuts; track shortcut.id) {
-                      <label class="shortcut-row">
-                        <span class="text-sm">{{ t(shortcut.label) }}</span>
-                        <input
-                          suiInput
-                          size="sm"
-                          readonly
-                          class="shortcut-input"
-                          [attr.aria-label]="t(shortcut.label)"
-                          [value]="recording() === shortcut.id ? t('settings.recordShortcut') : shortcutService.display(shortcut.id)"
-                          (focus)="recording.set(shortcut.id)"
-                          (click)="recording.set(shortcut.id)"
-                          (blur)="recording.set(null)"
-                          (keydown)="handleShortcut($event, shortcut.id)"
-                        />
-                      </label>
+                      <div class="flex flex-col gap-1">
+                        <label class="shortcut-row">
+                          <span class="text-sm">{{ t(shortcut.label) }}</span>
+                          <input
+                            suiInput
+                            size="sm"
+                            readonly
+                            class="shortcut-input"
+                            [attr.aria-label]="t(shortcut.label)"
+                            [invalid]="shortcutError()?.action === shortcut.id"
+                            [attr.aria-invalid]="shortcutError()?.action === shortcut.id ? true : null"
+                            [attr.aria-describedby]="shortcutError()?.action === shortcut.id ? 'shortcut-error-' + shortcut.id : null"
+                            [value]="
+                              recording() === shortcut.id
+                                ? t('settings.recordShortcut')
+                                : shortcutService.display(shortcut.id) || t('settings.unassignedShortcut')
+                            "
+                            (focus)="startRecording(shortcut.id)"
+                            (click)="startRecording(shortcut.id)"
+                            (blur)="recording.set(null)"
+                            (keydown)="handleShortcut($event, shortcut.id)"
+                          />
+                        </label>
+                        @if (shortcutError(); as error) {
+                          @if (error.action === shortcut.id) {
+                            <p
+                              #shortcutErrorMessage
+                              class="text-error mb-5 scroll-mb-5 px-1 text-xs"
+                              [id]="'shortcut-error-' + shortcut.id"
+                              role="alert"
+                            >
+                              {{ error.message }}
+                            </p>
+                          }
+                        }
+                      </div>
                     }
                   </div>
                 </sui-card>
@@ -243,4 +261,50 @@
       </div>
     </ng-template>
   </sui-tabs>
+  <sui-dialog
+    [open]="conflictOpen()"
+    [draggable]="false"
+    [closeOnBackdrop]="false"
+    [ariaLabel]="t('settings.reassignShortcutTitle')"
+    ariaDescribedby="shortcut-conflict-description"
+    [closeLabel]="t('common.close')"
+    [motion]="appState.state().animations ? 'fade' : 'none'"
+    [class.nori-dialog-motion]="appState.state().animations"
+    class="nori-dialog-enter-ready"
+    style="
+      --sui-dialog-width: var(--nori-dialog-width-compact);
+      --sui-dialog-radius: var(--nori-radius);
+      --sui-dialog-border-color: var(--nori-border);
+      --sui-dialog-shadow: none;
+      --sui-dialog-enter-duration: var(--nori-dialog-enter-duration);
+      --sui-dialog-exit-duration: var(--nori-dialog-exit-duration);
+      --sui-dialog-motion-easing: var(--nori-dialog-ease);
+    "
+    (keydown.escape)="$event.stopPropagation()"
+    (closed)="finishConflict()"
+  >
+    <header suiDialogHeader class="min-h-14">{{ t('settings.reassignShortcutTitle') }}</header>
+    <div suiDialogBody>
+      @if (shortcutConflict(); as conflict) {
+        <section class="nori-dialog-content">
+          <div id="shortcut-conflict-description">
+            <nori-confirmation-content
+              [message]="{
+                key: 'settings.reassignShortcutDescription',
+                params: { shortcut: conflict.shortcut, previous: conflict.previousLabel, next: conflict.nextLabel },
+              }"
+            />
+          </div>
+          <footer class="nori-dialog-actions">
+            <button suiButton type="button" severity="neutral" variant="text" size="sm" suiAutoFocus (click)="conflictOpen.set(false)">
+              <svg lucideX class="size-4 shrink-0" aria-hidden="true"></svg>{{ t('common.cancel') }}
+            </button>
+            <button suiButton type="button" size="sm" (click)="confirmReassignment()">
+              <svg lucideCheck class="size-4 shrink-0" aria-hidden="true"></svg>{{ t('settings.reassignShortcut') }}
+            </button>
+          </footer>
+        </section>
+      }
+    </div>
+  </sui-dialog>
 </div>

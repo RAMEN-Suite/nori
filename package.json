@@ -39,7 +39,8 @@
     "ng": "ng",
     "test:import": "node tools/check-project-import.mts",
     "test:feedback": "node tools/check-feedback.mts",
-    "test:history": "node tools/check-history.mts"
+    "test:history": "node tools/check-history.mts",
+    "test:shortcuts": "node tools/check-shortcuts.mts"
   },
   "dependencies": {
     "@angular/aria": "^22.2.1",

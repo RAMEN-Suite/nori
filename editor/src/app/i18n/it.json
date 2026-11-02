@@ -72,7 +72,10 @@
     "appearance": "Aspetto",
     "shortcuts": "Scorciatoie da tastiera",
     "recordShortcut": "Premi i tasti…",
-    "shortcutConflict": "Questa scorciatoia è già assegnata a «{{action}}».",
+    "unassignedShortcut": "Non assegnata",
+    "reassignShortcutTitle": "Riassegnare la scorciatoia?",
+    "reassignShortcutDescription": "{{shortcut}} è già assegnata a {{previous}}. Assegnandola a {{next}}, {{previous}} perderà questa scorciatoia.",
+    "reassignShortcut": "Riassegna",
     "unsupportedShortcut": "Questa combinazione di tasti non è supportata.",
     "resetShortcuts": "Ripristina scorciatoie predefinite",
     "shortcutCategories": {

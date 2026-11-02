@@ -7,6 +7,8 @@
 - Preserve normal text editing and focused-widget interaction. Global shortcuts are blocked in inputs, editable text, dialogs, the property workspace, menus, listboxes, trees, grids, tablists, sliders, spinbuttons and radio groups. Ignore composition, AltGraph and repeated key events.
 - `mod` means Cmd on macOS and Ctrl on Windows/Linux. Display uses native macOS modifier symbols (⌘, ⌥, ⇧) and text labels on Windows/Linux (Ctrl, Alt, Shift). Separate macOS keys with narrow nonbreaking spaces (⌘ Z, ⇧ ⌘ Z); separate Windows/Linux keys with spaced plus signs (Ctrl + Z). Tooltips and Settings share this formatter. `aria-keyshortcuts` keeps standard key names for assistive technology.
 
+Conflicts never overwrite a binding silently. A nested confirmation names both actions; confirmation transfers the binding atomically, while Cancel or Escape leaves both unchanged. The previous action becomes unassigned until given another binding or defaults are restored.
+
 ## Default bindings
 
 These letters are application choices, not shortcuts mandated by an accessibility standard.

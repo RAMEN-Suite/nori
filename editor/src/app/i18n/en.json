@@ -73,7 +73,10 @@
     "appearance": "Appearance",
     "shortcuts": "Keyboard shortcuts",
     "recordShortcut": "Press keys…",
-    "shortcutConflict": "This shortcut is already assigned to “{{action}}”.",
+    "unassignedShortcut": "Unassigned",
+    "reassignShortcutTitle": "Reassign shortcut?",
+    "reassignShortcutDescription": "{{shortcut}} is already assigned to {{previous}}. Assigning it to {{next}} will remove the shortcut from {{previous}}.",
+    "reassignShortcut": "Reassign",
     "unsupportedShortcut": "This key combination is not supported.",
     "resetShortcuts": "Restore default shortcuts",
     "shortcutCategories": {

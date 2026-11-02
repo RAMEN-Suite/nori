@@ -73,7 +73,10 @@
     "appearance": "Aussehen",
     "shortcuts": "Tastenkürzel",
     "recordShortcut": "Tasten drücken…",
-    "shortcutConflict": "Dieses Kürzel ist bereits für „{{action}}“ vergeben.",
+    "unassignedShortcut": "Nicht belegt",
+    "reassignShortcutTitle": "Tastenkürzel neu zuweisen?",
+    "reassignShortcutDescription": "{{shortcut}} wird bereits für {{previous}} verwendet. Wenn du es {{next}} zuweist, verliert {{previous}} dieses Kürzel.",
+    "reassignShortcut": "Neu zuweisen",
     "unsupportedShortcut": "Diese Tastenkombination wird nicht unterstützt.",
     "resetShortcuts": "Standardkürzel wiederherstellen",
     "shortcutCategories": {

@@ -168,7 +168,7 @@ A rejected edit keeps the prepared action, gives it a brief attention cue and ex
 
 Settings is available on Start, project entry and the editor. Language (English, German, Italian or system), theme (light, dark or system), animation preferences and shortcut assignments save immediately. System language falls back to English when unsupported. Help & Support links to support, RAMEN resources and credits.
 
-Shortcut capture reports invalid/conflicting assignments; Escape cancels capture, Tab keeps normal navigation, and Reset restores defaults. Global editor shortcuts do not override text entry, focused widgets, dialogs or the node workspace. See [bindings and compatibility](keyboard-shortcuts.md).
+Shortcut capture reports unsupported combinations at the field. Conflicting assignments open a confirmation above Settings; Cancel preserves both bindings, and Reassign moves the shortcut and leaves its previous action unassigned. Unassigned actions stay unassigned after restart and do not advertise shortcut hints; Escape cancels capture, Tab keeps normal navigation, and Reset restores defaults. Global editor shortcuts do not override text entry, focused widgets, dialogs or the node workspace. See [bindings and compatibility](keyboard-shortcuts.md).
 
 ## Current boundaries
 

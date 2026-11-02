@@ -31,7 +31,8 @@ export class ShortcutService {
       new Map(
         this.defaults
           .filter((shortcut): boolean => this.available(shortcut.id))
-          .map((shortcut): [string, ShortcutAction] => [this.binding(shortcut.id), shortcut.id]),
+          .map((shortcut): [string, ShortcutAction] => [this.binding(shortcut.id), shortcut.id])
+          .filter(([binding]): boolean => !!binding),
       ),
   );
 
@@ -48,6 +49,24 @@ export class ShortcutService {
 
   public display(action: ShortcutAction): string {
     return ShortcutBindings.display(this.binding(action), this.isMac);
+  }
+
+  public hint(action: ShortcutAction): string {
+    return this.binding(action) ? ` (${this.display(action)})` : '';
+  }
+
+  /** Move a binding only while the confirmed conflict still owns it. Empty overrides disable an action. */
+  public reassign(action: ShortcutAction, binding: string, previousOwner: ShortcutAction): boolean {
+    if (!ShortcutBindings.isValid(binding)) throw new TypeError('Invalid shortcut binding.');
+    if (action === previousOwner || this.actionsByBinding().get(binding) !== previousOwner) return false;
+    this.overrides.update(
+      (overrides: ShortcutOverrides): ShortcutOverrides => ({
+        ...overrides,
+        [previousOwner]: '',
+        [action]: binding,
+      }),
+    );
+    return true;
   }
 
   public aria(action: ShortcutAction): string {

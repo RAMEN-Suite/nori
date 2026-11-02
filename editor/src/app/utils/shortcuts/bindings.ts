@@ -83,9 +83,9 @@ export class ShortcutBindings {
         Object.hasOwn(stored, id),
       );
       const candidate: unknown = storedId ? Reflect.get(stored, storedId) : shortcut.key;
-      const binding: string = ShortcutBindings.isValid(candidate) ? candidate : shortcut.key;
+      const binding: string = candidate === '' || ShortcutBindings.isValid(candidate) ? candidate : shortcut.key;
       if (used.has(binding)) return {};
-      used.add(binding);
+      if (binding) used.add(binding);
       if (binding !== shortcut.key) overrides[shortcut.id] = binding;
     }
     return overrides;

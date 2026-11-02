@@ -1,6 +1,19 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal, type Signal, type WritableSignal } from '@angular/core';
+import {
+  afterRenderEffect,
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  signal,
+  viewChild,
+  type ElementRef,
+  type Signal,
+  type WritableSignal,
+} from '@angular/core';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import {
+  LucideCheck,
+  LucideX,
   LucideExternalLink,
   LucideMail,
   LucideUsers,
@@ -14,7 +27,22 @@ import {
   LucideRotateCcw,
   LucideSlidersHorizontal,
 } from '@lucide/angular';
-import { Card, Radio, Toggle, List, ListItemTemplate, Select, Tabs, Tab, Input, Button } from '@sushi-kit/angular';
+import {
+  AutoFocus,
+  Dialog,
+  DialogHeader,
+  DialogBody,
+  Card,
+  Radio,
+  Toggle,
+  List,
+  ListItemTemplate,
+  Select,
+  Tabs,
+  Tab,
+  Input,
+  Button,
+} from '@sushi-kit/angular';
 import { ExternalLinkDirective } from '../../../../directives/external-link.directive';
 import { ScrollOverflowDirective } from '../../../../directives/scroll-overflow.directive';
 import { APP_THEMES, type AppTheme } from '../../../../models/Appearance';
@@ -22,6 +50,7 @@ import { Languages, type AppLanguage } from '../../../../i18n/languages';
 import {
   EDITOR_SHORTCUTS,
   SHORTCUT_CATEGORIES,
+  SHORTCUT_DEFINITIONS,
   type ShortcutAction,
   type ShortcutCategory,
   type ShortcutDefinition,
@@ -30,13 +59,30 @@ import {
 import { ShortcutBindings } from '../../../../utils/shortcuts/bindings';
 import { ShortcutService } from '../../../../services/interaction/shortcut.service';
 import { ScrollHintsComponent } from '../../shared/scroll-hints/scroll-hints.component';
+import { ConfirmationContentComponent } from '../confirmation/confirmation-content/confirmation-content.component';
 import { environment } from '../../../../../environments/environment';
 import { ApplicationState } from '../../../../states/application.state';
+
+interface ShortcutConflict {
+  readonly action: ShortcutAction;
+  readonly binding: string;
+  readonly previousOwner: ShortcutAction;
+  readonly shortcut: string;
+  readonly previousLabel: string;
+  readonly nextLabel: string;
+}
 
 @Component({
   selector: 'nori-settings-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    AutoFocus,
+    ConfirmationContentComponent,
+    Dialog,
+    DialogHeader,
+    DialogBody,
+    LucideCheck,
+    LucideX,
     ExternalLinkDirective,
     LucideExternalLink,
     LucideMail,
@@ -95,7 +141,35 @@ export class SettingsDialog {
     }),
   );
   protected readonly recording: WritableSignal<ShortcutAction | null> = signal(null);
-  protected readonly shortcutError: WritableSignal<string | null> = signal(null);
+  protected readonly shortcutError: WritableSignal<{ action: ShortcutAction; message: string } | null> = signal(null);
+
+  private readonly shortcutErrorElement: Signal<ElementRef<HTMLElement> | undefined> = viewChild('shortcutErrorMessage');
+
+  public constructor() {
+    afterRenderEffect((): void => {
+      if (this.shortcutError()) this.shortcutErrorElement()?.nativeElement.scrollIntoView({ block: 'nearest' });
+    });
+  }
+
+  protected readonly shortcutConflict: WritableSignal<ShortcutConflict | null> = signal(null);
+  protected readonly conflictOpen: WritableSignal<boolean> = signal(false);
+
+  protected confirmReassignment(): void {
+    const conflict: ShortcutConflict | null = this.shortcutConflict();
+    if (!conflict) return;
+    if (!this.shortcutService.reassign(conflict.action, conflict.binding, conflict.previousOwner)) return;
+    this.conflictOpen.set(false);
+  }
+
+  protected finishConflict(): void {
+    this.conflictOpen.set(false);
+    this.shortcutConflict.set(null);
+  }
+
+  protected startRecording(action: ShortcutAction): void {
+    if (this.shortcutError()?.action !== action) this.shortcutError.set(null);
+    this.recording.set(action);
+  }
 
   protected handleShortcut(event: KeyboardEvent, action: ShortcutAction): void {
     if (event.key === 'Tab') return;
@@ -111,18 +185,32 @@ export class SettingsDialog {
     const binding: string | null = this.shortcutService.fromEvent(event);
     if (!binding) return;
     if (!ShortcutBindings.isValid(binding)) {
-      this.shortcutError.set(this.translations.translate('settings.unsupportedShortcut'));
+      this.shortcutError.set({ action, message: this.translations.translate('settings.unsupportedShortcut') });
       return;
     }
     const conflict: ShortcutAction | null = this.shortcutService.assign(action, binding);
     if (conflict) {
-      const label: string = EDITOR_SHORTCUTS.find((shortcut): boolean => shortcut.id === conflict)?.label ?? '';
-      const actionLabel: string = this.translations.translate(label);
-      this.shortcutError.set(this.translations.translate('settings.shortcutConflict', { action: actionLabel }));
+      this.presentConflict(action, binding, conflict);
       return;
     }
     this.recording.set(null);
     this.shortcutError.set(null);
+  }
+
+  private presentConflict(action: ShortcutAction, binding: string, previousOwner: ShortcutAction): void {
+    const label: (id: ShortcutAction) => string = (id: ShortcutAction): string =>
+      this.translations.translate(SHORTCUT_DEFINITIONS[id].label);
+    this.recording.set(null);
+    this.shortcutError.set(null);
+    this.shortcutConflict.set({
+      action,
+      binding,
+      previousOwner,
+      shortcut: this.shortcutService.display(previousOwner),
+      previousLabel: label(previousOwner),
+      nextLabel: label(action),
+    });
+    this.conflictOpen.set(true);
   }
 
   protected handleResetShortcuts(): void {
