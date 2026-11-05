@@ -94,7 +94,7 @@ SVG/PNG export captures the complete current graph, independently of its zoom, w
 
 The inspector shows the selected definition and its properties or relationship endpoints. Double-click can rename an editable node inline; Enter saves and Escape cancels. Node names are normalised through Nori's naming helper and limited to 40 characters. Name and description can also be edited together in the node-details dialog. Imported definitions remain read-only in the current model.
 
-Edit node opens a dedicated workspace for Properties, Annotations and Constraints while preserving the main graph view. Its optional neighbourhood graph shows the selected node and directly connected neighbours. Selecting an ancestor or neighbour keeps internal Back/Forward history; closing returns to the main editor.
+Edit node opens a dedicated workspace with separate node-context and neighbourhood-graph panels on the left and a compact toolbar for Properties, Relationships and Constraints above the editing area while preserving the main graph view. When annotation editing is enabled, the toolbar includes Annotations for the Annotation base node and its refinements. The Connections graph shows the selected node and its direct neighbours. Relationships lists each direct connection with its source and target. Back and Forward track visits within the node editor. Undo and Redo are available when the next history step affects the open node. Closing returns to the main editor.
 
 ### Properties
 
