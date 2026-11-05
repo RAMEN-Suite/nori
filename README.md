@@ -2,37 +2,9 @@
 
 A browser and desktop editor for multi-level modelling across heterogeneous domains, including the Digital Humanities. The editor uses Angular and Sushi; the desktop application uses Electron.
 
-## Documentation
-
-- [Features and behaviour](docs/features.md): screen flows, model concepts, save rules and pending decisions.
-- [Build and distribution](docs/deployment.md): prerequisites and browser, macOS and Windows builds.
-- [Coding conventions](docs/coding-conventions.md): code style, types, async work and verification.
-- [Editor guide](docs/editor-components.md): architecture, ownership and extension paths.
-- [UI guidelines](docs/ui-guidelines.md): shared layouts, interaction and accessibility.
-- [Sushi feedback](docs/sushi-feedback.md): unresolved library issues and proposals.
-
 ## Development
 
-Use the Node.js version in [`.nvmrc`](.nvmrc) and npm requirements in [`package.json`](package.json). RAMEN Core is installed from npm as `@ramen-suite/core` (0.1.0 or a compatible patch release). No sibling checkout or separate Core build is needed.
-
-```sh
-npm ci
-npm start
-```
-
-`npm start` prepares Electron, builds the desktop process and starts the editor and desktop app. Closing Electron stops the development server. Dependency install scripts are disabled in `.npmrc`; the start command explicitly prepares the Electron runtime.
-
-For browser development, use `npm run start:editor` and open `http://localhost:4200`. Use `npm run start:network` for another device on the same network.
-
-## Verification
-
-```sh
-npm run verify
-```
-
-This runs lint, formatting, TypeScript checks and both builds, including Angular templates. Run `npm run test:feedback`, `npm run test:history` and `npm run test:import` for interaction/command, history and import regression checks. These service-level checks run separately from `verify`; changed UI workflows still need browser/desktop verification.
-
-For production builds and desktop packaging, follow [Build and distribution](docs/deployment.md).
+See [Contributing](CONTRIBUTING.md) for setup and verification, the [component map](docs/architecture.md) for code ownership and the [coding conventions](docs/coding-conventions.md) for implementation rules.
 
 ## License
 
