@@ -51,30 +51,31 @@ export class ProjectCreateComponent {
   public readonly showAlternative: OutputEmitterRef<void> = output();
   public readonly busyChange: OutputEmitterRef<boolean> = output<boolean>();
 
-  protected readonly draft: Pick<CreateManifest, 'name' | 'description'> = { name: '', description: '' };
+  protected readonly name: WritableSignal<string> = signal('');
+  protected readonly description: WritableSignal<string> = signal('');
   protected readonly busy: WritableSignal<boolean> = signal(false);
   protected readonly error: WritableSignal<string | null> = signal(null);
-  protected useExample: boolean = false;
+  protected readonly useExample: WritableSignal<boolean> = signal(false);
 
   protected isDescriptionValid(): boolean {
-    return isDescriptionValid(this.draft.description);
+    return isDescriptionValid(this.description());
   }
 
   protected isNameValid(): boolean {
-    return this.draft.name.trim().length >= 3;
+    return this.name().trim().length >= 3;
   }
 
   protected async handleCreateProject(form: NgForm): Promise<void> {
     if (form.invalid || !this.isNameValid() || !this.isDescriptionValid() || this.busy() || this.disabled()) return;
 
     const input: CreateManifest = {
-      name: this.draft.name.trim(),
-      description: this.draft.description.trim(),
+      name: this.name().trim(),
+      description: this.description().trim(),
       metamodelName: RAMEN_MODEL.name,
       metamodelId: RAMEN_MODEL.id,
       metamodelVersion: RAMEN_MODEL.version,
     };
-    const example: Model | undefined = this.useExample ? createCorrespondenceModel() : undefined;
+    const example: Model | undefined = this.useExample() ? createCorrespondenceModel() : undefined;
 
     this.busy.set(true);
     this.busyChange.emit(true);

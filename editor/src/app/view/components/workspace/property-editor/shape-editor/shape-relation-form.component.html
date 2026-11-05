@@ -48,8 +48,8 @@
           [disabled]="!editable()"
           [min]="0"
           [maxFractionDigits]="0"
-          [value]="minimum"
-          (valueChange)="minimum = $event ?? 0"
+          [value]="minimum()"
+          (valueChange)="minimum.set($event ?? 0)"
         />
       </div>
       <div class="flex min-w-0 flex-col gap-2 text-xs font-medium">
@@ -60,10 +60,10 @@
           ariaLabelledby="shape-relation-maximum"
           [disabled]="!editable()"
           [placeholder]="t('editor.unlimitedValues')"
-          [min]="minimum"
+          [min]="minimum()"
           [maxFractionDigits]="0"
-          [value]="maximum"
-          (valueChange)="maximum = $event"
+          [value]="maximum()"
+          (valueChange)="maximum.set($event)"
         />
       </div>
     </fieldset>

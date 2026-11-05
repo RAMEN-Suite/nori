@@ -5,6 +5,8 @@ import {
   effect,
   inject,
   input,
+  signal,
+  type WritableSignal,
   untracked,
   type InputSignal,
 } from '@angular/core';
@@ -63,7 +65,10 @@ export class NotificationsComponent {
   );
   protected readonly appearance: ApplicationState = inject(ApplicationState);
   protected readonly notifications: NotificationService = inject(NotificationService);
-  private readonly interactions: Record<'hover' | 'focus', boolean> = { hover: false, focus: false };
+  private readonly interactions: WritableSignal<Readonly<Record<'hover' | 'focus', boolean>>> = signal({
+    hover: false,
+    focus: false,
+  });
 
   public constructor() {
     effect((): void => {
@@ -81,8 +86,13 @@ export class NotificationsComponent {
   }
 
   protected setInteraction(kind: 'hover' | 'focus', active: boolean): void {
-    if (this.interactions[kind] === active) return;
-    this.interactions[kind] = active;
+    if (this.interactions()[kind] === active) return;
+    this.interactions.update(
+      (current: Readonly<Record<'hover' | 'focus', boolean>>): Readonly<Record<'hover' | 'focus', boolean>> => ({
+        ...current,
+        [kind]: active,
+      }),
+    );
     if (active) this.notifications.pause();
     else this.notifications.resume();
   }

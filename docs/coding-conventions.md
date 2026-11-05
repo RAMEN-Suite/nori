@@ -59,6 +59,10 @@ Use guard clauses instead of deeply nested branches. Extract meaningful operatio
 - Group members by dependencies, inputs/configuration, state, derived values, lifecycle, actions and helpers. Use blank lines, not decorative section comments.
 - Give mutable state one owner. Expose readonly views where practical and derive values instead of maintaining stale copies.
 - Use standalone OnPush Angular components, signals, `inject` and host metadata. Effects synchronise external systems; computed signals derive state.
+- Store mutable Angular UI state, including form drafts, in readonly `signal()` fields. Use `input()`, `model()` and `output()` at component boundaries. Derive reactive values with `computed()`; do not use revision counters or manual change detection to refresh forms.
+- Update signal objects and collections immutably with `set()` or `update()`. Bind form controls to scalar signals or explicit update handlers; never two-way bind to a nested property such as `draft().name`.
+- Keep resource handles, request counters, persistence queues and D3 renderer bookkeeping outside reactive state. RxJS streams carry events; signals hold current UI state. Electron and pure layout/domain utilities do not depend on Angular signals.
+- Editor lint enforces readonly public/protected fields, signal component APIs and the absence of `ChangeDetectorRef`. Review private state and nested object updates when adding a feature.
 
 ## Async work, errors and resources
 

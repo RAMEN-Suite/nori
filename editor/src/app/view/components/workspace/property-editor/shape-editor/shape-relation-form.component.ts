@@ -42,9 +42,9 @@ export class ShapeRelationFormComponent {
   public readonly saving: WritableSignal<boolean> = signal(false);
   protected readonly direction: WritableSignal<'incoming' | 'outgoing'> = signal('outgoing');
   protected readonly refs: WritableSignal<readonly string[]> = signal([]);
-  protected minimum: number = 0;
-  protected maximum: number | null = null;
-  private initialValue: string = '';
+  protected readonly minimum: WritableSignal<number> = signal(0);
+  protected readonly maximum: WritableSignal<number | null> = signal(null);
+  private readonly initialValue: WritableSignal<string> = signal('');
 
   protected readonly options: Signal<readonly RelationOption[]> = computed(() => {
     this.workspace.store.currentModel();
@@ -72,14 +72,14 @@ export class ShapeRelationFormComponent {
     this.refs.set(
       rule?.relationIds.map((ref: string): string => (ModelRef.isQualified(ref) ? ref : ModelRef.qualify(modelId, ref))) ?? [],
     );
-    this.minimum = rule?.bounds.lowerBound ?? 0;
+    this.minimum.set(rule?.bounds.lowerBound ?? 0);
     const maximum: number = rule?.bounds.upperBound ?? -1;
-    this.maximum = maximum === -1 ? null : maximum;
-    this.initialValue = JSON.stringify(this.values());
+    this.maximum.set(maximum === -1 ? null : maximum);
+    this.initialValue.set(JSON.stringify(this.values()));
   }
 
   public hasChanges(): boolean {
-    return this.initialValue !== JSON.stringify(this.values());
+    return this.initialValue() !== JSON.stringify(this.values());
   }
 
   protected changeDirection(value: unknown): void {
@@ -110,7 +110,7 @@ export class ShapeRelationFormComponent {
       const context: WorkspaceContext | null = this.workspace.context();
       await this.workspace.actions.updateAnnotationShape(shape.id, { relations });
       if (this.destroyRef.destroyed || !context || !this.workspace.isCurrent(context) || this.shape().id !== shape.id) return;
-      this.initialValue = JSON.stringify(this.values());
+      this.initialValue.set(JSON.stringify(this.values()));
       this.saved.emit(index);
     } catch (error: unknown) {
       if (!this.destroyRef.destroyed) this.projects.reportError(error);
@@ -123,7 +123,7 @@ export class ShapeRelationFormComponent {
     return {
       relationIds: this.refs(),
       direction: this.direction(),
-      bounds: { lowerBound: this.minimum, upperBound: this.maximum ?? -1 },
+      bounds: { lowerBound: this.minimum(), upperBound: this.maximum() ?? -1 },
     };
   }
 }

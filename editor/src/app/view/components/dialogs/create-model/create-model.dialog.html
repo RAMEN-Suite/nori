@@ -17,11 +17,12 @@
         maxlength="70"
         autocomplete="off"
         required
-        [(ngModel)]="draftModel().name"
-        [invalid]="(nameModel.touched || isSubmitted) && !isModelNameValid()"
+        [ngModel]="draftModel().name"
+        (ngModelChange)="updateDraft({ name: $event })"
+        [invalid]="(nameModel.touched || isSubmitted()) && !isModelNameValid()"
       />
       <p id="level-name-hint" class="text-xs leading-relaxed">
-        @if ((nameModel.touched || isSubmitted) && !isModelNameValid()) {
+        @if ((nameModel.touched || isSubmitted()) && !isModelNameValid()) {
           <span class="text-error">{{ t('editor.invalidLevelName') }}</span>
         } @else {
           <span class="text-base-content/50">{{ t('editor.levelNameHint') }}</span>
@@ -49,11 +50,12 @@
         placeholder="1.0.0"
         autocomplete="off"
         required
-        [(ngModel)]="draftModel().version"
-        [invalid]="(versionModel.touched || isSubmitted) && !isVersionValid()"
+        [ngModel]="draftModel().version"
+        (ngModelChange)="updateDraft({ version: $event })"
+        [invalid]="(versionModel.touched || isSubmitted()) && !isVersionValid()"
       />
       <p id="level-version-hint" class="text-xs leading-relaxed">
-        @if ((versionModel.touched || isSubmitted) && !isVersionValid()) {
+        @if ((versionModel.touched || isSubmitted()) && !isVersionValid()) {
           <span class="text-error">{{ t('editor.invalidModelVersion') }}</span>
         } @else {
           <span class="text-base-content/50">{{ t('editor.modelVersionHint') }}</span>
@@ -74,11 +76,12 @@
         placeholder="https://example.com/"
         autocomplete="off"
         required
-        [(ngModel)]="draftModel().uri"
-        [invalid]="(uriModel.touched || isSubmitted) && !isUriValid()"
+        [ngModel]="draftModel().uri"
+        (ngModelChange)="updateDraft({ uri: $event })"
+        [invalid]="(uriModel.touched || isSubmitted()) && !isUriValid()"
       />
       <p id="level-uri-hint" class="text-xs leading-relaxed">
-        @if ((uriModel.touched || isSubmitted) && !isUriValid()) {
+        @if ((uriModel.touched || isSubmitted()) && !isUriValid()) {
           <span class="text-error">{{ t('editor.invalidModelUri') }}</span>
         } @else {
           <span class="text-base-content/50">{{ t('editor.modelUriHint') }}</span>

@@ -38,7 +38,7 @@ export class CreateModelDialog {
 
   public readonly currentLevelIndex: ModelSignal<number | undefined> = model();
 
-  protected isSubmitted: boolean = false;
+  protected readonly isSubmitted: WritableSignal<boolean> = signal(false);
   protected readonly draftModel: WritableSignal<CreateLevelInput> = signal({
     name: '',
     description: '',
@@ -66,6 +66,10 @@ export class CreateModelDialog {
       };
       this.draftModel.set(input);
     });
+  }
+
+  protected updateDraft(changes: Partial<CreateLevelInput>): void {
+    this.draftModel.update((draft: CreateLevelInput): CreateLevelInput => ({ ...draft, ...changes }));
   }
 
   protected isModelNameValid(): boolean {
@@ -101,7 +105,7 @@ export class CreateModelDialog {
   }
 
   protected async handleSave(): Promise<void> {
-    this.isSubmitted = true;
+    this.isSubmitted.set(true);
     if (!this.isFormValid() || this.dialogs.pending()) return;
 
     const levelIndex: number | undefined = this.currentLevelIndex();

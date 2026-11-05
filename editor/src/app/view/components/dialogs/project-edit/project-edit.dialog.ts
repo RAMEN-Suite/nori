@@ -1,4 +1,13 @@
-import { ChangeDetectionStrategy, Component, inject, input, type InputSignal, type OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  signal,
+  type WritableSignal,
+  type InputSignal,
+  type OnInit,
+} from '@angular/core';
 import { FormsModule, type NgForm } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { LucideSave, LucideX } from '@lucide/angular';
@@ -21,23 +30,25 @@ export class ProjectEditDialog implements OnInit {
 
   public readonly project: InputSignal<Manifest> = input.required();
 
-  protected draft: UpdateManifest = { name: '', description: '' };
+  protected readonly name: WritableSignal<string> = signal('');
+  protected readonly description: WritableSignal<string> = signal('');
 
   public ngOnInit(): void {
-    this.draft = { name: this.project().name, description: this.project().description };
+    this.name.set(this.project().name);
+    this.description.set(this.project().description);
   }
 
   protected isDescriptionValid(): boolean {
-    return isDescriptionValid(this.draft.description);
+    return isDescriptionValid(this.description());
   }
 
   protected hasChanges(): boolean {
     const project: Manifest = this.project();
-    return this.draft.name.trim() !== project.name || this.draft.description.trim() !== project.description;
+    return this.name().trim() !== project.name || this.description().trim() !== project.description;
   }
 
   protected async handleSave(form: NgForm): Promise<void> {
-    const draft: UpdateManifest = this.draft;
+    const draft: UpdateManifest = { name: this.name(), description: this.description() };
     if (form.invalid || draft.name.trim().length < 3 || !this.isDescriptionValid() || !this.hasChanges()) return;
     await this.dialogs.run(
       (): Promise<void> =>

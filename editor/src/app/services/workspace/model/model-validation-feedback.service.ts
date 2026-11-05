@@ -1,4 +1,4 @@
-import { computed, effect, inject, Injectable, untracked, type Signal } from '@angular/core';
+import { computed, effect, inject, Injectable, signal, untracked, type Signal, type WritableSignal } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 import { LucideShieldAlert } from '@lucide/angular';
 import { type Diagnostic } from '@ramen-suite/core/model';
@@ -20,9 +20,9 @@ export class ModelValidationFeedbackService {
   private readonly dialogs: DialogService = inject(DialogService);
   private readonly translations: TranslocoService = inject(TranslocoService);
   private readonly appearance: ApplicationState = inject(ApplicationState);
-  private actionId: string | null = null;
-  private signature: string = '';
-  private dismissed: boolean = false;
+  private readonly actionId: WritableSignal<string | null> = signal(null);
+  private readonly signature: WritableSignal<string> = signal('');
+  private readonly dismissed: WritableSignal<boolean> = signal(false);
 
   public readonly findings: Signal<readonly Diagnostic[]> = computed(() => this.queries.validation()?.diagnostics ?? []);
   public readonly hasErrors: Signal<boolean> = computed(() => this.findings().some((finding) => finding.severity === 'error'));
@@ -43,32 +43,35 @@ export class ModelValidationFeedbackService {
   }
 
   private synchronise(signature: string, findings: readonly Diagnostic[]): void {
-    if (signature !== this.signature) {
-      this.signature = signature;
-      this.dismissed = false;
+    if (signature !== this.signature()) {
+      this.signature.set(signature);
+      this.dismissed.set(false);
     }
-    if (!findings.length || this.dismissed) {
-      if (this.actionId) this.actions.release(this.actionId);
-      this.actionId = null;
+    if (!findings.length || this.dismissed()) {
+      const actionId: string | null = this.actionId();
+      if (actionId) this.actions.release(actionId);
+      this.actionId.set(null);
       return;
     }
-    this.actionId = this.actions.publish({
-      owner: 'model-validation',
-      icon: LucideShieldAlert.icon,
-      severity: findings.some((finding) => finding.severity === 'error') ? 'error' : 'warning',
-      title: this.translations.translate('editor.validationActionTitle'),
-      description: this.translations.translate(
-        findings.length === 1 ? 'editor.validationSummarySingle' : 'editor.validationSummary',
-        {
-          count: findings.length,
+    this.actionId.set(
+      this.actions.publish({
+        owner: 'model-validation',
+        icon: LucideShieldAlert.icon,
+        severity: findings.some((finding) => finding.severity === 'error') ? 'error' : 'warning',
+        title: this.translations.translate('editor.validationActionTitle'),
+        description: this.translations.translate(
+          findings.length === 1 ? 'editor.validationSummarySingle' : 'editor.validationSummary',
+          {
+            count: findings.length,
+          },
+        ),
+        label: this.translations.translate('editor.showFindings'),
+        run: (): void => this.showDetails(),
+        cancel: (): void => {
+          this.dismissed.set(true);
+          this.actionId.set(null);
         },
-      ),
-      label: this.translations.translate('editor.showFindings'),
-      run: (): void => this.showDetails(),
-      cancel: (): void => {
-        this.dismissed = true;
-        this.actionId = null;
-      },
-    });
+      }),
+    );
   }
 }

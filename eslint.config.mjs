@@ -57,6 +57,26 @@ export default defineConfig(
       '@angular-eslint/prefer-on-push-component-change-detection': 'error',
       '@angular-eslint/prefer-signal-model': 'error',
       '@angular-eslint/prefer-signals': 'error',
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector:
+            "PropertyDefinition[accessibility='protected'][readonly!=true], PropertyDefinition[accessibility='public'][readonly!=true]",
+          message: 'Keep template-facing state in readonly signal fields; derive values with computed().',
+        },
+      ],
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@angular/core',
+              importNames: ['ChangeDetectorRef'],
+              message: 'Use signals to notify Angular of state changes.',
+            },
+          ],
+        },
+      ],
       '@angular-eslint/no-output-on-prefix': 'off',
       '@angular-eslint/no-duplicates-in-metadata-arrays': 'error',
       '@angular-eslint/directive-selector': ['error', { type: 'attribute', prefix: 'nori', style: 'camelCase' }],

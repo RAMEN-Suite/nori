@@ -41,7 +41,7 @@
             [disabled]="!editable()"
             [ariaLabel]="t('editor.dataType')"
             [options]="typeOptions()"
-            [value]="typeId"
+            [value]="typeId()"
             (valueChange)="handleType($event)"
           />
         </div>
@@ -51,22 +51,22 @@
       <legend class="property-group-title">{{ t('editor.propertyBehavior') }}</legend>
       <ng-container
         [ngTemplateOutlet]="optionList"
-        [ngTemplateOutletContext]="{ $implicit: usageOptions, label: t('editor.propertyBehavior') }"
+        [ngTemplateOutletContext]="{ $implicit: usageOptions(), label: t('editor.propertyBehavior') }"
       />
     </fieldset>
-    @if (multiple || (!hideDefinition() && editable())) {
+    @if (multiple() || (!hideDefinition() && editable())) {
       <fieldset class="property-option-group">
         <legend class="property-group-title">{{ t('editor.propertyValues') }}</legend>
         <ng-container
           [ngTemplateOutlet]="optionList"
-          [ngTemplateOutletContext]="{ $implicit: boundOptions, label: t('editor.propertyValues') }"
+          [ngTemplateOutletContext]="{ $implicit: boundOptions(), label: t('editor.propertyValues') }"
         />
       </fieldset>
     }
     <nori-description-field inputId="property-description" [(value)]="description" [disabled]="!editable()" />
   </fieldset>
   <ng-template #optionList let-options let-label="label">
-    @let optionItems = options === usageOptions ? usageOptions : boundOptions;
+    @let optionItems = options === usageOptions() ? usageOptions() : boundOptions();
     <sui-card size="xs" variant="border">
       <sui-list size="xs" [items]="optionItems" [trackBy]="trackOption" [ariaLabel]="label" [dividers]="false" [rowHover]="false">
         <ng-template [suiListItem]="optionItems" let-option>
@@ -81,7 +81,7 @@
               <span class="property-hint" [id]="'property-option-' + option">
                 @if (option === 'key' && otherKey(); as key) {
                   {{ t('editor.propertyKeyAlreadyUsed', { name: key.name }) }}
-                } @else if (option === 'key' && keyUnavailable) {
+                } @else if (option === 'key' && keyUnavailable()) {
                   {{ t('editor.propertyKeyRequiresSingleValue') }}
                 } @else {
                   {{ t('editor.propertyOptions.' + option + '.hint') }}
@@ -101,13 +101,13 @@
                   [incrementLabel]="t('editor.increasePropertyCount', { name: t('editor.propertyOptions.' + option + '.label') })"
                   [decrementLabel]="t('editor.decreasePropertyCount', { name: t('editor.propertyOptions.' + option + '.label') })"
                   [min]="0"
-                  [max]="upperBound === -1 ? undefined : upperBound"
+                  [max]="upperBound() === -1 ? undefined : upperBound()"
                   [step]="1"
                   [maxFractionDigits]="0"
                   [disabled]="!editable()"
                   [ariaLabel]="t('editor.propertyOptions.minimum.label')"
                   ariaDescribedby="property-option-minimum"
-                  [value]="lowerBound"
+                  [value]="lowerBound()"
                   (valueChange)="handleMinimum($event)"
                 />
               }
@@ -119,7 +119,7 @@
                   [showButtons]="true"
                   [incrementLabel]="t('editor.increasePropertyCount', { name: t('editor.propertyOptions.' + option + '.label') })"
                   [decrementLabel]="t('editor.decreasePropertyCount', { name: t('editor.propertyOptions.' + option + '.label') })"
-                  [min]="lowerBound > 2 ? lowerBound : 2"
+                  [min]="lowerBound() > 2 ? lowerBound() : 2"
                   [step]="1"
                   [maxFractionDigits]="0"
                   [disabled]="!editable()"
@@ -131,7 +131,7 @@
                   "
                   [invalid]="!!fieldErrors()['maximum']"
                   [placeholder]="t('editor.unlimitedValues')"
-                  [value]="upperBound === -1 ? null : upperBound"
+                  [value]="upperBound() === -1 ? null : upperBound()"
                   (valueChange)="handleMaximum($event)"
                 />
               }

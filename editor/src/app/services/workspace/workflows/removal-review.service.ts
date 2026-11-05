@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, signal, type WritableSignal } from '@angular/core';
 import { Router } from '@angular/router';
 import { LucideEraser } from '@lucide/angular';
 import { type WorkspaceLocation } from '../../../models/WorkspaceLocation';
@@ -29,12 +29,12 @@ export class RemovalReviewService {
   private readonly projects: ProjectService = inject(ProjectService);
   private readonly tools: GraphToolsService = inject(GraphToolsService);
 
-  private inspecting: boolean = false;
+  private readonly inspecting: WritableSignal<boolean> = signal(false);
 
   public async inspect(location: WorkspaceLocation, position: RemovalReviewPosition): Promise<void> {
     const dialog: OpenDialog | null = this.dialogs.current();
-    if (!dialog || this.dialogs.pending() || this.inspecting || this.actions.pending()) return;
-    this.inspecting = true;
+    if (!dialog || this.dialogs.pending() || this.inspecting() || this.actions.pending()) return;
+    this.inspecting.set(true);
     let paused: boolean = false;
     const review: PausedRemoval = { dialog, position, returnUrl: this.router.url };
     try {
@@ -54,7 +54,7 @@ export class RemovalReviewService {
       this.projects.reportError(error);
       if (paused) await this.actions.resume();
     } finally {
-      this.inspecting = false;
+      this.inspecting.set(false);
     }
   }
 

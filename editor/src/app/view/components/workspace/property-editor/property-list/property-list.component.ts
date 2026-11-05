@@ -108,7 +108,7 @@ export class PropertyListComponent {
   public readonly inspect: OutputEmitterRef<InheritedAttribute> = output();
   public readonly remove: OutputEmitterRef<Attribute> = output<Attribute>();
   public readonly duplicate: OutputEmitterRef<Attribute> = output<Attribute>();
-  public readonly busy: WritableSignal<boolean> = signal(false);
+  public readonly busy: Signal<boolean> = computed(() => this.pendingOperations() > 0);
   protected readonly error: WritableSignal<{ id: string; field: string; message: string } | null> = signal(null);
   protected readonly drafts: WritableSignal<Readonly<Record<string, string>>> = signal({});
   protected readonly draft: Signal<{ id: string; name: string } | null> = computed(() => {
@@ -116,7 +116,7 @@ export class PropertyListComponent {
     return entry ? { id: entry[0], name: entry[1] } : null;
   });
   protected readonly creating: WritableSignal<boolean> = signal(false);
-  private pendingOperations: number = 0;
+  private readonly pendingOperations: WritableSignal<number> = signal(0);
   private mutationQueue: Promise<void> = Promise.resolve();
   private readonly queuedNames: Map<string, string> = new Map();
   protected readonly ownModelName: Signal<string | null> = computed(() => this.workspace.queries.nodeOwner()?.name ?? null);
@@ -505,16 +505,14 @@ export class PropertyListComponent {
   }
 
   private enqueue<T>(operation: () => Promise<T>): Promise<T> {
-    this.pendingOperations++;
-    this.busy.set(true);
+    this.pendingOperations.update((count: number): number => count + 1);
     const task: Promise<T> = this.mutationQueue
       .then(async () => {
         await this.allowInputPaint();
         return operation();
       })
       .finally(() => {
-        this.pendingOperations--;
-        this.busy.set(this.pendingOperations > 0);
+        this.pendingOperations.update((count: number): number => count - 1);
       });
     this.mutationQueue = task.then(
       () => undefined,

@@ -22,7 +22,7 @@
           [fluid]="true"
           name="name"
           maxlength="70"
-          [(ngModel)]="draft.name"
+          [(ngModel)]="name"
           required
           minlength="3"
           [disabled]="busy() || disabled()"
@@ -31,7 +31,7 @@
         />
         <span id="project-name-hint" class="text-base-content/55 text-xs">{{ t('create.nameHint') }}</span>
       </label>
-      <nori-description-field inputId="create-project-description" [(value)]="draft.description" [disabled]="busy() || disabled()" />
+      <nori-description-field inputId="create-project-description" [(value)]="description" [disabled]="busy() || disabled()" />
       <label class="flex cursor-pointer items-start gap-3 py-2">
         <input suiCheckbox class="shrink-0" type="checkbox" name="example" [(ngModel)]="useExample" [disabled]="busy() || disabled()" />
         <span class="flex flex-col gap-1">

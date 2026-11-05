@@ -173,10 +173,10 @@ export class ShapeEditorComponent {
   protected readonly propertyId: WritableSignal<string | null> = signal(null);
   protected readonly shared: WritableSignal<InheritedAttribute | null> = signal(null);
   protected readonly relationIndex: WritableSignal<number> = signal(-1);
-  protected name: string = '';
+  protected readonly name: WritableSignal<string> = signal('');
   protected readonly description: WritableSignal<string> = signal('');
-  private initialDescription: string = '';
-  private initialName: string = '';
+  private readonly initialDescription: WritableSignal<string> = signal('');
+  private readonly initialName: WritableSignal<string> = signal('');
 
   protected readonly trackShape: ListTrackBy<ShapeEntry> = (_index: number, entry: ShapeEntry): string =>
     `${entry.modelId}:${entry.shape.id}`;
@@ -338,7 +338,7 @@ export class ShapeEditorComponent {
 
   protected settingsChanged(): boolean {
     if (!this.selected() && !this.creating()) return false;
-    return this.name.trim() !== this.initialName || descriptionValue(this.description()) !== this.initialDescription;
+    return this.name().trim() !== this.initialName() || descriptionValue(this.description()) !== this.initialDescription();
   }
 
   protected detailChanged(): boolean {
@@ -433,7 +433,7 @@ export class ShapeEditorComponent {
   protected async saveSettings(): Promise<void> {
     const nodeId: string | null = this.workspace.store.currentNodeId();
     const context: WorkspaceContext | null = this.workspace.context();
-    const type: string = this.name.trim();
+    const type: string = this.name().trim();
     if (this.pending() || !this.editable() || !this.settingsChanged() || !nodeId || !context) return;
     if (!isDescriptionValid(this.description())) {
       this.focus('.shape-window textarea');
@@ -462,8 +462,8 @@ export class ShapeEditorComponent {
 
   protected discardSettings(): void {
     this.nameError.set(null);
-    this.name = this.initialName;
-    this.description.set(this.initialDescription);
+    this.name.set(this.initialName());
+    this.description.set(this.initialDescription());
   }
 
   protected discardDetail(): void {
@@ -572,10 +572,10 @@ export class ShapeEditorComponent {
   }
 
   private loadSettings(name: string, description: string): void {
-    this.name = name;
-    this.initialName = name;
+    this.name.set(name);
+    this.initialName.set(name);
     this.description.set(description);
-    this.initialDescription = description;
+    this.initialDescription.set(description);
     this.nameError.set(null);
   }
 

@@ -56,15 +56,15 @@ export class DefinitionDescriptionComponent {
   protected readonly saving: WritableSignal<boolean> = signal(false);
   protected readonly valid: Signal<boolean> = computed(() => isDescriptionValid(this.draft()));
   protected readonly changed: Signal<boolean> = computed(() => descriptionValue(this.draft()) !== (this.value() ?? ''));
-  private contextKey: string = '';
+  private readonly contextKey: WritableSignal<string> = signal('');
 
   public constructor() {
     effect((): void => {
       const key: string = `${this.kind()}:${this.elementId()}`;
       const value: string = this.value() ?? '';
       untracked((): void => {
-        if (this.saving() && this.contextKey === key) return;
-        this.contextKey = key;
+        if (this.saving() && this.contextKey() === key) return;
+        this.contextKey.set(key);
         this.draft.set(value);
         this.editing.set(false);
         this.expanded.set(false);
@@ -98,18 +98,18 @@ export class DefinitionDescriptionComponent {
 
   protected async save(): Promise<void> {
     if (!this.editable() || this.saving() || !this.valid() || !this.changed()) return;
-    const key: string = this.contextKey;
+    const key: string = this.contextKey();
     const elementId: string = this.elementId();
     const description: string = descriptionValue(this.draft());
     this.saving.set(true);
     try {
       if (this.kind() === 'node') await this.workspace.actions.updateNode(elementId, { description });
       else await this.workspace.actions.updateRelation(elementId, { description });
-      if (this.destroyRef.destroyed || this.contextKey !== key) return;
+      if (this.destroyRef.destroyed || this.contextKey() !== key) return;
       this.editing.set(false);
       this.focusAction();
     } catch (error: unknown) {
-      if (!this.destroyRef.destroyed && this.contextKey === key) this.projects.reportError(error);
+      if (!this.destroyRef.destroyed && this.contextKey() === key) this.projects.reportError(error);
     } finally {
       this.saving.set(false);
     }

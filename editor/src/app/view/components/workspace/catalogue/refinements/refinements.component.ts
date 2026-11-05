@@ -101,8 +101,8 @@ export class RefinementsComponent {
   protected readonly editingId: WritableSignal<string | null> = signal(null);
   protected readonly draftName: WritableSignal<string> = signal('');
   protected readonly savingName: WritableSignal<boolean> = signal(false);
-  private editingModelId: string | undefined;
-  private pendingRevealId: string | null = null;
+  private readonly editingModelId: WritableSignal<string | undefined> = signal(undefined);
+  private readonly pendingRevealId: WritableSignal<string | null> = signal(null);
   protected readonly search: WritableSignal<string> = signal('');
 
   protected readonly isRefinementLevel: Signal<boolean> = computed((): boolean => this.workspace.store.currentLevelIndex() > 0);
@@ -119,12 +119,12 @@ export class RefinementsComponent {
       this.search.set('');
       this.handleGroupExpansion(created.baseNodeId, [created.baseNodeId]);
       this.handleRename({ value: created.node.id, label: created.node.name });
-      this.pendingRevealId = created.node.id;
+      this.pendingRevealId.set(created.node.id);
       this.nodeEditing.createdRefinement.set(null);
     });
     effect((): void => {
       const modelId: string | undefined = this.workspace.store.currentModel()?.id;
-      if (modelId !== this.editingModelId) this.editingId.set(null);
+      if (modelId !== this.editingModelId()) this.editingId.set(null);
     });
   }
 
@@ -140,7 +140,7 @@ export class RefinementsComponent {
   protected handleRename(item: NodeItem): void {
     if (!this.workspace.queries.editable() || this.savingName()) return;
 
-    this.editingModelId = this.workspace.store.currentModel()?.id;
+    this.editingModelId.set(this.workspace.store.currentModel()?.id);
     this.draftName.set(item.label);
     this.editingId.set(item.value);
   }
@@ -154,12 +154,12 @@ export class RefinementsComponent {
       this.handleCancelRename(restoreFocus);
       return;
     }
-    if (this.workspace.store.currentModel()?.id !== this.editingModelId) return;
+    if (this.workspace.store.currentModel()?.id !== this.editingModelId()) return;
 
     this.savingName.set(true);
     try {
       await this.workspace.actions.updateNode(id, { name: toPascalName(name) });
-      if (this.editingId() === id && this.workspace.store.currentModel()?.id === this.editingModelId) {
+      if (this.editingId() === id && this.workspace.store.currentModel()?.id === this.editingModelId()) {
         this.handleCancelRename(restoreFocus);
       }
     } catch (error: unknown) {
@@ -193,10 +193,10 @@ export class RefinementsComponent {
   }
 
   private revealPendingNode(): void {
-    const id: string | null = this.pendingRevealId;
+    const id: string | null = this.pendingRevealId();
     if (!id) return;
     if (this.workspace.store.currentNodeId() !== id) {
-      this.pendingRevealId = null;
+      this.pendingRevealId.set(null);
       return;
     }
 
@@ -207,7 +207,7 @@ export class RefinementsComponent {
     const bounds: DOMRect | undefined = catalogue?.getBoundingClientRect();
     const item: DOMRect = button.getBoundingClientRect();
     if (bounds && item.top >= bounds.top && item.bottom <= bounds.bottom) {
-      this.pendingRevealId = null;
+      this.pendingRevealId.set(null);
       return;
     }
     button.scrollIntoView({

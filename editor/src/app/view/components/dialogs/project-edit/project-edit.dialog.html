@@ -11,20 +11,20 @@
           required
           minlength="3"
           maxlength="70"
-          [(ngModel)]="draft.name"
-          [invalid]="nameField.touched && draft.name.trim().length < 3"
+          [(ngModel)]="name"
+          [invalid]="nameField.touched && name().trim().length < 3"
           [disabled]="dialogs.pending()"
           aria-describedby="edit-project-name-hint"
         />
         <span id="edit-project-name-hint" class="text-xs">
-          @if (nameField.touched && draft.name.trim().length < 3) {
+          @if (nameField.touched && name().trim().length < 3) {
             <span class="text-error">{{ t('editor.projectNameTooShort') }}</span>
           } @else {
             <span class="text-base-content/50">{{ t('editor.projectNameLength') }}</span>
           }
         </span>
       </label>
-      <nori-description-field inputId="edit-project-description" [(value)]="draft.description" [disabled]="dialogs.pending()" />
+      <nori-description-field inputId="edit-project-description" [(value)]="description" [disabled]="dialogs.pending()" />
     </div>
   </div>
   <footer class="nori-dialog-actions shrink-0">
@@ -37,7 +37,7 @@
       type="submit"
       size="sm"
       [loading]="dialogs.pending()"
-      [disabled]="!form.valid || draft.name.trim().length < 3 || !isDescriptionValid() || !hasChanges() || dialogs.pending()"
+      [disabled]="!form.valid || name().trim().length < 3 || !isDescriptionValid() || !hasChanges() || dialogs.pending()"
     >
       <svg lucideSave class="size-4 shrink-0" aria-hidden="true"></svg>
       {{ t('editor.saveProject') }}
