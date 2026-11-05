@@ -8,7 +8,8 @@ nori-graph,
   .host {
     height: 100%;
   }
-  .host > svg:not(.is-connecting, .is-erasing) {
+  .host > svg:not(.is-connecting, .is-erasing),
+  &.nori-graph-preview:not(.is-connecting, .is-erasing) {
     cursor: grab;
 
     &:active {

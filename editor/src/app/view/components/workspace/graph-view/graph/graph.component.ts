@@ -38,6 +38,7 @@ import { ApplicationState } from '../../../../../states/application.state';
 import { GraphModeHintComponent } from '../graph-mode-hint/graph-mode-hint.component';
 import { NodeActionsComponent } from '../node-actions/node-actions.component';
 import { RelationActionsComponent } from '../relation-actions/relation-actions.component';
+import { animateGraphLayout, GRAPH_FIT_DURATION } from './graph.layout-motion';
 import { GraphAutoLayout, type NodePosition } from './graph.auto-layout';
 import { getLinkPath } from './graph.geometry';
 import { positionLinkLabels } from './graph.labels';
@@ -166,7 +167,7 @@ export class GraphComponent implements AfterViewInit {
   }
 
   public fitView(): void {
-    this.fitViewport(this.appearance.state().animations ? 400 : 0);
+    this.fitViewport(this.appearance.state().animations ? GRAPH_FIT_DURATION : 0);
     if (!this.appearance.state().animations) this.saveView();
   }
 
@@ -206,31 +207,17 @@ export class GraphComponent implements AfterViewInit {
   }
 
   private animateLayout(model: RenderModel, positions: ReadonlyMap<string, NodePosition>): void {
-    const starts: Map<string, NodePosition> = new Map(
-      model.nodes.map((node: PositionedNode): [string, NodePosition] => [node.id, { x: node.x, y: node.y }]),
+    animateGraphLayout(
+      this.rootGroupSelection,
+      model,
+      positions,
+      this.appearance.state().animations,
+      (): void => {
+        this.updateNodePositions();
+        this.updateLinkPositions();
+      },
+      (): void => this.fitView(),
     );
-    const move: (progress: number) => void = (progress: number): void => {
-      for (const node of model.nodes) {
-        const start: NodePosition | undefined = starts.get(node.id);
-        const target: NodePosition | undefined = positions.get(node.id);
-        if (start && target)
-          setNodePosition(node, start.x + (target.x - start.x) * progress, start.y + (target.y - start.y) * progress);
-      }
-      this.updateNodePositions();
-      this.updateLinkPositions();
-    };
-    this.rootGroupSelection?.interrupt('layout');
-    if (!this.appearance.state().animations) {
-      move(1);
-      this.fitView();
-      return;
-    }
-    this.rootGroupSelection
-      ?.transition('layout')
-      .duration(450)
-      .ease(d3.easeCubicInOut)
-      .tween('positions', (): ((progress: number) => void) => move)
-      .on('end', (): void => this.fitView());
   }
 
   private registerColorChangesEffect(): void {
@@ -568,22 +555,7 @@ export class GraphComponent implements AfterViewInit {
     }
     if (this.graphTools.source() !== node.id) return;
 
-    const preview: d3.Selection<SVGGElement, number, SVGGElement, unknown> = this.rootGroupSelection
-      .selectAll<SVGGElement, number>('g.connection-preview')
-      .data([0])
-      .join('g')
-      .attr('class', 'connection-preview')
-      .style('--connection-color', this.getNodeColor(node));
-    const bend: number = (x - this.dragStart.x) / 2;
-    preview
-      .selectAll('path')
-      .data([0])
-      .join('path')
-      .attr(
-        'd',
-        `M${this.dragStart.x},${this.dragStart.y}C${this.dragStart.x + bend},${this.dragStart.y} ${x - bend},${y} ${x},${y}`,
-      );
-    preview.selectAll('circle').data([0]).join('circle').attr('cx', x).attr('cy', y).attr('r', 4);
+    this.renderer.drawConnectionPreview(this.rootGroupSelection, this.dragStart, { x, y }, this.getNodeColor(node));
   }
 
   private finishConnection(event: d3.D3DragEvent<SVGGElement, PositionedNode, unknown>, source: PositionedNode): void {

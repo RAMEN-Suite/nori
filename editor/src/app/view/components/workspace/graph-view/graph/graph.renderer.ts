@@ -1,6 +1,7 @@
 import { type TranslocoService } from '@jsverse/transloco';
 import { ModelRef } from '@ramen-suite/core/model';
 import type { Selection } from 'd3';
+import type { NodePosition } from './graph.auto-layout';
 import { getLinkPath } from './graph.geometry';
 import {
   GRAPH_NODE_WIDTH,
@@ -14,8 +15,29 @@ import {
   type SVGSelection,
 } from './graph.types';
 
+let nextMarkerId: number = 0;
+
 export class GraphRenderer {
+  private readonly markerId: string = `g-arrow-${++nextMarkerId}`;
+  private readonly markerUrl: string = `url(#${this.markerId})`;
   public constructor(private readonly translations: TranslocoService) {}
+
+  public drawConnectionPreview(root: RootSelection, start: NodePosition, end: NodePosition, colour: string): void {
+    const { x, y }: NodePosition = end;
+    const preview: Selection<SVGGElement, number, SVGGElement, unknown> = root
+      .selectAll<SVGGElement, number>('g.connection-preview')
+      .data([0])
+      .join('g')
+      .attr('class', 'connection-preview')
+      .style('--connection-color', colour);
+    const bend: number = (x - start.x) / 2;
+    preview
+      .selectAll('path')
+      .data([0])
+      .join('path')
+      .attr('d', `M${start.x},${start.y}C${start.x + bend},${start.y} ${x - bend},${y} ${x},${y}`);
+    preview.selectAll('circle').data([0]).join('circle').attr('cx', x).attr('cy', y).attr('r', 4);
+  }
 
   public drawLinks(rootGroupSelection: RootSelection, links: ResolvedLink[]): LinkSelection {
     const merged: LinkSelection = rootGroupSelection
@@ -29,7 +51,7 @@ export class GraphRenderer {
             .attr('fill', 'none')
             .style('--graph-arrival-delay', (_link: ResolvedLink, index: number): string => `${220 + Math.min(index, 8) * 25}ms`)
             .attr('data-nori-motion', '')
-            .attr('marker-end', 'url(#g-arrow)'),
+            .attr('marker-end', this.markerUrl),
         (update) => update,
         (exit) => exit.remove(),
       );
@@ -88,10 +110,10 @@ export class GraphRenderer {
       .join('defs');
 
     const marker: Selection<SVGMarkerElement, number, SVGDefsElement, number> = defs
-      .selectAll<SVGMarkerElement, unknown>('marker#g-arrow')
+      .selectAll<SVGMarkerElement, unknown>(`marker#${this.markerId}`)
       .data([0])
       .join('marker')
-      .attr('id', 'g-arrow')
+      .attr('id', this.markerId)
       .attr('viewBox', '0 0 10 10')
       .attr('refX', 5.5)
       .attr('refY', 5)
@@ -167,7 +189,7 @@ export class GraphRenderer {
       .join('path')
       .attr('class', (kind: string): string => `link-feedback-${kind}`)
       .attr('fill', 'none')
-      .attr('marker-end', (kind: string): string | null => (kind === 'stroke' ? 'url(#g-arrow)' : null))
+      .attr('marker-end', (kind: string): string | null => (kind === 'stroke' ? this.markerUrl : null))
       .attr('d', target ? getLinkPath(target, model.nodes) : '');
   }
 

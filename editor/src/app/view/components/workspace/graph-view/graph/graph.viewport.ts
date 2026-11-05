@@ -54,10 +54,12 @@ export class GraphViewport {
     return this.currentTransform;
   }
 
-  public fit(padding: GraphPadding, duration: number): void {
+  public fit(padding: GraphPadding, duration: number, maxScale?: number): void {
     const root: SVGGElement | null = this.root.node();
     if (!root) return;
-    const target: GraphView['viewport'] | null = getFitViewport(getViewportSize(this.host), padding, root.getBBox());
+    const bounds: DOMRect = root.getBBox();
+    if (bounds.width <= 0 || bounds.height <= 0) return;
+    const target: GraphView['viewport'] | null = getFitViewport(getViewportSize(this.host), padding, bounds, maxScale);
     if (target) this.applyTransform(d3.zoomIdentity.translate(target.x, target.y).scale(target.scale), duration);
   }
 
