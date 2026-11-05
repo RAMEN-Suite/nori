@@ -43,7 +43,7 @@ export class PropertyEditingService {
   private readonly navigating: WritableSignal<boolean> = signal(false);
 
   public readonly annotationEditingEnabled: boolean = features.annotationEditing;
-  public readonly section: WritableSignal<'properties' | 'shapes' | 'constraints'> = signal('properties');
+  public readonly section: WritableSignal<'properties' | 'shapes' | 'constraints' | 'relationships'> = signal('properties');
   public readonly changingNode: Signal<boolean> = this.navigating.asReadonly();
   public readonly previous: Signal<PropertyHistoryEntry | null> = computed(() => this.history().at(-1) ?? null);
 

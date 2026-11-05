@@ -9,82 +9,69 @@
     [class.switching-node]="switchingNode()"
     [attr.aria-busy]="actionPending()"
   >
-    <header class="property-toolbar flex min-w-0 shrink-0 flex-wrap items-center gap-4">
-      <h1 id="node-editing-screen-title" data-property-screen-heading tabindex="-1" class="min-w-0 flex-1 text-base font-semibold">
-        {{ t('editor.nodeDetails') }}
-      </h1>
-      <button
-        suiButton
-        type="button"
-        size="sm"
-        severity="neutral"
-        variant="text"
-        shape="circle"
-        [attr.aria-label]="t(graphVisible() ? 'editor.nodeWorkspace.hideGraph' : 'editor.nodeWorkspace.showGraph')"
-        [attr.aria-pressed]="graphVisible()"
-        (click)="graphVisible.set(!graphVisible())"
-      >
-        <svg lucideWaypoints class="size-4" aria-hidden="true"></svg>
-      </button>
-      <button
-        type="button"
-        class="property-screen-close inline-grid size-8 shrink-0 cursor-pointer place-items-center rounded-[var(--radius-field)]"
-        [attr.aria-label]="t('common.close')"
-        [disabled]="controlsUnavailable()"
-        (click)="close()"
-      >
-        <svg lucideX class="size-4.5" aria-hidden="true"></svg>
-      </button>
-    </header>
-
-    <div class="property-stage" [class.graph-hidden]="!graphVisible()">
-      <aside class="property-sidebar flex min-h-0 min-w-0 flex-col gap-2.5 overflow-auto">
-        <nori-node-context-panel
-          class="bg-base-100 shrink-0 rounded-[var(--nori-radius)] border border-[var(--nori-border)]"
-          [inert]="!!shapeEditor()?.pending()"
-          [disabled]="controlsUnavailable()"
-          (inspect)="inspectRefinement($event)"
-        />
-        <nav class="shrink-0 [--radius-box:var(--nori-radius)]" [attr.aria-label]="t('editor.nodeDetails')">
-          <sui-menu
-            fluid
-            size="sm"
-            severity="primary"
-            [items]="navigationItems()"
-            [disabled]="controlsUnavailable()"
-            (itemSelected)="switchSection($event)"
-          >
-            <ng-template [suiMenuItem]="navigationItems()" let-item>
-              <span class="flex items-center gap-3">
-                @switch (item.value) {
-                  @case ('properties') {
-                    <svg lucideList class="size-4" aria-hidden="true"></svg>
-                  }
-                  @case ('shapes') {
-                    <svg lucideTags class="size-4" aria-hidden="true"></svg>
-                  }
-                  @case ('constraints') {
-                    <svg lucideShieldCheck class="size-4" aria-hidden="true"></svg>
-                  }
+    <div class="property-stage flex-1">
+      <sui-card class="property-toolbar min-w-0" size="xs" variant="border">
+        <header class="flex min-w-0 flex-wrap items-center gap-2 px-3">
+          <h1 id="node-editing-screen-title" data-property-screen-heading tabindex="-1" class="sr-only">
+            {{ t('editor.nodeDetails') }}
+          </h1>
+          <nav class="flex min-w-0 flex-1 flex-wrap items-center gap-2" [attr.aria-label]="t('editor.nodeDetails')">
+            @for (item of navigationItems(); track item.value) {
+              <button
+                suiButton
+                type="button"
+                size="sm"
+                severity="neutral"
+                variant="text"
+                class="nori-panel-toggle"
+                [attr.aria-pressed]="editing.section() === item.value"
+                [disabled]="controlsUnavailable()"
+                (click)="switchSection(item.value)"
+              >
+                @if (item.value === 'properties') {
+                  <svg lucideList class="size-4" aria-hidden="true"></svg>
+                } @else if (item.value === 'shapes') {
+                  <svg lucideTags class="size-4" aria-hidden="true"></svg>
+                } @else if (item.value === 'relationships') {
+                  <svg lucideSpline class="size-4" aria-hidden="true"></svg>
+                } @else {
+                  <svg lucideShieldCheck class="size-4" aria-hidden="true"></svg>
                 }
                 {{ item.label }}
-              </span>
-            </ng-template>
-          </sui-menu>
-        </nav>
-      </aside>
-      @if (graphVisible()) {
+              </button>
+            }
+          </nav>
+          <button
+            type="button"
+            class="property-screen-close inline-grid size-8 shrink-0 cursor-pointer place-items-center rounded-[var(--radius-field)]"
+            [attr.aria-label]="t('common.close')"
+            [disabled]="controlsUnavailable()"
+            (click)="close()"
+          >
+            <svg lucideX class="size-4.5" aria-hidden="true"></svg>
+          </button>
+        </header>
+      </sui-card>
+      <aside class="property-sidebar flex min-h-0 min-w-0 flex-col">
         <nori-node-neighbourhood
-          class="property-neighbourhood"
+          class="property-neighbourhood min-h-0 flex-1"
           [highlightedRelations]="shapeEditor()?.highlightedRelations() ?? noRelations"
           [disabled]="controlsUnavailable()"
           [previousName]="editing.previous()?.name ?? null"
           [nextName]="editing.next()?.name ?? null"
           (back)="backToNode()"
           (forward)="forwardToNode()"
+          (historyChange)="restoreModelHistory($event)"
           (inspect)="inspectNeighbour($event)"
-        />
-      }
+        >
+          <nori-node-context-panel
+            class="bg-base-100 shrink-0 rounded-[var(--nori-radius)] border border-[var(--nori-border)]"
+            [inert]="!!shapeEditor()?.pending()"
+            [disabled]="controlsUnavailable()"
+            (inspect)="inspectRefinement($event)"
+          />
+        </nori-node-neighbourhood>
+      </aside>
       <div class="property-main min-h-0 min-w-0">
         @switch (editing.section()) {
           @case ('shapes') {
@@ -101,13 +88,35 @@
               </div>
             }
           }
+          @case ('relationships') {
+            <section
+              class="property-surface bg-base-100 h-full min-h-0 overflow-auto rounded-[var(--nori-radius)] border border-[var(--nori-border)] p-5"
+              [attr.aria-label]="t('editor.nodeWorkspace.relationships')"
+            >
+              @if (relationships().length) {
+                <ul class="divide-y divide-[var(--nori-border)]">
+                  @for (relation of relationships(); track relation.id) {
+                    <li class="flex flex-wrap items-center justify-between gap-2 py-3 text-sm">
+                      <span class="font-medium">{{ relation.name }}</span>
+                      <span class="text-base-content/60">
+                        {{ workspace.queries.resolveNodeLabel(relation.from.nodeId) }}
+                        <span aria-hidden="true">→</span>
+                        {{ workspace.queries.resolveNodeLabel(relation.to.nodeId) }}
+                      </span>
+                    </li>
+                  }
+                </ul>
+              } @else {
+                <p class="text-base-content/60 text-sm">{{ t('editor.nodeWorkspace.noRelationships') }}</p>
+              }
+            </section>
+          }
           @case ('constraints') {
             <section
               class="property-surface bg-base-100 flex h-full min-h-0 flex-col overflow-auto rounded-[var(--nori-radius)] border border-[var(--nori-border)] p-5"
               [attr.aria-label]="t('editor.constraints')"
             >
-              <h2 class="text-base font-semibold">{{ t('editor.constraints') }}</h2>
-              <p class="text-base-content/60 mt-2 text-sm">{{ t('editor.nodeWorkspace.rulesHint') }}</p>
+              <p class="text-base-content/60 text-sm">{{ t('editor.nodeWorkspace.rulesHint') }}</p>
               <div class="mt-5 flex flex-col gap-2">
                 @for (property of properties(); track property.id) {
                   <button
@@ -125,11 +134,11 @@
                   <p class="text-base-content/60 text-sm">{{ t('editor.noProperties') }}</p>
                 }
               </div>
-              <h3 class="mt-6 text-sm font-semibold">{{ t('editor.nodeWorkspace.modelConstraints') }}</h3>
+              <h2 class="mt-6 text-sm font-semibold">{{ t('editor.nodeWorkspace.modelConstraints') }}</h2>
               <p class="text-base-content/60 mt-2 text-sm">{{ t('editor.nodeWorkspace.constraintsHint') }}</p>
               @for (rule of nodeConstraints(); track $index) {
                 <div class="mt-3 rounded-[var(--radius-field)] border border-[var(--nori-border)] p-3">
-                  <h4 class="text-sm font-medium">{{ rule.name }}</h4>
+                  <h3 class="text-sm font-medium">{{ rule.name }}</h3>
                   @if (rule.description || rule.message) {
                     <p class="text-base-content/60 mt-1 text-sm">{{ rule.description || rule.message }}</p>
                   }

@@ -290,7 +290,7 @@
     "propertyInvalidBounds": "Il numero minimo deve essere almeno 0. Il massimo non può essere inferiore al minimo; lascialo vuoto per valori illimitati.",
     "propertyKeyBounds": "Una proprietà chiave deve avere esattamente un valore. Imposta sia il minimo sia il massimo su 1.",
     "propertyChangeInvalid": "Questa modifica renderebbe il modello non valido: {{reason}}",
-    "propertyValues": "Numero di valori",
+    "propertyValues": "Impostazioni elenco",
     "propertyBehavior": "Utilizzo",
     "propertyName": "Nome della proprietà",
     "dataType": "Tipo di dato",
@@ -342,6 +342,14 @@
     "modelNodeCount": "{{count}} nodi",
     "propertyDefinition": "Definizione",
     "propertyOptions": {
+      "required": {
+        "label": "Richiedi un valore",
+        "hint": "Deve essere indicato almeno un valore."
+      },
+      "multiple": {
+        "label": "Consenti più valori",
+        "hint": "Questa proprietà può contenere più di un valore."
+      },
       "ordered": {
         "label": "Mantieni l’ordine dei valori",
         "hint": "La posizione di ogni valore è significativa."
@@ -447,15 +455,15 @@
         "hint": "Esattamente un valore."
       },
       "list": {
-        "label": "Elenco",
+        "label": "Qualsiasi quantità",
         "hint": "Un numero qualsiasi di valori, anche nessuno."
       },
       "nonEmpty": {
-        "label": "Non vuoto",
+        "label": "Almeno uno",
         "hint": "Almeno un valore, senza limite massimo."
       },
       "custom": {
-        "label": "Personalizzato",
+        "label": "Imposta limiti",
         "hint": "Imposta tu il minimo e il massimo."
       }
     },
@@ -468,12 +476,12 @@
     },
     "backToGraph": "Torna al grafo",
     "neighbourhood": {
-      "title": "Dintorni",
+      "title": "Collegamenti",
       "label": "Collegamenti diretti di questo nodo. Un altro nodo si apre qui.",
       "empty": "Questo nodo non ha ancora relazioni.",
       "zoomIn": "Ingrandisci",
       "zoomOut": "Riduci",
-      "navigationHint": "Grafo del modello. Scorri per ingrandire, trascina per spostare. Tastiera: più, meno e 0 per adattare."
+      "navigationHint": "Scorri per ingrandire. Trascina lo sfondo o un nodo per spostarlo. Tastiera: più, meno e 0 per adattare."
     },
     "propertyList": {
       "own": "Definite su questo nodo",
@@ -485,13 +493,15 @@
       "singleValue": "Valore singolo",
       "valueMode": "Numero di valori",
       "inherited": "Proprietà ereditate",
+      "viewProperty": "Visualizza proprietà",
       "view": "Visualizza {{name}}",
+      "goToSource": "Vai alla fonte",
       "jumpToNode": "Vai al nodo {{name}}",
       "viewTitle": "Visualizza proprietà"
     },
     "nodeWorkspace": {
-      "hideGraph": "Nascondi il grafo del modello",
-      "showGraph": "Mostra il grafo del modello",
+      "relationships": "Relazioni",
+      "noRelationships": "Questo nodo non ha relazioni.",
       "history": "Navigazione tra nodi",
       "forwardTo": "Avanti a {{name}}",
       "rulesHint": "Modifica requisiti, limiti e regole di utilizzo nelle impostazioni di ogni proprietà.",

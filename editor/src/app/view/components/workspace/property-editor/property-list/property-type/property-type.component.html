@@ -15,6 +15,8 @@
     [options]="options()"
     [value]="value()"
     [disabled]="disabled()"
+    [invalid]="invalid()"
+    [touched]="invalid()"
     (valueChange)="selectType($event)"
     (touch)="restoreType()"
   >
@@ -27,15 +29,16 @@
     type="button"
     size="sm"
     shape="circle"
-    [severity]="multiple() ? 'primary' : 'neutral'"
+    [severity]="multipleInvalid() ? 'error' : 'neutral'"
     [variant]="multiple() ? 'soft' : 'text'"
     class="shrink-0 select-none"
+    [class.nori-panel-toggle]="!multipleInvalid()"
     [attr.aria-pressed]="multiple()"
-    [disabled]="disabled()"
+    [disabled]="disabled() || multipleDisabled()"
     [attr.aria-label]="t('editor.propertyList.array') + ': ' + label()"
-    [noriTooltip]="t('editor.propertyList.array')"
+    [noriTooltip]="t('editor.propertyList.multipleValues')"
     (click)="arrayChange.emit(!multiple())"
   >
-    <svg lucideList class="size-4" aria-hidden="true"></svg>
+    <svg lucideLayers class="size-4" aria-hidden="true"></svg>
   </button>
 </div>

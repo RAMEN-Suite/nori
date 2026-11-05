@@ -20,7 +20,7 @@ import { descriptionLength } from '../../../../utils/descriptions';
   imports: [FormsModule, TranslocoDirective, Textarea],
   host: { class: 'block min-w-0' },
   template: `
-    <div *transloco="let t" class="flex min-w-0 flex-col gap-1.5 text-xs" [class.opacity-50]="disabled()">
+    <div *transloco="let t" class="flex min-w-0 flex-col gap-1.5 text-xs">
       <label [for]="inputId()" class="nori-field-label"
         >{{ t('editor.description.label') }} <span class="nori-field-optional">{{ t('create.optional') }}</span></label
       >
@@ -30,6 +30,7 @@ import { descriptionLength } from '../../../../utils/descriptions';
         size="sm"
         rows="3"
         class="text-base"
+        [class.opacity-50]="disabled()"
         data-description-input
         [id]="inputId()"
         [ngModel]="value()"
@@ -41,7 +42,7 @@ import { descriptionLength } from '../../../../utils/descriptions';
         [attr.aria-invalid]="tooLong() ? 'true' : null"
         [attr.aria-describedby]="inputId() + '-count' + (tooLong() ? ' ' + inputId() + '-error' : '')"
       ></textarea>
-      <div class="flex items-start justify-between gap-3 font-normal">
+      <div class="flex items-start justify-between gap-3 font-normal" [class.opacity-50]="disabled()">
         @if (tooLong()) {
           <span [id]="inputId() + '-error'" class="text-error" role="alert">{{
             t('editor.description.tooLong', { maximum: limit })

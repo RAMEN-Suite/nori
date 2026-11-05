@@ -1,21 +1,28 @@
 <div *transloco="let t" class="nori-dialog-content">
-  <div class="nori-dialog-scroll min-w-0">
-    <nori-property-form
-      [currentAttribute]="attribute()"
-      [editable]="editable()"
-      [modelLevelIndex]="levelIndex()"
-      (saved)="created($event)"
-      (submitRequested)="save()"
-    />
+  <nori-notifications context="dialog" />
+  <div class="nori-scroll-frame -ms-1 -me-5">
+    <div noriScrollOverflow #scroll="scrollOverflow" class="editor-panel-scroll min-w-0 overflow-y-auto py-1 pe-3">
+      <nori-property-form
+        [currentAttribute]="attribute()"
+        [hideDefinition]="!!attribute()"
+        [editable]="editable()"
+        [autoSave]="autoSave()"
+        [statusErrors]="true"
+        [modelLevelIndex]="levelIndex()"
+        (saved)="created($event)"
+        (submitRequested)="save()"
+      />
+    </div>
+    <nori-scroll-hints [up]="scroll.canScrollUp()" [down]="scroll.canScrollDown()" />
   </div>
-  <footer class="nori-dialog-actions">
-    <button suiButton size="sm" severity="neutral" variant="text" [disabled]="dialogs.pending()" (click)="dialogs.close()">
-      {{ t(editable() ? 'common.cancel' : 'common.close') }}
-    </button>
-    @if (editable()) {
+  @if (editable() && !autoSave()) {
+    <footer class="nori-dialog-actions -me-2">
+      <button suiButton size="sm" severity="neutral" variant="text" [disabled]="dialogs.pending()" (click)="dialogs.close()">
+        {{ t('common.cancel') }}
+      </button>
       <button suiButton size="sm" [loading]="dialogs.pending()" [disabled]="dialogs.pending() || !form()?.hasChanges()" (click)="save()">
         {{ t(attribute() ? 'editor.saveProperty' : 'editor.addProperty') }}
       </button>
-    }
-  </footer>
+    </footer>
+  }
 </div>

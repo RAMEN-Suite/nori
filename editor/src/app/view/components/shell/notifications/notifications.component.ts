@@ -26,6 +26,7 @@ import { ApplicationState } from '../../../../states/application.state';
         <nori-feedback
           class="notification-window"
           [class.node-editor]="context() === 'node-editor'"
+          [class.in-dialog]="context() === 'dialog'"
           kind="status"
           [severity]="notification.status"
           [title]="notification.title"
@@ -57,7 +58,9 @@ import { ApplicationState } from '../../../../states/application.state';
   styleUrl: './notifications.component.scss',
 })
 export class NotificationsComponent {
-  public readonly context: InputSignal<'workspace' | 'node-editor'> = input<'workspace' | 'node-editor'>('workspace');
+  public readonly context: InputSignal<'workspace' | 'node-editor' | 'dialog'> = input<'workspace' | 'node-editor' | 'dialog'>(
+    'workspace',
+  );
   protected readonly appearance: ApplicationState = inject(ApplicationState);
   protected readonly notifications: NotificationService = inject(NotificationService);
   private readonly interactions: Record<'hover' | 'focus', boolean> = { hover: false, focus: false };

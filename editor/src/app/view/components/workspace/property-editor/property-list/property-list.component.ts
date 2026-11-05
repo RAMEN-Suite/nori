@@ -16,7 +16,15 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
-import { LucideSettings2, LucideEraser, LucideEye, LucideArrowUpRight, LucideCopy, LucideList } from '@lucide/angular';
+import {
+  LucideSettings2,
+  LucideTrash,
+  LucideEye,
+  LucideArrowUpRight,
+  LucideCopy,
+  LucidePlus,
+  LucideGripVertical,
+} from '@lucide/angular';
 import {
   Button,
   Accordion,
@@ -30,7 +38,7 @@ import {
   type OrderListReorderEvent,
   type AutocompleteOption,
 } from '@sushi-kit/angular';
-import { DataTypes, type Attribute, type UpdateAttributeInput } from '@ramen-suite/core/model';
+import { DataTypes, type Diagnostic, type Model, type Attribute, type UpdateAttributeInput } from '@ramen-suite/core/model';
 import { WorkspaceService, type WorkspaceContext } from '../../../../../services/workspace/workspace.service';
 import { ProjectService } from '../../../../../services/projects/project.service';
 import { DialogService } from '../../../../../services/interaction/dialog.service';
@@ -40,6 +48,8 @@ import { FieldValidationError } from '../../../../../models/FieldValidationError
 import { PropertyDetailsDialog } from '../../../dialogs/property-details/property-details.dialog';
 import { ApplicationState } from '../../../../../states/application.state';
 import { PropertyTypeComponent } from './property-type/property-type.component';
+import { ScrollOverflowDirective } from '../../../../../directives/scroll-overflow.directive';
+import { ScrollHintsComponent } from '../../../shared/scroll-hints/scroll-hints.component';
 import { TooltipDirective } from '../../../../../directives/tooltip.directive';
 
 interface PropertyListItem {
@@ -48,10 +58,17 @@ interface PropertyListItem {
   readonly attribute: Attribute;
 }
 
+interface PropertyIssue {
+  readonly field: string;
+  readonly message: string;
+}
+
 @Component({
   selector: 'nori-property-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    ScrollOverflowDirective,
+    ScrollHintsComponent,
     FormsModule,
     TranslocoDirective,
     Button,
@@ -62,12 +79,13 @@ interface PropertyListItem {
     PropertyTypeComponent,
     OrderList,
     OrderListItemTemplate,
-    LucideList,
     LucideSettings2,
-    LucideEraser,
+    LucideTrash,
     LucideEye,
     LucideArrowUpRight,
     LucideCopy,
+    LucidePlus,
+    LucideGripVertical,
     TooltipDirective,
   ],
   templateUrl: './property-list.component.html',
@@ -94,7 +112,6 @@ export class PropertyListComponent {
     return entry ? { id: entry[0], name: entry[1] } : null;
   });
   protected readonly creating: WritableSignal<boolean> = signal(false);
-  private readonly arrayDrafts: WritableSignal<Readonly<Record<string, { multiple: boolean }>>> = signal({});
   private pendingOperations: number = 0;
   private mutationQueue: Promise<void> = Promise.resolve();
   private readonly queuedNames: Map<string, string> = new Map();
@@ -147,13 +164,58 @@ export class PropertyListComponent {
   protected readonly newName: WritableSignal<string> = signal('');
   protected readonly newType: WritableSignal<string> = signal(DataTypes.String);
   protected readonly newArray: WritableSignal<boolean> = signal(false);
+  private readonly importedIssues: Signal<ReadonlyMap<string, readonly PropertyIssue[]>> = computed(() => {
+    const issues: Map<string, PropertyIssue[]> = new Map();
+    const models: readonly Model[] = this.workspace.store.getModels();
+    for (const finding of this.workspace.queries.validation()?.diagnostics ?? []) {
+      if (finding.severity !== 'error') continue;
+      const target: readonly [string, PropertyIssue] | undefined = this.resolvePropertyIssue(finding, models);
+      if (!target) continue;
+      const [key, issue] = target;
+      const group: PropertyIssue[] = issues.get(key) ?? [];
+      group.push(issue);
+      issues.set(key, group);
+    }
+    return issues;
+  });
+
+  protected issuesFor(
+    id: string,
+    modelId: string | undefined = this.workspace.store.currentModel()?.id,
+  ): readonly PropertyIssue[] {
+    const findings: readonly PropertyIssue[] = this.importedIssues().get(JSON.stringify([modelId, id])) ?? [];
+    const draft: ReturnType<typeof this.error> = this.error();
+    return draft?.id === id && modelId === this.workspace.store.currentModel()?.id ? [draft, ...findings] : findings;
+  }
+
+  private resolvePropertyIssue(finding: Diagnostic, models: readonly Model[]): readonly [string, PropertyIssue] | undefined {
+    const match: RegExpMatchArray | null | undefined = finding.path?.match(
+      /^\/models\/([^/]+)\/classifiers\/(\d+)\/attributes(?:\/(\d+))?(?:\/([^/]+))?/,
+    );
+    if (!match) return undefined;
+    const [, modelId, classifierIndex, attributeIndex, pathField] = match;
+    const classifier: Model['classifiers'][number] | undefined = models.find((model): boolean => model.id === modelId)
+      ?.classifiers[Number(classifierIndex)];
+    if (classifier?.kind !== 'Node') return undefined;
+    const attribute: Attribute | undefined =
+      attributeIndex === undefined
+        ? classifier.attributes.find((item): boolean => item.id === finding.ref)
+        : classifier.attributes[Number(attributeIndex)];
+    if (!attribute) return undefined;
+    const field: string = pathField ?? (finding.code.includes('ATTRIBUTE_NAME') ? 'name' : '');
+    return [JSON.stringify([modelId, attribute.id]), { field, message: finding.message }];
+  }
+
+  protected hasIssue(issues: readonly PropertyIssue[], field: string): boolean {
+    return issues.some((issue: PropertyIssue): boolean => issue.field === field);
+  }
+
   protected readonly creationError: WritableSignal<string | null> = signal(null);
 
   public constructor() {
     effect(() => {
       this.workspace.store.currentNodeId();
       this.drafts.set({});
-      this.arrayDrafts.set({});
       this.error.set(null);
       this.orderDraft.set(null);
       this.newName.set('');
@@ -164,23 +226,61 @@ export class PropertyListComponent {
   }
 
   public canLeave(): boolean {
-    return !this.busy() && !this.draft() && !this.newName().trim();
+    const draft: ReturnType<typeof this.draft> = this.draft();
+    const error: ReturnType<typeof this.error> = this.error();
+    const hasUnsavedName: boolean = !!draft && !(error?.field === 'name' && error.id === draft.id);
+    return !this.busy() && !hasUnsavedName && (!this.newName().trim() || !!this.creationError());
+  }
+
+  public discardInvalidDrafts(): void {
+    if (this.busy()) return;
+    if (this.creationError()) this.resetNewDraft();
+    const error: ReturnType<typeof this.error> = this.error();
+    if (error?.field === 'name') {
+      this.clearNameDraft(error.id);
+      this.error.set(null);
+    }
   }
 
   public guardLeave(): boolean {
+    if (this.canLeave()) return true;
     const draft: { id: string; name: string } | null = this.draft();
     if (draft) this.focusProperty(draft.id);
     else if (this.newName().trim()) this.focusNew();
-    return this.canLeave();
+    return false;
   }
 
-  public focusProperty(id: string): void {
-    if (this.revealOwnGroup(() => this.focusProperty(id))) return;
-    const rows: NodeListOf<HTMLElement> = this.element.nativeElement.querySelectorAll('[data-property-id]');
-    [...rows]
-      .find((row) => row.dataset['propertyId'] === id)
-      ?.querySelector<HTMLElement>('input, button')
-      ?.focus({ preventScroll: true });
+  public focusProperty(id: string, selectName: boolean = false): boolean {
+    const own: boolean = this.properties().some((property): boolean => property.id === id);
+    if (!own && !this.inherited().some((entry): boolean => entry.attribute.id === id)) return false;
+    if (this.revealGroup(own ? 'own' : 'inherited', () => this.focusProperty(id, selectName))) return true;
+    const rows: NodeListOf<HTMLElement> = this.element.nativeElement.querySelectorAll(
+      own ? '[data-property-id]' : '[data-inherited-property-id]',
+    );
+    const row: HTMLElement | undefined = [...rows].find(
+      (entry): boolean => (own ? entry.dataset['propertyId'] : entry.dataset['inheritedPropertyId']) === id,
+    );
+    const nameInput: HTMLInputElement | null | undefined = row?.querySelector<HTMLInputElement>(
+      '.name-field input:not(:disabled)',
+    );
+    const target: HTMLElement | null | undefined = nameInput ?? row?.querySelector<HTMLButtonElement>('button:not(:disabled)');
+    if (!target) return false;
+    return this.focusPropertyControl(target, selectName);
+  }
+
+  private focusPropertyControl(target: HTMLElement, selectName: boolean): boolean {
+    target.focus({ preventScroll: true });
+    if (target.ownerDocument.activeElement !== target) return false;
+    if (selectName) {
+      target.scrollIntoView({ block: 'center', inline: 'nearest' });
+      if (target instanceof HTMLInputElement) {
+        target.select();
+        requestAnimationFrame((): void => {
+          if (target.ownerDocument.activeElement === target) target.select();
+        });
+      }
+    }
+    return true;
   }
 
   public details(
@@ -193,7 +293,9 @@ export class PropertyListComponent {
         ? (this.properties().find((item) => item.id === attribute.id) ?? attribute)
         : undefined;
       this.dialogs.open(PropertyDetailsDialog, {
-        headerKey: current ? (editable ? 'editor.editProperties' : 'editor.propertyList.viewTitle') : 'editor.addProperty',
+        width: 'var(--nori-dialog-width)',
+        header: current ? current.name : undefined,
+        headerKey: current ? undefined : 'editor.addProperty',
         inputValues: { attribute: current, editable, levelIndex },
       });
     });
@@ -236,6 +338,7 @@ export class PropertyListComponent {
     event?.preventDefault();
     const name: string | undefined = this.drafts()[property.id]?.trim();
     if (name === undefined || this.queuedNames.get(property.id) === name) return;
+    if (!event && this.error()?.id === property.id) return;
     if (!name) {
       this.error.set({ id: property.id, field: 'name', message: this.translations.translate('editor.propertyNameRequired') });
       return;
@@ -258,29 +361,24 @@ export class PropertyListComponent {
   }
 
   protected isArray(property: Attribute): boolean {
-    return this.arrayDrafts()[property.id]?.multiple ?? property.bounds.upperBound !== 1;
+    return property.bounds.upperBound !== 1;
   }
 
   protected async changeArray(property: Attribute, multiple: boolean): Promise<void> {
-    if (multiple === this.isArray(property)) return;
-    const draft: { multiple: boolean } = { multiple };
-    this.arrayDrafts.update((drafts) => ({ ...drafts, [property.id]: draft }));
+    if (property.isKey || multiple === this.isArray(property)) return;
     await this.update(property, {
       bounds: { lowerBound: Math.min(property.bounds.lowerBound, 1), upperBound: multiple ? -1 : 1 },
-      ...(multiple ? { isKey: false } : {}),
     });
-    if (this.arrayDrafts()[property.id] === draft)
-      this.arrayDrafts.update((drafts) => Object.fromEntries(Object.entries(drafts).filter(([id]) => id !== property.id)));
   }
 
   public focusNew(): void {
-    if (this.revealOwnGroup(() => this.focusNew())) return;
+    if (this.revealGroup('own', () => this.focusNew())) return;
     this.element.nativeElement.querySelector<HTMLInputElement>('[data-new-property]')?.focus({ preventScroll: true });
   }
 
-  private revealOwnGroup(focus: () => void): boolean {
-    if (this.expandedGroups().includes('own')) return false;
-    this.expandedGroups.update((groups) => [...groups, 'own']);
+  private revealGroup(group: 'own' | 'inherited', focus: () => void): boolean {
+    if (this.expandedGroups().includes(group)) return false;
+    this.expandedGroups.update((groups) => [...groups, group]);
     afterNextRender(
       () => {
         if (!this.destroyRef.destroyed) focus();
@@ -295,6 +393,7 @@ export class PropertyListComponent {
   }
 
   protected leaveNewName(event: FocusEvent): void {
+    if (this.creationError()) return;
     const row: Element | null = event.target instanceof Element ? event.target.closest('.new-property-row') : null;
     if (row && event.relatedTarget instanceof Node && row.contains(event.relatedTarget)) return;
     void this.createInline(false);
@@ -302,6 +401,10 @@ export class PropertyListComponent {
 
   protected cancelNew(event: Event): void {
     event.stopPropagation();
+    this.resetNewDraft();
+  }
+
+  private resetNewDraft(): void {
     this.newName.set('');
     this.newType.set(DataTypes.String);
     this.newArray.set(false);
@@ -339,8 +442,9 @@ export class PropertyListComponent {
   }
 
   private reportCreationError(error: unknown): void {
-    if (error instanceof FieldValidationError) this.creationError.set(error.message);
-    else this.projects.reportError(error);
+    if (error instanceof FieldValidationError) {
+      this.creationError.set(error.message);
+    } else this.projects.reportError(error);
   }
 
   protected async changeType(property: Attribute, value: unknown): Promise<void> {

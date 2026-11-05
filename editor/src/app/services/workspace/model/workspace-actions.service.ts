@@ -294,20 +294,20 @@ export class WorkspaceActionsService {
     await this.persistValidatedChange((draft: RamenModel): ModelChange<Relation> => draft.updateRelation(relationId, patch));
   }
 
-  public undo(): Promise<void> {
-    return this.restoreHistory('undo');
+  public undo(currentNodeOnly: boolean = false): Promise<void> {
+    return this.restoreHistory('undo', currentNodeOnly);
   }
 
-  public redo(): Promise<void> {
-    return this.restoreHistory('redo');
+  public redo(currentNodeOnly: boolean = false): Promise<void> {
+    return this.restoreHistory('redo', currentNodeOnly);
   }
 
-  private restoreHistory(direction: 'undo' | 'redo'): Promise<void> {
+  private restoreHistory(direction: 'undo' | 'redo', currentNodeOnly: boolean): Promise<void> {
     const projectId: string | null = this.projects.selectedProjectId();
     if (!projectId) return Promise.resolve();
     return this.interactions.mutate(
       projectId,
-      (): Promise<void> => this.history[direction]((views): Promise<void> => this.saveWorkspace(views)),
+      (): Promise<void> => this.history[direction]((views): Promise<void> => this.saveWorkspace(views), currentNodeOnly),
     );
   }
 

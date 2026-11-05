@@ -16,3 +16,10 @@
   position: absolute;
   top: calc(var(--nori-node-toolbar-height) + 1rem);
 }
+
+.notification-window.in-dialog {
+  position: static;
+  width: 100%;
+  translate: none;
+  flex-shrink: 0;
+}

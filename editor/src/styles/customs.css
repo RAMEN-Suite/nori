@@ -37,6 +37,7 @@ body {
   --nori-dialog-exit-duration: 100ms;
   --nori-dialog-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --nori-dialog-width: 36rem;
+  --nori-dialog-width-edit: 30rem;
   --nori-dialog-width-compact: 28rem;
   --nori-notification-width: 36rem;
   --nori-action-bottom: 3.5rem;

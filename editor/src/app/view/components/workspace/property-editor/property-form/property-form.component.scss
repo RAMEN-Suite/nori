@@ -10,7 +10,7 @@
   width: 100%;
   min-width: 0;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.375rem;
 }
 .property-basics {
   display: grid;
@@ -35,17 +35,12 @@
 }
 .property-option-row {
   @include surface-list.row;
+  padding-inline: 0.75rem;
   display: flex;
   justify-content: space-between;
   border-radius: var(--nori-radius-input);
   cursor: pointer;
   transition: background-color 180ms ease-out;
-}
-.property-option-row.has-previous {
-  margin-top: 0.5rem;
-}
-.property-option-row.has-next {
-  margin-bottom: 0.5rem;
 }
 .property-option-text {
   display: flex;

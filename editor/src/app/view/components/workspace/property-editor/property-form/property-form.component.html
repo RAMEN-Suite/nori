@@ -1,72 +1,50 @@
-<form *transloco="let t" class="property-form" [inert]="saving()" (ngSubmit)="submitRequested.emit()">
+<form *transloco="let t" class="property-form" [inert]="saving() && !autoSave()" (ngSubmit)="submitRequested.emit()">
   <button type="submit" hidden [disabled]="!editable() || saving()">{{ t('common.save') }}</button>
   <fieldset class="property-fields" [disabled]="!editable()">
     <legend class="sr-only">{{ t('editor.properties') }}</legend>
-    <fieldset class="property-basics">
-      <legend class="property-group-title">{{ t('editor.propertyDefinition') }}</legend>
-      <label class="property-field"
-        ><span class="nori-field-label">{{ t('editor.propertyName') }}</span>
-        <input
-          suiInput
-          fluid
-          size="sm"
-          name="name"
-          [maxlength]="nameMaxLength"
-          [(ngModel)]="name"
-          (ngModelChange)="handleName()"
-          [invalid]="!!nameError()"
-          [touched]="!!nameError()"
-          [attr.aria-invalid]="nameError() ? 'true' : null"
-          [attr.aria-describedby]="nameError() ? 'property-name-error' : null"
-          required
-        />
-        @if (nameError(); as message) {
-          <span id="property-name-error" class="text-error text-xs font-normal" role="alert">{{ message }}</span>
-        }
-      </label>
-      <div class="property-field">
-        <span class="nori-field-label">{{ t('editor.dataType') }}</span>
-        <sui-autocomplete
-          fluid
-          size="sm"
-          forceSelection
-          openOnFocus
-          openOnClick
-          [minQueryLength]="0"
-          [delay]="0"
-          [placeholder]="t('editor.searchDataTypes')"
-          [emptyMessage]="t('editor.noMatchingDataTypes')"
-          [suggestionsMessage]="suggestionsMessage"
-          [disabled]="!editable()"
-          [ariaLabel]="t('editor.dataType')"
-          [options]="typeOptions()"
-          [value]="typeId"
-          (valueChange)="handleType($event)"
-        />
-      </div>
-    </fieldset>
-    <nori-description-field inputId="property-description" [(value)]="description" [disabled]="!editable()" />
-    <fieldset class="property-option-group">
-      <legend id="property-cardinality-label" class="property-group-title">{{ t('editor.propertyValues') }}</legend>
-      <sui-select-button
-        size="sm"
-        severity="neutral"
-        ariaLabelledby="property-cardinality-label"
-        aria-describedby="property-cardinality-hint"
-        [options]="cardinalityOptions()"
-        [value]="cardinality"
-        [disabled]="!editable()"
-        (valueChange)="handleCardinality($event)"
-      />
-      <p id="property-cardinality-hint" class="property-hint mt-2">{{ t('editor.propertyCardinality.' + cardinality + '.hint') }}</p>
-    </fieldset>
-    @if (multiple || cardinality === 'custom') {
-      <fieldset class="property-option-group">
-        <legend class="property-group-title">{{ t('editor.propertyMultipleValues') }}</legend>
-        <ng-container
-          [ngTemplateOutlet]="optionList"
-          [ngTemplateOutletContext]="{ $implicit: boundOptions, label: t('editor.propertyMultipleValues') }"
-        />
+    @if (!hideDefinition()) {
+      <fieldset class="property-basics">
+        <legend class="sr-only">{{ t('editor.propertyDefinition') }}</legend>
+        <label class="property-field"
+          ><span class="nori-field-label">{{ t('editor.propertyName') }}</span>
+          <input
+            suiInput
+            fluid
+            size="sm"
+            name="name"
+            [maxlength]="nameMaxLength"
+            [(ngModel)]="name"
+            (ngModelChange)="handleName()"
+            [invalid]="!!nameError()"
+            [touched]="!!nameError()"
+            [attr.aria-invalid]="nameError() ? 'true' : null"
+            [attr.aria-describedby]="nameError() && !statusErrors() ? 'property-name-error' : null"
+            required
+          />
+          @if (!statusErrors() && nameError(); as message) {
+            <span id="property-name-error" class="text-error text-xs font-normal" role="alert">{{ message }}</span>
+          }
+        </label>
+        <div class="property-field">
+          <span class="nori-field-label">{{ t('editor.dataType') }}</span>
+          <sui-autocomplete
+            fluid
+            size="sm"
+            forceSelection
+            openOnFocus
+            openOnClick
+            [minQueryLength]="0"
+            [delay]="0"
+            [placeholder]="t('editor.searchDataTypes')"
+            [emptyMessage]="t('editor.noMatchingDataTypes')"
+            [suggestionsMessage]="suggestionsMessage"
+            [disabled]="!editable()"
+            [ariaLabel]="t('editor.dataType')"
+            [options]="typeOptions()"
+            [value]="typeId"
+            (valueChange)="handleType($event)"
+          />
+        </div>
       </fieldset>
     }
     <fieldset class="property-option-group">
@@ -76,19 +54,27 @@
         [ngTemplateOutletContext]="{ $implicit: usageOptions, label: t('editor.propertyBehavior') }"
       />
     </fieldset>
+    @if (multiple || (!hideDefinition() && editable())) {
+      <fieldset class="property-option-group">
+        <legend class="property-group-title">{{ t('editor.propertyValues') }}</legend>
+        <ng-container
+          [ngTemplateOutlet]="optionList"
+          [ngTemplateOutletContext]="{ $implicit: boundOptions, label: t('editor.propertyValues') }"
+        />
+      </fieldset>
+    }
+    <nori-description-field inputId="property-description" [(value)]="description" [disabled]="!editable()" />
   </fieldset>
   <ng-template #optionList let-options let-label="label">
     @let optionItems = options === usageOptions ? usageOptions : boundOptions;
     <sui-card size="xs" variant="border">
-      <sui-list size="xs" [items]="optionItems" [trackBy]="trackOption" [ariaLabel]="label" [dividers]="true" [rowHover]="false">
-        <ng-template [suiListItem]="optionItems" let-option let-first="first" let-last="last">
+      <sui-list size="xs" [items]="optionItems" [trackBy]="trackOption" [ariaLabel]="label" [dividers]="false" [rowHover]="false">
+        <ng-template [suiListItem]="optionItems" let-option>
           <label
             class="property-option-row col-span-full"
-            [class.has-previous]="!first"
-            [class.has-next]="!last"
             data-nori-motion
             [attr.for]="'property-control-' + option"
-            [attr.aria-disabled]="!editable() || (option === 'key' && keyUnavailable) ? 'true' : null"
+            [attr.aria-disabled]="optionDisabled(option) ? 'true' : null"
           >
             <span class="property-option-text" data-nori-motion>
               <span class="property-option-label">{{ t('editor.propertyOptions.' + option + '.label') }}</span>
@@ -101,7 +87,7 @@
                   {{ t('editor.propertyOptions.' + option + '.hint') }}
                 }
               </span>
-              @if (fieldErrors()[option]; as message) {
+              @if (!statusErrors() && fieldErrors()[option]; as message) {
                 <span [id]="'property-error-' + option" class="text-error text-xs" role="alert">{{ message }}</span>
               }
             </span>
@@ -139,7 +125,9 @@
                   [disabled]="!editable()"
                   [ariaLabel]="t('editor.propertyOptions.maximum.label')"
                   [ariaDescribedby]="
-                    fieldErrors()['maximum'] ? 'property-option-maximum property-error-maximum' : 'property-option-maximum'
+                    fieldErrors()['maximum'] && !statusErrors()
+                      ? 'property-option-maximum property-error-maximum'
+                      : 'property-option-maximum'
                   "
                   [invalid]="!!fieldErrors()['maximum']"
                   [placeholder]="t('editor.unlimitedValues')"
@@ -155,9 +143,11 @@
                   size="sm"
                   type="checkbox"
                   [name]="option"
-                  [disabled]="!editable() || (option === 'key' && keyUnavailable)"
+                  [disabled]="optionDisabled(option)"
                   [attr.aria-label]="t('editor.propertyOptions.' + option + '.label')"
-                  [attr.aria-describedby]="'property-option-' + option + (fieldErrors()[option] ? ' property-error-' + option : '')"
+                  [attr.aria-describedby]="
+                    'property-option-' + option + (fieldErrors()[option] && !statusErrors() ? ' property-error-' + option : '')
+                  "
                   [attr.aria-invalid]="fieldErrors()[option] ? 'true' : null"
                   [ngModel]="optionValue(option)"
                   (ngModelChange)="handleOption(option, $event)"

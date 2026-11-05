@@ -4,13 +4,8 @@
     [attr.aria-label]="t('editor.shapes.title')"
     [inert]="pending() || switchingNode()"
   >
-    <header class="property-panel-heading flex min-h-12 shrink-0 items-center justify-between gap-3 pt-3 pr-3.5 pb-1 pl-5.5">
-      <h3 class="flex min-w-0 items-center gap-2.5 text-base font-semibold select-none">
-        <svg lucideTags class="size-4 shrink-0" aria-hidden="true"></svg>{{ t('editor.shapes.title') }}
-      </h3>
-    </header>
     <div class="nori-scroll-frame min-h-0 flex-1">
-      <div noriScrollOverflow #shapeScroll="scrollOverflow" class="property-list-scroll editor-panel-scroll px-2 pb-2">
+      <div noriScrollOverflow #shapeScroll="scrollOverflow" class="property-list-scroll editor-panel-scroll px-2 pt-4 pb-2">
         @for (group of shapeGroups(); track group.modelId) {
           <div suiDivider placement="start" class="text-base-content/60 text-xs">
             {{

@@ -1,26 +1,7 @@
-<section
-  *transloco="let t"
-  class="property-surface bg-base-100 flex h-full min-h-0 min-w-0 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)]"
-  aria-labelledby="node-neighbourhood-title"
->
-  <header class="property-panel-heading">
-    <h2 id="node-neighbourhood-title"><svg lucideWaypoints class="size-4 shrink-0" aria-hidden="true"></svg>{{ t('editor.graph') }}</h2>
-  </header>
-  <div #graphHost class="neighbourhood-host relative min-h-0 flex-1 overflow-hidden">
-    <svg
-      #canvas
-      class="nori-graph-preview neighbourhood-canvas"
-      tabindex="0"
-      role="group"
-      [attr.aria-label]="t('editor.neighbourhood.navigationHint')"
-      (keydown)="handleGraphKey($event)"
-    ></svg>
-    @if (previousName() || nextName()) {
-      <div
-        class="bg-base-100 absolute bottom-3 left-3 flex items-center gap-1 rounded-[var(--nori-radius)] border border-[var(--nori-border)] p-1"
-        role="group"
-        [attr.aria-label]="t('editor.nodeWorkspace.history')"
-      >
+<ng-container *transloco="let t">
+  <sui-card class="neighbourhood-toolbar shrink-0" size="xs" variant="border">
+    <div class="flex flex-wrap items-center justify-between gap-2 px-3">
+      <div class="flex items-center gap-2" role="group" [attr.aria-label]="t('editor.nodeWorkspace.history')">
         <button
           suiButton
           type="button"
@@ -50,48 +31,102 @@
           <svg lucideArrowRight class="size-4" aria-hidden="true"></svg>
         </button>
       </div>
-    }
-    <div
-      class="graph-viewport-controls bg-base-100 absolute right-3 bottom-3 flex items-center gap-1 rounded-[var(--nori-radius)] border border-[var(--nori-border)] p-1"
-      role="group"
-      [attr.aria-label]="t('editor.graph')"
-    >
-      <button
-        suiButton
-        type="button"
-        size="sm"
-        severity="neutral"
-        variant="text"
-        shape="circle"
-        [attr.aria-label]="t('editor.neighbourhood.zoomOut')"
-        (click)="zoom(0.8)"
-      >
-        <svg lucideMinus class="size-4" aria-hidden="true"></svg>
-      </button>
-      <button
-        suiButton
-        type="button"
-        size="sm"
-        severity="neutral"
-        variant="text"
-        shape="circle"
-        [attr.aria-label]="t('editor.neighbourhood.zoomIn')"
-        (click)="zoom(1.25)"
-      >
-        <svg lucidePlus class="size-4" aria-hidden="true"></svg>
-      </button>
-      <button
-        suiButton
-        type="button"
-        size="sm"
-        severity="neutral"
-        variant="text"
-        shape="circle"
-        [attr.aria-label]="t('editor.fit')"
-        (click)="fit()"
-      >
-        <svg lucideScan class="size-4" aria-hidden="true"></svg>
-      </button>
+      <div class="flex items-center gap-2" role="group">
+        <button
+          suiButton
+          type="button"
+          size="sm"
+          severity="neutral"
+          variant="text"
+          shape="circle"
+          [disabled]="controlsBusy() || !history.canUndoCurrentNode()"
+          [attr.aria-label]="t('editor.undoModel')"
+          [attr.aria-keyshortcuts]="shortcuts.aria('undo')"
+          [noriTooltip]="t('editor.undoModel') + shortcuts.hint('undo')"
+          (click)="historyChange.emit('undo')"
+        >
+          <svg lucideUndo2 class="size-4" aria-hidden="true"></svg>
+        </button>
+        <button
+          suiButton
+          type="button"
+          size="sm"
+          severity="neutral"
+          variant="text"
+          shape="circle"
+          [disabled]="controlsBusy() || !history.canRedoCurrentNode()"
+          [attr.aria-label]="t('editor.redoModel')"
+          [attr.aria-keyshortcuts]="shortcuts.aria('redo')"
+          [noriTooltip]="t('editor.redoModel') + shortcuts.hint('redo')"
+          (click)="historyChange.emit('redo')"
+        >
+          <svg lucideRedo2 class="size-4" aria-hidden="true"></svg>
+        </button>
+      </div>
     </div>
-  </div>
-</section>
+  </sui-card>
+  <ng-content select="nori-node-context-panel" />
+  <section
+    class="property-surface bg-base-100 flex min-h-0 min-w-0 flex-1 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)]"
+    [attr.aria-label]="t('editor.neighbourhood.title')"
+  >
+    <div #graphHost class="neighbourhood-host relative min-h-0 flex-1 overflow-hidden">
+      <svg
+        #canvas
+        class="nori-graph-preview neighbourhood-canvas"
+        tabindex="0"
+        role="group"
+        [attr.aria-label]="t('editor.neighbourhood.navigationHint')"
+        (keydown)="handleGraphKey($event)"
+      ></svg>
+      <div
+        class="bg-base-100 absolute right-3 bottom-3 flex items-center gap-1 rounded-[var(--nori-radius)] border border-[var(--nori-border)] p-1"
+        role="group"
+        [attr.aria-label]="t('editor.neighbourhood.title')"
+      >
+        <button
+          suiButton
+          type="button"
+          size="sm"
+          severity="neutral"
+          variant="text"
+          shape="circle"
+          [disabled]="disabled()"
+          [attr.aria-label]="t('editor.fit')"
+          [noriTooltip]="t('editor.fit')"
+          (click)="fit()"
+        >
+          <svg lucideScan class="size-4" aria-hidden="true"></svg>
+        </button>
+        <button
+          suiButton
+          type="button"
+          size="sm"
+          severity="neutral"
+          variant="text"
+          shape="circle"
+          [disabled]="disabled()"
+          [attr.aria-label]="t('editor.colours')"
+          [noriTooltip]="t('editor.colours')"
+          (click)="openColours()"
+        >
+          <svg lucidePalette class="size-4" aria-hidden="true"></svg>
+        </button>
+        <button
+          suiButton
+          type="button"
+          size="sm"
+          severity="neutral"
+          variant="text"
+          shape="circle"
+          [disabled]="disabled()"
+          [attr.aria-label]="t('editor.reset')"
+          [noriTooltip]="t('editor.reset')"
+          (click)="resetLayout()"
+        >
+          <svg lucideNetwork class="size-4" aria-hidden="true"></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+</ng-container>

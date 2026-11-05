@@ -1,7 +1,7 @@
 import { computed, inject, Injectable, signal, type Signal, type WritableSignal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ModelRef, type Model } from '@ramen-suite/core/model';
-import { RamenModelFormat } from '@ramen-suite/core/ramen';
+import { RamenModelFormat, type AnnotationShape } from '@ramen-suite/core/ramen';
 import { type ModelRecord, type ViewSettings } from '../../../models/ModelRecord';
 import { WorkspaceStore } from '../../../states/workspace.store';
 import { NavigationService } from '../../interaction/navigation.service';
@@ -45,6 +45,36 @@ export class ModelHistoryService {
     const edit: ModelEdit | undefined = this.future().at(-1);
     return !!edit && this.isCurrent(edit.before) && !this.restoring() && edit.before.signature === this.signature();
   });
+
+  public readonly canUndoCurrentNode: Signal<boolean> = computed(
+    (): boolean => this.canUndo() && this.affectsCurrentNode(this.past().at(-1)),
+  );
+  public readonly canRedoCurrentNode: Signal<boolean> = computed(
+    (): boolean => this.canRedo() && this.affectsCurrentNode(this.future().at(-1)),
+  );
+
+  private affectsCurrentNode(edit: ModelEdit | undefined): boolean {
+    const modelId: string | undefined = this.store.currentModel()?.id;
+    const nodeId: string | null = this.store.currentNodeId();
+    if (!edit || !modelId || !nodeId) return false;
+    const ownerId: string = ModelRef.isQualified(nodeId) ? ModelRef.splitQualified(nodeId).modelId : modelId;
+    const id: string = ModelRef.localId(nodeId);
+    const before: Model | undefined = edit.before.models.find((model): boolean => model.id === ownerId);
+    const after: Model | undefined = edit.after.models.find((model): boolean => model.id === ownerId);
+    if (!before || !after) return false;
+    const beforeNode: Model['classifiers'][number] | undefined = before.classifiers.find(
+      (item): boolean => item.kind === 'Node' && item.id === id,
+    );
+    const afterNode: Model['classifiers'][number] | undefined = after.classifiers.find(
+      (item): boolean => item.kind === 'Node' && item.id === id,
+    );
+    if (!beforeNode || !afterNode) return false;
+    const shapes: (model: Model) => readonly AnnotationShape[] = (model: Model): readonly AnnotationShape[] =>
+      RamenModelFormat.isDocument(model)
+        ? model.annotations.filter((shape: AnnotationShape): boolean => shape.annotationId === id)
+        : [];
+    return JSON.stringify([beforeNode, shapes(before)]) !== JSON.stringify([afterNode, shapes(after)]);
+  }
 
   public constructor() {
     this.projects.projectSelectionChanges$.pipe(takeUntilDestroyed()).subscribe((): void => {
@@ -96,11 +126,13 @@ export class ModelHistoryService {
     if (this.isCurrent(snapshot)) this.store.restoreModels(snapshot.models);
   }
 
-  public async undo(save: SaveHistory): Promise<void> {
-    if (this.canUndo()) await this.restore(this.past, this.future, 'before', save);
+  public async undo(save: SaveHistory, currentNodeOnly: boolean = false): Promise<void> {
+    if (currentNodeOnly ? this.canUndoCurrentNode() : this.canUndo())
+      await this.restore(this.past, this.future, 'before', save, currentNodeOnly);
   }
-  public async redo(save: SaveHistory): Promise<void> {
-    if (this.canRedo()) await this.restore(this.future, this.past, 'after', save);
+  public async redo(save: SaveHistory, currentNodeOnly: boolean = false): Promise<void> {
+    if (currentNodeOnly ? this.canRedoCurrentNode() : this.canRedo())
+      await this.restore(this.future, this.past, 'after', save, currentNodeOnly);
   }
 
   private async restore(
@@ -108,6 +140,7 @@ export class ModelHistoryService {
     target: WritableSignal<readonly ModelEdit[]>,
     direction: 'before' | 'after',
     save: SaveHistory,
+    currentNodeOnly: boolean,
   ): Promise<void> {
     const edit: ModelEdit | undefined = source().at(-1);
     if (!edit) return;
@@ -126,7 +159,9 @@ export class ModelHistoryService {
     if (!this.isCurrent(previous)) return;
     source.set(source().filter((item): boolean => item !== edit));
     target.set([...target(), edit]);
-    await this.restoreSelection(next);
+    if (!currentNodeOnly || !previous.modelId || !previous.nodeId || !this.hasNode(next, previous.modelId, previous.nodeId)) {
+      await this.restoreSelection(next);
+    }
   }
 
   private async restoreSelection(snapshot: HistorySnapshot): Promise<void> {

@@ -48,6 +48,7 @@ export class NodeContextPanelComponent {
     if (!node || !reference || this.disabled()) return;
     const editable: boolean = this.workspace.queries.nodeEditable();
     this.dialogs.open(NodeEditDialog, {
+      width: 'var(--nori-dialog-width-edit)',
       headerKey: editable ? 'editor.editNode' : 'editor.nodeDetails',
       inputValues: { node, reference, editable },
     });

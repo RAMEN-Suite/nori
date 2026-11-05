@@ -291,7 +291,7 @@
     "propertyInvalidBounds": "Die Mindestanzahl muss mindestens 0 sein. Die Höchstanzahl darf nicht kleiner sein; lass sie für unbegrenzt viele Werte leer.",
     "propertyKeyBounds": "Eine Schlüsseleigenschaft muss genau einen Wert haben. Setze Minimum und Maximum auf 1.",
     "propertyChangeInvalid": "Diese Änderung würde das Modell ungültig machen: {{reason}}",
-    "propertyValues": "Anzahl der Werte",
+    "propertyValues": "Listeneinstellungen",
     "propertyBehavior": "Verwendung",
     "propertyName": "Name der Eigenschaft",
     "dataType": "Datentyp",
@@ -343,6 +343,14 @@
     "modelNodeCount": "{{count}} Knoten",
     "propertyDefinition": "Definition",
     "propertyOptions": {
+      "required": {
+        "label": "Wert erforderlich",
+        "hint": "Mindestens ein Wert muss angegeben werden."
+      },
+      "multiple": {
+        "label": "Mehrere Werte erlauben",
+        "hint": "In dieser Eigenschaft können mehrere Werte gespeichert werden."
+      },
       "ordered": {
         "label": "Reihenfolge beibehalten",
         "hint": "Die Position der einzelnen Werte ist von Bedeutung."
@@ -448,15 +456,15 @@
         "hint": "Genau ein Wert."
       },
       "list": {
-        "label": "Liste",
+        "label": "Beliebig viele",
         "hint": "Beliebig viele Werte, auch keiner."
       },
       "nonEmpty": {
-        "label": "Nicht leer",
+        "label": "Mindestens einer",
         "hint": "Mindestens ein Wert, nach oben offen."
       },
       "custom": {
-        "label": "Eigene",
+        "label": "Grenzen festlegen",
         "hint": "Mindest- und Höchstanzahl frei festlegen."
       }
     },
@@ -469,12 +477,12 @@
     },
     "backToGraph": "Zurück zum Graph",
     "neighbourhood": {
-      "title": "Umgebung",
+      "title": "Verbindungen",
       "label": "Direkte Verbindungen dieses Knotens. Ein anderer Knoten öffnet sich hier.",
       "empty": "Dieser Knoten hat noch keine Relationen.",
       "zoomIn": "Vergrößern",
       "zoomOut": "Verkleinern",
-      "navigationHint": "Modellgraph. Mit Scrollen zoomen, durch Ziehen verschieben. Tastatur: Plus, Minus und 0 zum Einpassen."
+      "navigationHint": "Zum Zoomen scrollen. Den Hintergrund oder einen Knoten durch Ziehen verschieben. Tastatur: Plus, Minus und 0 zum Einpassen."
     },
     "propertyList": {
       "own": "An diesem Knoten definiert",
@@ -486,13 +494,15 @@
       "singleValue": "Einzelwert",
       "valueMode": "Wertanzahl",
       "inherited": "Geerbte Eigenschaften",
+      "viewProperty": "Eigenschaft ansehen",
       "view": "{{name}} ansehen",
+      "goToSource": "Zur Quelle",
       "jumpToNode": "Zum Knoten {{name}}",
       "viewTitle": "Eigenschaft ansehen"
     },
     "nodeWorkspace": {
-      "hideGraph": "Modellgraph ausblenden",
-      "showGraph": "Modellgraph einblenden",
+      "relationships": "Beziehungen",
+      "noRelationships": "Dieser Knoten hat keine Beziehungen.",
       "history": "Knotennavigation",
       "forwardTo": "Vorwärts zu {{name}}",
       "rulesHint": "Pflichtwerte, Grenzen und Nutzungsregeln lassen sich in den Einstellungen der jeweiligen Eigenschaft bearbeiten.",

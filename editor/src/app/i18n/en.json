@@ -291,7 +291,7 @@
     "propertyInvalidBounds": "The minimum count must be at least 0. The maximum must be at least the minimum; leave it empty for unlimited values.",
     "propertyKeyBounds": "A key property must have exactly one value. Set both minimum and maximum to 1.",
     "propertyChangeInvalid": "This change would make the model invalid: {{reason}}",
-    "propertyValues": "Number of values",
+    "propertyValues": "List settings",
     "propertyBehavior": "Usage",
     "propertyName": "Property name",
     "dataType": "Data type",
@@ -343,6 +343,14 @@
     "modelNodeCount": "{{count}} Nodes",
     "propertyDefinition": "Definition",
     "propertyOptions": {
+      "required": {
+        "label": "Require a value",
+        "hint": "At least one value must be provided."
+      },
+      "multiple": {
+        "label": "Allow multiple values",
+        "hint": "Store more than one value in this property."
+      },
       "ordered": {
         "label": "Preserve value order",
         "hint": "The position of each value matters."
@@ -448,15 +456,15 @@
         "hint": "Exactly one value."
       },
       "list": {
-        "label": "List",
+        "label": "Any number",
         "hint": "Any number of values, including none."
       },
       "nonEmpty": {
-        "label": "Non-empty",
+        "label": "At least one",
         "hint": "At least one value, no upper limit."
       },
       "custom": {
-        "label": "Custom",
+        "label": "Set limits",
         "hint": "Set the minimum and maximum yourself."
       }
     },
@@ -469,12 +477,12 @@
     },
     "backToGraph": "Back to graph",
     "neighbourhood": {
-      "title": "Neighbourhood",
+      "title": "Connections",
       "label": "Direct connections of this node. Another node opens here.",
       "empty": "This node has no relations yet.",
       "zoomIn": "Zoom in",
       "zoomOut": "Zoom out",
-      "navigationHint": "Model graph. Scroll to zoom, drag to pan. Keyboard: plus, minus and 0 to fit."
+      "navigationHint": "Scroll to zoom. Drag the background to pan or drag a node to move it. Keyboard: plus, minus and 0 to fit."
     },
     "propertyList": {
       "own": "Defined on this node",
@@ -486,13 +494,15 @@
       "singleValue": "Single value",
       "valueMode": "Value count",
       "inherited": "Inherited properties",
+      "viewProperty": "View property",
       "view": "View {{name}}",
+      "goToSource": "Go to source",
       "jumpToNode": "Go to {{name}}",
       "viewTitle": "View property"
     },
     "nodeWorkspace": {
-      "hideGraph": "Hide model graph",
-      "showGraph": "Show model graph",
+      "relationships": "Relationships",
+      "noRelationships": "This node has no relationships.",
       "history": "Node navigation",
       "forwardTo": "Forward to {{name}}",
       "rulesHint": "Set value requirements, limits and usage rules in each property’s settings.",

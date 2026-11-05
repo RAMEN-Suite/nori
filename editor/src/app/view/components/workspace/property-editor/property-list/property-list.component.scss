@@ -1,17 +1,10 @@
-@use "../../../../../../styles/panel-heading";
-
 :host {
+  --property-handle-gap: 0.875rem;
   --property-actions-width: calc(var(--size-field, 0.25rem) * 24 + 1.5rem);
   display: flex;
   min-height: 0;
   flex: 1;
   flex-direction: column;
-}
-.property-panel-heading {
-  @include panel-heading.frame;
-}
-.property-panel-heading h2 {
-  @include panel-heading.title;
 }
 .property-groups {
   --sui-focus-ring-offset: calc(-1 * var(--sui-focus-ring-width));
@@ -24,21 +17,19 @@
   --sui-accordion-panel-padding-bottom: 0;
 }
 sui-order-list {
-  --sui-order-list-row-padding: 0 0.25rem;
-  --sui-order-list-row-gap: 0.375rem;
+  --sui-order-list-row-padding: 0 0.75rem 0 0.25rem;
+  --sui-order-list-row-gap: var(--property-handle-gap);
   --sui-order-list-row-hover-background: var(--sui-color-hover);
 }
-.property-row,
-.inherited-row {
+.property-row {
   display: grid;
-  grid-template-columns: minmax(9rem, 1fr) 10rem var(--property-actions-width);
+  grid-template-columns: minmax(9rem, 1fr) 12.75rem var(--property-actions-width);
   align-items: center;
   gap: 0.5rem;
   min-height: 2.375rem;
-}
-.property-row {
   padding-block: 0.375rem;
 }
+
 .inherited-row:hover,
 .new-property-row:hover,
 .inherited-row:focus-within,
@@ -50,16 +41,48 @@ sui-order-list {
   padding: 0;
   list-style: none;
 }
-.inherited-row {
-  padding: 0.375rem 0.25rem 0.375rem 2.125rem;
-}
 .inherited-actions {
   width: 100%;
 }
+.inherited-row,
 .new-property-row {
   display: grid;
   grid-template-columns: 1.5rem minmax(0, 1fr);
-  gap: 0.375rem;
+  gap: var(--property-handle-gap);
   align-items: center;
-  padding-inline: 0.25rem;
+  padding-inline: 0.25rem 0.75rem;
+}
+
+.row-actions {
+  padding-inline-start: 1.25rem;
+}
+
+.disabled-property-grip {
+  display: grid;
+  place-items: center;
+  height: 1.5rem;
+  opacity: var(--sui-disabled-opacity);
+  cursor: not-allowed;
+}
+
+.property-row-errors {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--color-error);
+  font-size: var(--text-xs);
+  line-height: var(--text-xs--line-height);
+}
+
+.inherited-row.has-property-issues,
+.new-property-row.has-property-issues,
+:host ::ng-deep .sui-order-list__row:has(.has-property-issues) {
+  background: color-mix(in oklab, var(--color-error) 8%, var(--color-base-100));
+  border-radius: var(--radius-field);
+}
+
+.inherited-row.has-property-issues > .disabled-property-grip,
+.new-property-row.has-property-issues > .disabled-property-grip,
+:host ::ng-deep .sui-order-list__row:has(.has-property-issues) > .sui-order-list__handle {
+  align-self: start;
+  margin-block-start: 0.625rem;
 }

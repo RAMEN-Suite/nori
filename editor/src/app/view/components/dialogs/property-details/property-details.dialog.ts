@@ -1,15 +1,36 @@
-import { ChangeDetectionStrategy, Component, inject, input, viewChild, type InputSignal, type Signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  inject,
+  input,
+  viewChild,
+  type InputSignal,
+  type Signal,
+} from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { Button } from '@sushi-kit/angular';
 import type { Attribute } from '@ramen-suite/core/model';
 import { DialogService } from '../../../../services/interaction/dialog.service';
 import { PropertyEditingService } from '../../../../services/workspace/editing/property-editing.service';
+import { ScrollOverflowDirective } from '../../../../directives/scroll-overflow.directive';
+import { ScrollHintsComponent } from '../../shared/scroll-hints/scroll-hints.component';
+import { NotificationService } from '../../../../services/interaction/notification.service';
+import { NotificationsComponent } from '../../shell/notifications/notifications.component';
 import { PropertyFormComponent } from '../../workspace/property-editor/property-form/property-form.component';
 
 @Component({
   selector: 'nori-property-details-dialog',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslocoDirective, Button, PropertyFormComponent],
+  providers: [NotificationService],
+  imports: [
+    TranslocoDirective,
+    Button,
+    PropertyFormComponent,
+    ScrollOverflowDirective,
+    ScrollHintsComponent,
+    NotificationsComponent,
+  ],
   templateUrl: './property-details.dialog.html',
 })
 export class PropertyDetailsDialog {
@@ -18,6 +39,7 @@ export class PropertyDetailsDialog {
   public readonly attribute: InputSignal<Attribute | undefined> = input<Attribute>();
   public readonly editable: InputSignal<boolean> = input(true);
   public readonly levelIndex: InputSignal<number | null> = input<number | null>(null);
+  protected readonly autoSave: Signal<boolean> = computed((): boolean => !!this.attribute() && this.editable());
   protected readonly form: Signal<PropertyFormComponent | undefined> = viewChild(PropertyFormComponent);
 
   protected created(id: string): void {
@@ -29,7 +51,7 @@ export class PropertyDetailsDialog {
     if (!form || this.dialogs.pending()) return;
     this.dialogs.pending.set(true);
     try {
-      if (await form.commit()) this.dialogs.current.set(null);
+      if ((await form.commit()) && !this.autoSave()) this.dialogs.current.set(null);
     } finally {
       this.dialogs.pending.set(false);
     }
