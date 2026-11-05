@@ -24,6 +24,8 @@ import {
   LucideCopy,
   LucidePlus,
   LucideGripVertical,
+  LucideLockKeyhole,
+  LucideKeyRound,
 } from '@lucide/angular';
 import {
   Button,
@@ -86,6 +88,8 @@ interface PropertyIssue {
     LucideCopy,
     LucidePlus,
     LucideGripVertical,
+    LucideLockKeyhole,
+    LucideKeyRound,
     TooltipDirective,
   ],
   templateUrl: './property-list.component.html',

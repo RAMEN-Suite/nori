@@ -138,6 +138,7 @@
               @default {
                 <input
                   suiToggle
+                  #optionControl
                   [id]="'property-control-' + option"
                   severity="neutral"
                   size="sm"
@@ -149,8 +150,8 @@
                     'property-option-' + option + (fieldErrors()[option] && !statusErrors() ? ' property-error-' + option : '')
                   "
                   [attr.aria-invalid]="fieldErrors()[option] ? 'true' : null"
-                  [ngModel]="optionValue(option)"
-                  (ngModelChange)="handleOption(option, $event)"
+                  [checked]="optionValue(option)"
+                  (change)="handleOption(option, optionControl.checked)"
                 />
               }
             }

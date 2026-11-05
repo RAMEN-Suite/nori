@@ -33,6 +33,26 @@
                           <span aria-hidden="true">*</span><span class="sr-only">{{ t('editor.propertyCount.required') }}</span>
                         </span>
                       }
+                      @if (entry.attribute.isKey) {
+                        <span
+                          class="text-base-content/60 shrink-0 cursor-help"
+                          role="img"
+                          [attr.aria-label]="t('editor.keyProperty')"
+                          [noriTooltip]="t('editor.keyProperty')"
+                        >
+                          <svg lucideKeyRound class="size-3.5" aria-hidden="true"></svg>
+                        </span>
+                      }
+                      @if (entry.attribute.isReadOnly) {
+                        <span
+                          class="text-base-content/60 shrink-0 cursor-help"
+                          role="img"
+                          [attr.aria-label]="t('editor.readOnlyProperty')"
+                          [noriTooltip]="t('editor.readOnlyProperty')"
+                        >
+                          <svg lucideLockKeyhole class="size-3.5" aria-hidden="true"></svg>
+                        </span>
+                      }
                     </span>
                     <span class="type-label text-base-content/65"
                       >{{ workspace.queries.resolveTypeLabel(entry.attribute.typeId, entry.levelIndex) }}
@@ -112,7 +132,11 @@
                         fluid
                         size="sm"
                         class="text-sm"
-                        [class.pe-7]="property.bounds.lowerBound > 0"
+                        [class.pe-7]="property.bounds.lowerBound > 0 || property.isReadOnly || property.isKey"
+                        [class.pe-12]="
+                          (property.bounds.lowerBound > 0 ? 1 : 0) + (property.isReadOnly ? 1 : 0) + (property.isKey ? 1 : 0) > 1
+                        "
+                        [class.pe-16]="property.bounds.lowerBound > 0 && property.isReadOnly && property.isKey"
                         maxlength="40"
                         [attr.aria-label]="
                           t('editor.propertyName') +
@@ -131,14 +155,36 @@
                         [attr.aria-invalid]="invalidName ? 'true' : null"
                         [attr.aria-describedby]="invalidName ? 'property-row-error-' + property.id : null"
                       />
-                      @if (property.bounds.lowerBound > 0) {
-                        <span
-                          class="text-error absolute inset-y-0 end-2 flex cursor-help items-center text-sm font-semibold"
-                          [noriTooltip]="t('editor.propertyCount.required')"
-                          aria-hidden="true"
-                          >*</span
-                        >
-                      }
+                      <span class="absolute inset-y-0 end-2 flex items-center gap-2">
+                        @if (property.bounds.lowerBound > 0) {
+                          <span
+                            class="text-error cursor-help text-sm font-semibold"
+                            [noriTooltip]="t('editor.propertyCount.required')"
+                            aria-hidden="true"
+                            >*</span
+                          >
+                        }
+                        @if (property.isKey) {
+                          <span
+                            class="text-base-content/60 shrink-0 cursor-help"
+                            role="img"
+                            [attr.aria-label]="t('editor.keyProperty')"
+                            [noriTooltip]="t('editor.keyProperty')"
+                          >
+                            <svg lucideKeyRound class="size-3.5" aria-hidden="true"></svg>
+                          </span>
+                        }
+                        @if (property.isReadOnly) {
+                          <span
+                            class="text-base-content/60 cursor-help"
+                            role="img"
+                            [attr.aria-label]="t('editor.readOnlyProperty')"
+                            [noriTooltip]="t('editor.readOnlyProperty')"
+                          >
+                            <svg lucideLockKeyhole class="size-3.5" aria-hidden="true"></svg>
+                          </span>
+                        }
+                      </span>
                     </div>
                   </div>
                   <div class="type-field min-w-0">
