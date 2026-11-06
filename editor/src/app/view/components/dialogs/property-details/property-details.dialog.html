@@ -6,7 +6,7 @@
         [currentAttribute]="attribute()"
         [hideDefinition]="!!attribute()"
         [editable]="editable()"
-        [autoSave]="autoSave()"
+        [autoSave]="isAutoSaveEnabled()"
         [statusErrors]="true"
         [modelLevelIndex]="levelIndex()"
         (saved)="created($event)"
@@ -15,12 +15,18 @@
     </div>
     <nori-scroll-hints [up]="scroll.canScrollUp()" [down]="scroll.canScrollDown()" />
   </div>
-  @if (editable() && !autoSave()) {
+  @if (editable() && !isAutoSaveEnabled()) {
     <footer class="nori-dialog-actions -me-2">
-      <button suiButton size="sm" severity="neutral" variant="text" [disabled]="dialogs.pending()" (click)="dialogs.close()">
+      <button suiButton size="sm" severity="neutral" variant="text" [disabled]="dialogs.isPending()" (click)="dialogs.close()">
         {{ t('common.cancel') }}
       </button>
-      <button suiButton size="sm" [loading]="dialogs.pending()" [disabled]="dialogs.pending() || !form()?.hasChanges()" (click)="save()">
+      <button
+        suiButton
+        size="sm"
+        [loading]="dialogs.isPending()"
+        [disabled]="dialogs.isPending() || !form()?.hasChanges()"
+        (click)="save()"
+      >
         {{ t(attribute() ? 'editor.saveProperty' : 'editor.addProperty') }}
       </button>
     </footer>

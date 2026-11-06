@@ -1,23 +1,22 @@
 import {
   afterEveryRender,
-  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   ElementRef,
   inject,
-  Injector,
   output,
   type OutputEmitterRef,
   signal,
+  linkedSignal,
   type Signal,
   type WritableSignal,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
 import { LucideBox, LucideChevronRight, LucideCopy, LucidePlus, LucideTrash } from '@lucide/angular';
-import { ModelRef, type Node } from '@ramen-suite/core/model';
+import { ModelRef } from '@ramen-suite/core/model';
 import {
   Accordion,
   AccordionActionsTemplate,
@@ -31,12 +30,14 @@ import {
   type ListTrackBy,
 } from '@sushi-kit/angular';
 import { toPascalName } from '../../../../../utils/model-names';
-import { AutoselectDirective } from '../../../../../directives/autoselect.directive';
+import { InlineRename } from '../../../shared/inline-name-input/inline-rename';
+import { InlineNameInputComponent } from '../../../shared/inline-name-input/inline-name-input.component';
 import { ScrollOverflowDirective } from '../../../../../directives/scroll-overflow.directive';
-import { TooltipDirective } from '../../../../../directives/tooltip.directive';
+import { IconTooltipDirective, TooltipDirective } from '../../../../../directives/tooltip.directive';
 import { NavigationService } from '../../../../../services/interaction/navigation.service';
 import { ProjectService } from '../../../../../services/projects/project.service';
-import { NodeEditingService } from '../../../../../services/workspace/editing/node-editing.service';
+import { NodeEditingService, type CreatedRefinement } from '../../../../../services/workspace/editing/node-editing.service';
+import { updateSetMembership } from '../../../../../utils/collections';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
 import { type NodeDefinition } from '../../../../../models/WorkspaceDetails';
 import { ApplicationState } from '../../../../../states/application.state';
@@ -69,6 +70,7 @@ interface MutableNodeGroup extends Omit<NodeGroup, 'items'> {
     Input,
     List,
     ListItemTemplate,
+    IconTooltipDirective,
     TooltipDirective,
     Accordion,
     AccordionItem,
@@ -80,7 +82,7 @@ interface MutableNodeGroup extends Omit<NodeGroup, 'items'> {
     LucideCopy,
     LucideTrash,
     LucidePlus,
-    AutoselectDirective,
+    InlineNameInputComponent,
   ],
   templateUrl: './refinements.component.html',
   styleUrl: './refinements.component.scss',
@@ -90,7 +92,6 @@ export class RefinementsComponent {
   protected readonly nodeEditing: NodeEditingService = inject(NodeEditingService);
   private readonly appearance: ApplicationState = inject(ApplicationState);
   private readonly element: ElementRef<HTMLElement> = inject<ElementRef<HTMLElement>>(ElementRef);
-  private readonly injector: Injector = inject(Injector);
   private readonly projects: ProjectService = inject(ProjectService);
   private readonly navigation: NavigationService = inject(NavigationService);
 
@@ -98,10 +99,14 @@ export class RefinementsComponent {
 
   protected readonly trackNode: ListTrackBy<NodeItem> = (_index: number, item: NodeItem): string => item.value;
   protected readonly collapsedGroups: WritableSignal<ReadonlySet<string>> = signal(new Set<string>());
-  protected readonly editingId: WritableSignal<string | null> = signal(null);
-  protected readonly draftName: WritableSignal<string> = signal('');
-  protected readonly savingName: WritableSignal<boolean> = signal(false);
-  private readonly editingModelId: WritableSignal<string | undefined> = signal(undefined);
+  private readonly renameContext: Signal<string> = computed((): string => JSON.stringify(this.workspace.context()));
+  protected readonly editingId: WritableSignal<string | null> = linkedSignal({
+    source: this.renameContext,
+    computation: (): string | null => null,
+  });
+  protected readonly rename: InlineRename<string> = new InlineRename(this.editingId, this.renameContext, (error: unknown): void =>
+    this.projects.reportError(error),
+  );
   private readonly pendingRevealId: WritableSignal<string | null> = signal(null);
   protected readonly search: WritableSignal<string> = signal('');
 
@@ -112,74 +117,40 @@ export class RefinementsComponent {
 
   public constructor() {
     afterEveryRender((): void => this.revealPendingNode());
-    effect((): void => {
-      const created: { modelId: string; baseNodeId: string; node: Node } | null = this.nodeEditing.createdRefinement();
-      if (!created || created.modelId !== this.workspace.store.currentModel()?.id) return;
+    this.nodeEditing.createdRefinement.pipe(takeUntilDestroyed()).subscribe((created: CreatedRefinement): void => {
+      if (created.modelId !== this.workspace.store.currentModel()?.id) return;
 
       this.search.set('');
       this.handleGroupExpansion(created.baseNodeId, [created.baseNodeId]);
       this.handleRename({ value: created.node.id, label: created.node.name });
       this.pendingRevealId.set(created.node.id);
-      this.nodeEditing.createdRefinement.set(null);
-    });
-    effect((): void => {
-      const modelId: string | undefined = this.workspace.store.currentModel()?.id;
-      if (modelId !== this.editingModelId()) this.editingId.set(null);
     });
   }
 
   protected handleGroupExpansion(key: string, expanded: readonly string[]): void {
-    this.collapsedGroups.update((current: ReadonlySet<string>): ReadonlySet<string> => {
-      const next: Set<string> = new Set(current);
-      if (expanded.length) next.delete(key);
-      else next.add(key);
-      return next;
-    });
+    this.collapsedGroups.update((current: ReadonlySet<string>): ReadonlySet<string> =>
+      updateSetMembership(current, key, expanded.length === 0),
+    );
   }
 
   protected handleRename(item: NodeItem): void {
-    if (!this.workspace.queries.editable() || this.savingName()) return;
+    if (!this.workspace.queries.isEditable() || this.rename.isSaving()) return;
 
-    this.editingModelId.set(this.workspace.store.currentModel()?.id);
-    this.draftName.set(item.label);
-    this.editingId.set(item.value);
+    this.rename.start(item.value, item.label);
   }
 
-  protected async handleSaveName(restoreFocus: boolean = false): Promise<void> {
-    const id: string | null = this.editingId();
-    if (!id || this.savingName()) return;
-
-    const name: string = this.draftName().trim();
-    if (!name) {
-      this.handleCancelRename(restoreFocus);
-      return;
-    }
-    if (this.workspace.store.currentModel()?.id !== this.editingModelId()) return;
-
-    this.savingName.set(true);
-    try {
-      await this.workspace.actions.updateNode(id, { name: toPascalName(name) });
-      if (this.editingId() === id && this.workspace.store.currentModel()?.id === this.editingModelId()) {
-        this.handleCancelRename(restoreFocus);
-      }
-    } catch (error: unknown) {
-      this.projects.reportError(error);
-    } finally {
-      this.savingName.set(false);
-    }
+  protected handleSaveName(restoreFocus: boolean = false): Promise<void> {
+    return this.rename.save(
+      (id: string, name: string): Promise<unknown> => this.workspace.actions.updateNode(id, { name: toPascalName(name) }),
+      (): void => this.handleCancelRename(restoreFocus),
+    );
   }
 
   protected handleCancelRename(restoreFocus: boolean = false): void {
-    const id: string | null = this.editingId();
-    this.editingId.set(null);
-    if (!restoreFocus) return;
-
-    afterNextRender(
-      (): void => {
-        const buttons: NodeListOf<HTMLButtonElement> = this.element.nativeElement.querySelectorAll('button[data-node-id]');
-        [...buttons].find((button: HTMLButtonElement): boolean => button.dataset['nodeId'] === id)?.focus();
-      },
-      { injector: this.injector },
+    const id: string | null = this.rename.cancel();
+    if (!restoreFocus || !id) return;
+    this.rename.restoreFocus((): HTMLButtonElement | null =>
+      this.element.nativeElement.querySelector(`button[data-node-id="${CSS.escape(id)}"]`),
     );
   }
 
@@ -213,7 +184,7 @@ export class RefinementsComponent {
     button.scrollIntoView({
       block: 'nearest',
       inline: 'nearest',
-      behavior: this.appearance.state().animations ? 'smooth' : 'instant',
+      behavior: this.appearance.isMotionEnabled() ? 'smooth' : 'instant',
     });
   }
 
@@ -243,12 +214,10 @@ export class RefinementsComponent {
     }
 
     return [...grouped.values()]
-      .map(
-        (group): NodeGroup => ({
-          ...group,
-          items: group.items.filter((item: NodeItem): boolean => `${item.label} ${group.label}`.toLowerCase().includes(query)),
-        }),
-      )
+      .map((group): NodeGroup => ({
+        ...group,
+        items: group.items.filter((item: NodeItem): boolean => `${item.label} ${group.label}`.toLowerCase().includes(query)),
+      }))
       .filter((group: NodeGroup): boolean => !query || group.items.length > 0 || group.label.toLowerCase().includes(query))
       .sort((left, right): number => left.label.localeCompare(right.label));
   }

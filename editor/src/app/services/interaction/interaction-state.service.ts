@@ -40,12 +40,10 @@ export class InteractionStateService {
   public assertCanMutate(): void {
     const state: InteractionState = this.current();
     if (state.phase === 'ready') return;
-    this.attentionState.update(
-      (attention): InteractionAttention => ({
-        interactionId: state.id,
-        sequence: (attention?.sequence ?? 0) + 1,
-      }),
-    );
+    this.attentionState.update((attention): InteractionAttention => ({
+      interactionId: state.id,
+      sequence: (attention?.sequence ?? 0) + 1,
+    }));
     throw new InteractionBlockedError(
       this.translations.translate(state.phase === 'decision' ? 'editor.resolvePendingAction' : 'editor.operationInProgress'),
       state.owner !== 'workspace-edit',

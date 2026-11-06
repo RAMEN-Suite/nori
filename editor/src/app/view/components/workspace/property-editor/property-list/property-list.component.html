@@ -34,22 +34,12 @@
                         </span>
                       }
                       @if (entry.attribute.isKey) {
-                        <span
-                          class="text-base-content/60 shrink-0 cursor-help"
-                          role="img"
-                          [attr.aria-label]="t('editor.keyProperty')"
-                          [noriTooltip]="t('editor.keyProperty')"
-                        >
+                        <span class="text-base-content/60 shrink-0 cursor-help" role="img" [noriIconTooltip]="t('editor.keyProperty')">
                           <svg lucideKeyRound class="size-3.5" aria-hidden="true"></svg>
                         </span>
                       }
                       @if (entry.attribute.isReadOnly) {
-                        <span
-                          class="text-base-content/60 shrink-0 cursor-help"
-                          role="img"
-                          [attr.aria-label]="t('editor.readOnlyProperty')"
-                          [noriTooltip]="t('editor.readOnlyProperty')"
-                        >
+                        <span class="text-base-content/60 shrink-0 cursor-help" role="img" [noriIconTooltip]="t('editor.readOnlyProperty')">
                           <svg lucideLockKeyhole class="size-3.5" aria-hidden="true"></svg>
                         </span>
                       }
@@ -112,7 +102,7 @@
               [value]="items()"
               [labels]="orderLabels()"
               [ariaLabel]="t('editor.properties')"
-              [reorderable]="items().length > 1 && workspace.queries.nodeEditable() && !draft() && !newName().trim()"
+              [reorderable]="items().length > 1 && workspace.queries.isNodeEditable() && !draft() && !newName().trim()"
               (reordered)="reorder($event)"
             >
               <ng-template [suiOrderListItem]="items()" let-item>
@@ -121,6 +111,8 @@
                 @let invalidName = hasIssue(issues, 'name');
                 <div
                   class="property-row"
+                  [animate.enter]="appearance.isMotionEnabled() ? 'property-row-arrive' : ''"
+                  data-nori-motion
                   [attr.data-property-id]="property.id"
                   [class.has-property-issues]="issues.length > 0"
                   [class.is-selected]="editing.current()?.attributeId === property.id"
@@ -144,7 +136,7 @@
                           property.name +
                           (property.bounds.lowerBound > 0 ? ', ' + t('editor.propertyCount.required') : '')
                         "
-                        [disabled]="!workspace.queries.nodeEditable()"
+                        [disabled]="!workspace.queries.isNodeEditable()"
                         [ngModel]="name(property)"
                         (ngModelChange)="changeName(property, $event)"
                         (blur)="saveName(property)"
@@ -165,22 +157,12 @@
                           >
                         }
                         @if (property.isKey) {
-                          <span
-                            class="text-base-content/60 shrink-0 cursor-help"
-                            role="img"
-                            [attr.aria-label]="t('editor.keyProperty')"
-                            [noriTooltip]="t('editor.keyProperty')"
-                          >
+                          <span class="text-base-content/60 shrink-0 cursor-help" role="img" [noriIconTooltip]="t('editor.keyProperty')">
                             <svg lucideKeyRound class="size-3.5" aria-hidden="true"></svg>
                           </span>
                         }
                         @if (property.isReadOnly) {
-                          <span
-                            class="text-base-content/60 cursor-help"
-                            role="img"
-                            [attr.aria-label]="t('editor.readOnlyProperty')"
-                            [noriTooltip]="t('editor.readOnlyProperty')"
-                          >
+                          <span class="text-base-content/60 cursor-help" role="img" [noriIconTooltip]="t('editor.readOnlyProperty')">
                             <svg lucideLockKeyhole class="size-3.5" aria-hidden="true"></svg>
                           </span>
                         }
@@ -196,7 +178,7 @@
                       [multiple]="isArray(property)"
                       [multipleDisabled]="property.isKey === true"
                       [label]="t('editor.dataType') + ': ' + property.name"
-                      [disabled]="!workspace.queries.nodeEditable()"
+                      [disabled]="!workspace.queries.isNodeEditable()"
                       (typeChange)="changeType(property, $event)"
                       (arrayChange)="changeArray(property, $event)"
                     />
@@ -215,15 +197,14 @@
                       <svg lucideSettings2 class="size-4" aria-hidden="true"></svg>
                     </button>
 
-                    @if (workspace.queries.nodeEditable()) {
+                    @if (workspace.queries.isNodeEditable()) {
                       <button
                         suiButton
                         size="sm"
                         severity="neutral"
                         variant="text"
                         shape="circle"
-                        [attr.aria-label]="t('editor.duplicateProperty')"
-                        [noriTooltip]="t('editor.duplicateProperty')"
+                        [noriIconTooltip]="t('editor.duplicateProperty')"
                         (click)="requestAction(property, 'duplicate')"
                       >
                         <svg lucideCopy class="size-3.5" aria-hidden="true"></svg>
@@ -253,7 +234,7 @@
               </ng-template>
             </sui-order-list>
           }
-          @if (workspace.queries.nodeEditable()) {
+          @if (workspace.queries.isNodeEditable()) {
             <div class="new-property-row" [class.has-property-issues]="!!creationError()">
               <span class="disabled-property-grip" aria-hidden="true">
                 <svg lucideGripVertical class="size-4"></svg>
@@ -270,7 +251,7 @@
                     maxlength="40"
                     [attr.aria-label]="t('editor.propertyList.newName')"
                     [placeholder]="t('editor.propertyList.newName')"
-                    [readonly]="creating()"
+                    [readonly]="isCreating()"
                     [ngModel]="newName()"
                     (ngModelChange)="newName.set($event); creationError.set(null)"
                     (keydown.enter)="$event.preventDefault(); createInline()"
@@ -284,26 +265,25 @@
                 <nori-property-type
                   [options]="types()"
                   [value]="newType()"
-                  [multiple]="newArray()"
+                  [multiple]="isNewList()"
                   [label]="t('editor.dataType')"
                   (typeChange)="changeNewType($event)"
-                  (arrayChange)="newArray.set($event)"
+                  (arrayChange)="isNewList.set($event)"
                 />
-                <div class="row-actions">
+                <div class="row-actions flex justify-end">
                   <button
                     suiButton
                     type="button"
                     size="sm"
-                    severity="neutral"
+                    severity="success"
                     variant="text"
                     shape="circle"
-                    [disabled]="creating() || !newName().trim()"
-                    [attr.aria-label]="t('editor.addProperty')"
-                    [noriTooltip]="t('editor.addProperty')"
+                    [disabled]="isCreating() || !newName().trim()"
+                    [noriIconTooltip]="t('editor.addProperty')"
                     (mousedown)="$event.preventDefault()"
                     (click)="createInline()"
                   >
-                    <svg lucidePlus class="size-4" aria-hidden="true"></svg>
+                    <svg lucidePlus class="create-property-icon size-4" aria-hidden="true"></svg>
                   </button>
                 </div>
                 @if (creationError(); as message) {

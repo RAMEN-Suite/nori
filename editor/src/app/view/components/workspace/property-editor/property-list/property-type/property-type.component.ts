@@ -11,8 +11,8 @@ import {
 } from '@angular/core';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { LucideLayers } from '@lucide/angular';
-import { TooltipDirective } from '../../../../../../directives/tooltip.directive';
 import { Autocomplete, AutocompleteItemTemplate, Button, type AutocompleteOption } from '@sushi-kit/angular';
+import { TooltipDirective } from '../../../../../../directives/tooltip.directive';
 
 @Component({
   selector: 'nori-property-type',

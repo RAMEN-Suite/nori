@@ -1,6 +1,6 @@
 import { ModelRef, type Model, type Node } from '@ramen-suite/core/model';
 import { RAMEN_ELEMENT } from '@ramen-suite/core/ramen';
-import { type NodeColors } from '../models/ModelRecord';
+import { type NodeColours } from '../models/ModelRecord';
 
 const PASTEL_PALETTE: readonly string[] = [
   '#d6ecd4',
@@ -12,14 +12,14 @@ const PASTEL_PALETTE: readonly string[] = [
   '#91cddd',
   '#b5beae',
 ];
-const RAMEN_COLOURS: NodeColors = {
+const RAMEN_COLOURS: NodeColours = {
   [RAMEN_ELEMENT.ENTITY]: '#fc9c99',
   [RAMEN_ELEMENT.CONTENT]: '#97b887',
   [RAMEN_ELEMENT.ANNOTATION]: '#e4a175',
   [RAMEN_ELEMENT.COLLECTION]: '#6ebef5',
 };
 
-export function getDefaultNodeColours(models: readonly Model[]): NodeColors {
+export function getDefaultNodeColours(models: readonly Model[]): NodeColours {
   const nodes: Map<string, Node> = new Map();
   for (const model of models) {
     for (const node of model.classifiers) {

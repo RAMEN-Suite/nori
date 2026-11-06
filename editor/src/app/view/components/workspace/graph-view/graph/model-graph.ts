@@ -45,15 +45,13 @@ export function buildModelGraph(
     if (node) nodes.set(ref, node);
   }
 
-  const links: GraphLink[] = model.relations.map(
-    (relation: Relation): GraphLink => ({
-      id: relation.id,
-      source: relation.from.nodeId,
-      target: relation.to.nodeId,
-      kind: 'Relation',
-      label: relation.name,
-    }),
-  );
+  const links: GraphLink[] = model.relations.map((relation: Relation): GraphLink => ({
+    id: relation.id,
+    source: relation.from.nodeId,
+    target: relation.to.nodeId,
+    kind: 'Relation',
+    label: relation.name,
+  }));
   return { nodes: [...nodes.values()], links };
 }
 

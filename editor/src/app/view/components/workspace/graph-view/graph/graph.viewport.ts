@@ -1,5 +1,4 @@
 import * as d3 from 'd3';
-import { type ZoomTransform } from 'd3';
 import { type GraphView } from '../../../../../models/ModelRecord';
 import { getFitViewport, getViewportSize } from './graph.layout';
 import {
@@ -21,7 +20,7 @@ export class GraphViewport {
   private readonly zoom: ZoomBehaviour;
   private readonly resizeObserver: ResizeObserver;
   private resizeFrame: number | null = null;
-  private currentTransform: ZoomTransform = d3.zoomIdentity;
+  private currentTransform: d3.ZoomTransform = d3.zoomIdentity;
 
   public constructor(
     private readonly host: HTMLDivElement,
@@ -50,7 +49,7 @@ export class GraphViewport {
     this.updateViewBox();
   }
 
-  public get transform(): ZoomTransform {
+  public get transform(): d3.ZoomTransform {
     return this.currentTransform;
   }
 
@@ -69,7 +68,7 @@ export class GraphViewport {
     else this.svg.transition().duration(duration).ease(d3.easeCubicInOut).call(this.zoom.scaleBy, factor);
   }
 
-  public applyTransform(transform: ZoomTransform, duration: number): void {
+  public applyTransform(transform: d3.ZoomTransform, duration: number): void {
     this.svg.interrupt();
     if (duration === 0) {
       this.svg.call(this.zoom.transform, transform);

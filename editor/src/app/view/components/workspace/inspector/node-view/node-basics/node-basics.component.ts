@@ -1,22 +1,19 @@
 import {
-  afterNextRender,
   ChangeDetectionStrategy,
   Component,
-  effect,
+  computed,
   type ElementRef,
   inject,
   input,
-  Injector,
-  signal,
+  linkedSignal,
   viewChild,
   type InputSignal,
   type Signal,
   type WritableSignal,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { Input } from '@sushi-kit/angular';
-import { AutoselectDirective } from '../../../../../../directives/autoselect.directive';
+import { InlineRename } from '../../../../shared/inline-name-input/inline-rename';
+import { InlineNameInputComponent } from '../../../../shared/inline-name-input/inline-name-input.component';
 import { ProjectService } from '../../../../../../services/projects/project.service';
 import { WorkspaceService } from '../../../../../../services/workspace/workspace.service';
 import { toPascalName } from '../../../../../../utils/model-names';
@@ -24,72 +21,56 @@ import { toPascalName } from '../../../../../../utils/model-names';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'nori-node-basics',
-  imports: [TranslocoDirective, Input, FormsModule, AutoselectDirective],
+  imports: [TranslocoDirective, InlineNameInputComponent],
   templateUrl: './node-basics.component.html',
 })
 export class NodeBasicsComponent {
   private readonly projects: ProjectService = inject(ProjectService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
-  private readonly injector: Injector = inject(Injector);
 
   public readonly showEditingControls: InputSignal<boolean> = input(false);
   private readonly title: Signal<ElementRef<HTMLElement> | undefined> = viewChild('renameTarget');
 
-  protected readonly draftName: WritableSignal<string> = signal('');
-  protected readonly savingName: WritableSignal<boolean> = signal(false);
-  protected readonly editingName: WritableSignal<boolean> = signal(false);
-
-  public constructor() {
-    effect((): void => {
-      const currentName: string | undefined = this.workspace.queries.currentNode()?.name;
-      this.draftName.set(currentName ?? '');
-      this.editingName.set(false);
-    });
-  }
+  private readonly renameContext: Signal<string> = computed((): string =>
+    JSON.stringify([this.workspace.context(), this.workspace.store.currentNodeId()]),
+  );
+  protected readonly editingId: WritableSignal<string | null> = linkedSignal({
+    source: this.renameContext,
+    computation: (): null => null,
+  });
+  protected readonly rename: InlineRename<string> = new InlineRename(this.editingId, this.renameContext, (error: unknown): void =>
+    this.projects.reportError(error),
+  );
 
   protected handleBlurName(): void {
-    if (!this.savingName()) this.handleCancelRename(false);
+    if (!this.rename.isSaving()) this.handleCancelRename(false);
   }
 
   protected handleStartRename(): void {
-    if (!this.workspace.queries.nodeEditable() || this.savingName()) return;
+    if (!this.workspace.queries.isNodeEditable() || this.rename.isSaving()) return;
 
-    this.draftName.set(this.workspace.queries.currentNode()?.name ?? '');
-    this.editingName.set(true);
+    const id: string | null = this.workspace.store.currentNodeId();
+    if (id) this.rename.start(id, this.workspace.queries.currentNode()?.name ?? '');
   }
 
   protected handleCancelRename(restoreFocus: boolean = true): void {
-    if (this.savingName()) return;
-    this.editingName.set(false);
+    if (this.rename.isSaving()) return;
+    this.rename.cancel();
     if (restoreFocus) this.focusTitle();
   }
 
   protected focusTitle(): void {
-    afterNextRender((): void => this.title()?.nativeElement.focus(), { injector: this.injector });
+    this.rename.restoreFocus((): HTMLElement | undefined => this.title()?.nativeElement);
   }
 
-  protected async handleSaveName(restoreFocus: boolean = false): Promise<void> {
-    const selectedId: string | null = this.workspace.store.currentNodeId();
-    const name: string = this.draftName().trim();
-    if (!this.editingName() || !selectedId || this.savingName() || !this.workspace.queries.nodeEditable()) return;
-    if (!name) {
-      this.handleCancelRename(restoreFocus);
-      return;
-    }
-
-    const transformedName: string = toPascalName(name);
-
-    this.savingName.set(true);
-    try {
-      await this.workspace.actions.updateNode(selectedId, { name: transformedName });
-      if (this.workspace.store.currentNodeId() === selectedId) {
-        this.editingName.set(false);
+  protected handleSaveName(restoreFocus: boolean = false): Promise<void> {
+    if (!this.workspace.queries.isNodeEditable()) return Promise.resolve();
+    return this.rename.save(
+      (id: string, name: string): Promise<unknown> => this.workspace.actions.updateNode(id, { name: toPascalName(name) }),
+      (): void => {
+        this.rename.cancel();
         if (restoreFocus) this.focusTitle();
-      }
-    } catch (error: unknown) {
-      this.projects.reportError(error);
-    } finally {
-      this.savingName.set(false);
-    }
+      },
+    );
   }
 }

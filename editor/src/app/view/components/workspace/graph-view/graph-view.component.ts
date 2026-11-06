@@ -19,7 +19,7 @@ import { areGraphsEqual, buildVisibleModelGraph, type GraphData } from './graph/
 import { DialogService, type DialogRef } from '../../../../services/interaction/dialog.service';
 import { NodeEditingService } from '../../../../services/workspace/editing/node-editing.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
-import { NodeColorsDialog } from '../../dialogs/node-colors/node-colors.dialog';
+import { NodeColoursDialog } from '../../dialogs/node-colors/node-colors.dialog';
 import { GraphComponent } from './graph/graph.component';
 import { type GraphImageFormat } from './graph/graph.image-export';
 import {
@@ -48,12 +48,10 @@ export class GraphViewComponent {
 
   private dialogRef: DialogRef | null = null;
 
-  protected readonly settings: Signal<GraphLayoutSettings> = computed(
-    (): GraphLayoutSettings => ({
-      ...DEFAULT_GRAPH_LAYOUT_SETTINGS,
-      padding: this.canvasPadding(),
-    }),
-  );
+  protected readonly settings: Signal<GraphLayoutSettings> = computed((): GraphLayoutSettings => ({
+    ...DEFAULT_GRAPH_LAYOUT_SETTINGS,
+    padding: this.canvasPadding(),
+  }));
   protected readonly graphData: Signal<GraphData> = computed(
     (): GraphData => {
       const model: Model | null = this.workspace.store.currentModel();
@@ -78,9 +76,9 @@ export class GraphViewComponent {
     });
   }
 
-  public handleOpenColorsDialog(): void {
+  public handleOpenColoursDialog(): void {
     this.dialogRef?.close();
-    this.dialogRef = this.dialogs.open(NodeColorsDialog, {
+    this.dialogRef = this.dialogs.open(NodeColoursDialog, {
       closeOnBackdrop: true,
       width: '28rem',
       headerKey: 'editor.adjustNodeColours',

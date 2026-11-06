@@ -17,8 +17,8 @@
           size="sm"
           [severity]="button.severity ?? 'neutral'"
           [variant]="button.variant ?? (button.severity === 'error' ? null : 'text')"
-          [disabled]="dialogs.pending()"
-          [loading]="dialogs.pending() && button.severity === 'error'"
+          [disabled]="dialogs.isPending()"
+          [loading]="dialogs.isPending() && button.severity === 'error'"
           (click)="handleAction(button)"
         >
           @if (!button.click) {

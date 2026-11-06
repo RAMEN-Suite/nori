@@ -1,12 +1,9 @@
+@use "../../../../../styles/feedback-surface";
 @use "../../../../../styles/feedback-motion";
 
 .action-window {
-  position: fixed;
-  z-index: 2000;
+  @include feedback-surface.window-position;
   bottom: var(--nori-action-bottom);
-  left: 50%;
-  translate: -50% 0;
-  width: min(var(--nori-notification-width), calc(100% - 2rem));
 }
 .action-window.node-editor {
   position: absolute;
@@ -29,11 +26,5 @@
     50% {
       transform: translateX(0.15rem);
     }
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .attention-odd,
-  .attention-even {
-    animation: none;
   }
 }

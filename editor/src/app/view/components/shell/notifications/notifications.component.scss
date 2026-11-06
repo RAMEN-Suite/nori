@@ -1,20 +1,17 @@
+@use "../../../../../styles/feedback-surface";
 @use "../../../../../styles/feedback-motion";
 
 .notification-region {
   display: contents;
 }
 .notification-window {
-  position: fixed;
-  z-index: 2000;
+  @include feedback-surface.window-position;
   top: var(--nori-notification-top);
-  left: 50%;
-  translate: -50% 0;
-  width: min(var(--nori-notification-width), calc(100% - 2rem));
   pointer-events: auto;
 }
 .notification-window.node-editor {
   position: absolute;
-  top: calc(var(--nori-node-toolbar-height) + 1rem);
+  top: calc(100% + 1rem);
 }
 
 .notification-window.in-dialog {

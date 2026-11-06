@@ -35,14 +35,12 @@ function captionCandidates(path: SVGPathElement, link: ResolvedLink): Point[] {
 }
 
 export function positionLinkLabels(root: RootSelection, paths: LinkSelection, nodes: readonly PositionedNode[]): void {
-  const occupied: Box[] = nodes.map(
-    (node: PositionedNode): Box => ({
-      x: node.x - GRAPH_NODE_WIDTH / 2 - 4,
-      y: node.y - GRAPH_NODE_HEIGHT / 2 - 4,
-      width: GRAPH_NODE_WIDTH + 8,
-      height: GRAPH_NODE_HEIGHT + 8,
-    }),
-  );
+  const occupied: Box[] = nodes.map((node: PositionedNode): Box => ({
+    x: node.x - GRAPH_NODE_WIDTH / 2 - 4,
+    y: node.y - GRAPH_NODE_HEIGHT / 2 - 4,
+    width: GRAPH_NODE_WIDTH + 8,
+    height: GRAPH_NODE_HEIGHT + 8,
+  }));
   const byId: Map<string, SVGPathElement> = new Map();
   paths.each(function (this: SVGPathElement, link: ResolvedLink): void {
     byId.set(link.id, this);

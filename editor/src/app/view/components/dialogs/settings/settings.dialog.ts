@@ -10,7 +10,7 @@ import {
   type Signal,
   type WritableSignal,
 } from '@angular/core';
-import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
+import { translateSignal, TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import {
   LucideCheck,
   LucideX,
@@ -118,11 +118,14 @@ export class SettingsDialog {
   protected readonly shortcutService: ShortcutService = inject(ShortcutService);
   private readonly translations: TranslocoService = inject(TranslocoService);
 
+  private readonly languageLabels: Signal<string[]> = translateSignal(
+    Languages.options.map((language: AppLanguage): string => `settings.languageOptions.${language}`),
+  );
   protected readonly languageOptions: Signal<readonly { value: AppLanguage; label: string }[]> = computed(() => {
-    this.appState.language();
-    return Languages.options.map((language: AppLanguage): { value: AppLanguage; label: string } => ({
+    const labels: string[] = this.languageLabels();
+    return Languages.options.map((language: AppLanguage, index: number): { value: AppLanguage; label: string } => ({
       value: language,
-      label: this.translations.translate(`settings.languageOptions.${language}`),
+      label: labels[index] ?? language,
     }));
   });
 
@@ -152,17 +155,17 @@ export class SettingsDialog {
   }
 
   protected readonly shortcutConflict: WritableSignal<ShortcutConflict | null> = signal(null);
-  protected readonly conflictOpen: WritableSignal<boolean> = signal(false);
+  protected readonly isConflictOpen: WritableSignal<boolean> = signal(false);
 
   protected confirmReassignment(): void {
     const conflict: ShortcutConflict | null = this.shortcutConflict();
     if (!conflict) return;
     if (!this.shortcutService.reassign(conflict.action, conflict.binding, conflict.previousOwner)) return;
-    this.conflictOpen.set(false);
+    this.isConflictOpen.set(false);
   }
 
   protected finishConflict(): void {
-    this.conflictOpen.set(false);
+    this.isConflictOpen.set(false);
     this.shortcutConflict.set(null);
   }
 
@@ -210,7 +213,7 @@ export class SettingsDialog {
       previousLabel: label(previousOwner),
       nextLabel: label(action),
     });
-    this.conflictOpen.set(true);
+    this.isConflictOpen.set(true);
   }
 
   protected handleResetShortcuts(): void {

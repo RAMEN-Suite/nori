@@ -1,8 +1,18 @@
-import { computed, effect, inject, Injectable, signal, untracked, type Signal, type WritableSignal } from '@angular/core';
+import {
+  computed,
+  effect,
+  inject,
+  Injectable,
+  signal,
+  linkedSignal,
+  untracked,
+  type Signal,
+  type WritableSignal,
+} from '@angular/core';
 import { Modeller, type Id, type Model } from '@ramen-suite/core/model';
 import { RamenModel, RamenModelFormat, type RamenFile } from '@ramen-suite/core/ramen';
 import { getDefaultNodeColours } from '../utils/node-colours';
-import { type ModelRecord, type NodeColors } from '../models/ModelRecord';
+import { type ModelRecord, type NodeColours } from '../models/ModelRecord';
 import { type Manifest } from '../models/Manifest';
 import { ProjectService } from '../services/projects/project.service';
 
@@ -14,31 +24,28 @@ export class WorkspaceStore {
   private readonly workspace: WritableSignal<RamenModel | null> = signal(null);
   private readonly levels: Map<string, RamenModel> = new Map();
   private referenceModels: readonly Model[] = [];
-  private readonly change: WritableSignal<number> = signal(0);
+  private readonly modelSnapshots: WritableSignal<readonly Model[]> = signal([]);
+  public readonly models: Signal<readonly Model[]> = this.modelSnapshots.asReadonly();
   public readonly currentLevelIndex: WritableSignal<number> = signal(1);
   public readonly currentRelationId: WritableSignal<Id | null> = signal(null);
   public readonly currentNodeId: WritableSignal<Id | null> = signal(null);
-  public readonly currentNodeColors: WritableSignal<NodeColors> = signal(
-    {},
-    {
-      equal: (previous: NodeColors, current: NodeColors): boolean =>
-        Object.keys(previous).length === Object.keys(current).length &&
-        Object.entries(previous).every(([key, colour]) => current[key] === colour),
-    },
-  );
-
   public readonly currentModelRecord: Signal<ModelRecord | null> = computed(
     (): ModelRecord | null => this.projects.recordsByLevelIndex().get(this.currentLevelIndex()) ?? null,
   );
   public readonly currentModel: Signal<Model | null> = computed((): Model | null => {
-    this.change();
-    const record: ModelRecord | null = this.currentModelRecord();
-    if (!record) return null;
-    return (
-      this.levels.get(record.gmodel.id)?.getModel() ??
-      this.referenceModels.find((model: Model): boolean => model.id === record.gmodel.id) ??
-      null
-    );
+    const modelId: string | undefined = this.currentModelRecord()?.gmodel.id;
+    return this.models().find((model: Model): boolean => model.id === modelId) ?? null;
+  });
+
+  public readonly currentNodeColours: WritableSignal<NodeColours> = linkedSignal({
+    source: this.currentModelRecord,
+    computation: (record: ModelRecord | null): NodeColours => ({
+      ...getDefaultNodeColours(this.models()),
+      ...record?.view?.nodeColors,
+    }),
+    equal: (previous: NodeColours, current: NodeColours): boolean =>
+      Object.keys(previous).length === Object.keys(current).length &&
+      Object.entries(previous).every(([key, colour]): boolean => current[key] === colour),
   });
 
   public constructor() {
@@ -46,13 +53,6 @@ export class WorkspaceStore {
       const projectId: string | null = this.projects.loadedProjectId();
       const records: ModelRecord[] = untracked((): ModelRecord[] => this.projects.records());
       this.restoreWorkspace(projectId ? records.map((record: ModelRecord): Model => record.gmodel) : []);
-    });
-    effect((): void => {
-      this.currentModel();
-      this.currentNodeColors.set({
-        ...getDefaultNodeColours(this.getModels()),
-        ...this.currentModelRecord()?.view?.nodeColors,
-      });
     });
   }
 
@@ -129,7 +129,7 @@ export class WorkspaceStore {
   }
 
   public notifyChange(): void {
-    this.change.update((value: number): number => value + 1);
+    this.modelSnapshots.set(this.getModels());
   }
 
   public selectLevel(levelIndex: number | null): void {
@@ -146,8 +146,8 @@ export class WorkspaceStore {
     this.currentRelationId.set(relationId);
   }
 
-  public setCurrentNodeColors(colors: NodeColors): void {
-    this.currentNodeColors.set(colors);
+  public setCurrentNodeColours(colours: NodeColours): void {
+    this.currentNodeColours.set(colours);
   }
 
   private restoreWorkspace(models: readonly Model[]): void {

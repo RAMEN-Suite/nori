@@ -14,7 +14,7 @@
   max-width: 82rem;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 64rem) {
   /* Keep each card's width unchanged while the pair moves into position. */
   .entry-layout {
     --entry-content-width: calc(min(82rem, 100vw) - 4rem);

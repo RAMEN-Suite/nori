@@ -36,8 +36,8 @@ export class ProjectEntryScreen implements OnInit {
   private readonly document: Document = inject(DOCUMENT);
 
   protected readonly initial: 'create' | 'open' = this.route.snapshot.routeConfig?.path === 'open' ? 'open' : 'create';
-  protected readonly expanded: WritableSignal<boolean> = signal(false);
-  protected readonly busy: WritableSignal<boolean> = signal(false);
+  protected readonly isExpanded: WritableSignal<boolean> = signal(false);
+  protected readonly isBusy: WritableSignal<boolean> = signal(false);
 
   public ngOnInit(): void {
     this.windowState.setTitleKey(
@@ -47,13 +47,13 @@ export class ProjectEntryScreen implements OnInit {
   }
 
   protected handleShowAlternative(): void {
-    if (this.expanded() || this.busy()) return;
-    if (!this.preferences.state().animations || !('startViewTransition' in this.document)) {
-      this.expanded.set(true);
+    if (this.isExpanded() || this.isBusy()) return;
+    if (!this.preferences.isMotionEnabled() || !('startViewTransition' in this.document)) {
+      this.isExpanded.set(true);
       return;
     }
 
-    const transition: ViewTransition = this.document.startViewTransition((): void => this.expanded.set(true));
+    const transition: ViewTransition = this.document.startViewTransition((): void => this.isExpanded.set(true));
     if ('types' in transition) transition.types.add(this.initial === 'create' ? 'add-open-card' : 'add-create-card');
   }
 }

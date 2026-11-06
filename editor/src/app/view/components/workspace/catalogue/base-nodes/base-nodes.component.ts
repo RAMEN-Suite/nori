@@ -30,6 +30,7 @@ import { type ModelRecord } from '../../../../../models/ModelRecord';
 import { NavigationService } from '../../../../../services/interaction/navigation.service';
 import { ProjectService } from '../../../../../services/projects/project.service';
 import { NodeEditingService } from '../../../../../services/workspace/editing/node-editing.service';
+import { updateSetMembership } from '../../../../../utils/collections';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
 import { ScrollHintsComponent } from '../../../shared/scroll-hints/scroll-hints.component';
 
@@ -74,7 +75,7 @@ export class BaseNodesComponent {
 
   protected readonly search: WritableSignal<string> = signal('');
   protected readonly collapsedGroups: WritableSignal<ReadonlySet<string>> = signal(new Set<string>());
-  protected readonly pending: WritableSignal<boolean> = signal(false);
+  protected readonly isPending: WritableSignal<boolean> = signal(false);
   protected readonly trackNode: ListTrackBy<NodeSuggestion> = (_index: number, node: NodeSuggestion): string => node.ref;
 
   protected readonly visible: Signal<ReadonlySet<string>> = computed(
@@ -92,25 +93,20 @@ export class BaseNodesComponent {
     return [...this.projects.records()]
       .sort((left: ModelRecord, right: ModelRecord): number => right.levelIndex - left.levelIndex)
       .filter((record: ModelRecord): boolean => record.gmodel.id !== this.workspace.store.currentModel()?.id)
-      .map(
-        (record: ModelRecord): BaseNodeGroup => ({
-          record,
-          nodes: suggestions.filter(
-            (node: NodeSuggestion): boolean =>
-              node.modelId === record.gmodel.id && `${node.name} ${record.name}`.toLowerCase().includes(query),
-          ),
-        }),
-      )
+      .map((record: ModelRecord): BaseNodeGroup => ({
+        record,
+        nodes: suggestions.filter(
+          (node: NodeSuggestion): boolean =>
+            node.modelId === record.gmodel.id && `${node.name} ${record.name}`.toLowerCase().includes(query),
+        ),
+      }))
       .filter((group: BaseNodeGroup): boolean => group.nodes.length > 0);
   });
 
   protected handleGroupExpansion(key: string, expanded: readonly string[]): void {
-    this.collapsedGroups.update((current: ReadonlySet<string>): ReadonlySet<string> => {
-      const next: Set<string> = new Set(current);
-      if (expanded.length) next.delete(key);
-      else next.add(key);
-      return next;
-    });
+    this.collapsedGroups.update((current: ReadonlySet<string>): ReadonlySet<string> =>
+      updateSetMembership(current, key, expanded.length === 0),
+    );
   }
 
   protected async handleSelect(reference: string): Promise<void> {
@@ -123,7 +119,7 @@ export class BaseNodesComponent {
   }
 
   protected async handleVisibility(reference: string): Promise<void> {
-    if (this.pending()) return;
+    if (this.isPending()) return;
     if (this.visible().has(reference)) {
       this.nodeEditing.confirmCanvasRemoval(reference);
       return;
@@ -131,7 +127,7 @@ export class BaseNodesComponent {
 
     const modelId: string | undefined = this.workspace.store.currentModel()?.id;
 
-    this.pending.set(true);
+    this.isPending.set(true);
     try {
       await this.workspace.actions.addVisibleNode(reference);
       if (this.workspace.store.currentModel()?.id !== modelId) return;
@@ -140,7 +136,7 @@ export class BaseNodesComponent {
     } catch (error: unknown) {
       this.projects.reportError(error);
     } finally {
-      this.pending.set(false);
+      this.isPending.set(false);
     }
   }
 }

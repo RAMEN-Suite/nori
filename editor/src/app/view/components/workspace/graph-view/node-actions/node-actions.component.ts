@@ -3,14 +3,14 @@ import { TranslocoDirective } from '@jsverse/transloco';
 import { LucideCopy, LucideGitBranch, LucideTrash } from '@lucide/angular';
 import { ModelRef, type NodeSuggestion } from '@ramen-suite/core/model';
 import { Button, Card } from '@sushi-kit/angular';
-import { TooltipDirective } from '../../../../../directives/tooltip.directive';
+import { IconTooltipDirective } from '../../../../../directives/tooltip.directive';
 import { NodeEditingService } from '../../../../../services/workspace/editing/node-editing.service';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
 
 @Component({
   selector: 'nori-node-actions',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslocoDirective, Button, Card, TooltipDirective, LucideCopy, LucideGitBranch, LucideTrash],
+  imports: [TranslocoDirective, Button, Card, IconTooltipDirective, LucideCopy, LucideGitBranch, LucideTrash],
   templateUrl: './node-actions.component.html',
   styleUrl: './node-actions.component.scss',
 })

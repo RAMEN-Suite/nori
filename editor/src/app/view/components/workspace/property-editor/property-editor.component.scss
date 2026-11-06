@@ -14,12 +14,12 @@
   // The modal uses the top layer, but its host must stay out of the flex layout.
   position: absolute;
 }
-.property-workspace > nori-notifications {
-  display: contents;
-}
 .property-toolbar {
+  position: relative;
   grid-column: 2;
   grid-row: 1;
+}
+.property-toolbar > sui-card {
   --sui-card-border-color: var(--nori-border);
   background: var(--color-base-100);
 }
@@ -39,6 +39,27 @@
   grid-column: 1;
   grid-row: 1 / 3;
 }
+:host-context(html[data-motion="on"]) .initial-arrival {
+  .property-toolbar > sui-card,
+  .property-sidebar,
+  .property-main {
+    animation: nori-panel-arrive 600ms var(--panel-delay, 0ms) var(--nori-editor-ease) backwards;
+  }
+
+  .property-toolbar > sui-card {
+    --panel-x: 1.5rem;
+  }
+
+  .property-sidebar {
+    --panel-x: -3rem;
+    --panel-delay: 40ms;
+  }
+
+  .property-main {
+    --panel-x: 3rem;
+    --panel-delay: 90ms;
+  }
+}
 .annotation-workspace {
   container-type: inline-size;
   display: grid;
@@ -46,7 +67,7 @@
   grid-template-columns: minmax(10rem, 0.65fr) minmax(0, 1fr);
   gap: 0.625rem;
 }
-@media (max-width: 900px) {
+@media (width <= 56.25rem) {
   .property-stage {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto auto minmax(30rem, 1fr);
@@ -69,7 +90,7 @@
     min-height: 18rem;
   }
 }
-@media (max-width: 640px) {
+@media (width < 40rem) {
   .property-stage {
     display: flex;
     flex-direction: column;

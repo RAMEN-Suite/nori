@@ -105,21 +105,17 @@ export class GraphAutoLayout {
         'elk.spacing.componentComponent': '100',
         'elk.separateConnectedComponents': 'true',
       },
-      children: model.nodes.map(
-        (node: PositionedNode): ElkNode => ({
-          id: node.id,
-          width: GRAPH_NODE_WIDTH,
-          height: GRAPH_NODE_HEIGHT,
-        }),
-      ),
-      edges: model.links.map(
-        (link: ResolvedLink): ElkExtendedEdge => ({
-          id: link.id,
-          sources: [link.source.id],
-          targets: [link.target.id],
-          labels: [{ text: link.label, width: link.label.length * 8, height: 20 }],
-        }),
-      ),
+      children: model.nodes.map((node: PositionedNode): ElkNode => ({
+        id: node.id,
+        width: GRAPH_NODE_WIDTH,
+        height: GRAPH_NODE_HEIGHT,
+      })),
+      edges: model.links.map((link: ResolvedLink): ElkExtendedEdge => ({
+        id: link.id,
+        sources: [link.source.id],
+        targets: [link.target.id],
+        labels: [{ text: link.label, width: link.label.length * 8, height: 20 }],
+      })),
     };
   }
 }

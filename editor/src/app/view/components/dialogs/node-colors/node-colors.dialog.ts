@@ -6,7 +6,7 @@ import { type Node } from '@ramen-suite/core/model';
 import { Button, ColorPicker, List, ListItemTemplate, Popover, PopoverTrigger } from '@sushi-kit/angular';
 import { getDefaultNodeColours } from '../../../../utils/node-colours';
 import { ScrollOverflowDirective } from '../../../../directives/scroll-overflow.directive';
-import { type NodeColors } from '../../../../models/ModelRecord';
+import { type NodeColours } from '../../../../models/ModelRecord';
 import { DialogService } from '../../../../services/interaction/dialog.service';
 import { WorkspaceService } from '../../../../services/workspace/workspace.service';
 import { ScrollHintsComponent } from '../../shared/scroll-hints/scroll-hints.component';
@@ -31,7 +31,7 @@ import { ScrollHintsComponent } from '../../shared/scroll-hints/scroll-hints.com
   templateUrl: './node-colors.dialog.html',
   styleUrl: './node-colors.dialog.scss',
 })
-export class NodeColorsDialog {
+export class NodeColoursDialog {
   protected readonly dialogs: DialogService = inject(DialogService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
 
@@ -48,8 +48,8 @@ export class NodeColorsDialog {
     '#A5B9CA',
   ];
   private readonly recordId: string | null = this.workspace.store.currentModelRecord()?.modelId ?? null;
-  private pendingColours: NodeColors | null = null;
-  protected readonly colours: WritableSignal<NodeColors> = signal(structuredClone(this.workspace.store.currentNodeColors()));
+  private pendingColours: NodeColours | null = null;
+  protected readonly colours: WritableSignal<NodeColours> = signal(structuredClone(this.workspace.store.currentNodeColours()));
 
   protected readonly nodes: Signal<readonly Node[]> = computed((): readonly Node[] =>
     this.workspace.queries.baseModel() ? this.workspace.queries.baseNodes() : this.workspace.queries.currentNodes(),
@@ -75,33 +75,33 @@ export class NodeColorsDialog {
     await this.applyColours({ ...this.colours(), [id]: colour });
   }
 
-  private async applyColours(colours: NodeColors): Promise<void> {
+  private async applyColours(colours: NodeColours): Promise<void> {
     const recordId: string | null = this.recordId;
     if (!recordId || this.workspace.store.currentModelRecord()?.modelId !== recordId) return;
 
-    const previous: NodeColors = this.colours();
+    const previous: NodeColours = this.colours();
     this.pendingColours = colours;
     this.colours.set(colours);
-    this.workspace.store.setCurrentNodeColors(colours);
+    this.workspace.store.setCurrentNodeColours(colours);
 
-    if (this.dialogs.pending()) return;
+    if (this.dialogs.isPending()) return;
 
     await this.dialogs.run((): Promise<void> => this.persistColours(recordId, previous), { closeOnSuccess: false });
   }
 
-  private async persistColours(recordId: string, saved: NodeColors): Promise<void> {
+  private async persistColours(recordId: string, saved: NodeColours): Promise<void> {
     try {
       while (this.pendingColours) {
-        const colours: NodeColors = this.pendingColours;
+        const colours: NodeColours = this.pendingColours;
         this.pendingColours = null;
-        await this.workspace.actions.updateNodeColors(recordId, colours);
+        await this.workspace.actions.updateNodeColours(recordId, colours);
         saved = colours;
       }
     } catch (error: unknown) {
       this.pendingColours = null;
       this.colours.set(saved);
       if (this.workspace.store.currentModelRecord()?.modelId === recordId) {
-        this.workspace.store.setCurrentNodeColors(saved);
+        this.workspace.store.setCurrentNodeColours(saved);
       }
       throw error;
     }

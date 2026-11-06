@@ -13,3 +13,11 @@ export function groupBy<T, K>(items: readonly T[], key: (item: T) => K): Readonl
 
   return groups;
 }
+
+export function updateSetMembership<T>(current: ReadonlySet<T>, item: T, isIncluded: boolean): ReadonlySet<T> {
+  if (current.has(item) === isIncluded) return current;
+  const next: Set<T> = new Set(current);
+  if (isIncluded) next.add(item);
+  else next.delete(item);
+  return next;
+}

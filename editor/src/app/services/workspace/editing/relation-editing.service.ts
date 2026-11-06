@@ -17,11 +17,11 @@ export class RelationEditingService {
   private readonly dialogs: DialogService = inject(DialogService);
   private readonly translations: TranslocoService = inject(TranslocoService);
 
-  private readonly working: WritableSignal<boolean> = signal(false);
-  public readonly pending: Signal<boolean> = this.working.asReadonly();
+  private readonly isWorking: WritableSignal<boolean> = signal(false);
+  public readonly isPending: Signal<boolean> = this.isWorking.asReadonly();
 
   public async connect(from: string, to: string): Promise<void> {
-    if (this.pending() || !this.workspace.queries.editable()) return;
+    if (this.isPending() || !this.workspace.queries.isEditable()) return;
     try {
       const draft: RamenModel = this.workspace.store.getDraft();
       const choices: readonly RelationSuggestion[] = this.workspace.queries.resolveRelationChoices(from, to);
@@ -47,7 +47,7 @@ export class RelationEditingService {
   }
 
   public remove(id: string): void {
-    if (this.pending() || !this.workspace.queries.editable()) return;
+    if (this.isPending() || !this.workspace.queries.isEditable()) return;
     try {
       const draft: RamenModel = this.workspace.store.getDraft();
       const relation: Relation | undefined = draft.getRelation(id);
@@ -123,11 +123,11 @@ export class RelationEditingService {
   }
 
   private async perform(action: () => Promise<void>): Promise<void> {
-    this.working.set(true);
+    this.isWorking.set(true);
     try {
       await action();
     } finally {
-      this.working.set(false);
+      this.isWorking.set(false);
     }
   }
 

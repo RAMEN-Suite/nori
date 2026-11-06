@@ -39,7 +39,7 @@ export class PropertyDetailsDialog {
   public readonly attribute: InputSignal<Attribute | undefined> = input<Attribute>();
   public readonly editable: InputSignal<boolean> = input(true);
   public readonly levelIndex: InputSignal<number | null> = input<number | null>(null);
-  protected readonly autoSave: Signal<boolean> = computed((): boolean => !!this.attribute() && this.editable());
+  protected readonly isAutoSaveEnabled: Signal<boolean> = computed((): boolean => !!this.attribute() && this.editable());
   protected readonly form: Signal<PropertyFormComponent | undefined> = viewChild(PropertyFormComponent);
 
   protected created(id: string): void {
@@ -48,12 +48,12 @@ export class PropertyDetailsDialog {
 
   protected async save(): Promise<void> {
     const form: PropertyFormComponent | undefined = this.form();
-    if (!form || this.dialogs.pending()) return;
-    this.dialogs.pending.set(true);
+    if (!form || this.dialogs.isPending()) return;
+    this.dialogs.isPending.set(true);
     try {
-      if ((await form.commit()) && !this.autoSave()) this.dialogs.current.set(null);
+      if ((await form.commit()) && !this.isAutoSaveEnabled()) this.dialogs.current.set(null);
     } finally {
-      this.dialogs.pending.set(false);
+      this.dialogs.isPending.set(false);
     }
   }
 }

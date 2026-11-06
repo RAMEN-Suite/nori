@@ -1,24 +1,19 @@
 @if (workspace.queries.currentNode(); as node) {
   <section *transloco="let t" class="flex flex-col" [attr.aria-label]="node.name">
     <div class="flex min-h-8 items-center gap-2">
-      @if (editingName() && workspace.queries.nodeEditable()) {
-        <input
-          suiInput
-          fluid
-          noriAutoselect
+      @if (editingId() && workspace.queries.isNodeEditable()) {
+        <nori-inline-name-input
           name="nodeName"
-          size="sm"
-          maxlength="40"
-          class="h-8 text-xl font-semibold"
-          [attr.aria-label]="t('editor.nodeName')"
-          [ngModel]="draftName()"
-          (ngModelChange)="draftName.set($event)"
-          [readOnly]="savingName()"
-          (keydown.enter)="handleSaveName(true)"
-          (blur)="handleBlurName()"
-          (keydown.escape)="$event.stopPropagation(); handleCancelRename()"
+          fieldClass="h-8 text-xl font-semibold"
+          [maxLength]="40"
+          [label]="t('editor.nodeName')"
+          [(value)]="rename.draft"
+          [readOnly]="rename.isSaving()"
+          (submitted)="handleSaveName(true)"
+          (focusLeft)="handleBlurName()"
+          (cancelled)="handleCancelRename()"
         />
-      } @else if (showEditingControls() && workspace.queries.nodeEditable()) {
+      } @else if (showEditingControls() && workspace.queries.isNodeEditable()) {
         <h1 class="min-w-0 flex-1 text-xl leading-8 font-semibold break-words" [attr.aria-label]="node.name">
           <button
             #renameTarget
@@ -35,7 +30,7 @@
           {{ node.name }}
         </h1>
       }
-      @if (!editingName()) {
+      @if (!editingId()) {
         <ng-content />
       }
     </div>

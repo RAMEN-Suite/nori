@@ -32,13 +32,13 @@
     grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
   }
 }
-@media (max-width: 960px) {
+@media (max-width: 60rem) {
   .shape-windows.has-detail {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
   }
 }
-@media (max-width: 640px) {
+@media (width < 40rem) {
   .shape-list,
   .shape-windows {
     grid-area: auto;

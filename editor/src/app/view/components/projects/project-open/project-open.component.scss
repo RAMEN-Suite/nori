@@ -1,3 +1,5 @@
+@use "../../../../../styles/surface-list";
+
 .open-card {
   view-transition-name: project-list;
 }
@@ -18,19 +20,14 @@
 }
 
 .project-entry {
-  --sui-button-pressed-scale: 1;
-  width: 100%;
-  height: auto;
+  @include surface-list.button-treatment;
+  @include surface-list.button-size;
   min-height: 4.5rem;
-  justify-content: flex-start;
   gap: 1.25rem;
   padding: 0.875rem 6.5rem 0.875rem 1rem;
   white-space: normal;
-  border-radius: var(--nori-radius-input);
   border-color: transparent;
-  background: transparent;
   color: var(--color-base-content);
-  box-shadow: none;
 }
 
 .project-entry:not(:disabled):is(:hover, :focus-visible) {

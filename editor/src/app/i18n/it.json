@@ -30,7 +30,8 @@
     "open": "Apri progetto",
     "create": "Crea progetto",
     "import": "Importa modello",
-    "importError": "Impossibile importare il modello."
+    "importError": "Impossibile importare il modello.",
+    "importFileError": "Impossibile aprire questo file: {{message}}"
   },
   "settings": {
     "repository": "Domande e problemi su GitHub",
@@ -38,8 +39,6 @@
     "development": "Ideazione e sviluppo",
     "support": "Contattaci",
     "help": "Aiuto e supporto",
-    "about": "Informazioni su Nori",
-    "softwareLicense": "Software distribuito con licenza Apache 2.0.",
     "credits": "Crediti",
     "logoMotion": "Logo, motion design e visual design",
     "contact": "Contatti",
@@ -88,12 +87,9 @@
   "create": {
     "title": "Crea progetto",
     "description": "Crea un modello di dati per la tua edizione digitale.",
-    "back": "Indietro",
     "name": "Nome del progetto",
     "namePlaceholder": "La mia prima edizione digitale!",
     "nameHint": "Da 3 a 70 caratteri. Puoi cambiare il nome in seguito.",
-    "summary": "Descrizione",
-    "summaryPlaceholder": "Un’edizione di lettere storiche con persone, luoghi e annotazioni.",
     "optional": "(facoltativo)",
     "example": "Inizia con un esempio di corrispondenza",
     "exampleDescription": "Esplora lettere, persone e luoghi in un modello già pronto. Lascia deselezionata questa opzione per iniziare con un modello vuoto.",
@@ -108,14 +104,13 @@
     "searchPlaceholder": "Cerca nomi di progetti o parole chiave, ad esempio corrispondenza",
     "projects": "Progetti salvati",
     "updated": "Ultima modifica:",
-    "openProject": "Apri «{{name}}»",
+    "openProject": "Apri {{name}}",
     "duplicate": "Duplica",
-    "duplicateProject": "Duplica «{{name}}»",
+    "duplicateProject": "Duplica {{name}}",
     "remove": "Elimina",
-    "removeProject": "Elimina «{{name}}»",
+    "removeProject": "Elimina {{name}}",
     "removeTitle": "Eliminare il progetto?",
     "removeMessage": "Eliminando {{name}}, l’intero progetto viene cancellato definitivamente. Se vuoi conservarne una copia, aprilo ed esportalo prima.",
-    "cancel": "Annulla",
     "empty": "Nessun progetto",
     "emptyHint": "Crea un nuovo progetto per iniziare a modellare.",
     "noMatches": "Nessun progetto corrispondente",
@@ -144,7 +139,6 @@
     "propertyKeyRequiresSingleValue": "Richiedi un valore e disattiva i valori multipli per usare questa proprietà come chiave.",
     "saveProperty": "Salva proprietà",
     "propertyNameRequired": "Inserisci un nome per la proprietà.",
-    "propertyChanges": "Modifiche alla proprietà",
     "unsavedChangesMessage": "Salva o annulla le modifiche prima di continuare.",
     "discardChanges": "Annulla modifiche",
     "graph": "Grafo del modello",
@@ -181,8 +175,6 @@
     "properties": "Proprietà",
     "valid": "Il modello è valido",
     "addProperty": "Crea proprietà",
-    "sortProperties": "Riordina proprietà",
-    "savePropertyOrder": "Salva ordine",
     "reorderProperty": "Riordina {{name}}",
     "duplicateProperty": "Duplica proprietà",
     "selectHint": "Seleziona un nodo o una relazione per visualizzarne i dettagli.",
@@ -203,7 +195,7 @@
     "refineNamedNode": "Raffina {{name}}",
     "removeNamedNode": "Elimina {{name}}",
     "confirmRemoveNode": "L’eliminazione di {{name}} rimuove anche le sue proprietà, i raffinamenti dipendenti e le relazioni.",
-    "nodeNameTaken": "Su questo livello del modello esiste già un nodo chiamato «{{name}}». Scegli un altro nome.",
+    "nodeNameTaken": "Su questo livello del modello esiste già un nodo chiamato {{name}}. Scegli un altro nome.",
     "modelChanged": "Il livello attivo del modello è cambiato. Avvia di nuovo l’azione.",
     "fromModel": "Da {{name}}",
     "selectTool": "Seleziona",
@@ -264,13 +256,9 @@
     "showOnCanvas": "Mostra nell’area di disegno",
     "nodeDetails": "Dettagli del nodo",
     "annotations": "Annotazioni",
-    "inheritedPropertyHint": "Questa proprietà non può essere modificata qui perché è ereditata da",
     "openPropertySource": "Apri la proprietà su {{name}}",
     "editNode": "Modifica nodo",
     "editProperties": "Modifica proprietà",
-    "editPropertiesOf": "Modifica proprietà di {{name}}",
-    "allowDuplicates": "Consenti duplicati",
-    "useAsKey": "Usa come chiave",
     "propertySource": "Da {{name}}",
     "propertyLevel": "Livello {{level}}",
     "propertyCount": {
@@ -291,7 +279,7 @@
     "propertyKeyBounds": "Una proprietà chiave deve avere esattamente un valore. Imposta sia il minimo sia il massimo su 1.",
     "propertyChangeInvalid": "Questa modifica renderebbe il modello non valido: {{reason}}",
     "propertyValues": "Impostazioni elenco",
-    "propertyBehavior": "Utilizzo",
+    "propertyBehaviour": "Utilizzo",
     "propertyName": "Nome della proprietà",
     "dataType": "Tipo di dato",
     "redoModelAlternative": "Ripeti modifica al modello (alternativa)",
@@ -322,7 +310,6 @@
     "operationInProgress": "Attendi il completamento dell’operazione in corso.",
     "runningDeletionHint": "Esamina il grafo, poi torna per rivedere l’eliminazione.",
     "resumeAction": "Riprendi",
-    "cancelRunningAction": "Annulla azione",
     "affectedNodeRemoval": "Verrà eliminato 1 nodo",
     "affectedNodesRemoval": "Verranno eliminati {{count}} nodi",
     "affectedRelationRemoval": "Verrà eliminata 1 relazione",
@@ -375,11 +362,9 @@
         "hint": "Lascia vuoto per consentire un numero illimitato di valori."
       }
     },
-    "propertyMultipleValues": "Valori multipli",
     "unlimitedValues": "Illimitato",
     "shapes": {
       "title": "Annotazioni",
-      "edit": "Modifica annotazioni",
       "details": "Dettagli dell’annotazione",
       "name": "Nome dell’annotazione",
       "nameHint": "Il nome deve essere univoco per questo nodo, incluse le annotazioni ereditate.",
@@ -434,7 +419,6 @@
       "propertyOf": "Proprietà di {{name}}",
       "sharedProperty": "Proprietà condivisa del nodo",
       "ruleOf": "Regola di relazione di {{name}}",
-      "closeDetail": "Chiudi",
       "rulesIntro": "Quali relazioni modellate può impostare questa annotazione."
     },
     "description": {
@@ -469,18 +453,14 @@
     },
     "propertyShorthand": {
       "label": "Nuova proprietà",
-      "placeholder": "Nuova proprietà, ad es. tags: String[0..*]",
       "format": "Usa nome, nome: Tipo oppure nome: Tipo[min..max].",
       "unknownType": "Tipo di dati sconosciuto {{type}}.",
       "bounds": "Il massimo deve essere almeno 1 e non inferiore al minimo."
     },
-    "backToGraph": "Torna al grafo",
     "neighbourhood": {
       "title": "Collegamenti",
-      "label": "Collegamenti diretti di questo nodo. Un altro nodo si apre qui.",
+      "label": "Nodi collegati direttamente",
       "empty": "Questo nodo non ha ancora relazioni.",
-      "zoomIn": "Ingrandisci",
-      "zoomOut": "Riduci",
       "navigationHint": "Scorri per ingrandire. Trascina lo sfondo o un nodo per spostarlo. Tastiera: più, meno e 0 per adattare."
     },
     "propertyList": {
@@ -490,14 +470,11 @@
       "newName": "Nuova proprietà…",
       "list": "Lista",
       "multipleValues": "Più valori",
-      "singleValue": "Valore singolo",
-      "valueMode": "Numero di valori",
       "inherited": "Proprietà ereditate",
       "viewProperty": "Visualizza proprietà",
       "view": "Visualizza {{name}}",
       "goToSource": "Vai alla fonte",
-      "jumpToNode": "Vai al nodo {{name}}",
-      "viewTitle": "Visualizza proprietà"
+      "jumpToNode": "Vai al nodo {{name}}"
     },
     "nodeWorkspace": {
       "relationships": "Relazioni",

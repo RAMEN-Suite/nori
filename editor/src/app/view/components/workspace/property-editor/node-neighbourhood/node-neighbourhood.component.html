@@ -10,8 +10,7 @@
           variant="text"
           shape="circle"
           [disabled]="disabled() || !previousName()"
-          [attr.aria-label]="previousName() ? t('editor.backToNode', { name: previousName() }) : t('common.back')"
-          [noriTooltip]="previousName() ? t('editor.backToNode', { name: previousName() }) : t('common.back')"
+          [noriIconTooltip]="previousName() ? t('editor.backToNode', { name: previousName() }) : t('common.back')"
           (click)="back.emit()"
         >
           <svg lucideArrowLeft class="size-4" aria-hidden="true"></svg>
@@ -24,8 +23,7 @@
           variant="text"
           shape="circle"
           [disabled]="disabled() || !nextName()"
-          [attr.aria-label]="nextName() ? t('editor.nodeWorkspace.forwardTo', { name: nextName() }) : t('editor.nodeWorkspace.forward')"
-          [noriTooltip]="nextName() ? t('editor.nodeWorkspace.forwardTo', { name: nextName() }) : t('editor.nodeWorkspace.forward')"
+          [noriIconTooltip]="nextName() ? t('editor.nodeWorkspace.forwardTo', { name: nextName() }) : t('editor.nodeWorkspace.forward')"
           (click)="forward.emit()"
         >
           <svg lucideArrowRight class="size-4" aria-hidden="true"></svg>
@@ -39,7 +37,7 @@
           severity="neutral"
           variant="text"
           shape="circle"
-          [disabled]="controlsBusy() || !history.canUndoCurrentNode()"
+          [disabled]="areControlsBusy() || !history.canUndoCurrentNode()"
           [attr.aria-label]="t('editor.undoModel')"
           [attr.aria-keyshortcuts]="shortcuts.aria('undo')"
           [noriTooltip]="t('editor.undoModel') + shortcuts.hint('undo')"
@@ -54,7 +52,7 @@
           severity="neutral"
           variant="text"
           shape="circle"
-          [disabled]="controlsBusy() || !history.canRedoCurrentNode()"
+          [disabled]="areControlsBusy() || !history.canRedoCurrentNode()"
           [attr.aria-label]="t('editor.redoModel')"
           [attr.aria-keyshortcuts]="shortcuts.aria('redo')"
           [noriTooltip]="t('editor.redoModel') + shortcuts.hint('redo')"
@@ -73,7 +71,7 @@
     <div #graphHost class="neighbourhood-host relative min-h-0 flex-1 overflow-hidden">
       <svg
         #canvas
-        class="nori-graph-preview neighbourhood-canvas"
+        class="nori-graph neighbourhood-canvas"
         tabindex="0"
         role="group"
         [attr.aria-label]="t('editor.neighbourhood.navigationHint')"
@@ -92,8 +90,7 @@
           variant="text"
           shape="circle"
           [disabled]="disabled()"
-          [attr.aria-label]="t('editor.fit')"
-          [noriTooltip]="t('editor.fit')"
+          [noriIconTooltip]="t('editor.fit')"
           (click)="fit()"
         >
           <svg lucideScan class="size-4" aria-hidden="true"></svg>
@@ -106,8 +103,7 @@
           variant="text"
           shape="circle"
           [disabled]="disabled()"
-          [attr.aria-label]="t('editor.colours')"
-          [noriTooltip]="t('editor.colours')"
+          [noriIconTooltip]="t('editor.colours')"
           (click)="openColours()"
         >
           <svg lucidePalette class="size-4" aria-hidden="true"></svg>
@@ -120,8 +116,7 @@
           variant="text"
           shape="circle"
           [disabled]="disabled()"
-          [attr.aria-label]="t('editor.reset')"
-          [noriTooltip]="t('editor.reset')"
+          [noriIconTooltip]="t('editor.reset')"
           (click)="resetLayout()"
         >
           <svg lucideNetwork class="size-4" aria-hidden="true"></svg>

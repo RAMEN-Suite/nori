@@ -15,7 +15,7 @@ export class GraphToolsService {
   private context: WorkspaceContext | null = null;
   public readonly source: Signal<string | null> = this.selectedSource.asReadonly();
   public readonly tool: Signal<GraphTool> = this.activeTool.asReadonly();
-  public readonly pending: Signal<boolean> = this.relations.pending;
+  public readonly isPending: Signal<boolean> = this.relations.isPending;
 
   public constructor() {
     effect((): void => {
@@ -27,7 +27,7 @@ export class GraphToolsService {
   }
 
   public toggle(tool: GraphTool): void {
-    if (this.pending() || !this.workspace.queries.editable()) return;
+    if (this.isPending() || !this.workspace.queries.isEditable()) return;
     this.cancel();
     this.activeTool.update((active: GraphTool): GraphTool => (active === tool ? 'select' : tool));
   }

@@ -65,16 +65,14 @@ export class RelationViewComponent {
   protected readonly endpoints: Signal<readonly RelationEndpoint[]> = computed((): readonly RelationEndpoint[] => {
     const relation: Relation | null = this.workspace.queries.currentRelation();
     return relation
-      ? (['from', 'to'] as const).map(
-          (key): RelationEndpoint => ({
-            key,
-            labelKey: key === 'from' ? 'editor.relationSourceLabel' : 'editor.relationTargetLabel',
-            reference: relation[key].nodeId,
-            name: this.workspace.queries.resolveNodeLabel(relation[key].nodeId),
-            cardinality: this.cardinality(relation[key].bounds),
-            constraints: relation[key].constraints ?? [],
-          }),
-        )
+      ? (['from', 'to'] as const).map((key): RelationEndpoint => ({
+          key,
+          labelKey: key === 'from' ? 'editor.relationSourceLabel' : 'editor.relationTargetLabel',
+          reference: relation[key].nodeId,
+          name: this.workspace.queries.resolveNodeLabel(relation[key].nodeId),
+          cardinality: this.cardinality(relation[key].bounds),
+          constraints: relation[key].constraints ?? [],
+        }))
       : [];
   });
 

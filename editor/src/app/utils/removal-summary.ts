@@ -121,15 +121,13 @@ function getAffectedModelLevels(
 ): readonly AffectedModelLevel[] {
   return models
     .filter((model: Model): boolean => model.id !== selectedModelId)
-    .map(
-      (model: Model): AffectedModelLevel => ({
-        modelName: model.name,
-        modelLevelIndex: modelLevelIndex(model.id, levels),
-        location: removalLocation(model.id, undefined, levels),
-        nodeCount: model.classifiers.filter((item): boolean => item.kind === 'Node').length,
-        relationCount: model.relations.length,
-      }),
-    );
+    .map((model: Model): AffectedModelLevel => ({
+      modelName: model.name,
+      modelLevelIndex: modelLevelIndex(model.id, levels),
+      location: removalLocation(model.id, undefined, levels),
+      nodeCount: model.classifiers.filter((item): boolean => item.kind === 'Node').length,
+      relationCount: model.relations.length,
+    }));
 }
 
 function modelLevelIndex(modelId: string, levels: readonly ModelLevel[]): number | null {

@@ -2,7 +2,7 @@
   <section
     class="property-surface shape-list bg-base-100 flex min-h-0 min-w-0 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)]"
     [attr.aria-label]="t('editor.shapes.title')"
-    [inert]="pending() || switchingNode()"
+    [inert]="isPending() || switchingNode()"
   >
     <div class="nori-scroll-frame min-h-0 flex-1">
       <div noriScrollOverflow #shapeScroll="scrollOverflow" class="property-list-scroll editor-panel-scroll px-2 pt-4 pb-2">
@@ -61,8 +61,8 @@
             class="min-w-0 flex-1"
             autocomplete="off"
             spellcheck="false"
-            [attr.aria-label]="t(workspace.queries.editable() ? 'editor.shapes.findOrCreate' : 'editor.shapes.find')"
-            [placeholder]="t(workspace.queries.editable() ? 'editor.shapes.findOrCreate' : 'editor.shapes.find')"
+            [attr.aria-label]="t(workspace.queries.isEditable() ? 'editor.shapes.findOrCreate' : 'editor.shapes.find')"
+            [placeholder]="t(workspace.queries.isEditable() ? 'editor.shapes.findOrCreate' : 'editor.shapes.find')"
             [ngModel]="search()"
             (ngModelChange)="changeSearch($event)"
             [invalid]="!!searchError()"
@@ -71,7 +71,7 @@
             [attr.aria-describedby]="searchError() ? 'annotation-search-error' : null"
             (keydown.escape)="clearSearch($event)"
           />
-          @if (workspace.queries.editable()) {
+          @if (workspace.queries.isEditable()) {
             <button
               suiButton
               suiJoinItem
@@ -79,8 +79,7 @@
               size="sm"
               severity="neutral"
               variant="outlined"
-              [attr.aria-label]="t('editor.shapes.vocabularies.open')"
-              [noriTooltip]="t('editor.shapes.vocabularies.open')"
+              [noriIconTooltip]="t('editor.shapes.vocabularies.open')"
               [suiPopoverTrigger]="vocabularies"
             >
               <svg lucideBookOpen class="size-4" aria-hidden="true"></svg>
@@ -113,7 +112,7 @@
         <nori-annotation-vocabularies
           class="block w-80 max-w-full"
           [existingTypes]="existingTypes()"
-          [disabled]="pending() || !workspace.queries.editable()"
+          [disabled]="isPending() || !workspace.queries.isEditable()"
           (add)="addVocabularyAnnotations($event, vocabularies)"
         />
       </sui-popover>
@@ -121,8 +120,8 @@
   </section>
 
   @if (active()) {
-    <div class="shape-windows" [class.has-detail]="detail() !== 'empty'" [inert]="pending() || switchingNode()">
-      @if (selected() || creating()) {
+    <div class="shape-windows" [class.has-detail]="detail() !== 'empty'" [inert]="isPending() || switchingNode()">
+      @if (selected() || isCreating()) {
         <section
           class="property-surface shape-window bg-base-100 flex min-h-0 min-w-0 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)]"
           tabindex="-1"
@@ -142,7 +141,7 @@
                 <svg lucideArrowLeft class="size-4" aria-hidden="true"></svg>{{ t('editor.shapes.title') }}
               </button>
               <form class="flex flex-col gap-1.5" (ngSubmit)="saveSettings()">
-                <button type="submit" hidden [disabled]="!editable() || pending()">{{ t('common.save') }}</button>
+                <button type="submit" hidden [disabled]="!isEditable() || isPending()">{{ t('common.save') }}</button>
                 <label for="annotation-name" class="nori-field-label">{{ t('editor.shapes.name') }}</label>
                 <input
                   suiInput
@@ -156,7 +155,7 @@
                   spellcheck="false"
                   [(ngModel)]="name"
                   (ngModelChange)="nameError.set(null)"
-                  [disabled]="!editable()"
+                  [disabled]="!isEditable()"
                   [invalid]="!!nameError()"
                   [touched]="!!nameError()"
                   [attr.aria-invalid]="nameError() ? 'true' : null"
@@ -167,7 +166,7 @@
                 } @else {
                   <span id="annotation-name-hint" class="text-base-content/60 text-xs">{{ t('editor.shapes.nameHint') }}</span>
                 }
-                <nori-description-field inputId="annotation-description" class="mt-4" [(value)]="description" [disabled]="!editable()" />
+                <nori-description-field inputId="annotation-description" class="mt-4" [(value)]="description" [disabled]="!isEditable()" />
               </form>
 
               @if (selected(); as entry) {
@@ -228,7 +227,7 @@
                       </button>
                     </ng-template>
                   </sui-list>
-                  @if (editable()) {
+                  @if (isEditable()) {
                     <button suiButton type="button" size="sm" severity="neutral" variant="text" class="mt-1" (click)="selectProperty(null)">
                       <svg lucidePlus class="size-4" aria-hidden="true"></svg>{{ t('editor.addProperty') }}
                     </button>
@@ -266,7 +265,7 @@
                       </button>
                     </ng-template>
                   </sui-list>
-                  @if (editable()) {
+                  @if (isEditable()) {
                     <button suiButton type="button" size="sm" severity="neutral" variant="text" class="mt-1" (click)="selectRelation(-1)">
                       <svg lucidePlus class="size-4" aria-hidden="true"></svg>{{ t('editor.shapes.addRelation') }}
                     </button>
@@ -276,7 +275,7 @@
             </div>
             <nori-scroll-hints [up]="shapeWindowScroll.canScrollUp()" [down]="shapeWindowScroll.canScrollDown()" />
           </div>
-          @if (selected() && !editable()) {
+          @if (selected() && !isEditable()) {
             <ng-container [ngTemplateOutlet]="sourceNotice" [ngTemplateOutletContext]="{ $implicit: 'editor.shapes.inheritedHint' }" />
           } @else {
             <footer class="flex shrink-0 flex-wrap items-center gap-2 border-t border-[var(--nori-border)] px-5 py-3">
@@ -288,8 +287,7 @@
                   shape="circle"
                   severity="neutral"
                   variant="text"
-                  [attr.aria-label]="t('editor.shapes.duplicate')"
-                  [noriTooltip]="t('editor.shapes.duplicate')"
+                  [noriIconTooltip]="t('editor.shapes.duplicate')"
                   (click)="duplicateShape()"
                 >
                   <svg lucideCopy class="size-3.5" aria-hidden="true"></svg>
@@ -301,8 +299,7 @@
                   shape="circle"
                   severity="error"
                   variant="text"
-                  [attr.aria-label]="t('editor.shapes.removeAction')"
-                  [noriTooltip]="t('editor.shapes.removeAction')"
+                  [noriIconTooltip]="t('editor.shapes.removeAction')"
                   (click)="requestRemoval('shape')"
                 >
                   <svg lucideEraser class="size-3.5" aria-hidden="true"></svg>
@@ -324,8 +321,8 @@
                   suiButton
                   type="button"
                   size="sm"
-                  [loading]="busy()"
-                  [disabled]="!settingsChanged() || !editable()"
+                  [loading]="isBusy()"
+                  [disabled]="!settingsChanged() || !isEditable()"
                   (click)="saveSettings()"
                 >
                   @if (selected()) {
@@ -374,8 +371,7 @@
               shape="circle"
               severity="neutral"
               variant="text"
-              [attr.aria-label]="t('editor.shapes.closeDetail')"
-              [noriTooltip]="t('editor.shapes.closeDetail')"
+              [noriIconTooltip]="t('common.close')"
               (click)="closeDetail()"
             >
               <svg lucideX class="size-4" aria-hidden="true"></svg>
@@ -388,7 +384,7 @@
                   <nori-property-form
                     [shapeId]="entry.shape.id"
                     [currentAttribute]="attribute()"
-                    [editable]="editable()"
+                    [editable]="isEditable()"
                     [modelLevelIndex]="entry.levelIndex"
                     (saved)="savedProperty($event)"
                     (submitRequested)="saveDetail()"
@@ -406,7 +402,7 @@
                     [shape]="entry.shape"
                     [ownerModelId]="entry.modelId"
                     [index]="relationIndex()"
-                    [editable]="editable()"
+                    [editable]="isEditable()"
                     (saved)="savedRelation($event)"
                     (submitRequested)="saveDetail()"
                   />
@@ -415,7 +411,7 @@
             </div>
             <nori-scroll-hints [up]="detailScroll.canScrollUp()" [down]="detailScroll.canScrollDown()" />
           </div>
-          @if (detail() === 'shared' || !editable()) {
+          @if (detail() === 'shared' || !isEditable()) {
             <ng-container
               [ngTemplateOutlet]="sourceNotice"
               [ngTemplateOutletContext]="{ $implicit: detail() === 'shared' ? 'editor.shapes.sharedHint' : 'editor.shapes.inheritedHint' }"
@@ -430,8 +426,7 @@
                   shape="circle"
                   severity="error"
                   variant="text"
-                  [attr.aria-label]="t('editor.shapes.removeAction')"
-                  [noriTooltip]="t('editor.shapes.removeAction')"
+                  [noriIconTooltip]="t('editor.shapes.removeAction')"
                   (click)="requestRemoval(detail() === 'relation' ? 'relation' : 'property')"
                 >
                   <svg lucideEraser class="size-3.5" aria-hidden="true"></svg>
@@ -449,7 +444,7 @@
                 >
                   <svg lucideUndo2 class="size-4" aria-hidden="true"></svg>{{ t('editor.discardChanges') }}
                 </button>
-                <button suiButton type="button" size="sm" [loading]="pending()" [disabled]="!detailChanged()" (click)="saveDetail()">
+                <button suiButton type="button" size="sm" [loading]="isPending()" [disabled]="!detailChanged()" (click)="saveDetail()">
                   <svg lucideSave class="size-4" aria-hidden="true"></svg>
                   @if (detail() === 'relation') {
                     {{ t('editor.shapes.saveRelation') }}
@@ -474,7 +469,7 @@
           type="button"
           class="property-refinement-chip text-base-content inline-flex min-w-0 cursor-pointer items-center gap-1.5 rounded-full border border-[color-mix(in_oklab,var(--refinement-colour)_40%,transparent)] bg-[color-mix(in_oklab,var(--refinement-colour)_10%,transparent)] px-2.5 py-0.5 text-xs"
           [style.--refinement-colour]="origin.colour"
-          [disabled]="pending() || switchingNode()"
+          [disabled]="isPending() || switchingNode()"
           [attr.aria-label]="t(detail() === 'shared' ? 'editor.openPropertySource' : 'editor.shapes.openSource', { name: origin.name })"
           (click)="inspectOrigin()"
         >

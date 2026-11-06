@@ -1,4 +1,5 @@
 import { computed, effect, inject, Injectable, type Signal, signal, type WritableSignal } from '@angular/core';
+import { TranslocoService } from '@jsverse/transloco';
 import { type Model } from '@ramen-suite/core/model';
 import { RamenModel, RAMEN_MODEL } from '@ramen-suite/core/ramen';
 import { Subject, type Observable } from 'rxjs';
@@ -12,6 +13,7 @@ import { ProjectRepositoryService } from './project-repository.service';
 /** Coordinates project loading and mutations, exposing the selected project’s reactive state. */
 @Injectable({ providedIn: 'root' })
 export class ProjectService {
+  private readonly translations: TranslocoService = inject(TranslocoService);
   private readonly repository: ProjectRepositoryService = inject(ProjectRepositoryService);
 
   private readonly projectSelectionChanges: Subject<string | null> = new Subject<string | null>();
@@ -26,18 +28,17 @@ export class ProjectService {
   public readonly selectedManifest: WritableSignal<Manifest | null> = signal(null);
   public readonly error: WritableSignal<string | null> = signal(null);
 
-  public readonly recordsByLevelIndex: Signal<ReadonlyMap<number, ModelRecord>> = computed(
-    (): ReadonlyMap<number, ModelRecord> => indexBy(this.records(), (record: ModelRecord): number => record.levelIndex),
+  public readonly recordsByLevelIndex: Signal<ReadonlyMap<number, ModelRecord>> = computed((): ReadonlyMap<number, ModelRecord> =>
+    indexBy(this.records(), (record: ModelRecord): number => record.levelIndex),
   );
-  public readonly recordsByModelId: Signal<ReadonlyMap<string, ModelRecord>> = computed(
-    (): ReadonlyMap<string, ModelRecord> => indexBy(this.records(), (record: ModelRecord): string => record.gmodel.id),
+  public readonly recordsByModelId: Signal<ReadonlyMap<string, ModelRecord>> = computed((): ReadonlyMap<string, ModelRecord> =>
+    indexBy(this.records(), (record: ModelRecord): string => record.gmodel.id),
   );
-  public readonly modelsById: Signal<ReadonlyMap<string, Model>> = computed(
-    (): ReadonlyMap<string, Model> =>
-      indexBy(
-        this.records().map((record: ModelRecord): Model => record.gmodel),
-        (model: Model): string => model.id,
-      ),
+  public readonly modelsById: Signal<ReadonlyMap<string, Model>> = computed((): ReadonlyMap<string, Model> =>
+    indexBy(
+      this.records().map((record: ModelRecord): Model => record.gmodel),
+      (model: Model): string => model.id,
+    ),
   );
 
   public constructor() {
@@ -52,7 +53,7 @@ export class ProjectService {
 
   public reportError(error: unknown): void {
     if (error instanceof InteractionBlockedError && error.explainedByAction) return;
-    this.error.set(error instanceof Error ? error.message : 'The operation could not be completed.');
+    this.error.set(error instanceof Error ? error.message : this.translations.translate('common.notificationTitles.error'));
   }
 
   public async projectExists(id: string): Promise<boolean> {

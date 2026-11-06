@@ -5,6 +5,7 @@ import {
   Component,
   computed,
   effect,
+  linkedSignal,
   DestroyRef,
   ElementRef,
   inject,
@@ -42,6 +43,25 @@ import { PROPERTY_NAME_MAX_LENGTH } from '../../../../../utils/model-names';
 
 type PropertyToggleOption = 'multiple' | 'required' | 'ordered' | 'duplicates' | 'readonly' | 'key';
 type PropertyOption = PropertyToggleOption | 'minimum' | 'maximum';
+interface PropertyDraftValues {
+  readonly name: string;
+  readonly description: string;
+  readonly typeId: string;
+  readonly lowerBound: number;
+  readonly upperBound: number;
+  readonly isKey: boolean;
+  readonly isReadOnly: boolean;
+  readonly isUnique: boolean;
+  readonly isOrdered: boolean;
+  readonly constraints: AttributeInput['constraints'];
+}
+
+interface PropertyDraft {
+  readonly values: PropertyDraftValues;
+  readonly baseline: string;
+  readonly attributeId: string | undefined;
+}
+
 /** Tracks property drafts reactively and commits valid edits through the workspace. */
 @Component({
   selector: 'nori-property-form',
@@ -79,7 +99,7 @@ export class PropertyFormComponent {
   public readonly editable: InputSignal<boolean> = input(true);
   public readonly saved: OutputEmitterRef<string> = output();
   public readonly submitRequested: OutputEmitterRef<void> = output();
-  public readonly saving: WritableSignal<boolean> = signal(false);
+  public readonly isSaving: WritableSignal<boolean> = signal(false);
   public readonly currentAttribute: InputSignal<Attribute | undefined> = input();
 
   protected readonly suggestionsMessage: (count: number) => string = (count: number): string =>
@@ -95,26 +115,32 @@ export class PropertyFormComponent {
 
   protected readonly nameMaxLength: number = PROPERTY_NAME_MAX_LENGTH;
 
-  protected readonly fieldErrors: WritableSignal<Readonly<Record<string, string>>> = signal({});
+  private readonly draft: WritableSignal<PropertyDraft> = linkedSignal({
+    source: this.currentAttribute,
+    computation: (attribute, previous): PropertyDraft => {
+      const draft: PropertyDraft | undefined = previous?.value;
+      if (draft && attribute?.id === draft.attributeId && this.snapshot(this.values(draft.values)) !== draft.baseline) {
+        return draft;
+      }
+      return this.createDraft(attribute);
+    },
+  });
+  protected readonly fieldErrors: WritableSignal<Readonly<Record<string, string>>> = linkedSignal({
+    source: (): string | undefined => this.currentAttribute()?.id,
+    computation: (): Readonly<Record<string, string>> => ({}),
+  });
   protected readonly nameError: Signal<string | null> = computed(() => this.fieldErrors()['name'] ?? null);
-  protected readonly name: WritableSignal<string> = signal('');
-  protected readonly description: WritableSignal<string> = signal('');
-  public readonly descriptionValid: Signal<boolean> = computed(() => isDescriptionValid(this.description()));
-  protected readonly typeId: WritableSignal<string> = signal(DataTypes.String);
-  protected readonly lowerBound: WritableSignal<number> = signal(0);
-  protected readonly upperBound: WritableSignal<number> = signal(1);
-  protected readonly isKey: WritableSignal<boolean> = signal(false);
-  protected readonly isReadOnly: WritableSignal<boolean> = signal(false);
-  protected readonly isUnique: WritableSignal<boolean> = signal(true);
-  protected readonly isOrdered: WritableSignal<boolean> = signal(false);
-
-  private readonly initialValue: WritableSignal<string> = signal('');
+  protected readonly name: Signal<string> = computed((): string => this.draft().values.name);
+  protected readonly description: Signal<string> = computed((): string => this.draft().values.description);
+  public readonly isDescriptionValid: Signal<boolean> = computed(() => isDescriptionValid(this.description()));
+  protected readonly typeId: Signal<string> = computed((): string => this.draft().values.typeId);
+  protected readonly lowerBound: Signal<number> = computed((): number => this.draft().values.lowerBound);
+  protected readonly upperBound: Signal<number> = computed((): number => this.draft().values.upperBound);
+  protected readonly isKey: Signal<boolean> = computed((): boolean => this.draft().values.isKey);
+  protected readonly isReadOnly: Signal<boolean> = computed((): boolean => this.draft().values.isReadOnly);
+  protected readonly isUnique: Signal<boolean> = computed((): boolean => this.draft().values.isUnique);
+  protected readonly isOrdered: Signal<boolean> = computed((): boolean => this.draft().values.isOrdered);
   private autoSaveAttempt: string | null = null;
-  private selectedAttributeId: string | undefined;
-  private readonly constraints: WritableSignal<AttributeInput['constraints']> = signal(undefined);
-  private readonly attributeSnapshot: Signal<string | undefined> = computed((): string | undefined =>
-    JSON.stringify(this.currentAttribute()),
-  );
 
   /** The current attribute with unsaved form values, for live previews outside the form. */
   public readonly preview: Signal<Attribute | undefined> = computed((): Attribute | undefined => {
@@ -158,16 +184,9 @@ export class PropertyFormComponent {
 
   public constructor() {
     effect((): void => {
-      this.attributeSnapshot();
-      untracked((): void => {
-        const sameSelection: boolean = this.currentAttribute()?.id === this.selectedAttributeId;
-        if (!this.initialValue() || !sameSelection || !this.hasChanges()) this.reset();
-      });
-    });
-    effect((): void => {
-      if (!this.autoSave() || this.saving() || !this.descriptionValid()) return;
+      if (!this.autoSave() || this.isSaving() || !this.isDescriptionValid()) return;
       const snapshot: string = this.snapshot(this.values());
-      if (snapshot === this.initialValue()) {
+      if (snapshot === this.draft().baseline) {
         this.autoSaveAttempt = null;
         return;
       }
@@ -178,21 +197,17 @@ export class PropertyFormComponent {
   }
 
   public reset(): void {
-    const attribute: AttributeInput = this.currentAttribute() ?? {
-      name: '',
-      typeId: DataTypes.String,
-      bounds: { lowerBound: 0, upperBound: 1 },
-    };
-
     this.autoSaveAttempt = null;
-    this.loadValues(attribute);
-    this.selectedAttributeId = this.currentAttribute()?.id;
+    this.draft.set(this.createDraft(this.currentAttribute()));
     this.fieldErrors.set({});
-    this.initialValue.set(this.snapshot(this.values()));
+  }
+
+  protected updateDraft<K extends keyof PropertyDraftValues>(field: K, value: PropertyDraftValues[K]): void {
+    this.draft.update((draft: PropertyDraft): PropertyDraft => ({ ...draft, values: { ...draft.values, [field]: value } }));
   }
 
   public hasChanges(): boolean {
-    return this.snapshot(this.values()) !== this.initialValue();
+    return this.snapshot(this.values()) !== this.draft().baseline;
   }
 
   public async commit(): Promise<boolean> {
@@ -200,31 +215,31 @@ export class PropertyFormComponent {
     return !this.hasChanges();
   }
 
-  protected readonly multiple: Signal<boolean> = computed(() => this.upperBound() === -1 || this.upperBound() > 1);
+  protected readonly hasMultipleValues: Signal<boolean> = computed(() => this.upperBound() === -1 || this.upperBound() > 1);
 
   protected readonly boundOptions: Signal<readonly PropertyOption[]> = computed((): readonly PropertyOption[] => {
-    if (!this.multiple()) return this.singleOptions;
+    if (!this.hasMultipleValues()) return this.singleOptions;
     if (this.hideDefinition() || !this.editable()) return this.multipleOptions;
     return this.multipleWithToggle;
   });
 
   protected readonly usageOptions: Signal<readonly PropertyOption[]> = computed((): readonly PropertyOption[] => {
-    return this.multiple() ? this.listUsageOptions : this.singleUsageOptions;
+    return this.hasMultipleValues() ? this.listUsageOptions : this.singleUsageOptions;
   });
 
-  protected readonly keyUnavailable: Signal<boolean> = computed((): boolean => {
+  protected readonly isKeyUnavailable: Signal<boolean> = computed((): boolean => {
     return !!this.otherKey() || this.lowerBound() !== 1 || this.upperBound() !== 1;
   });
 
   protected optionDisabled(option: PropertyOption): boolean {
     if (!this.editable()) return true;
-    if (option === 'key') return this.keyUnavailable();
+    if (option === 'key') return this.isKeyUnavailable();
     return this.isKey() && (option === 'multiple' || option === 'required');
   }
 
   protected optionValue(option: PropertyToggleOption): boolean {
     const values: Record<PropertyToggleOption, boolean> = {
-      multiple: this.multiple(),
+      multiple: this.hasMultipleValues(),
       required: this.lowerBound() > 0,
       ordered: this.isOrdered(),
       duplicates: !this.isUnique(),
@@ -236,20 +251,20 @@ export class PropertyFormComponent {
 
   protected clearFieldError(field: string): void {
     if (!this.fieldErrors()[field]) return;
-    this.fieldErrors.update(
-      (errors: Readonly<Record<string, string>>): Readonly<Record<string, string>> =>
-        Object.fromEntries(Object.entries(errors).filter(([key]): boolean => key !== field)),
+    this.fieldErrors.update((errors: Readonly<Record<string, string>>): Readonly<Record<string, string>> =>
+      Object.fromEntries(Object.entries(errors).filter(([key]): boolean => key !== field)),
     );
   }
 
-  protected handleName(): void {
+  protected handleName(value: string): void {
+    this.updateDraft('name', value);
     this.clearFieldError('name');
   }
 
   private toggleMultiple(enabled: boolean): void {
-    if (this.isKey() || enabled === this.multiple()) return;
-    this.lowerBound.set(Math.min(this.lowerBound(), 1));
-    this.upperBound.set(enabled ? -1 : 1);
+    if (this.isKey() || enabled === this.hasMultipleValues()) return;
+    this.updateDraft('lowerBound', Math.min(this.lowerBound(), 1));
+    this.updateDraft('upperBound', enabled ? -1 : 1);
     this.handleBounds();
   }
 
@@ -266,47 +281,47 @@ export class PropertyFormComponent {
     this.clearFieldError(option);
     switch (option) {
       case 'ordered':
-        this.isOrdered.set(value);
+        this.updateDraft('isOrdered', value);
         break;
       case 'duplicates':
-        this.isUnique.set(!value);
+        this.updateDraft('isUnique', !value);
         break;
       case 'readonly':
-        this.isReadOnly.set(value);
+        this.updateDraft('isReadOnly', value);
         break;
       case 'key':
-        this.isKey.set(value);
+        this.updateDraft('isKey', value);
         break;
     }
   }
 
   protected handleMinimum(value: number | null): void {
-    this.lowerBound.set(value ?? 0);
+    this.updateDraft('lowerBound', value ?? 0);
     this.handleBounds();
   }
 
   protected handleMaximum(value: number | null): void {
-    this.upperBound.set(value ?? -1);
+    this.updateDraft('upperBound', value ?? -1);
     this.handleBounds();
   }
 
   protected handleType(value: unknown): void {
     if (typeof value !== 'string' || !this.typeOptions().some((option: AutocompleteOption): boolean => option.value === value))
       return;
-    this.typeId.set(value);
+    this.updateDraft('typeId', value);
   }
 
   private handleBounds(): void {
     this.clearFieldError('maximum');
     this.clearFieldError('key');
-    if (this.lowerBound() !== 1 || this.upperBound() !== 1) this.isKey.set(false);
+    if (this.lowerBound() !== 1 || this.upperBound() !== 1) this.updateDraft('isKey', false);
   }
 
   private async saveDraft(): Promise<void> {
     const nodeId: string | null = this.workspace.store.currentNodeId();
-    if (!nodeId || !this.editable() || this.saving() || !this.hasChanges()) return;
+    if (!nodeId || !this.editable() || this.isSaving() || !this.hasChanges()) return;
     this.fieldErrors.set({});
-    if (!this.descriptionValid()) {
+    if (!this.isDescriptionValid()) {
       this.element.nativeElement.querySelector<HTMLTextAreaElement>('textarea')?.focus();
       return;
     }
@@ -315,25 +330,41 @@ export class PropertyFormComponent {
       return;
     }
 
-    this.saving.set(true);
+    this.isSaving.set(true);
     try {
       await this.saveCurrent(nodeId);
     } finally {
-      this.saving.set(false);
+      this.isSaving.set(false);
     }
   }
 
-  private loadValues(attribute: AttributeInput): void {
-    this.name.set(attribute.name);
-    this.description.set(attribute.description ?? '');
-    this.typeId.set(attribute.typeId ?? DataTypes.String);
-    this.lowerBound.set(attribute.bounds?.lowerBound ?? 0);
-    this.upperBound.set(attribute.bounds?.upperBound ?? 1);
-    this.isKey.set(attribute.isKey ?? false);
-    this.isReadOnly.set(attribute.isReadOnly ?? false);
-    this.isUnique.set(attribute.isUnique ?? true);
-    this.isOrdered.set(attribute.isOrdered ?? false);
-    this.constraints.set(attribute.constraints);
+  private createDraft(attribute: Attribute | undefined): PropertyDraft {
+    const values: PropertyDraftValues = attribute
+      ? {
+          name: attribute.name,
+          description: attribute.description ?? '',
+          typeId: attribute.typeId,
+          lowerBound: attribute.bounds.lowerBound,
+          upperBound: attribute.bounds.upperBound,
+          isKey: attribute.isKey ?? false,
+          isReadOnly: attribute.isReadOnly ?? false,
+          isUnique: attribute.isUnique ?? true,
+          isOrdered: attribute.isOrdered ?? false,
+          constraints: attribute.constraints,
+        }
+      : {
+          name: '',
+          description: '',
+          typeId: DataTypes.String,
+          lowerBound: 0,
+          upperBound: 1,
+          isKey: false,
+          isReadOnly: false,
+          isUnique: true,
+          isOrdered: false,
+          constraints: undefined,
+        };
+    return { values, baseline: this.snapshot(this.values(values)), attributeId: attribute?.id };
   }
 
   private async saveCurrent(nodeId: string): Promise<void> {
@@ -345,9 +376,12 @@ export class PropertyFormComponent {
     try {
       const attribute: Attribute | undefined = await this.persist(nodeId, existing, input);
       if (!this.isCurrentForm(context, nodeId, existing?.id)) return;
-      this.initialValue.set(this.snapshot(input));
+      this.draft.update((draft: PropertyDraft): PropertyDraft => ({
+        ...draft,
+        baseline: this.snapshot(input),
+        attributeId: attribute?.id ?? existing?.id,
+      }));
       if (attribute && !existing) {
-        this.selectedAttributeId = attribute.id;
         this.saved.emit(attribute.id);
       }
     } catch (error: unknown) {
@@ -375,7 +409,7 @@ export class PropertyFormComponent {
   }
 
   private hasField(field: string): boolean {
-    return field === 'name' || field === 'key' || (field === 'maximum' && this.multiple());
+    return field === 'name' || field === 'key' || (field === 'maximum' && this.hasMultipleValues());
   }
 
   private isCurrentForm(context: WorkspaceContext, nodeId: string, attributeId: string | undefined): boolean {
@@ -406,17 +440,17 @@ export class PropertyFormComponent {
     return JSON.stringify({ ...input, constraints: undefined });
   }
 
-  private values(): AttributeInput {
+  private values(form: PropertyDraftValues = this.draft().values): AttributeInput {
     return {
-      name: this.name().trim(),
-      description: descriptionValue(this.description()),
-      typeId: this.typeId(),
-      bounds: { lowerBound: this.lowerBound(), upperBound: this.upperBound() },
-      isKey: this.isKey(),
-      isReadOnly: this.isReadOnly(),
-      isUnique: this.isUnique(),
-      isOrdered: this.isOrdered(),
-      constraints: this.constraints(),
+      name: form.name.trim(),
+      description: descriptionValue(form.description),
+      typeId: form.typeId,
+      bounds: { lowerBound: form.lowerBound, upperBound: form.upperBound },
+      isKey: form.isKey,
+      isReadOnly: form.isReadOnly,
+      isUnique: form.isUnique,
+      isOrdered: form.isOrdered,
+      constraints: form.constraints,
     };
   }
 }

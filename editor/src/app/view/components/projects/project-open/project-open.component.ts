@@ -63,8 +63,8 @@ export class ProjectOpenComponent implements OnInit {
 
   private dialogRef: DialogRef | null = null;
   protected readonly query: WritableSignal<string> = signal('');
-  protected readonly loading: WritableSignal<boolean> = signal(true);
-  protected readonly busy: WritableSignal<boolean> = signal(false);
+  protected readonly isLoading: WritableSignal<boolean> = signal(true);
+  protected readonly isBusy: WritableSignal<boolean> = signal(false);
   protected readonly error: WritableSignal<string | null> = signal(null);
 
   protected readonly hasSavedProjects: Signal<boolean> = computed((): boolean => this.projects.manifests().length > 0);
@@ -95,14 +95,14 @@ export class ProjectOpenComponent implements OnInit {
   }
 
   protected handleRemoveProject(project: Manifest): void {
-    if (this.busy() || this.disabled()) return;
+    if (this.isBusy() || this.disabled()) return;
     this.error.set(null);
     const options: ConfirmationOptions = {
       title: this.translations.translate('open.removeTitle'),
       message: { key: 'open.removeMessage', params: { name: project.name } },
       buttons: [
         [
-          { label: this.translations.translate('open.cancel'), severity: 'neutral' },
+          { label: this.translations.translate('common.cancel'), severity: 'neutral' },
           {
             label: this.translations.translate('open.remove'),
             severity: 'error',
@@ -130,14 +130,14 @@ export class ProjectOpenComponent implements OnInit {
     } catch {
       this.error.set(this.translations.translate('open.loadError'));
     } finally {
-      this.loading.set(false);
+      this.isLoading.set(false);
     }
   }
 
   private async runProjectAction(action: () => Promise<void>, errorKey: string): Promise<void> {
-    if (this.busy() || this.disabled()) return;
+    if (this.isBusy() || this.disabled()) return;
 
-    this.busy.set(true);
+    this.isBusy.set(true);
     this.busyChange.emit(true);
     this.error.set(null);
 
@@ -146,7 +146,7 @@ export class ProjectOpenComponent implements OnInit {
     } catch {
       this.error.set(this.translations.translate(errorKey));
     } finally {
-      this.busy.set(false);
+      this.isBusy.set(false);
       this.busyChange.emit(false);
     }
   }

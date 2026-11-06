@@ -29,9 +29,9 @@ import { Button, Card } from '@sushi-kit/angular';
 import * as d3 from 'd3';
 import type { GraphView } from '../../../../../models/ModelRecord';
 import { ApplicationState } from '../../../../../states/application.state';
-import { TooltipDirective } from '../../../../../directives/tooltip.directive';
+import { IconTooltipDirective, TooltipDirective } from '../../../../../directives/tooltip.directive';
 import { DialogService } from '../../../../../services/interaction/dialog.service';
-import { NodeColorsDialog } from '../../../dialogs/node-colors/node-colors.dialog';
+import { NodeColoursDialog } from '../../../dialogs/node-colors/node-colors.dialog';
 import { animateGraphLayout, GRAPH_FIT_DURATION } from '../../graph-view/graph/graph.layout-motion';
 import { type NodePosition } from '../../graph-view/graph/graph.auto-layout';
 import { GraphViewport } from '../../graph-view/graph/graph.viewport';
@@ -73,6 +73,7 @@ interface NeighbourhoodPositions {
   selector: 'nori-node-neighbourhood',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
+    IconTooltipDirective,
     TooltipDirective,
     TranslocoDirective,
     Button,
@@ -115,7 +116,7 @@ export class NodeNeighbourhoodComponent {
   public readonly forward: OutputEmitterRef<void> = output();
   public readonly inspect: OutputEmitterRef<string> = output();
 
-  protected readonly controlsBusy: Signal<boolean> = computed((): boolean => this.disabled() || !!this.dialogs.current());
+  protected readonly areControlsBusy: Signal<boolean> = computed((): boolean => this.disabled() || !!this.dialogs.current());
 
   protected readonly graph: Signal<GraphData> = computed(
     (): GraphData => {
@@ -137,9 +138,9 @@ export class NodeNeighbourhoodComponent {
       const data: GraphData = this.graph();
       // Selection can change without changing the visible graph topology.
       this.workspace.store.currentNodeId();
-      const colours: Readonly<Record<string, string>> = this.workspace.store.currentNodeColors();
+      const colours: Readonly<Record<string, string>> = this.workspace.store.currentNodeColours();
       const highlighted: ReadonlySet<string> = this.highlightedRelations();
-      const disabled: boolean = this.controlsBusy();
+      const disabled: boolean = this.areControlsBusy();
       const host: HTMLDivElement | undefined = this.host()?.nativeElement;
       if (svg && host) untracked((): void => this.render(svg, host, data, colours, highlighted, disabled));
     });
@@ -191,7 +192,7 @@ export class NodeNeighbourhoodComponent {
       d3
         .drag<SVGGElement, PositionedNode>()
         .clickDistance(4)
-        .filter((event: MouseEvent): boolean => !this.controlsBusy() && !event.button && !event.ctrlKey)
+        .filter((event: MouseEvent): boolean => !this.areControlsBusy() && !event.button && !event.ctrlKey)
         .on('start', (): void => {
           root.interrupt('layout');
         })
@@ -255,7 +256,7 @@ export class NodeNeighbourhoodComponent {
 
   private bindNodes(nodes: NodeSelection, currentId: string | null, disabled: boolean): void {
     const open: (node: PositionedNode) => void = (node: PositionedNode): void => {
-      if (!this.controlsBusy() && node.id !== currentId) this.inspect.emit(node.id);
+      if (!this.areControlsBusy() && node.id !== currentId) this.inspect.emit(node.id);
     };
     nodes
       .select<SVGRectElement>('rect.node-body')
@@ -270,7 +271,7 @@ export class NodeNeighbourhoodComponent {
   }
 
   protected openColours(): void {
-    this.dialogs.open(NodeColorsDialog, {
+    this.dialogs.open(NodeColoursDialog, {
       closeOnBackdrop: true,
       width: '28rem',
       headerKey: 'editor.adjustNodeColours',
@@ -289,7 +290,7 @@ export class NodeNeighbourhoodComponent {
     positions: ReadonlyMap<string, NodePosition>,
   ): void {
     const localPositions: Map<string, NodePosition> = this.positions().local;
-    const motion: boolean = this.appearance.state().animations;
+    const motion: boolean = this.appearance.isMotionEnabled();
     animateGraphLayout(
       root,
       model,
@@ -312,7 +313,7 @@ export class NodeNeighbourhoodComponent {
   }
 
   protected zoom(factor: number): void {
-    const motion: boolean = this.appearance.state().animations && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const motion: boolean = this.appearance.isMotionEnabled();
     this.viewport?.zoomBy(factor, motion ? 180 : 0);
   }
 

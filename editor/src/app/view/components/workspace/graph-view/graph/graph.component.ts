@@ -18,15 +18,13 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormsModule } from '@angular/forms';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { type Node as ModelNode } from '@ramen-suite/core/model';
-import { Input } from '@sushi-kit/angular';
-import type { ZoomTransform } from 'd3';
 import * as d3 from 'd3';
 import { toCamelName, toPascalName } from '../../../../../utils/model-names';
 import type { GraphData } from './model-graph';
-import { AutoselectDirective } from '../../../../../directives/autoselect.directive';
+import { InlineRename } from '../../../shared/inline-name-input/inline-rename';
+import { InlineNameInputComponent } from '../../../shared/inline-name-input/inline-name-input.component';
 import { type GraphView, type ModelRecord } from '../../../../../models/ModelRecord';
 import { NavigationService } from '../../../../../services/interaction/navigation.service';
 import { ProjectService } from '../../../../../services/projects/project.service';
@@ -67,16 +65,9 @@ import {
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'nori-graph',
+  host: { class: 'nori-graph' },
   encapsulation: ViewEncapsulation.None,
-  imports: [
-    GraphModeHintComponent,
-    TranslocoDirective,
-    NodeActionsComponent,
-    RelationActionsComponent,
-    FormsModule,
-    Input,
-    AutoselectDirective,
-  ],
+  imports: [GraphModeHintComponent, TranslocoDirective, NodeActionsComponent, RelationActionsComponent, InlineNameInputComponent],
   templateUrl: './graph.component.html',
   styleUrl: './graph.component.scss',
 })
@@ -104,8 +95,11 @@ export class GraphComponent implements AfterViewInit {
   protected readonly relationActionsPosition: WritableSignal<{ x: number; y: number } | null> = signal(null);
   protected readonly nameEditorPosition: WritableSignal<{ x: number; y: number; width: number } | null> = signal(null);
   protected readonly renamingNode: WritableSignal<{ id: string; modelId: string } | null> = signal(null);
-  protected readonly draftName: WritableSignal<string> = signal('');
-  protected readonly savingName: WritableSignal<boolean> = signal(false);
+  protected readonly rename: InlineRename<{ id: string; modelId: string }> = new InlineRename(
+    this.renamingNode,
+    (): string => JSON.stringify(this.workspace.context()),
+    (error: unknown): void => this.projects.reportError(error),
+  );
 
   private readonly autoLayout: GraphAutoLayout = new GraphAutoLayout();
   private layoutRequest: number = 0;
@@ -156,19 +150,22 @@ export class GraphComponent implements AfterViewInit {
       this.refreshHover();
       this.updateOverlaysPosition();
     });
-    this.registerColorChangesEffect();
+    this.registerColourChangesEffect();
     this.registerGraphChangesEffect();
   }
 
   public ngAfterViewInit(): void {
     this.mountSvg();
-    this.render(this.graphData());
+    const data: GraphData = this.graphData();
+    this.previousGraphData = data;
+    this.previousSettings = this.settings();
+    this.render(data);
     this.destroyRef.onDestroy((): void => this.cleanup());
   }
 
   public fitView(): void {
-    this.fitViewport(this.appearance.state().animations ? GRAPH_FIT_DURATION : 0);
-    if (!this.appearance.state().animations) this.saveView();
+    this.fitViewport(this.appearance.isMotionEnabled() ? GRAPH_FIT_DURATION : 0);
+    if (!this.appearance.isMotionEnabled()) this.saveView();
   }
 
   public resetView(): void {
@@ -211,7 +208,7 @@ export class GraphComponent implements AfterViewInit {
       this.rootGroupSelection,
       model,
       positions,
-      this.appearance.state().animations,
+      this.appearance.isMotionEnabled(),
       (): void => {
         this.updateNodePositions();
         this.updateLinkPositions();
@@ -220,10 +217,10 @@ export class GraphComponent implements AfterViewInit {
     );
   }
 
-  private registerColorChangesEffect(): void {
+  private registerColourChangesEffect(): void {
     effect((): void => {
-      this.workspace.store.currentNodeColors();
-      untracked((): void => this.updateNodeColors());
+      this.workspace.store.currentNodeColours();
+      untracked((): void => this.updateNodeColours());
     });
   }
 
@@ -269,7 +266,7 @@ export class GraphComponent implements AfterViewInit {
     });
   }
 
-  private get viewTransform(): ZoomTransform {
+  private get viewTransform(): d3.ZoomTransform {
     return this.viewport?.transform ?? d3.zoomIdentity;
   }
 
@@ -298,7 +295,7 @@ export class GraphComponent implements AfterViewInit {
     this.bindGraphEvents();
     this.updateLinkPositions();
     this.updateNodePositions();
-    this.updateNodeColors();
+    this.updateNodeColours();
     this.refreshHover();
 
     this.restoreViewport(changedLevel ? saved : undefined, !previous?.nodes.length, needsFit);
@@ -318,7 +315,7 @@ export class GraphComponent implements AfterViewInit {
       } else added.push(node);
     }
 
-    const transform: ZoomTransform = saved
+    const transform: d3.ZoomTransform = saved
       ? d3.zoomIdentity.translate(saved.viewport.x, saved.viewport.y).scale(saved.viewport.scale)
       : this.viewTransform;
     return placeNodes(added, retained, getViewportSize(this.getHostElement()), this.getCanvasPadding(), transform);
@@ -363,12 +360,12 @@ export class GraphComponent implements AfterViewInit {
     this.updateLinkAccessibility();
   }
 
-  private updateNodeColors(): void {
-    this.nodeSelection?.style('--g-node-fill', (node: PositionedNode): string => this.getNodeColor(node));
+  private updateNodeColours(): void {
+    this.nodeSelection?.style('--g-node-fill', (node: PositionedNode): string => this.getNodeColour(node));
   }
 
-  private getNodeColor(node: PositionedNode): string {
-    return this.workspace.store.currentNodeColors()[node.superType] ?? 'var(--color-base-300)';
+  private getNodeColour(node: PositionedNode): string {
+    return this.workspace.store.currentNodeColours()[node.superType] ?? 'var(--color-base-300)';
   }
 
   private updateNodePositions(): void {
@@ -381,7 +378,7 @@ export class GraphComponent implements AfterViewInit {
     this.updateRelationActionsPosition();
     const selectedId: string | null = this.workspace.store.currentNodeId();
     const node: PositionedNode | undefined = selectedId ? this.renderModel?.nodesById.get(selectedId) : undefined;
-    if (!node || this.renamingNode() || !this.workspace.queries.editable() || this.graphTools.tool() !== 'select') {
+    if (!node || this.renamingNode() || !this.workspace.queries.isEditable() || this.graphTools.tool() !== 'select') {
       this.nodeActionsPosition.set(null);
       return;
     }
@@ -398,7 +395,7 @@ export class GraphComponent implements AfterViewInit {
       ?.selectAll<SVGTextElement, ResolvedLink>('text.link-label')
       .filter((link: ResolvedLink): boolean => link.id === relationId)
       .node();
-    if (!label || this.renamingNode() || !this.workspace.queries.editable() || this.graphTools.tool() !== 'select') {
+    if (!label || this.renamingNode() || !this.workspace.queries.isEditable() || this.graphTools.tool() !== 'select') {
       this.relationActionsPosition.set(null);
       return;
     }
@@ -416,7 +413,7 @@ export class GraphComponent implements AfterViewInit {
     if (
       editingNode &&
       renaming?.modelId === this.workspace.store.currentModel()?.id &&
-      this.workspace.queries.editable() &&
+      this.workspace.queries.isEditable() &&
       this.graphTools.tool() === 'select'
     ) {
       this.nameEditorPosition.set({
@@ -516,7 +513,7 @@ export class GraphComponent implements AfterViewInit {
   private createDragBehavior(): NodeDrag {
     return d3
       .drag<SVGGElement, PositionedNode>()
-      .filter((): boolean => this.graphTools.tool() !== 'erase' && !this.graphTools.pending())
+      .filter((): boolean => this.graphTools.tool() !== 'erase' && !this.graphTools.isPending())
       .on('start', (event: d3.D3DragEvent<SVGGElement, PositionedNode, unknown>): void => {
         this.layoutRequest++;
         this.rootGroupSelection?.interrupt('layout');
@@ -555,7 +552,7 @@ export class GraphComponent implements AfterViewInit {
     }
     if (this.graphTools.source() !== node.id) return;
 
-    this.renderer.drawConnectionPreview(this.rootGroupSelection, this.dragStart, { x, y }, this.getNodeColor(node));
+    this.renderer.drawConnectionPreview(this.rootGroupSelection, this.dragStart, { x, y }, this.getNodeColour(node));
   }
 
   private finishConnection(event: d3.D3DragEvent<SVGGElement, PositionedNode, unknown>, source: PositionedNode): void {
@@ -589,7 +586,7 @@ export class GraphComponent implements AfterViewInit {
   private handleNodeClick(event: MouseEvent | KeyboardEvent, node: PositionedNode): void {
     event.stopPropagation();
     if (event instanceof MouseEvent && event.detail > 1) return;
-    if (this.graphTools.pending()) return;
+    if (this.graphTools.isPending()) return;
     if (this.graphTools.tool() === 'erase') {
       if (this.workspace.queries.currentNodesById().has(node.id)) this.nodeEditing.confirmRemoval(node.id);
       else this.nodeEditing.confirmCanvasRemoval(node.id);
@@ -623,11 +620,10 @@ export class GraphComponent implements AfterViewInit {
     if (this.graphTools.tool() === 'select') {
       const local: ModelNode | undefined = this.workspace.queries.currentNodesById().get(node.id);
       const modelId: string | undefined = this.workspace.store.currentModel()?.id;
-      if (!local || !modelId || !this.workspace.queries.editable() || this.savingName()) return;
+      if (!local || !modelId || !this.workspace.queries.isEditable() || this.rename.isSaving()) return;
       event.preventDefault();
       event.stopPropagation();
-      this.draftName.set(local.name);
-      this.renamingNode.set({ id: node.id, modelId });
+      this.rename.start({ id: node.id, modelId }, local.name);
       this.updateOverlaysPosition();
       return;
     }
@@ -640,8 +636,7 @@ export class GraphComponent implements AfterViewInit {
   }
 
   protected handleCancelRename(restoreFocus: boolean = true): void {
-    const id: string | undefined = this.renamingNode()?.id;
-    this.renamingNode.set(null);
+    const id: string | undefined = this.rename.cancel()?.id;
     this.nameEditorPosition.set(null);
     if (restoreFocus && id) {
       this.scheduleFrame((): void => {
@@ -654,32 +649,21 @@ export class GraphComponent implements AfterViewInit {
     }
   }
 
-  protected async handleSaveName(restoreFocus: boolean = false): Promise<void> {
+  protected handleSaveName(restoreFocus: boolean = false): Promise<void> {
     const editing: { id: string; modelId: string } | null = this.renamingNode();
-    if (!editing || this.savingName()) return;
-    if (editing.modelId !== this.workspace.store.currentModel()?.id || !this.workspace.queries.editable()) {
+    if (editing && (editing.modelId !== this.workspace.store.currentModel()?.id || !this.workspace.queries.isEditable())) {
       this.handleCancelRename(false);
-      return;
+      return Promise.resolve();
     }
-    const enteredName: string = this.draftName().trim();
-    if (!enteredName) {
-      this.handleCancelRename(restoreFocus);
-      return;
-    }
-    const name: string = toPascalName(enteredName);
-    if (name === this.workspace.queries.currentNodesById().get(editing.id)?.name) {
-      this.handleCancelRename(restoreFocus);
-      return;
-    }
-    this.savingName.set(true);
-    try {
-      await this.workspace.actions.updateNode(editing.id, { name });
-      if (this.renamingNode() === editing) this.handleCancelRename(restoreFocus);
-    } catch (error: unknown) {
-      this.projects.reportError(error);
-    } finally {
-      this.savingName.set(false);
-    }
+    return this.rename.save(
+      ({ id }, enteredName: string): Promise<unknown> => {
+        const name: string = toPascalName(enteredName);
+        return name === this.workspace.queries.currentNodesById().get(id)?.name
+          ? Promise.resolve()
+          : this.workspace.actions.updateNode(id, { name });
+      },
+      (): void => this.handleCancelRename(restoreFocus),
+    );
   }
 
   private handleLinkClick(event: MouseEvent | KeyboardEvent, link: ResolvedLink): void {

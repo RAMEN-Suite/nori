@@ -3,7 +3,7 @@ import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { LucideRepeat2, LucideRepeat1, LucideKeyRound, LucideListOrdered, LucideLockKeyhole } from '@lucide/angular';
 import { type Attribute, type Bounds } from '@ramen-suite/core/model';
 import { Badge } from '@sushi-kit/angular';
-import { TooltipDirective } from '../../../../../../../directives/tooltip.directive';
+import { IconTooltipDirective, TooltipDirective } from '../../../../../../../directives/tooltip.directive';
 import { WorkspaceService } from '../../../../../../../services/workspace/workspace.service';
 
 /** Displays a property’s name, data type, bounds and status hints. */
@@ -12,6 +12,7 @@ import { WorkspaceService } from '../../../../../../../services/workspace/worksp
   selector: 'nori-node-attribute',
   imports: [
     TranslocoDirective,
+    IconTooltipDirective,
     TooltipDirective,
     Badge,
     LucideRepeat2,

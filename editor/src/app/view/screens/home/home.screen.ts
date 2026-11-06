@@ -1,13 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  DestroyRef,
-  effect,
-  inject,
-  type OnInit,
-  signal,
-  type WritableSignal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, type OnInit, signal, type WritableSignal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { LucideArrowUpRight, LucideBoxes, LucideCodeXml, LucideFileBraces, LucideFolderOpen, LucidePlus } from '@lucide/angular';
@@ -51,18 +42,17 @@ import { SettingsButtonComponent } from '../../components/shell/settings-button/
 export class HomeScreen implements OnInit {
   private readonly router: Router = inject(Router);
   private readonly application: ApplicationState = inject(ApplicationState);
-  private readonly reducedMotion: MediaQueryList = window.matchMedia('(prefers-reduced-motion: reduce)');
   private readonly windowState: WindowState = inject(WindowState);
   private readonly translations: TranslocoService = inject(TranslocoService);
   private readonly projects: ProjectService = inject(ProjectService);
   private readonly navigation: NavigationService = inject(NavigationService);
 
-  protected readonly introVisible: WritableSignal<boolean> = signal(
-    this.router.lastSuccessfulNavigation() === null && this.application.state().animations && !this.reducedMotion.matches,
+  protected readonly isIntroVisible: WritableSignal<boolean> = signal(
+    this.router.lastSuccessfulNavigation() === null && this.application.isMotionEnabled(),
   );
-  protected readonly playLogoIntro: boolean = this.introVisible();
-  protected readonly introPlaying: WritableSignal<boolean> = signal(this.introVisible());
-  protected readonly importing: WritableSignal<boolean> = signal(false);
+  protected readonly playLogoIntro: boolean = this.isIntroVisible();
+  protected readonly isIntroPlaying: WritableSignal<boolean> = signal(this.isIntroVisible());
+  protected readonly isImporting: WritableSignal<boolean> = signal(false);
   protected readonly importError: WritableSignal<string | null> = signal(null);
   protected readonly resources: readonly {
     readonly icon: 'schema' | 'suite' | 'core';
@@ -75,18 +65,13 @@ export class HomeScreen implements OnInit {
   ];
 
   public constructor() {
-    const skipIntro: () => void = (): void => {
-      if (this.reducedMotion.matches) this.introVisible.set(false);
-    };
-    this.reducedMotion.addEventListener('change', skipIntro);
-    inject(DestroyRef).onDestroy((): void => this.reducedMotion.removeEventListener('change', skipIntro));
     effect((): void => {
-      if (!this.application.state().animations) this.introVisible.set(false);
+      if (!this.application.isMotionEnabled()) this.isIntroVisible.set(false);
     });
   }
 
   protected finishIntro(): void {
-    this.introVisible.set(false);
+    this.isIntroVisible.set(false);
   }
 
   public ngOnInit(): void {
@@ -96,9 +81,9 @@ export class HomeScreen implements OnInit {
   protected async handleImport(input: HTMLInputElement): Promise<void> {
     const file: File | undefined = input.files?.[0];
     input.value = '';
-    if (!file || this.importing()) return;
+    if (!file || this.isImporting()) return;
 
-    this.importing.set(true);
+    this.isImporting.set(true);
     this.importError.set(null);
 
     try {
@@ -112,7 +97,7 @@ export class HomeScreen implements OnInit {
           : this.translations.translate('home.importError'),
       );
     } finally {
-      this.importing.set(false);
+      this.isImporting.set(false);
     }
   }
 }

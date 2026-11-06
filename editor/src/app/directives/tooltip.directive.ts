@@ -1,4 +1,4 @@
-import { Directive } from '@angular/core';
+import { Directive, inject } from '@angular/core';
 import { Tooltip } from '@sushi-kit/angular';
 
 @Directive({
@@ -11,3 +11,17 @@ import { Tooltip } from '@sushi-kit/angular';
   ],
 })
 export class TooltipDirective {}
+
+@Directive({
+  selector: '[noriIconTooltip]',
+  hostDirectives: [
+    {
+      directive: Tooltip,
+      inputs: ['suiTooltip: noriIconTooltip', 'placement', 'offset', 'disabled: noriTooltipSuspended', 'showDelay', 'hideDelay'],
+    },
+  ],
+  host: { '[attr.aria-label]': 'tooltip.text()' },
+})
+export class IconTooltipDirective {
+  protected readonly tooltip: Tooltip = inject(Tooltip, { self: true });
+}

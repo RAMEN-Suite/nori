@@ -52,7 +52,7 @@
                         [noriTooltip]="t('editor.refineNode')"
                         placement="bottom"
                         [showDelay]="600"
-                        [disabled]="pending() || nodeEditing.creating()"
+                        [disabled]="isPending() || nodeEditing.isCreating()"
                         (click)="nodeEditing.refine(node.ref)"
                       >
                         <svg lucideGitBranch class="size-3.5" aria-hidden="true"></svg>
@@ -67,7 +67,7 @@
                         [noriTooltip]="t(visible().has(node.ref) ? 'editor.removeFromCanvas' : 'editor.showOnCanvas')"
                         placement="bottom"
                         [showDelay]="600"
-                        [disabled]="pending()"
+                        [disabled]="isPending()"
                         (click)="handleVisibility(node.ref)"
                       >
                         @if (visible().has(node.ref)) {

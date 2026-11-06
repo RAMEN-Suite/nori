@@ -10,7 +10,7 @@ import {
   type Signal,
 } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { LucideInfo, LucidePencil } from '@lucide/angular';
+import { LucideInfo } from '@lucide/angular';
 import { ModelRef, type Node } from '@ramen-suite/core/model';
 import { Button } from '@sushi-kit/angular';
 import type { NodeDefinition } from '../../../../../models/WorkspaceDetails';
@@ -22,7 +22,7 @@ import { NodeBasicsComponent } from '../../inspector/node-view/node-basics/node-
 @Component({
   selector: 'nori-node-context-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslocoDirective, NodeBasicsComponent, Button, LucideInfo, LucidePencil],
+  imports: [TranslocoDirective, NodeBasicsComponent, Button, LucideInfo],
   templateUrl: './node-context-panel.component.html',
   styleUrl: './node-context-panel.component.scss',
 })
@@ -39,14 +39,14 @@ export class NodeContextPanelComponent {
     const node: Node | undefined = this.refinement()?.node;
     if (!node) return 'var(--color-base-content)';
     const base: string = ModelRef.localId(node.superTypes[0] ?? node.id);
-    return this.workspace.store.currentNodeColors()[base] ?? 'var(--color-base-content)';
+    return this.workspace.store.currentNodeColours()[base] ?? 'var(--color-base-content)';
   });
 
   protected openDetails(): void {
     const node: Node | null = this.workspace.queries.currentNode();
     const reference: string | null = this.workspace.store.currentNodeId();
     if (!node || !reference || this.disabled()) return;
-    const editable: boolean = this.workspace.queries.nodeEditable();
+    const editable: boolean = this.workspace.queries.isNodeEditable();
     this.dialogs.open(NodeEditDialog, {
       width: 'var(--nori-dialog-width-edit)',
       headerKey: editable ? 'editor.editNode' : 'editor.nodeDetails',

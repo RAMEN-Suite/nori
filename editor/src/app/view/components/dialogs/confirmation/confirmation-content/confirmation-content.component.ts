@@ -14,8 +14,7 @@ import {
   type Signal,
   type WritableSignal,
 } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
+import { TranslocoDirective, translateSignal } from '@jsverse/transloco';
 import { LucideArrowRight, LucideSearch, LucideX, LucideBox, LucideSpline, LucideLayers } from '@lucide/angular';
 import { Button, List, ListItemTemplate } from '@sushi-kit/angular';
 import {
@@ -38,7 +37,7 @@ export type { AffectedNode } from '../../../../../utils/removal-summary';
 
 interface MessagePart {
   readonly text: string;
-  readonly emphasized: boolean;
+  readonly emphasised: boolean;
 }
 
 type AffectedItem = AffectedNode | AffectedRelation | AffectedModelLevel;
@@ -75,7 +74,6 @@ export class ConfirmationContentComponent {
   protected readonly dialogs: DialogService = inject(DialogService);
   private readonly review: RemovalReviewService = inject(RemovalReviewService);
   private readonly injector: Injector = inject(Injector);
-  private readonly translations: TranslocoService = inject(TranslocoService);
 
   public readonly reviewPosition: InputSignal<RemovalReviewPosition | null> = input<RemovalReviewPosition | null>(null);
   public readonly message: InputSignal<ConfirmationMessage> = input.required<ConfirmationMessage>();
@@ -90,9 +88,16 @@ export class ConfirmationContentComponent {
   private trigger: HTMLElement | null = null;
   protected readonly selection: WritableSignal<ImpactKind | null> = signal(null);
 
-  private readonly language: Signal<string> = toSignal(this.translations.langChanges$, {
-    initialValue: this.translations.getActiveLang(),
+  private readonly messageKey: Signal<string> = computed((): string => {
+    const message: ConfirmationMessage = this.message();
+    return typeof message === 'string' ? '' : message.key;
   });
+  private readonly messageTokens: Signal<Record<string, string>> = computed((): Record<string, string> => {
+    const message: ConfirmationMessage = this.message();
+    if (typeof message === 'string') return {};
+    return Object.fromEntries(Object.keys(message.params).map((key: string): [string, string] => [key, `\uFFF0${key}\uFFF1`]));
+  });
+  private readonly translatedMessage: Signal<string> = translateSignal(this.messageKey, this.messageTokens);
 
   protected readonly impactLabels: Readonly<Record<ImpactKind, { singular: string; plural: string; title: string }>> = {
     nodes: { singular: 'editor.affectedNodeRemoval', plural: 'editor.affectedNodesRemoval', title: 'editor.affectedNodesLabel' },
@@ -137,27 +142,21 @@ export class ConfirmationContentComponent {
       ]);
   });
   protected readonly messageParts: Signal<readonly MessagePart[]> = computed((): readonly MessagePart[] => {
-    this.language();
     const message: ConfirmationMessage = this.message();
-    if (typeof message === 'string') return [{ text: message, emphasized: false }];
-    const tokens: Record<string, string> = Object.fromEntries(
-      Object.keys(message.params).map((key: string): [string, string] => [key, `\uFFF0${key}\uFFF1`]),
-    );
-    const translated: string = this.translations.translate(message.key, tokens);
-    return translated
+    if (typeof message === 'string') return [{ text: message, emphasised: false }];
+    return this.translatedMessage()
       .split(/(\uFFF0[^\uFFF1]+\uFFF1)/u)
       .filter(Boolean)
-      .map(
-        (part: string): MessagePart =>
-          part.startsWith('\uFFF0') && part.endsWith('\uFFF1')
-            ? { text: message.params[part.slice(1, -1)] ?? '', emphasized: true }
-            : { text: part, emphasized: false },
+      .map((part: string): MessagePart =>
+        part.startsWith('\uFFF0') && part.endsWith('\uFFF1')
+          ? { text: message.params[part.slice(1, -1)] ?? '', emphasised: true }
+          : { text: part, emphasised: false },
       );
   });
 
   public constructor() {
     effect((): void => {
-      if (!this.dialogs.detailsOpen()) {
+      if (!this.dialogs.isDetailsOpen()) {
         this.selection.set(null);
         this.trigger?.focus({ preventScroll: true });
         this.trigger = null;
@@ -207,11 +206,11 @@ export class ConfirmationContentComponent {
 
   protected showDetails(kind: ImpactKind, event: Event): void {
     if (this.selection() === kind) {
-      this.dialogs.detailsOpen.set(false);
+      this.dialogs.isDetailsOpen.set(false);
       return;
     }
     this.trigger = event.currentTarget instanceof HTMLElement ? event.currentTarget : null;
     this.selection.set(kind);
-    this.dialogs.detailsOpen.set(true);
+    this.dialogs.isDetailsOpen.set(true);
   }
 }

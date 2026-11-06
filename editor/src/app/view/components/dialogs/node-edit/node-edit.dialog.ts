@@ -38,7 +38,7 @@ export class NodeEditDialog implements OnInit {
 
   protected readonly draftName: WritableSignal<string> = signal('');
   protected readonly draftDescription: WritableSignal<string> = signal('');
-  protected readonly duplicateName: Signal<boolean> = computed(() => {
+  protected readonly hasDuplicateName: Signal<boolean> = computed(() => {
     const name: string = toPascalName(this.draftName().trim());
     return this.workspace.queries
       .currentNodes()
@@ -47,10 +47,10 @@ export class NodeEditDialog implements OnInit {
   protected readonly canSave: Signal<boolean> = computed(
     () =>
       this.editable() &&
-      !this.dialogs.pending() &&
+      !this.dialogs.isPending() &&
       !!this.draftName().trim() &&
       this.draftName().length <= 40 &&
-      !this.duplicateName() &&
+      !this.hasDuplicateName() &&
       isDescriptionValid(this.draftDescription()) &&
       (toPascalName(this.draftName().trim()) !== this.node().name ||
         descriptionValue(this.draftDescription()) !== (this.node().description ?? '')),
@@ -64,12 +64,11 @@ export class NodeEditDialog implements OnInit {
   protected async save(): Promise<void> {
     const context: WorkspaceContext | null = this.context;
     if (!context || !this.workspace.isCurrent(context) || !this.canSave()) return;
-    await this.dialogs.run(
-      (): Promise<void> =>
-        this.workspace.actions.updateNode(this.reference(), {
-          name: toPascalName(this.draftName().trim()),
-          description: descriptionValue(this.draftDescription()),
-        }),
+    await this.dialogs.run((): Promise<void> =>
+      this.workspace.actions.updateNode(this.reference(), {
+        name: toPascalName(this.draftName().trim()),
+        description: descriptionValue(this.draftDescription()),
+      }),
     );
   }
 }

@@ -1,23 +1,20 @@
 import {
-  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   ElementRef,
   inject,
-  Injector,
-  signal,
+  linkedSignal,
   type WritableSignal,
   type Signal,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { LucidePencil, LucidePlus, LucideTrash } from '@lucide/angular';
 import { type ModelRemovalPreview } from '@ramen-suite/core/model';
-import { Button, Input, List, ListItemTemplate, type ListTrackBy } from '@sushi-kit/angular';
+import { Button, List, ListItemTemplate, type ListTrackBy } from '@sushi-kit/angular';
 import { getRemovedModelImpact } from '../../../../utils/removal-summary';
-import { AutoselectDirective } from '../../../../directives/autoselect.directive';
+import { InlineRename } from '../../shared/inline-name-input/inline-rename';
+import { InlineNameInputComponent } from '../../shared/inline-name-input/inline-name-input.component';
 import { ScrollOverflowDirective } from '../../../../directives/scroll-overflow.directive';
 import { TooltipDirective } from '../../../../directives/tooltip.directive';
 import { type ModelRecord } from '../../../../models/ModelRecord';
@@ -35,9 +32,7 @@ import { ScrollHintsComponent } from '../../shared/scroll-hints/scroll-hints.com
   imports: [
     ScrollOverflowDirective,
     ScrollHintsComponent,
-    FormsModule,
-    AutoselectDirective,
-    Input,
+    InlineNameInputComponent,
     TranslocoDirective,
     Button,
     List,
@@ -54,72 +49,59 @@ export class ModelLevelsComponent {
   protected readonly projects: ProjectService = inject(ProjectService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   private readonly element: ElementRef<HTMLElement> = inject<ElementRef<HTMLElement>>(ElementRef);
-  private readonly injector: Injector = inject(Injector);
   private readonly navigation: NavigationService = inject(NavigationService);
   private readonly dialogs: DialogService = inject(DialogService);
   private readonly translations: TranslocoService = inject(TranslocoService);
 
   protected readonly trackLevel: ListTrackBy<ModelRecord> = (_index: number, record: ModelRecord): string => record.modelId;
-  protected readonly editingId: WritableSignal<string | null> = signal(null);
-  protected readonly draftName: WritableSignal<string> = signal('');
-  protected readonly savingName: WritableSignal<boolean> = signal(false);
+  private readonly renameContext: Signal<string> = computed((): string =>
+    JSON.stringify([this.projects.loadedProjectId(), this.projects.selectedProjectId()]),
+  );
+  protected readonly editingId: WritableSignal<string | null> = linkedSignal({
+    source: (): { context: string; records: ModelRecord[] } => ({
+      context: this.renameContext(),
+      records: this.projects.records(),
+    }),
+    computation: ({ context, records }, previous): string | null =>
+      previous?.source.context === context && records.some((record: ModelRecord): boolean => record.modelId === previous.value)
+        ? previous.value
+        : null,
+  });
+  protected readonly rename: InlineRename<string> = new InlineRename(this.editingId, this.renameContext, (error: unknown): void =>
+    this.projects.reportError(error),
+  );
 
   protected readonly levels: Signal<readonly ModelRecord[]> = computed((): readonly ModelRecord[] =>
     [...this.projects.records()].sort((left: ModelRecord, right: ModelRecord): number => right.levelIndex - left.levelIndex),
   );
 
-  public constructor() {
-    effect((): void => {
-      if (!this.projects.records().some((record: ModelRecord): boolean => record.modelId === this.editingId())) {
-        this.editingId.set(null);
-      }
-    });
-  }
-
   protected handleRename(record: ModelRecord): void {
-    if (record.levelIndex === 0 || this.savingName()) return;
+    if (record.levelIndex === 0 || this.rename.isSaving() || record.projectId !== this.projects.selectedProjectId()) return;
 
-    this.draftName.set(record.name);
-    this.editingId.set(record.modelId);
+    this.rename.start(record.modelId, record.name);
   }
 
-  protected async handleSaveName(restoreFocus: boolean = false): Promise<void> {
-    const id: string | null = this.editingId();
-    if (!id || this.savingName()) return;
-
-    const record: ModelRecord | undefined = this.projects.records().find((item: ModelRecord): boolean => item.modelId === id);
-    const name: string = this.draftName().trim();
-    if (!record || !name) {
-      this.handleCancelRename(restoreFocus);
-      return;
-    }
-
-    this.savingName.set(true);
-    try {
-      await this.workspace.actions.updateLevel(record.levelIndex, {
-        name,
-        uri: record.gmodel.$id,
-        version: record.gmodel.version,
-      });
-      this.handleCancelRename(restoreFocus);
-    } catch (error: unknown) {
-      this.projects.reportError(error);
-    } finally {
-      this.savingName.set(false);
-    }
+  protected handleSaveName(restoreFocus: boolean = false): Promise<void> {
+    const record: ModelRecord | undefined = this.projects
+      .records()
+      .find((item: ModelRecord): boolean => item.modelId === this.editingId());
+    if (!record) return Promise.resolve();
+    return this.rename.save(
+      (_id: string, name: string): Promise<unknown> =>
+        this.workspace.actions.updateLevel(record.levelIndex, {
+          name,
+          uri: record.gmodel.$id,
+          version: record.gmodel.version,
+        }),
+      (): void => this.handleCancelRename(restoreFocus),
+    );
   }
 
   protected handleCancelRename(restoreFocus: boolean = false): void {
-    const id: string | null = this.editingId();
-    this.editingId.set(null);
-    if (!restoreFocus) return;
-
-    afterNextRender(
-      (): void => {
-        const buttons: NodeListOf<HTMLButtonElement> = this.element.nativeElement.querySelectorAll('button[data-level-id]');
-        [...buttons].find((button: HTMLButtonElement): boolean => button.dataset['levelId'] === id)?.focus();
-      },
-      { injector: this.injector },
+    const id: string | null = this.rename.cancel();
+    if (!restoreFocus || !id) return;
+    this.rename.restoreFocus((): HTMLButtonElement | null =>
+      this.element.nativeElement.querySelector(`button[data-level-id="${CSS.escape(id)}"]`),
     );
   }
 

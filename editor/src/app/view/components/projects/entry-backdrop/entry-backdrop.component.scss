@@ -55,14 +55,5 @@ circle.accent-node {
 
 .top-left,
 .bottom-left {
-  animation: backdrop-arrive 1s 120ms ease-out backwards;
-}
-
-@keyframes backdrop-arrive {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  animation: nori-fade-in 1s 120ms ease-out backwards;
 }

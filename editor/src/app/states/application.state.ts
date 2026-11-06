@@ -23,7 +23,7 @@ interface State {
 const defaultState: State = {
   theme: DEFAULT_THEME.id,
   language: 'system',
-  animations: !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  animations: true,
 };
 
 /** Restores and applies appearance, language and animation preferences. */
@@ -37,7 +37,12 @@ export class ApplicationState {
   private readonly systemLanguage: WritableSignal<TranslationLanguage> = signal(Languages.resolve(navigator.languages));
   private readonly preferences: WritableSignal<State> = signal(defaultState);
   private readonly colourPreference: MediaQueryList = window.matchMedia('(prefers-color-scheme: dark)');
-  private readonly systemDark: WritableSignal<boolean> = signal(this.colourPreference.matches);
+  private readonly isSystemDark: WritableSignal<boolean> = signal(this.colourPreference.matches);
+  private readonly motionPreference: MediaQueryList = window.matchMedia('(prefers-reduced-motion: reduce)');
+  private readonly isSystemMotionReduced: WritableSignal<boolean> = signal(this.motionPreference.matches);
+  public readonly isMotionEnabled: Signal<boolean> = computed(
+    (): boolean => this.state().animations && !this.isSystemMotionReduced(),
+  );
   public readonly state: Signal<State> = this.preferences.asReadonly();
 
   public readonly language: Signal<TranslationLanguage> = computed((): TranslationLanguage => {
@@ -49,14 +54,19 @@ export class ApplicationState {
     if (selected.id !== APP_THEME.SYSTEM) return selected;
 
     return (
-      APP_THEMES.find((theme: AppTheme): boolean => theme.id === (this.systemDark() ? APP_THEME.DARK : APP_THEME.LIGHT)) ??
+      APP_THEMES.find((theme: AppTheme): boolean => theme.id === (this.isSystemDark() ? APP_THEME.DARK : APP_THEME.LIGHT)) ??
       DEFAULT_THEME
     );
   });
 
   public constructor() {
+    const updateSystemMotion: (event: MediaQueryListEvent) => void = (event: MediaQueryListEvent): void =>
+      this.isSystemMotionReduced.set(event.matches);
+    this.motionPreference.addEventListener('change', updateSystemMotion);
+    inject(DestroyRef).onDestroy((): void => this.motionPreference.removeEventListener('change', updateSystemMotion));
+
     const updateSystemTheme: (event: MediaQueryListEvent) => void = (event: MediaQueryListEvent): void =>
-      this.systemDark.set(event.matches);
+      this.isSystemDark.set(event.matches);
     this.colourPreference.addEventListener('change', updateSystemTheme);
     inject(DestroyRef).onDestroy((): void => this.colourPreference.removeEventListener('change', updateSystemTheme));
 

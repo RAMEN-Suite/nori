@@ -1,6 +1,6 @@
 <nav *transloco="let t" class="editor-chrome" [attr.aria-label]="t('editor.toolbar')">
-  @let catalogueShortcut = shortcuts.hint(workspace.queries.editable() ? 'refinements' : 'baseNodes');
-  @let catalogueLabel = t(workspace.queries.editable() ? 'editor.refinements' : 'editor.baseNodes');
+  @let catalogueShortcut = shortcuts.hint(workspace.queries.isEditable() ? 'refinements' : 'baseNodes');
+  @let catalogueLabel = t(workspace.queries.isEditable() ? 'editor.refinements' : 'editor.baseNodes');
   <a
     suiButton
     class="editor-back"
@@ -58,7 +58,7 @@
         [noriTooltip]="t('editor.selectTool') + shortcuts.hint('select')"
         placement="bottom"
         [showDelay]="600"
-        [disabled]="graphTools.pending()"
+        [disabled]="graphTools.isPending()"
         (click)="graphTools.exit()"
       >
         <svg lucideMousePointer2 class="size-4" aria-hidden="true"></svg>
@@ -76,7 +76,7 @@
         [noriTooltip]="t('editor.drawConnection') + shortcuts.hint('connect')"
         placement="bottom"
         [showDelay]="600"
-        [disabled]="!workspace.queries.editable() || graphTools.pending()"
+        [disabled]="!workspace.queries.isEditable() || graphTools.isPending()"
         (click)="graphTools.toggle('connect')"
       >
         <svg lucideSpline class="size-4" aria-hidden="true"></svg>
@@ -94,7 +94,7 @@
         [noriTooltip]="t('editor.eraseElements') + shortcuts.hint('erase')"
         placement="bottom"
         [showDelay]="600"
-        [disabled]="!workspace.queries.editable() || graphTools.pending()"
+        [disabled]="!workspace.queries.isEditable() || graphTools.isPending()"
         (click)="graphTools.toggle('erase')"
       >
         <svg lucideEraser class="size-4" aria-hidden="true"></svg>
@@ -147,7 +147,7 @@
         <svg lucidePalette class="size-4" aria-hidden="true"></svg>
       </button>
       <div suiDivider orientation="vertical" class="mx-1 my-0 h-6 self-center" style="--sui-divider-margin: 0" aria-hidden="true"></div>
-      @if (workspace.queries.editable()) {
+      @if (workspace.queries.isEditable()) {
         <button
           suiButton
           severity="neutral"
@@ -172,7 +172,7 @@
         [variant]="catalogueOpen() ? 'soft' : 'text'"
         size="sm"
         shape="circle"
-        [attr.aria-keyshortcuts]="shortcuts.aria(workspace.queries.editable() ? 'refinements' : 'baseNodes')"
+        [attr.aria-keyshortcuts]="shortcuts.aria(workspace.queries.isEditable() ? 'refinements' : 'baseNodes')"
         [attr.aria-label]="catalogueLabel"
         class="nori-panel-toggle"
         [attr.aria-pressed]="catalogueOpen()"
@@ -181,7 +181,7 @@
         [showDelay]="600"
         (click)="toggleCatalogue.emit()"
       >
-        @if (workspace.queries.editable()) {
+        @if (workspace.queries.isEditable()) {
           <svg lucideGitBranch class="size-4" aria-hidden="true"></svg>
         } @else {
           <svg lucideBoxes class="size-4" aria-hidden="true"></svg>
@@ -229,8 +229,7 @@
         variant="text"
         size="sm"
         shape="circle"
-        [attr.aria-label]="t('editor.exportImage')"
-        [noriTooltip]="t('editor.exportImage')"
+        [noriIconTooltip]="t('editor.exportImage')"
         placement="bottom"
         [showDelay]="600"
         [disabled]="!workspace.store.currentModel()"
@@ -269,7 +268,7 @@
         [attr.aria-keyshortcuts]="shortcuts.aria('export')"
         [attr.aria-label]="t('editor.export')"
         [noriTooltip]="t('editor.export') + shortcuts.hint('export')"
-        [noriTooltipSuspended]="exporting()"
+        [noriTooltipSuspended]="isExporting()"
         placement="bottom"
         [showDelay]="600"
         [disabled]="!canExport()"

@@ -1,9 +1,8 @@
 import { computed, effect, inject, Injectable, signal, untracked, type Signal, type WritableSignal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LucideArrowLeft, type LucideIconData } from '@lucide/angular';
-import { TranslocoService } from '@jsverse/transloco';
-import { ApplicationState } from '../../../states/application.state';
-import { ActionFeedbackService } from '../../interaction/action-feedback.service';
+import { translateSignal } from '@jsverse/transloco';
+import { ActionFeedbackService, type ActionFeedbackOptions } from '../../interaction/action-feedback.service';
 import {
   InteractionStateService,
   type InteractionHandle,
@@ -20,6 +19,8 @@ export interface RunningActionOptions {
   readonly resume: (signal: AbortSignal) => Promise<void>;
 }
 
+type RunningActionCopy = Pick<ActionFeedbackOptions, 'title' | 'description' | 'label'>;
+
 interface RunningAction extends RunningActionOptions {
   readonly interaction: InteractionHandle;
 }
@@ -29,18 +30,20 @@ interface RunningAction extends RunningActionOptions {
 export class RunningActionService {
   private readonly projects: ProjectService = inject(ProjectService);
   private readonly feedback: ActionFeedbackService = inject(ActionFeedbackService);
-  private readonly translations: TranslocoService = inject(TranslocoService);
-  private readonly appearance: ApplicationState = inject(ApplicationState);
   private readonly interactions: InteractionStateService = inject(InteractionStateService);
   private feedbackId: string | null = null;
 
   private readonly active: WritableSignal<RunningAction | null> = signal(null);
   private request: number = 0;
   public readonly current: Signal<RunningAction | null> = this.active.asReadonly();
-  public readonly pending: Signal<boolean> = computed((): boolean => {
+  public readonly isPending: Signal<boolean> = computed((): boolean => {
     const state: InteractionState = this.interactions.current();
     return state.phase === 'executing' && state.id === this.active()?.interaction.id;
   });
+
+  private readonly title: Signal<string> = translateSignal(computed((): string => this.active()?.titleKey ?? ''));
+  private readonly description: Signal<string> = translateSignal(computed((): string => this.active()?.descriptionKey ?? ''));
+  private readonly resumeLabel: Signal<string> = translateSignal('editor.resumeAction');
 
   public constructor() {
     this.projects.modelChanges$.pipe(takeUntilDestroyed()).subscribe((projectId: string): void => {
@@ -49,11 +52,13 @@ export class RunningActionService {
     effect((): void => {
       const action: RunningAction | null = this.active();
       const projectId: string | null = this.projects.selectedProjectId();
-      this.appearance.language();
-      untracked((): void => {
-        if (action && action.projectId !== projectId) this.discard();
-        else if (action) this.present(action);
-      });
+      if (!action) return;
+      if (action.projectId !== projectId) {
+        untracked((): void => this.discard());
+        return;
+      }
+      const copy: RunningActionCopy = { title: this.title(), description: this.description(), label: this.resumeLabel() };
+      untracked((): void => this.present(action, copy));
     });
   }
 
@@ -72,7 +77,7 @@ export class RunningActionService {
 
   public async resume(): Promise<void> {
     const action: RunningAction | null = this.active();
-    if (!action || this.pending()) return;
+    if (!action || this.isPending()) return;
 
     const state: InteractionState = this.interactions.current();
     if (state.phase !== 'decision' || state.id !== action.interaction.id) return;
@@ -90,7 +95,7 @@ export class RunningActionService {
   }
 
   public cancel(): void {
-    if (!this.pending()) this.discard();
+    if (!this.isPending()) this.discard();
   }
 
   private discard(): void {
@@ -102,14 +107,12 @@ export class RunningActionService {
     this.feedbackId = null;
   }
 
-  private present(action: RunningAction): void {
+  private present(action: RunningAction, copy: RunningActionCopy): void {
     this.feedbackId = this.feedback.publish({
       owner: 'removal-review',
       icon: action.icon,
       severity: action.severity,
-      title: this.translations.translate(action.titleKey),
-      description: this.translations.translate(action.descriptionKey),
-      label: this.translations.translate('editor.resumeAction'),
+      ...copy,
       buttonIcon: LucideArrowLeft.icon,
       run: (): Promise<void> => this.resume(),
       cancel: (): void => this.cancel(),

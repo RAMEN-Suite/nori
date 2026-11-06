@@ -173,7 +173,7 @@
           </div>
           <nori-scroll-hints [up]="shortcutScroll.canScrollUp()" [down]="shortcutScroll.canScrollDown()" />
         </div>
-        <footer class="settings-actions">
+        <footer class="nori-dialog-actions settings-actions">
           <button suiButton severity="neutral" variant="soft" size="sm" (click)="handleResetShortcuts()">
             <svg lucideRotateCcw class="size-4 shrink-0" aria-hidden="true"></svg>
             {{ t('settings.resetShortcuts') }}
@@ -262,14 +262,14 @@
     </ng-template>
   </sui-tabs>
   <sui-dialog
-    [open]="conflictOpen()"
+    [open]="isConflictOpen()"
     [draggable]="false"
     [closeOnBackdrop]="false"
     [ariaLabel]="t('settings.reassignShortcutTitle')"
     ariaDescribedby="shortcut-conflict-description"
     [closeLabel]="t('common.close')"
-    [motion]="appState.state().animations ? 'fade' : 'none'"
-    [class.nori-dialog-motion]="appState.state().animations"
+    [motion]="appState.isMotionEnabled() ? 'fade' : 'none'"
+    [class.nori-dialog-motion]="appState.isMotionEnabled()"
     class="nori-dialog-enter-ready"
     style="
       --sui-dialog-width: var(--nori-dialog-width-compact);
@@ -296,7 +296,7 @@
             />
           </div>
           <footer class="nori-dialog-actions">
-            <button suiButton type="button" severity="neutral" variant="text" size="sm" suiAutoFocus (click)="conflictOpen.set(false)">
+            <button suiButton type="button" severity="neutral" variant="text" size="sm" suiAutoFocus (click)="isConflictOpen.set(false)">
               <svg lucideX class="size-4 shrink-0" aria-hidden="true"></svg>{{ t('common.cancel') }}
             </button>
             <button suiButton type="button" size="sm" (click)="confirmReassignment()">

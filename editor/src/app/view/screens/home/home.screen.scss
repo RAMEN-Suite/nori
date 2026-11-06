@@ -4,20 +4,20 @@
 
 .home-action-title {
   font-size: var(--text-4xl);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   letter-spacing: -0.045em;
   line-height: var(--text-4xl--line-height);
   text-wrap: balance;
 }
 
-@media (min-width: 768px) {
+@media (width >= 48rem) {
   .home-intro {
     width: 84%;
     margin-inline: 10% 6%;
   }
 }
 
-@media (max-width: 767px) {
+@media (width < 48rem) {
   .home-action-title {
     font-size: var(--text-3xl);
     line-height: var(--text-3xl--line-height);
@@ -55,26 +55,11 @@
 }
 
 :where(.play-brand-intro) .home-wordmark {
-  animation: home-fade-in 300ms ease-out both;
+  animation: nori-fade-in 300ms ease-out both;
 }
 
 :where(.play-brand-intro) .home-backdrop {
-  animation: home-fade-in 600ms ease-out both;
-}
-
-@keyframes home-fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  [data-nori-motion] {
-    animation: none !important;
-  }
+  animation: nori-fade-in 600ms ease-out both;
 }
 
 .home-wordmark {
@@ -105,7 +90,7 @@
 .home-wordmark-name {
   font-family: var(--font-sans);
   font-size: var(--text-2xl);
-  font-weight: 300;
+  font-weight: var(--font-weight-light);
   font-variation-settings: "wght" 300;
   line-height: 1;
 }

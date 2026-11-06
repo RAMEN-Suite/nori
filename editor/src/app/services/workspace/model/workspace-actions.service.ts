@@ -29,7 +29,7 @@ import {
   type AnnotationShapeUpdate,
 } from '@ramen-suite/core/ramen';
 import { FieldValidationError } from '../../../models/FieldValidationError';
-import { type GraphView, type ModelRecord, type NodeColors, type ViewSettings } from '../../../models/ModelRecord';
+import { type GraphView, type ModelRecord, type NodeColours, type ViewSettings } from '../../../models/ModelRecord';
 import { ProjectService } from '../../projects/project.service';
 import { ModelHistoryService, type HistorySnapshot } from './model-history.service';
 import { WorkspaceStore } from '../../../states/workspace.store';
@@ -130,8 +130,8 @@ export class WorkspaceActionsService {
       .getNode(nodeId)
       ?.attributes.find((attribute: Attribute): boolean => attribute.id === attributeId)?.name;
     if (patch.name !== undefined && patch.name !== currentName) this.requirePropertyNameLength(patch.name);
-    await this.persistValidatedChange(
-      (draft: RamenModel): ModelChange<Attribute> => draft.updateAttribute(nodeId, attributeId, patch),
+    await this.persistValidatedChange((draft: RamenModel): ModelChange<Attribute> =>
+      draft.updateAttribute(nodeId, attributeId, patch),
     );
   }
 
@@ -201,19 +201,17 @@ export class WorkspaceActionsService {
     this.interactions.assertCanMutate();
 
     if (!inputs.length) return [];
-    return this.persistValidatedChange(
-      (draft: RamenModel): ModelChange<readonly AnnotationShape[]> => ({
-        element: inputs.map((input: AnnotationShapeInput): AnnotationShape => draft.createAnnotationShape(input).element),
-        validation: draft.validate(),
-      }),
-    );
+    return this.persistValidatedChange((draft: RamenModel): ModelChange<readonly AnnotationShape[]> => ({
+      element: inputs.map((input: AnnotationShapeInput): AnnotationShape => draft.createAnnotationShape(input).element),
+      validation: draft.validate(),
+    }));
   }
 
   public async updateAnnotationShape(shapeId: string, input: AnnotationShapeUpdate): Promise<AnnotationShape> {
     this.interactions.assertCanMutate();
 
-    return this.persistValidatedChange(
-      (draft: RamenModel): ModelChange<AnnotationShape> => draft.updateAnnotationShape(shapeId, input),
+    return this.persistValidatedChange((draft: RamenModel): ModelChange<AnnotationShape> =>
+      draft.updateAnnotationShape(shapeId, input),
     );
   }
 
@@ -305,9 +303,8 @@ export class WorkspaceActionsService {
   private restoreHistory(direction: 'undo' | 'redo', currentNodeOnly: boolean): Promise<void> {
     const projectId: string | null = this.projects.selectedProjectId();
     if (!projectId) return Promise.resolve();
-    return this.interactions.mutate(
-      projectId,
-      (): Promise<void> => this.history[direction]((views): Promise<void> => this.saveWorkspace(views), currentNodeOnly),
+    return this.interactions.mutate(projectId, (): Promise<void> =>
+      this.history[direction]((views): Promise<void> => this.saveWorkspace(views), currentNodeOnly),
     );
   }
 
@@ -362,7 +359,7 @@ export class WorkspaceActionsService {
     });
   }
 
-  public async updateNodeColors(recordId: string, colours: NodeColors): Promise<void> {
+  public async updateNodeColours(recordId: string, colours: NodeColours): Promise<void> {
     await this.saveView(recordId, { nodeColors: colours });
   }
 

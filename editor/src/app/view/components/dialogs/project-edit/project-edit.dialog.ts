@@ -50,12 +50,11 @@ export class ProjectEditDialog implements OnInit {
   protected async handleSave(form: NgForm): Promise<void> {
     const draft: UpdateManifest = { name: this.name(), description: this.description() };
     if (form.invalid || draft.name.trim().length < 3 || !this.isDescriptionValid() || !this.hasChanges()) return;
-    await this.dialogs.run(
-      (): Promise<void> =>
-        this.projects.updateProject(this.project().projectId, {
-          name: draft.name.trim(),
-          description: draft.description.trim(),
-        }),
+    await this.dialogs.run((): Promise<void> =>
+      this.projects.updateProject(this.project().projectId, {
+        name: draft.name.trim(),
+        description: draft.description.trim(),
+      }),
     );
   }
 }

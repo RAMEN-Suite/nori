@@ -6,7 +6,7 @@
         <span [class.invisible]="!alternativeVisible()" [attr.inert]="alternativeVisible() ? null : ''">
           <nori-project-alternative
             current="create"
-            [disabled]="!alternativeVisible() || busy() || disabled()"
+            [disabled]="!alternativeVisible() || isBusy() || disabled()"
             (selected)="showAlternative.emit()"
           />
         </span>
@@ -25,15 +25,22 @@
           [(ngModel)]="name"
           required
           minlength="3"
-          [disabled]="busy() || disabled()"
+          [disabled]="isBusy() || disabled()"
           [placeholder]="t('create.namePlaceholder')"
           aria-describedby="project-name-hint"
         />
         <span id="project-name-hint" class="text-base-content/55 text-xs">{{ t('create.nameHint') }}</span>
       </label>
-      <nori-description-field inputId="create-project-description" [(value)]="description" [disabled]="busy() || disabled()" />
+      <nori-description-field inputId="create-project-description" [(value)]="description" [disabled]="isBusy() || disabled()" />
       <label class="flex cursor-pointer items-start gap-3 py-2">
-        <input suiCheckbox class="shrink-0" type="checkbox" name="example" [(ngModel)]="useExample" [disabled]="busy() || disabled()" />
+        <input
+          suiCheckbox
+          class="shrink-0"
+          type="checkbox"
+          name="example"
+          [(ngModel)]="isExampleEnabled"
+          [disabled]="isBusy() || disabled()"
+        />
         <span class="flex flex-col gap-1">
           <span class="font-medium">{{ t('create.example') }}</span>
           <span class="text-base-content/60 text-sm">{{ t('create.exampleDescription') }}</span>
@@ -48,10 +55,10 @@
       class="mt-auto"
       size="lg"
       type="submit"
-      [loading]="busy()"
-      [disabled]="!projectForm.valid || !isNameValid() || !isDescriptionValid() || busy() || disabled()"
+      [loading]="isBusy()"
+      [disabled]="!projectForm.valid || !isNameValid() || !isDescriptionValid() || isBusy() || disabled()"
     >
-      <svg lucidePlus class="size-4" aria-hidden="true"></svg>{{ t(busy() ? 'create.creating' : 'home.create') }}
+      <svg lucidePlus class="size-4" aria-hidden="true"></svg>{{ t(isBusy() ? 'create.creating' : 'home.create') }}
     </button>
   </form>
 </sui-card>

@@ -6,7 +6,7 @@
         <svg lucideMousePointer2 class="text-base-content/30 size-8" aria-hidden="true"></svg>
         <h2 class="text-lg font-medium">{{ t('editor.emptyTitle') }}</h2>
         <p class="text-base-content/60 max-w-[calc(16rem+20px)] text-sm">{{ t('editor.emptyDescription') }}</p>
-        @if (workspace.queries.editable()) {
+        @if (workspace.queries.isEditable()) {
           <div class="flex max-w-lg flex-wrap justify-center gap-2 px-6">
             @for (node of startingNodes(); track node.ref) {
               <button
@@ -14,7 +14,7 @@
                 severity="neutral"
                 variant="soft"
                 size="sm"
-                [disabled]="nodeEditing.creating()"
+                [disabled]="nodeEditing.isCreating()"
                 [attr.aria-label]="t('editor.refineNamedNode', { name: node.name })"
                 (click)="nodeEditing.refine(node.ref)"
               >

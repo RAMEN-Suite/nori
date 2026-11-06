@@ -15,7 +15,7 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     'aria-hidden': 'true',
-    '[class.intro-leaving]': 'leaving()',
+    '[class.intro-leaving]': 'isLeaving()',
     '(animationend)': 'finish($event)',
   },
   templateUrl: './logo-intro.component.html',
@@ -23,7 +23,7 @@ import {
 })
 export class LogoIntroComponent implements OnInit {
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
-  protected readonly leaving: WritableSignal<boolean> = signal(false);
+  protected readonly isLeaving: WritableSignal<boolean> = signal(false);
   public readonly revealing: OutputEmitterRef<void> = output();
   public readonly completed: OutputEmitterRef<void> = output();
 
@@ -33,8 +33,8 @@ export class LogoIntroComponent implements OnInit {
   }
 
   protected reveal(): void {
-    if (this.leaving()) return;
-    this.leaving.set(true);
+    if (this.isLeaving()) return;
+    this.isLeaving.set(true);
     this.revealing.emit();
   }
 

@@ -37,13 +37,13 @@ import { descriptionLength } from '../../../../utils/descriptions';
         (ngModelChange)="value.set($event)"
         [ngModelOptions]="{ standalone: true }"
         [disabled]="disabled()"
-        [invalid]="tooLong()"
-        [touched]="tooLong()"
-        [attr.aria-invalid]="tooLong() ? 'true' : null"
-        [attr.aria-describedby]="inputId() + '-count' + (tooLong() ? ' ' + inputId() + '-error' : '')"
+        [invalid]="isTooLong()"
+        [touched]="isTooLong()"
+        [attr.aria-invalid]="isTooLong() ? 'true' : null"
+        [attr.aria-describedby]="inputId() + '-count' + (isTooLong() ? ' ' + inputId() + '-error' : '')"
       ></textarea>
       <div class="flex items-start justify-between gap-3 font-normal" [class.opacity-50]="disabled()">
-        @if (tooLong()) {
+        @if (isTooLong()) {
           <span [id]="inputId() + '-error'" class="text-error" role="alert">{{
             t('editor.description.tooLong', { maximum: limit })
           }}</span>
@@ -51,7 +51,7 @@ import { descriptionLength } from '../../../../utils/descriptions';
         <span
           [id]="inputId() + '-count'"
           class="text-base-content/50 ml-auto shrink-0 tabular-nums"
-          [class.text-error]="tooLong()"
+          [class.text-error]="isTooLong()"
           >{{ length() }} / {{ limit }}</span
         >
       </div>
@@ -64,5 +64,5 @@ export class DescriptionFieldComponent {
   public readonly disabled: InputSignal<boolean> = input(false);
   protected readonly limit: number = DESCRIPTION_MAX_LENGTH;
   protected readonly length: Signal<number> = computed(() => descriptionLength(this.value()));
-  protected readonly tooLong: Signal<boolean> = computed(() => this.length() > this.limit);
+  protected readonly isTooLong: Signal<boolean> = computed(() => this.length() > this.limit);
 }

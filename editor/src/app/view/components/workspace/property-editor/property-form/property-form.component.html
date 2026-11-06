@@ -1,5 +1,5 @@
-<form *transloco="let t" class="property-form" [inert]="saving() && !autoSave()" (ngSubmit)="submitRequested.emit()">
-  <button type="submit" hidden [disabled]="!editable() || saving()">{{ t('common.save') }}</button>
+<form *transloco="let t" class="property-form" [inert]="isSaving() && !autoSave()" (ngSubmit)="submitRequested.emit()">
+  <button type="submit" hidden [disabled]="!editable() || isSaving()">{{ t('common.save') }}</button>
   <fieldset class="property-fields" [disabled]="!editable()">
     <legend class="sr-only">{{ t('editor.properties') }}</legend>
     @if (!hideDefinition()) {
@@ -13,8 +13,8 @@
             size="sm"
             name="name"
             [maxlength]="nameMaxLength"
-            [(ngModel)]="name"
-            (ngModelChange)="handleName()"
+            [ngModel]="name()"
+            (ngModelChange)="handleName($event)"
             [invalid]="!!nameError()"
             [touched]="!!nameError()"
             [attr.aria-invalid]="nameError() ? 'true' : null"
@@ -48,13 +48,13 @@
       </fieldset>
     }
     <fieldset class="property-option-group">
-      <legend class="property-group-title">{{ t('editor.propertyBehavior') }}</legend>
+      <legend class="property-group-title">{{ t('editor.propertyBehaviour') }}</legend>
       <ng-container
         [ngTemplateOutlet]="optionList"
-        [ngTemplateOutletContext]="{ $implicit: usageOptions(), label: t('editor.propertyBehavior') }"
+        [ngTemplateOutletContext]="{ $implicit: usageOptions(), label: t('editor.propertyBehaviour') }"
       />
     </fieldset>
-    @if (multiple() || (!hideDefinition() && editable())) {
+    @if (hasMultipleValues() || (!hideDefinition() && editable())) {
       <fieldset class="property-option-group">
         <legend class="property-group-title">{{ t('editor.propertyValues') }}</legend>
         <ng-container
@@ -63,7 +63,12 @@
         />
       </fieldset>
     }
-    <nori-description-field inputId="property-description" [(value)]="description" [disabled]="!editable()" />
+    <nori-description-field
+      inputId="property-description"
+      [value]="description()"
+      (valueChange)="updateDraft('description', $event)"
+      [disabled]="!editable()"
+    />
   </fieldset>
   <ng-template #optionList let-options let-label="label">
     @let optionItems = options === usageOptions() ? usageOptions() : boundOptions();
@@ -81,7 +86,7 @@
               <span class="property-hint" [id]="'property-option-' + option">
                 @if (option === 'key' && otherKey(); as key) {
                   {{ t('editor.propertyKeyAlreadyUsed', { name: key.name }) }}
-                } @else if (option === 'key' && keyUnavailable()) {
+                } @else if (option === 'key' && isKeyUnavailable()) {
                   {{ t('editor.propertyKeyRequiresSingleValue') }}
                 } @else {
                   {{ t('editor.propertyOptions.' + option + '.hint') }}

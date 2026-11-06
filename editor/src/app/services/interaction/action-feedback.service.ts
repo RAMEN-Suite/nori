@@ -31,12 +31,12 @@ export class ActionFeedbackService {
     const actions: readonly ActionFeedback[] = [...this.entries().values()];
     return actions.find((action): boolean => action.owner === 'removal-review') ?? actions[0] ?? null;
   });
-  public readonly pending: Signal<boolean> = computed((): boolean => this.running() !== null);
+  public readonly isPending: Signal<boolean> = computed((): boolean => this.running() !== null);
 
   public publish(options: ActionFeedbackOptions): string {
     const id: string = this.entries().get(options.owner)?.id ?? `nori-action-${++this.sequence}`;
-    this.entries.update(
-      (entries): ReadonlyMap<string, ActionFeedback> => new Map(entries).set(options.owner, { ...options, id }),
+    this.entries.update((entries): ReadonlyMap<string, ActionFeedback> =>
+      new Map(entries).set(options.owner, { ...options, id }),
     );
     return id;
   }
@@ -49,19 +49,19 @@ export class ActionFeedbackService {
 
   public cancelCurrent(): boolean {
     const action: ActionFeedback | null = this.current();
-    if (!action || this.pending()) return false;
+    if (!action || this.isPending()) return false;
     this.cancel(action);
     return true;
   }
 
   public cancel(action: ActionFeedback): void {
-    if (this.current() !== action || this.pending()) return;
+    if (this.current() !== action || this.isPending()) return;
     action.cancel();
     this.release(action.id);
   }
 
   public async run(action: ActionFeedback): Promise<void> {
-    if (this.current() !== action || this.pending()) return;
+    if (this.current() !== action || this.isPending()) return;
     this.running.set(action.id);
     try {
       await action.run();

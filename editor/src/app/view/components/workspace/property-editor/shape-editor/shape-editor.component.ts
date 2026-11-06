@@ -4,14 +4,13 @@ import {
   Component,
   computed,
   DestroyRef,
-  effect,
   ElementRef,
   inject,
   Injector,
   input,
   output,
   signal,
-  untracked,
+  linkedSignal,
   viewChild,
   type InputSignal,
   type OutputEmitterRef,
@@ -33,10 +32,19 @@ import {
   LucideUndo2,
   LucideX,
 } from '@lucide/angular';
-import { ModelFactory, ModelRef, type Attribute, type Model, type Node, type Relation } from '@ramen-suite/core/model';
+import {
+  ModelFactory,
+  ModelRef,
+  type Attribute,
+  type Constraint,
+  type Model,
+  type Node,
+  type Relation,
+} from '@ramen-suite/core/model';
 import {
   RamenModelFormat,
   type AnnotationShape,
+  type AnnotationShapeInput,
   type AnnotationShapeRelation,
   type AnnotationShapeSuggestion,
 } from '@ramen-suite/core/ramen';
@@ -55,7 +63,7 @@ import {
   type ListTrackBy,
 } from '@sushi-kit/angular';
 import { ScrollOverflowDirective } from '../../../../../directives/scroll-overflow.directive';
-import { TooltipDirective } from '../../../../../directives/tooltip.directive';
+import { IconTooltipDirective, TooltipDirective } from '../../../../../directives/tooltip.directive';
 import { FieldValidationError } from '../../../../../models/FieldValidationError';
 import type { InheritedAttribute } from '../../../../../models/WorkspaceDetails';
 import type { WorkspaceLocation } from '../../../../../models/WorkspaceLocation';
@@ -122,6 +130,7 @@ type LeaveScope = 'all' | 'detail';
     PopoverTrigger,
     ScrollOverflowDirective,
     ScrollHintsComponent,
+    IconTooltipDirective,
     TooltipDirective,
     NodeAttributeComponent,
     PropertyFormComponent,
@@ -153,6 +162,11 @@ export class ShapeEditorComponent {
   protected readonly form: Signal<PropertyFormComponent | undefined> = viewChild(PropertyFormComponent);
   protected readonly relationForm: Signal<ShapeRelationFormComponent | undefined> = viewChild(ShapeRelationFormComponent);
 
+  private readonly nodeContext: Signal<string> = computed(
+    (): string =>
+      `${this.workspace.context()?.projectId}:${this.workspace.context()?.modelId}:${this.workspace.store.currentNodeId()}`,
+  );
+
   /** Whether the annotation windows own the window area; the list stays visible either way. */
   public readonly active: InputSignal<boolean> = input(false);
   /** Lets the workspace resolve its own drafts before an annotation takes over the window area. */
@@ -162,21 +176,54 @@ export class ShapeEditorComponent {
   public readonly inspectSource: OutputEmitterRef<WorkspaceLocation> = output();
   public readonly inspectPropertySource: OutputEmitterRef<InheritedAttribute> = output();
 
-  public readonly busy: WritableSignal<boolean> = signal(false);
-  public readonly mobileDetail: WritableSignal<boolean> = signal(false);
-  protected readonly nameError: WritableSignal<string | null> = signal(null);
-  protected readonly search: WritableSignal<string> = signal('');
+  public readonly isBusy: WritableSignal<boolean> = signal(false);
+  public readonly isMobileDetailVisible: WritableSignal<boolean> = linkedSignal({
+    source: this.nodeContext,
+    computation: (): boolean => false,
+  });
+  protected readonly nameError: WritableSignal<string | null> = linkedSignal({
+    source: this.nodeContext,
+    computation: (): string | null => null,
+  });
+  protected readonly search: WritableSignal<string> = linkedSignal({ source: this.nodeContext, computation: (): string => '' });
   protected readonly searchError: WritableSignal<string | null> = signal(null);
-  protected readonly shapeId: WritableSignal<string | null> = signal(null);
-  protected readonly creating: WritableSignal<boolean> = signal(false);
-  protected readonly detail: WritableSignal<ShapeDetail> = signal('empty');
-  protected readonly propertyId: WritableSignal<string | null> = signal(null);
-  protected readonly shared: WritableSignal<InheritedAttribute | null> = signal(null);
-  protected readonly relationIndex: WritableSignal<number> = signal(-1);
-  protected readonly name: WritableSignal<string> = signal('');
-  protected readonly description: WritableSignal<string> = signal('');
-  private readonly initialDescription: WritableSignal<string> = signal('');
-  private readonly initialName: WritableSignal<string> = signal('');
+  protected readonly shapeId: WritableSignal<string | null> = linkedSignal({
+    source: this.nodeContext,
+    computation: (): string | null => null,
+  });
+  protected readonly isCreating: WritableSignal<boolean> = linkedSignal({
+    source: this.nodeContext,
+    computation: (): boolean => false,
+  });
+  protected readonly detail: WritableSignal<ShapeDetail> = linkedSignal({
+    source: this.nodeContext,
+    computation: (): ShapeDetail => 'empty',
+  });
+  protected readonly propertyId: WritableSignal<string | null> = linkedSignal({
+    source: this.nodeContext,
+    computation: (): string | null => null,
+  });
+  protected readonly shared: WritableSignal<InheritedAttribute | null> = linkedSignal({
+    source: this.nodeContext,
+    computation: (): InheritedAttribute | null => null,
+  });
+  protected readonly relationIndex: WritableSignal<number> = linkedSignal({
+    source: this.nodeContext,
+    computation: (): number => -1,
+  });
+  protected readonly name: WritableSignal<string> = linkedSignal({ source: this.nodeContext, computation: (): string => '' });
+  protected readonly description: WritableSignal<string> = linkedSignal({
+    source: this.nodeContext,
+    computation: (): string => '',
+  });
+  private readonly initialDescription: WritableSignal<string> = linkedSignal({
+    source: this.nodeContext,
+    computation: (): string => '',
+  });
+  private readonly initialName: WritableSignal<string> = linkedSignal({
+    source: this.nodeContext,
+    computation: (): string => '',
+  });
 
   protected readonly trackShape: ListTrackBy<ShapeEntry> = (_index: number, entry: ShapeEntry): string =>
     `${entry.modelId}:${entry.shape.id}`;
@@ -186,10 +233,9 @@ export class ShapeEditorComponent {
   protected readonly trackRule: ListTrackBy<AnnotationShapeRelation> = (index: number): number => index;
 
   protected readonly shapes: Signal<readonly ShapeEntry[]> = computed((): readonly ShapeEntry[] => {
-    this.workspace.store.currentModel();
     const nodeId: string | null = this.workspace.store.currentNodeId();
     if (!nodeId || !this.workspace.queries.validation()?.valid) return [];
-    const models: readonly Model[] = this.workspace.store.getModels();
+    const models: readonly Model[] = this.workspace.store.models();
     return this.workspace.store
       .getDraft()
       .suggestAnnotationShapes(nodeId)
@@ -214,34 +260,32 @@ export class ShapeEditorComponent {
         left.shape.type.localeCompare(right.shape.type, undefined, { sensitivity: 'base', numeric: true }),
       );
   });
-  protected readonly existingTypes: Signal<readonly string[]> = computed(() =>
+  protected readonly existingTypes: Signal<readonly string[]> = computed((): string[] =>
     this.shapes().map((entry: ShapeEntry): string => entry.shape.type),
   );
-  protected readonly filteredShapes: Signal<readonly ShapeEntry[]> = computed(() => {
+  protected readonly filteredShapes: Signal<readonly ShapeEntry[]> = computed((): ShapeEntry[] => {
     const query: string = this.search().trim().toLowerCase();
     return this.shapes().filter((entry: ShapeEntry): boolean =>
       `${entry.shape.type} ${entry.modelName}`.toLowerCase().includes(query),
     );
   });
-  protected readonly shapeGroups: Signal<readonly ShapeGroup[]> = computed(() =>
+  protected readonly shapeGroups: Signal<readonly ShapeGroup[]> = computed((): ShapeGroup[] =>
     [...groupBy(this.filteredShapes(), (entry: ShapeEntry): string => entry.modelId)]
-      .map(
-        ([modelId, entries]): ShapeGroup => ({
-          modelId,
-          modelName: entries[0]?.modelName ?? '',
-          levelIndex: entries[0]?.levelIndex ?? 0,
-          entries,
-        }),
-      )
+      .map(([modelId, entries]): ShapeGroup => ({
+        modelId,
+        modelName: entries[0]?.modelName ?? '',
+        levelIndex: entries[0]?.levelIndex ?? 0,
+        entries,
+      }))
       .sort((left: ShapeGroup, right: ShapeGroup): number => left.levelIndex - right.levelIndex),
   );
-  protected readonly searchMatch: Signal<ShapeEntry | undefined> = computed(() =>
+  protected readonly searchMatch: Signal<ShapeEntry | undefined> = computed((): ShapeEntry | undefined =>
     this.shapes().find((entry: ShapeEntry): boolean => entry.shape.type === this.search().trim()),
   );
-  protected readonly selected: Signal<ShapeEntry | undefined> = computed(() =>
+  protected readonly selected: Signal<ShapeEntry | undefined> = computed((): ShapeEntry | undefined =>
     this.shapes().find((item: ShapeEntry): boolean => item.shape.id === this.shapeId()),
   );
-  private readonly sourceLocation: Signal<WorkspaceLocation | null> = computed(() => {
+  private readonly sourceLocation: Signal<WorkspaceLocation | null> = computed((): WorkspaceLocation | null => {
     const projectId: string | undefined = this.workspace.context()?.projectId;
     if (!projectId) return null;
     const property: InheritedAttribute | null = this.shared();
@@ -250,39 +294,37 @@ export class ShapeEditorComponent {
     if (!entry) return null;
     return { projectId, levelIndex: entry.levelIndex, nodeId: this.qualify(entry.shape.annotationId, entry.modelId) };
   });
-  protected readonly source: Signal<AnnotationSource | null> = computed(() => {
+  protected readonly source: Signal<AnnotationSource | null> = computed((): AnnotationSource | null => {
     const location: WorkspaceLocation | null = this.sourceLocation();
     if (!location?.nodeId) return null;
     const node: Node | undefined = this.workspace.store.getDraft().getNode(location.nodeId);
     if (!node) return null;
     const base: string = ModelRef.localId(node.superTypes[0] ?? node.id);
-    return { name: node.name, colour: this.workspace.store.currentNodeColors()[base] ?? 'var(--color-base-content)', location };
+    return { name: node.name, colour: this.workspace.store.currentNodeColours()[base] ?? 'var(--color-base-content)', location };
   });
-  protected readonly editable: Signal<boolean> = computed(
-    () =>
-      this.workspace.queries.editable() &&
+  protected readonly isEditable: Signal<boolean> = computed(
+    (): boolean =>
+      this.workspace.queries.isEditable() &&
       (!this.selected() || this.selected()?.modelId === this.workspace.store.currentModel()?.id),
   );
-  protected readonly attribute: Signal<Attribute | undefined> = computed(() =>
+  protected readonly attribute: Signal<Attribute | undefined> = computed((): Attribute | undefined =>
     this.selected()?.shape.properties.find((item: Attribute): boolean => item.id === this.propertyId()),
   );
-  public readonly pending: Signal<boolean> = computed(
-    () => this.busy() || !!this.form()?.saving() || !!this.relationForm()?.saving(),
+  public readonly isPending: Signal<boolean> = computed(
+    (): boolean => this.isBusy() || !!this.form()?.isSaving() || !!this.relationForm()?.isSaving(),
   );
-  protected readonly sharedProperties: Signal<readonly InheritedAttribute[]> = computed(() => {
+  protected readonly sharedProperties: Signal<readonly InheritedAttribute[]> = computed((): InheritedAttribute[] => {
     const node: Node | null = this.workspace.queries.currentNode();
     const modelId: string = this.workspace.queries.nodeOwner()?.modelId ?? this.workspace.store.currentModel()?.id ?? '';
     return [
       ...[...this.workspace.queries.inheritedAttributes().values()].flat(),
-      ...(node?.attributes ?? []).map(
-        (attribute: Attribute): InheritedAttribute => ({
-          attribute,
-          modelId,
-          nodeId: node?.id ?? '',
-          nodeName: node?.name ?? '',
-          levelIndex: this.workspace.queries.nodeOwner()?.levelIndex ?? 0,
-        }),
-      ),
+      ...(node?.attributes ?? []).map((attribute: Attribute): InheritedAttribute => ({
+        attribute,
+        modelId,
+        nodeId: node?.id ?? '',
+        nodeName: node?.name ?? '',
+        levelIndex: this.workspace.queries.nodeOwner()?.levelIndex ?? 0,
+      })),
     ];
   });
   /** Local relation IDs that the selected annotation may set; the open rule narrows them to itself. */
@@ -294,23 +336,9 @@ export class ShapeEditorComponent {
     return new Set(rules.flatMap((rule: AnnotationShapeRelation): string[] => rule.relationIds.map(ModelRef.localId)));
   });
 
-  private readonly nodeContext: Signal<string> = computed(
-    () => `${this.workspace.context()?.projectId}:${this.workspace.context()?.modelId}:${this.workspace.store.currentNodeId()}`,
-  );
-
-  public constructor() {
-    effect((): void => {
-      this.nodeContext();
-      untracked((): void => {
-        this.search.set('');
-        this.closeShape();
-      });
-    });
-  }
-
   /** Resolves unsaved annotation drafts; returns false while a decision is pending. */
   public canLeave(scope: LeaveScope = 'all'): boolean {
-    if (this.pending()) return false;
+    if (this.isPending()) return false;
     const changed: boolean = scope === 'all' ? this.hasChanges() : this.detailChanged();
     if (!changed) return true;
     const options: ConfirmationOptions = {
@@ -337,7 +365,7 @@ export class ShapeEditorComponent {
   }
 
   protected settingsChanged(): boolean {
-    if (!this.selected() && !this.creating()) return false;
+    if (!this.selected() && !this.isCreating()) return false;
     return this.name().trim() !== this.initialName() || descriptionValue(this.description()) !== this.initialDescription();
   }
 
@@ -354,10 +382,10 @@ export class ShapeEditorComponent {
   protected startCreate(): void {
     if (!this.takeOver()) return;
     this.shapeId.set(null);
-    this.creating.set(true);
+    this.isCreating.set(true);
     this.clearDetail();
     this.loadSettings('', '');
-    this.mobileDetail.set(true);
+    this.isMobileDetailVisible.set(true);
     this.focus('#annotation-name');
   }
 
@@ -434,7 +462,7 @@ export class ShapeEditorComponent {
     const nodeId: string | null = this.workspace.store.currentNodeId();
     const context: WorkspaceContext | null = this.workspace.context();
     const type: string = this.name().trim();
-    if (this.pending() || !this.editable() || !this.settingsChanged() || !nodeId || !context) return;
+    if (this.isPending() || !this.isEditable() || !this.settingsChanged() || !nodeId || !context) return;
     if (!isDescriptionValid(this.description())) {
       this.focus('.shape-window textarea');
       return;
@@ -455,7 +483,7 @@ export class ShapeEditorComponent {
   }
 
   protected async saveDetail(): Promise<void> {
-    if (this.pending() || !this.editable() || !this.detailChanged()) return;
+    if (this.isPending() || !this.isEditable() || !this.detailChanged()) return;
     if (this.detail() === 'property') await this.form()?.commit();
     else await this.relationForm()?.commit();
   }
@@ -482,7 +510,7 @@ export class ShapeEditorComponent {
 
     await this.run(async (): Promise<void> => {
       await this.workspace.actions.createAnnotationShapes(
-        missing.map((annotation: AnnotationPreset) => ({ nodeId, ...annotation })),
+        missing.map((annotation: AnnotationPreset): AnnotationShapeInput => ({ nodeId, ...annotation })),
       );
       if (this.isCurrentNode(context, nodeId)) popover.hide(true);
     });
@@ -521,13 +549,14 @@ export class ShapeEditorComponent {
         type: this.availableCopyName(shape.type),
         description: shape.description,
         relations: shape.relations,
-        properties: shape.properties.map(
-          (property: Attribute): Attribute => ({
-            ...property,
+        properties: shape.properties.map((property: Attribute): Attribute => ({
+          ...property,
+          id: ModelFactory.createIdentifier(),
+          constraints: property.constraints?.map((constraint: Constraint): Constraint => ({
+            ...constraint,
             id: ModelFactory.createIdentifier(),
-            constraints: property.constraints?.map((constraint) => ({ ...constraint, id: ModelFactory.createIdentifier() })),
-          }),
-        ),
+          })),
+        })),
       });
       if (this.isCurrentNode(context, nodeId)) this.showShape(copy);
     });
@@ -544,7 +573,7 @@ export class ShapeEditorComponent {
   }
 
   protected showList(): void {
-    if (this.canLeave()) this.mobileDetail.set(false);
+    if (this.canLeave()) this.isMobileDetailVisible.set(false);
   }
 
   private takeOver(): boolean {
@@ -556,19 +585,19 @@ export class ShapeEditorComponent {
 
   private showShape(shape: AnnotationShape): void {
     this.shapeId.set(shape.id);
-    this.creating.set(false);
+    this.isCreating.set(false);
     this.clearDetail();
     this.loadSettings(shape.type, shape.description ?? '');
-    this.mobileDetail.set(true);
+    this.isMobileDetailVisible.set(true);
     this.focus('#annotation-name');
   }
 
   private closeShape(): void {
     this.shapeId.set(null);
-    this.creating.set(false);
+    this.isCreating.set(false);
     this.clearDetail();
     this.loadSettings('', '');
-    this.mobileDetail.set(false);
+    this.isMobileDetailVisible.set(false);
   }
 
   private loadSettings(name: string, description: string): void {
@@ -582,9 +611,9 @@ export class ShapeEditorComponent {
   private async createFromSearch(): Promise<void> {
     const nodeId: string | null = this.workspace.store.currentNodeId();
     const context: WorkspaceContext | null = this.workspace.context();
-    if (!nodeId || !context || !this.workspace.queries.editable() || !this.takeOver()) return;
+    if (!nodeId || !context || !this.workspace.queries.isEditable() || !this.takeOver()) return;
 
-    this.busy.set(true);
+    this.isBusy.set(true);
     try {
       const shape: AnnotationShape = await this.workspace.actions.createAnnotationShape({ nodeId, type: this.search().trim() });
       if (!this.isCurrentNode(context, nodeId)) return;
@@ -597,7 +626,7 @@ export class ShapeEditorComponent {
         this.focus('#annotation-search');
       } else this.projects.reportError(error);
     } finally {
-      this.busy.set(false);
+      this.isBusy.set(false);
     }
   }
 
@@ -679,8 +708,8 @@ export class ShapeEditorComponent {
 
   private async run(action: () => Promise<void>): Promise<void> {
     const context: WorkspaceContext | null = this.workspace.context();
-    if (this.busy() || !context || !this.editable()) return;
-    this.busy.set(true);
+    if (this.isBusy() || !context || !this.isEditable()) return;
+    this.isBusy.set(true);
     this.nameError.set(null);
     try {
       await action();
@@ -691,7 +720,7 @@ export class ShapeEditorComponent {
         this.focus('#annotation-name');
       } else this.projects.reportError(error);
     } finally {
-      this.busy.set(false);
+      this.isBusy.set(false);
     }
   }
 }

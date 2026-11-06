@@ -24,9 +24,9 @@ export class WorkspaceQueriesService {
   private readonly store: WorkspaceStore = inject(WorkspaceStore);
   private readonly projects: ProjectService = inject(ProjectService);
 
-  public readonly editable: Signal<boolean> = computed((): boolean => RamenModelFormat.isDocument(this.store.currentModel()));
+  public readonly isEditable: Signal<boolean> = computed((): boolean => RamenModelFormat.isDocument(this.store.currentModel()));
   public readonly validation: Signal<ProjectValidationResult | null> = computed((): ProjectValidationResult | null =>
-    this.editable() ? this.store.getDraft().validate() : null,
+    this.isEditable() ? this.store.getDraft().validate() : null,
   );
   public readonly baseModel: Signal<Model | null> = computed((): Model | null => {
     const id: string | undefined = this.store.currentModel()?.imports[0]?.modelId;
@@ -36,8 +36,8 @@ export class WorkspaceQueriesService {
   public readonly currentNodes: Signal<readonly Node[]> = computed((): readonly Node[] =>
     ModelQueries.nodes(this.store.currentModel()),
   );
-  public readonly currentNodesById: Signal<ReadonlyMap<string, Node>> = computed(
-    (): ReadonlyMap<string, Node> => indexBy(this.currentNodes(), (node: Node): string => node.id),
+  public readonly currentNodesById: Signal<ReadonlyMap<string, Node>> = computed((): ReadonlyMap<string, Node> =>
+    indexBy(this.currentNodes(), (node: Node): string => node.id),
   );
   public readonly currentRelations: Signal<readonly Relation[]> = computed(
     (): readonly Relation[] => this.store.currentModel()?.relations ?? [],
@@ -45,7 +45,7 @@ export class WorkspaceQueriesService {
   public readonly currentNode: Signal<Node | null> = computed((): Node | null => {
     const reference: string | null = this.store.currentNodeId();
     if (!reference) return null;
-    return this.editable()
+    return this.isEditable()
       ? (this.store.getDraft().getNode(reference) ?? null)
       : (this.currentNodesById().get(reference) ?? null);
   });
@@ -61,9 +61,9 @@ export class WorkspaceQueriesService {
       : this.store.currentModel()?.id;
     return modelId ? (this.projects.recordsByModelId().get(modelId) ?? null) : null;
   });
-  public readonly nodeEditable: Signal<boolean> = computed(
+  public readonly isNodeEditable: Signal<boolean> = computed(
     (): boolean =>
-      this.editable() && this.currentNode() !== null && this.nodeOwner()?.gmodel.id === this.store.currentModel()?.id,
+      this.isEditable() && this.currentNode() !== null && this.nodeOwner()?.gmodel.id === this.store.currentModel()?.id,
   );
   public readonly currentNodeChain: Signal<readonly NodeDefinition[]> = computed((): readonly NodeDefinition[] => {
     const reference: string | null = this.store.currentNodeId();
@@ -85,14 +85,14 @@ export class WorkspaceQueriesService {
   );
 
   public resolveNodeLabel(reference: string): string {
-    const reader: RamenModel | null = this.editable() ? this.store.getDraft() : null;
+    const reader: RamenModel | null = this.isEditable() ? this.store.getDraft() : null;
     const local: Node | undefined = ModelRef.isQualified(reference) ? undefined : this.currentNodesById().get(reference);
     return reader?.getNode(reference)?.name ?? local?.name ?? reference;
   }
 
   public resolveNodeBase(node: Node, ownerId: string | undefined = this.store.currentModel()?.id): NodeDefinition | null {
     const reference: string | undefined = node.superTypes[0];
-    if (!reference || !ownerId || !this.editable()) return null;
+    if (!reference || !ownerId || !this.isEditable()) return null;
     const ref: string = ModelRef.isQualified(reference) ? reference : ModelRef.qualify(ownerId, reference);
     const base: Node | undefined = this.store.getDraft().getNode(ref);
     return base ? { modelId: ModelRef.splitQualified(ref).modelId, node: base } : null;

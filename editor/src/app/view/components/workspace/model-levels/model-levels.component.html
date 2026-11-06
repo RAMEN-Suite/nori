@@ -14,18 +14,13 @@
           <div class="editor-list-row" [class.selected]="workspace.store.currentLevelIndex() === record.levelIndex" data-nori-motion>
             @if (editingId() === record.modelId) {
               <div class="editor-name-editor">
-                <input
-                  suiInput
-                  fluid
-                  noriAutoselect
-                  size="sm"
-                  [attr.aria-label]="t('editor.levelName')"
-                  [ngModel]="draftName()"
-                  (ngModelChange)="draftName.set($event)"
-                  [readOnly]="savingName()"
-                  (keydown.enter)="$event.preventDefault(); handleSaveName(true)"
-                  (keydown.escape)="$event.stopPropagation(); handleCancelRename(true)"
-                  (blur)="handleSaveName()"
+                <nori-inline-name-input
+                  [label]="t('editor.levelName')"
+                  [(value)]="rename.draft"
+                  [readOnly]="rename.isSaving()"
+                  (submitted)="handleSaveName(true)"
+                  (focusLeft)="handleSaveName()"
+                  (cancelled)="handleCancelRename(true)"
                 />
               </div>
             } @else {

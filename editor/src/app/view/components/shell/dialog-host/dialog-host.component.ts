@@ -21,7 +21,7 @@ import { LucideCircleAlert } from '@lucide/angular';
 import { Dialog, DialogHeader, DialogBody, Message, type DialogPosition, type DialogCoordinates } from '@sushi-kit/angular';
 import { DialogService, type OpenDialog } from '../../../../services/interaction/dialog.service';
 import { ApplicationState } from '../../../../states/application.state';
-import { NodeColorsDialog } from '../../dialogs/node-colors/node-colors.dialog';
+import { NodeColoursDialog } from '../../dialogs/node-colors/node-colors.dialog';
 import { SettingsDialog } from '../../dialogs/settings/settings.dialog';
 import { ConfirmationDialog } from '../../dialogs/confirmation/confirmation.dialog';
 
@@ -36,20 +36,20 @@ import { ConfirmationDialog } from '../../dialogs/confirmation/confirmation.dial
         #dialog="suiDialog"
         [class.nori-confirmation-host]="isConfirmation()"
         [class.nori-settings-host]="isSettings()"
-        [class.nori-confirmation-expanded]="isConfirmation() && positionReady() && dialogs.detailsOpen()"
+        [class.nori-confirmation-expanded]="isConfirmation() && isPositionReady() && dialogs.isDetailsOpen()"
         [draggable]="false"
-        [position]="contentReady() ? dialogPosition() : 'top'"
+        [position]="isContentReady() ? dialogPosition() : 'top'"
         (keydown.escape)="handleEscape($event)"
-        [class.nori-dialog-motion]="appearance.state().animations"
-        [class.nori-dialog-enter-ready]="positionReady()"
+        [class.nori-dialog-motion]="appearance.isMotionEnabled()"
+        [class.nori-dialog-enter-ready]="isPositionReady()"
         style="--sui-dialog-radius: var(--nori-radius); --sui-dialog-border-color: var(--nori-border); --sui-dialog-shadow: none; --sui-dialog-enter-duration: var(--nori-dialog-enter-duration); --sui-dialog-exit-duration: var(--nori-dialog-exit-duration); --sui-dialog-motion-easing: var(--nori-dialog-ease)"
         [style.--sui-dialog-width]="isConfirmation() ? '24rem' : (content()?.width ?? 'var(--nori-dialog-width)')"
-        [open]="dialogs.current() !== null && contentReady()"
+        [open]="dialogs.current() !== null && isContentReady()"
         [ariaLabel]="content()?.title || (content()?.titleKey || 'common.confirm' | transloco)"
         [closeLabel]="'common.close' | transloco"
-        [motion]="appearance.state().animations ? 'fade' : 'none'"
-        [closeOnEscape]="!dialogs.pending()"
-        [closeOnBackdrop]="!!content()?.closeOnBackdrop && !dialogs.pending()"
+        [motion]="appearance.isMotionEnabled() ? 'fade' : 'none'"
+        [closeOnEscape]="!dialogs.isPending()"
+        [closeOnBackdrop]="!!content()?.closeOnBackdrop && !dialogs.isPending()"
         (closed)="handleClosed(dialog)"
       >
         @if (content(); as current) {
@@ -94,26 +94,25 @@ export class DialogHostComponent {
   private sizeObserver: ResizeObserver | null = null;
 
   private readonly narrowViewport: Signal<BreakpointState | undefined> = toSignal(
-    inject(BreakpointObserver).observe('(max-width: 832px)'),
+    inject(BreakpointObserver).observe('(max-width: 52rem)'),
   );
-  protected readonly dialogPosition: Signal<DialogPosition> = computed(
-    (): DialogPosition =>
-      this.content()?.component === NodeColorsDialog
-        ? this.colourPosition()
-        : this.isConfirmation() && this.dialogs.detailsOpen() && this.narrowViewport()?.matches
-          ? 'top'
-          : 'center',
+  protected readonly dialogPosition: Signal<DialogPosition> = computed((): DialogPosition =>
+    this.content()?.component === NodeColoursDialog
+      ? this.colourPosition()
+      : this.isConfirmation() && this.dialogs.isDetailsOpen() && this.narrowViewport()?.matches
+        ? 'top'
+        : 'center',
   );
 
-  protected readonly contentReady: WritableSignal<boolean> = signal(false);
-  protected readonly positionReady: WritableSignal<boolean> = signal(false);
+  protected readonly isContentReady: WritableSignal<boolean> = signal(false);
+  protected readonly isPositionReady: WritableSignal<boolean> = signal(false);
 
   public constructor() {
     inject(DestroyRef).onDestroy((): void => this.sizeObserver?.disconnect());
     effect((): void => {
       const current: OpenDialog | null = this.dialogs.current();
-      this.contentReady.set(false);
-      this.positionReady.set(false);
+      this.isContentReady.set(false);
+      this.isPositionReady.set(false);
       this.sizeObserver?.disconnect();
       this.colourPosition.set('center');
       if (!current) return;
@@ -121,11 +120,12 @@ export class DialogHostComponent {
       afterNextRender(
         (): void => {
           if (this.dialogs.current() !== current) return;
-          this.contentReady.set(true);
+          // Sushi locks the dialog bounds on open. Render the projected content first.
+          this.isContentReady.set(true);
           this.observeColourSize(current);
           afterNextRender(
             (): void => {
-              if (this.dialogs.current() === current) this.positionReady.set(true);
+              if (this.dialogs.current() === current) this.isPositionReady.set(true);
             },
             { injector: this.injector },
           );
@@ -136,7 +136,7 @@ export class DialogHostComponent {
   }
 
   private observeColourSize(current: OpenDialog): void {
-    if (current.component !== NodeColorsDialog) return;
+    if (current.component !== NodeColoursDialog) return;
     const body: HTMLDivElement | undefined = this.dialogBody()?.nativeElement;
     const dialog: HTMLDialogElement | null | undefined = body?.closest('dialog');
     if (!body || !dialog) return;
@@ -162,14 +162,14 @@ export class DialogHostComponent {
   }
 
   protected handleEscape(event: Event): void {
-    if (!this.dialogs.detailsOpen()) return;
+    if (!this.dialogs.isDetailsOpen()) return;
     event.preventDefault();
     event.stopPropagation();
-    this.dialogs.detailsOpen.set(false);
+    this.dialogs.isDetailsOpen.set(false);
   }
 
   protected handleClosed(dialog: Dialog): void {
-    if (this.dialogs.pending()) {
+    if (this.dialogs.isPending()) {
       dialog.show();
       return;
     }

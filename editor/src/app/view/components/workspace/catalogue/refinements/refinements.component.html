@@ -26,7 +26,7 @@
               </span>
             </ng-template>
             <ng-template suiAccordionActions>
-              @if (workspace.queries.editable() && group.baseNodeRef) {
+              @if (workspace.queries.isEditable() && group.baseNodeRef) {
                 <button
                   suiButton
                   severity="success"
@@ -37,7 +37,7 @@
                   [noriTooltip]="t('editor.refineNode')"
                   placement="bottom"
                   [showDelay]="600"
-                  [disabled]="nodeEditing.creating()"
+                  [disabled]="nodeEditing.isCreating()"
                   (click)="nodeEditing.refine(group.baseNodeRef)"
                 >
                   <svg lucidePlus class="size-3.5" aria-hidden="true"></svg>
@@ -60,24 +60,19 @@
                     <div
                       class="editor-list-row"
                       [class.selected]="workspace.store.currentNodeId() === item.value"
-                      [class.readonly-node]="!workspace.queries.editable()"
+                      [class.readonly-node]="!workspace.queries.isEditable()"
                     >
                       @if (editingId() === item.value) {
                         <div class="editor-name-editor">
-                          <input
-                            suiInput
-                            fluid
-                            noriAutoselect
+                          <nori-inline-name-input
                             [attr.data-node-id]="item.value"
-                            size="sm"
-                            maxlength="40"
-                            [attr.aria-label]="t('editor.nodeName')"
-                            [ngModel]="draftName()"
-                            (ngModelChange)="draftName.set($event)"
-                            [readOnly]="savingName()"
-                            (keydown.enter)="$event.preventDefault(); handleSaveName(true)"
-                            (keydown.escape)="$event.stopPropagation(); handleCancelRename(true)"
-                            (blur)="handleSaveName()"
+                            [maxLength]="40"
+                            [label]="t('editor.nodeName')"
+                            [(value)]="rename.draft"
+                            [readOnly]="rename.isSaving()"
+                            (submitted)="handleSaveName(true)"
+                            (focusLeft)="handleSaveName()"
+                            (cancelled)="handleCancelRename(true)"
                           />
                         </div>
                       } @else {
@@ -95,7 +90,7 @@
                           <span class="truncate text-xs font-medium">{{ item.label }}</span>
                         </button>
                       }
-                      @if (workspace.queries.editable()) {
+                      @if (workspace.queries.isEditable()) {
                         <div class="editor-list-actions flex gap-0.5">
                           <button
                             suiButton
@@ -103,8 +98,7 @@
                             variant="text"
                             size="xs"
                             shape="circle"
-                            [attr.aria-label]="t('editor.duplicateNode')"
-                            [noriTooltip]="t('editor.duplicateNode')"
+                            [noriIconTooltip]="t('editor.duplicateNode')"
                             placement="bottom"
                             [showDelay]="600"
                             (click)="nodeEditing.duplicate(item.value)"

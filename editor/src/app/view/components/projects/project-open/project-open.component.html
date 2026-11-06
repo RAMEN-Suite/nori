@@ -6,7 +6,7 @@
         <span [class.invisible]="!alternativeVisible()" [attr.inert]="alternativeVisible() ? null : ''">
           <nori-project-alternative
             current="open"
-            [disabled]="!alternativeVisible() || busy() || disabled()"
+            [disabled]="!alternativeVisible() || isBusy() || disabled()"
             (selected)="showAlternative.emit()"
           />
         </span>
@@ -22,7 +22,7 @@
         type="search"
         name="search"
         [fluid]="true"
-        [disabled]="busy() || disabled()"
+        [disabled]="isBusy() || disabled()"
         [placeholder]="t('open.searchPlaceholder')"
         [ngModel]="query()"
         (ngModelChange)="query.set($event)"
@@ -31,7 +31,7 @@
     @if (error(); as message) {
       <p suiMessage severity="error" role="alert">{{ message }}</p>
     }
-    @if (loading()) {
+    @if (isLoading()) {
       <p class="text-base-content/60 py-8 text-center" role="status">{{ t('open.loading') }}</p>
     } @else if (projectList().length) {
       <sui-list
@@ -51,7 +51,7 @@
               severity="neutral"
               variant="text"
               class="project-entry"
-              [disabled]="busy() || disabled()"
+              [disabled]="isBusy() || disabled()"
               [attr.aria-label]="t('open.openProject', { name: project.name })"
               (click)="handleOpenProject(project.projectId)"
             >
@@ -78,7 +78,7 @@
                 [noriTooltip]="t('open.duplicate')"
                 placement="bottom"
                 [showDelay]="600"
-                [disabled]="busy() || disabled()"
+                [disabled]="isBusy() || disabled()"
                 (click)="handleDuplicateProject(project.projectId)"
               >
                 <svg lucideCopy class="size-4" aria-hidden="true"></svg>
@@ -93,7 +93,7 @@
                 [noriTooltip]="t('open.remove')"
                 placement="bottom"
                 [showDelay]="600"
-                [disabled]="busy() || disabled()"
+                [disabled]="isBusy() || disabled()"
                 (click)="handleRemoveProject(project)"
               >
                 <svg lucideTrash class="size-4" aria-hidden="true"></svg>

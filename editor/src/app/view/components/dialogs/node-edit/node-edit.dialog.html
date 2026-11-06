@@ -13,17 +13,17 @@
             maxlength="40"
             [ngModel]="draftName()"
             (ngModelChange)="draftName.set($event)"
-            [disabled]="dialogs.pending()"
-            [invalid]="nameField.touched && (!draftName().trim() || duplicateName())"
-            [attr.aria-describedby]="nameField.touched && (!draftName().trim() || duplicateName()) ? 'edit-node-name-error' : null"
+            [disabled]="dialogs.isPending()"
+            [invalid]="nameField.touched && (!draftName().trim() || hasDuplicateName())"
+            [attr.aria-describedby]="nameField.touched && (!draftName().trim() || hasDuplicateName()) ? 'edit-node-name-error' : null"
           />
-          @if (nameField.touched && (!draftName().trim() || duplicateName())) {
+          @if (nameField.touched && (!draftName().trim() || hasDuplicateName())) {
             <span id="edit-node-name-error" class="text-error text-xs" role="alert">
-              {{ t(duplicateName() ? 'editor.nodeNameTaken' : 'editor.nodeNameRequired', { name: draftName() }) }}
+              {{ t(hasDuplicateName() ? 'editor.nodeNameTaken' : 'editor.nodeNameRequired', { name: draftName() }) }}
             </span>
           }
         </label>
-        <nori-description-field inputId="edit-node-description" [(value)]="draftDescription" [disabled]="dialogs.pending()" />
+        <nori-description-field inputId="edit-node-description" [(value)]="draftDescription" [disabled]="dialogs.isPending()" />
       </div>
     } @else {
       <h2 class="text-lg font-medium break-words">{{ node().name }}</h2>
@@ -33,11 +33,11 @@
     }
   </div>
   <footer class="nori-dialog-actions shrink-0">
-    <button suiButton type="button" severity="neutral" variant="text" size="sm" [disabled]="dialogs.pending()" (click)="dialogs.close()">
+    <button suiButton type="button" severity="neutral" variant="text" size="sm" [disabled]="dialogs.isPending()" (click)="dialogs.close()">
       <svg lucideX class="size-4 shrink-0" aria-hidden="true"></svg>{{ t(editable() ? 'common.cancel' : 'common.close') }}
     </button>
     @if (editable()) {
-      <button suiButton type="submit" size="sm" [loading]="dialogs.pending()" [disabled]="!canSave()">
+      <button suiButton type="submit" size="sm" [loading]="dialogs.isPending()" [disabled]="!canSave()">
         <svg lucideSave class="size-4 shrink-0" aria-hidden="true"></svg>{{ t('common.save') }}
       </button>
     }

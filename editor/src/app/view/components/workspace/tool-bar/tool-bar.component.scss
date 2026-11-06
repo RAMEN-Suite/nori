@@ -25,6 +25,8 @@
 }
 .editor-tools {
   --sui-card-border-color: var(--nori-border);
+  align-self: flex-start;
+  margin-block-start: var(--nori-workspace-toolbar-top);
   background: var(--color-base-100);
   pointer-events: auto;
   max-width: calc(100% - 6rem);
@@ -33,11 +35,11 @@
 }
 
 .editor-tools-content {
-  animation: chrome-arrive 360ms 380ms ease-out backwards;
+  animation: nori-fade-in 360ms 380ms ease-out backwards;
 }
 .editor-back,
 .editor-settings {
-  animation: chrome-arrive 360ms 360ms ease-out backwards;
+  animation: nori-fade-in 360ms 360ms ease-out backwards;
 }
 @keyframes tools-unfold {
   from {
@@ -49,14 +51,6 @@
   }
   to {
     clip-path: inset(0 0 round var(--nori-radius));
-    opacity: 1;
-  }
-}
-@keyframes chrome-arrive {
-  from {
-    opacity: 0;
-  }
-  to {
     opacity: 1;
   }
 }

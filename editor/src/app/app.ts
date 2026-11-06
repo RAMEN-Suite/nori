@@ -57,7 +57,7 @@ export class App {
       const html: HTMLElement = this.document.documentElement;
       html.classList.toggle('dark', this.editorState.theme().colourScheme === 'dark');
       html.dataset['theme'] = this.editorState.theme().sushiTheme;
-      html.dataset['motion'] = this.editorState.state().animations ? 'on' : 'off';
+      html.dataset['motion'] = this.editorState.isMotionEnabled() ? 'on' : 'off';
     });
   }
 

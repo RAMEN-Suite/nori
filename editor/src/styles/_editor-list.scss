@@ -1,3 +1,5 @@
+@use "surface-list";
+
 .editor-list {
   --radius-field: var(--nori-radius-input);
   padding: 0.25rem 0;
@@ -8,25 +10,20 @@
   min-width: 0;
   margin: -0.125rem -0.25rem;
   border-radius: var(--nori-radius-input);
-  transition: background-color 180ms ease;
+  transition: background-color var(--nori-motion-quick) ease;
 }
 .editor-list-row.selected {
   background: var(--nori-selection-background);
   color: var(--nori-selection-color);
 }
 .editor-list-entry {
-  --sui-button-pressed-scale: 1;
-  width: 100%;
-  height: auto;
+  @include surface-list.button-treatment;
+  @include surface-list.button-size;
   min-height: 2rem;
   padding: 0.25rem var(--editor-list-action-space, 4.5rem) 0.25rem 0.75rem;
-  justify-content: flex-start;
   gap: 0.5rem;
-  border-radius: var(--nori-radius-input);
   border: 0;
-  background: transparent;
   color: inherit;
-  box-shadow: none;
 }
 .editor-list-row:not(.selected) .editor-list-entry:is(:hover, :focus-visible) {
   background: var(--sui-color-hover);
@@ -62,13 +59,9 @@
 }
 
 .node-accordion {
-  --sui-focus-ring-offset: calc(-1 * var(--sui-focus-ring-width));
-  --sui-accordion-background: transparent;
-  --sui-accordion-border-color: transparent;
-  --sui-accordion-content-color: inherit;
+  @include surface-list.accordion-reset;
   --sui-accordion-trigger-min-height: 1.75rem;
   --sui-accordion-trigger-padding-block: 0;
-  --sui-accordion-panel-padding-bottom: 0;
 }
 .node-accordion .editor-list {
   padding: 0 0.5rem;

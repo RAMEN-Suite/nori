@@ -36,7 +36,7 @@ import {
 } from '@lucide/angular';
 import { Button, Card, Divider, Menu, MenuTrigger, MenuItemTemplate, type MenuItem } from '@sushi-kit/angular';
 import { toCamelName } from '../../../../utils/model-names';
-import { TooltipDirective } from '../../../../directives/tooltip.directive';
+import { IconTooltipDirective, TooltipDirective } from '../../../../directives/tooltip.directive';
 import { type Manifest } from '../../../../models/Manifest';
 import { type ShortcutAction } from '../../../../utils/shortcuts/definitions';
 import { ActionFeedbackService } from '../../../../services/interaction/action-feedback.service';
@@ -68,6 +68,7 @@ import { type GraphImageFormat } from '../graph-view/graph/graph.image-export';
     Card,
     TranslocoDirective,
     SettingsButtonComponent,
+    IconTooltipDirective,
     TooltipDirective,
     Divider,
     Menu,
@@ -147,17 +148,17 @@ export class ToolBarComponent {
     },
   ];
 
-  protected readonly exporting: WritableSignal<boolean> = signal(false);
+  protected readonly isExporting: WritableSignal<boolean> = signal(false);
 
   private readonly actions: Readonly<Record<ShortcutAction, () => void>> = {
     connect: (): void => this.graphTools.toggle('connect'),
     select: (): void => this.graphTools.exit(),
     erase: (): void => this.graphTools.toggle('erase'),
     refinements: (): void => {
-      if (this.workspace.queries.editable()) this.toggleCatalogue.emit();
+      if (this.workspace.queries.isEditable()) this.toggleCatalogue.emit();
     },
     baseNodes: (): void => {
-      if (this.workspace.queries.editable()) this.toggleBaseNodes.emit();
+      if (this.workspace.queries.isEditable()) this.toggleBaseNodes.emit();
       else this.toggleCatalogue.emit();
     },
     levels: (): void => this.toggleLevels.emit(),
@@ -225,8 +226,8 @@ export class ToolBarComponent {
   }
 
   protected async handleExportModel(): Promise<void> {
-    if (this.exporting()) return;
-    this.exporting.set(true);
+    if (this.isExporting()) return;
+    this.isExporting.set(true);
     const name: string = this.projects.selectedManifest()?.name ?? 'model';
     const fileName: string = `${toCamelName(name).toLowerCase()}.json`;
     try {
@@ -234,7 +235,7 @@ export class ToolBarComponent {
     } catch (error: unknown) {
       this.projects.reportError(error);
     } finally {
-      this.exporting.set(false);
+      this.isExporting.set(false);
     }
   }
 
@@ -247,13 +248,13 @@ export class ToolBarComponent {
   }
 
   protected handleUndo(): void {
-    if (this.graphTools.pending()) return;
+    if (this.graphTools.isPending()) return;
     this.graphTools.cancel();
     void this.workspace.actions.undo().catch((error: unknown): void => this.projects.reportError(error));
   }
 
   protected handleRedo(): void {
-    if (this.graphTools.pending()) return;
+    if (this.graphTools.isPending()) return;
     this.graphTools.cancel();
     void this.workspace.actions.redo().catch((error: unknown): void => this.projects.reportError(error));
   }

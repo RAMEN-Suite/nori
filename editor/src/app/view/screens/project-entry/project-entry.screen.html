@@ -1,8 +1,8 @@
 <main *transloco="let t" class="entry-screen relative isolate flex min-h-full flex-col overflow-y-auto">
   <nori-entry-backdrop />
   <header class="entry-chrome flex items-center justify-between px-5 sm:px-6">
-    <button suiButton severity="neutral" variant="text" size="sm" routerLink="/" [disabled]="busy()">
-      <svg lucideArrowLeft class="size-4" aria-hidden="true"></svg>{{ t('create.back') }}
+    <button suiButton severity="neutral" variant="text" size="sm" routerLink="/" [disabled]="isBusy()">
+      <svg lucideArrowLeft class="size-4" aria-hidden="true"></svg>{{ t('common.back') }}
     </button>
     <nori-settings-button />
   </header>
@@ -10,27 +10,27 @@
   <section
     class="entry-layout mx-auto my-auto w-full px-5 py-8"
     [class.entry-layout--open]="initial === 'open'"
-    [class.entry-layout--expanded]="expanded()"
+    [class.entry-layout--expanded]="isExpanded()"
     [attr.aria-label]="t('home.actions')"
   >
     <ng-container [ngTemplateOutlet]="initial === 'create' ? createCard : openCard" />
-    @if (expanded()) {
+    @if (isExpanded()) {
       <ng-container [ngTemplateOutlet]="initial === 'create' ? openCard : createCard" />
     }
     <ng-template #createCard>
       <nori-project-create
-        [alternativeVisible]="!expanded()"
-        [disabled]="busy()"
+        [alternativeVisible]="!isExpanded()"
+        [disabled]="isBusy()"
         (showAlternative)="handleShowAlternative()"
-        (busyChange)="busy.set($event)"
+        (busyChange)="isBusy.set($event)"
       />
     </ng-template>
     <ng-template #openCard>
       <nori-project-open
-        [alternativeVisible]="!expanded()"
-        [disabled]="busy()"
+        [alternativeVisible]="!isExpanded()"
+        [disabled]="isBusy()"
         (showAlternative)="handleShowAlternative()"
-        (busyChange)="busy.set($event)"
+        (busyChange)="isBusy.set($event)"
       />
     </ng-template>
   </section>

@@ -4,9 +4,9 @@
 }
 .workspace-shell {
   --nori-workspace-inset: 1.25rem;
+  --nori-workspace-toolbar-top: calc(0.75rem - 1px);
   --nori-workspace-bottom: 1rem;
   --nori-workspace-panels-top: 6rem;
-  --nori-editor-ease: cubic-bezier(0.22, 1, 0.36, 1);
   position: relative;
   isolation: isolate;
   height: 100%;
@@ -18,7 +18,7 @@
 .workspace-canvas {
   position: absolute;
   inset: 0;
-  animation: canvas-arrive 500ms 160ms var(--nori-editor-ease) backwards;
+  animation: nori-fade-in 500ms 160ms var(--nori-editor-ease) backwards;
 }
 .workspace-toolbar {
   position: absolute;
@@ -38,6 +38,7 @@
   left: var(--nori-workspace-inset);
 }
 .workspace-right {
+  --levels-height: min(var(--nori-levels-height), 100%);
   right: var(--nori-workspace-inset);
 }
 .panel-slot {
@@ -50,12 +51,12 @@
 .top-slot {
   top: 0;
   bottom: 0;
-  transition: bottom 480ms 180ms var(--nori-editor-ease);
+  transition: bottom 480ms var(--nori-motion-quick) var(--nori-editor-ease);
 }
 .bottom-slot {
   bottom: 0;
   height: 100%;
-  transition: height 480ms 180ms var(--nori-editor-ease);
+  transition: height 480ms var(--nori-motion-quick) var(--nori-editor-ease);
 }
 .workspace-left.both-open .top-slot {
   bottom: calc(50% + 0.5rem);
@@ -66,9 +67,6 @@
   height: calc(50% - 0.5rem);
   transition-duration: 80ms;
   transition-delay: 0s;
-}
-.workspace-right {
-  --levels-height: min(var(--nori-levels-height), 100%);
 }
 .workspace-right.levels-open .top-slot {
   bottom: calc(var(--levels-height) + 1rem);
@@ -81,25 +79,16 @@
 .workspace-catalogue {
   --nori-panel-arrival-delay: 280ms;
 }
-@media (min-width: 640px) {
+@media (width >= 40rem) {
   .workspace-shell {
     --nori-workspace-inset: 1.5rem;
   }
 }
 
-@media (max-width: 720px) {
+@media (width <= 45rem) {
   .workspace-shell {
     --nori-workspace-bottom: 0.5rem;
     --nori-workspace-panels-top: 5rem;
-  }
-}
-
-@keyframes canvas-arrive {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
   }
 }
 
@@ -117,20 +106,12 @@
 .workspace-property-screen {
   position: absolute;
   inset: 0;
-  padding: var(--nori-workspace-inset);
+  padding-block: var(--nori-workspace-toolbar-top);
+  padding-inline: var(--nori-workspace-inset);
   z-index: 4;
   background: var(--color-base-200);
   transform-origin: center;
 }
-.motion-enabled .workspace-property-screen {
-  animation: sui-dialog-nori-enter var(--nori-dialog-enter-duration) var(--nori-dialog-ease) both;
-}
-.motion-enabled .workspace-property-screen.is-leaving {
+:host-context(html[data-motion="on"]) .workspace-property-screen.is-leaving {
   animation: sui-dialog-nori-exit var(--nori-dialog-exit-duration) ease-in both;
-}
-@media (prefers-reduced-motion: reduce) {
-  .motion-enabled .workspace-property-screen,
-  .motion-enabled .workspace-property-screen.is-leaving {
-    animation: none;
-  }
 }

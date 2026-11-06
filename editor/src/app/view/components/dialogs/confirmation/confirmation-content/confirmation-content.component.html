@@ -1,7 +1,7 @@
 <div *transloco="let t" class="flex min-w-0 flex-col gap-4">
   <p class="text-base-content/75 text-sm leading-relaxed break-words">
     @for (part of messageParts(); track $index) {
-      @if (part.emphasized) {
+      @if (part.emphasised) {
         <strong class="text-base-content font-semibold">{{ part.text }}</strong>
       } @else {
         {{ part.text }}
@@ -42,7 +42,7 @@
           shape="square"
           size="sm"
           [attr.aria-label]="t('editor.closeRemovalDetails')"
-          (click)="dialogs.detailsOpen.set(false)"
+          (click)="dialogs.isDetailsOpen.set(false)"
         >
           <svg lucideX class="size-4" aria-hidden="true"></svg>
         </button>
@@ -53,7 +53,7 @@
             noriScrollOverflow
             #detailScroll="scrollOverflow"
             #detailViewport
-            class="impact-detail-scroll"
+            class="impact-detail-scroll nori-scroll-container"
             tabindex="0"
             [attr.aria-label]="t(impactLabels[selected].title)"
           >
@@ -76,7 +76,7 @@
                         name: impactName(item),
                       })
                     "
-                    [disabled]="dialogs.pending() || !item.location"
+                    [disabled]="dialogs.isPending() || !item.location"
                     (click)="item.location && inspect(item.location)"
                   >
                     <span class="impact-inspect-icon" aria-hidden="true">

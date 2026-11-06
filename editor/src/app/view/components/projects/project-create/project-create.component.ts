@@ -53,9 +53,9 @@ export class ProjectCreateComponent {
 
   protected readonly name: WritableSignal<string> = signal('');
   protected readonly description: WritableSignal<string> = signal('');
-  protected readonly busy: WritableSignal<boolean> = signal(false);
+  protected readonly isBusy: WritableSignal<boolean> = signal(false);
   protected readonly error: WritableSignal<string | null> = signal(null);
-  protected readonly useExample: WritableSignal<boolean> = signal(false);
+  protected readonly isExampleEnabled: WritableSignal<boolean> = signal(false);
 
   protected isDescriptionValid(): boolean {
     return isDescriptionValid(this.description());
@@ -66,7 +66,7 @@ export class ProjectCreateComponent {
   }
 
   protected async handleCreateProject(form: NgForm): Promise<void> {
-    if (form.invalid || !this.isNameValid() || !this.isDescriptionValid() || this.busy() || this.disabled()) return;
+    if (form.invalid || !this.isNameValid() || !this.isDescriptionValid() || this.isBusy() || this.disabled()) return;
 
     const input: CreateManifest = {
       name: this.name().trim(),
@@ -75,9 +75,9 @@ export class ProjectCreateComponent {
       metamodelId: RAMEN_MODEL.id,
       metamodelVersion: RAMEN_MODEL.version,
     };
-    const example: Model | undefined = this.useExample() ? createCorrespondenceModel() : undefined;
+    const example: Model | undefined = this.isExampleEnabled() ? createCorrespondenceModel() : undefined;
 
-    this.busy.set(true);
+    this.isBusy.set(true);
     this.busyChange.emit(true);
     this.error.set(null);
 
@@ -87,7 +87,7 @@ export class ProjectCreateComponent {
     } catch {
       this.error.set(this.translations.translate('create.error'));
     } finally {
-      this.busy.set(false);
+      this.isBusy.set(false);
       this.busyChange.emit(false);
     }
   }

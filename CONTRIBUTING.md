@@ -15,6 +15,6 @@ Start with the [component map](docs/architecture.md). Keep changes within the la
 
 ## Verify and submit
 
-Run `npm run verify` for lint, formatting, type checks and builds. Run the applicable regression checks listed in [`package.json`](package.json). Exercise changed UI flows with keyboard navigation and check persistence or cancellation where the change affects them.
+Run `npm test` for the Angular suite or `npx ng test editor --include="**/property-form.component.spec.ts"` for one spec. Keep specs next to the code they exercise. Use Angular TestBed for injected services and rendered components, and test the public behaviour that could regress. Run `npm run verify` for lint, formatting, type checks, tests and builds. Exercise changed UI flows with keyboard navigation and check persistence or cancellation where the change affects them.
 
 Keep each commit focused. Commitlint checks Conventional Commits with a scope of `editor`, `desktop`, `tools`, `deps` or `release`. Run `npm run prepare` to configure the repository hook if needed. In a pull request, describe the user-visible change, how to reproduce it and what you verified.

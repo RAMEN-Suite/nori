@@ -24,13 +24,13 @@ export class Languages {
 
   public static resolve(preferredLanguages: readonly string[]): TranslationLanguage {
     for (const preferred of preferredLanguages) {
-      const normalized: string = preferred.toLowerCase();
+      const normalised: string = preferred.toLowerCase();
       const exact: TranslationLanguage | undefined = Languages.supported.find(
-        (language: TranslationLanguage): boolean => language.toLowerCase() === normalized,
+        (language: TranslationLanguage): boolean => language.toLowerCase() === normalised,
       );
       if (exact) return exact;
 
-      const base: string = normalized.split('-')[0] ?? normalized;
+      const base: string = normalised.split('-')[0] ?? normalised;
       const match: TranslationLanguage | undefined = Languages.supported.find(
         (language: TranslationLanguage): boolean => language.toLowerCase() === base,
       );

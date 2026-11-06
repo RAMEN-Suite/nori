@@ -12,7 +12,7 @@
         size="sm"
         id="level-name"
         aria-describedby="level-name-hint"
-        [disabled]="dialogs.pending()"
+        [disabled]="dialogs.isPending()"
         name="name"
         maxlength="70"
         autocomplete="off"
@@ -33,7 +33,7 @@
       inputId="level-description"
       [value]="draftModel().description ?? ''"
       (valueChange)="setDescription($event)"
-      [disabled]="dialogs.pending()"
+      [disabled]="dialogs.isPending()"
     />
     <div class="flex flex-col gap-2">
       <label for="level-version" class="nori-field-label">{{ t('editor.modelVersion') }}</label>
@@ -44,7 +44,7 @@
         size="sm"
         id="level-version"
         aria-describedby="level-version-hint"
-        [disabled]="dialogs.pending()"
+        [disabled]="dialogs.isPending()"
         name="version"
         maxlength="30"
         placeholder="1.0.0"
@@ -71,7 +71,7 @@
         size="sm"
         id="level-uri"
         aria-describedby="level-uri-hint"
-        [disabled]="dialogs.pending()"
+        [disabled]="dialogs.isPending()"
         name="uri"
         placeholder="https://example.com/"
         autocomplete="off"
@@ -90,11 +90,11 @@
     </div>
   </div>
   <footer class="nori-dialog-actions">
-    <button suiButton type="button" size="sm" severity="neutral" variant="text" [disabled]="dialogs.pending()" (click)="handleClose()">
+    <button suiButton type="button" size="sm" severity="neutral" variant="text" [disabled]="dialogs.isPending()" (click)="handleClose()">
       <svg lucideX class="size-4 shrink-0" aria-hidden="true"></svg>
       {{ t('common.cancel') }}
     </button>
-    <button suiButton type="submit" size="sm" [loading]="dialogs.pending()" [disabled]="!isFormValid() || dialogs.pending()">
+    <button suiButton type="submit" size="sm" [loading]="dialogs.isPending()" [disabled]="!isFormValid() || dialogs.isPending()">
       @if (currentLevelIndex() === undefined) {
         <svg lucidePlus class="size-4 shrink-0" aria-hidden="true"></svg>
         {{ t('editor.createLevel') }}

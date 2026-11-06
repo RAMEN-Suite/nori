@@ -1,0 +1,13 @@
+/* Global CSS emits the cursor SVGs as shared files instead of inlining them into component CSS. */
+.nori-graph .is-connecting {
+  --nori-tool-cursor: url("./pencil-cursor.svg") 5 19, crosshair;
+}
+
+.nori-graph .is-erasing {
+  --nori-tool-cursor: url("./eraser-cursor.svg") 7 17, crosshair;
+}
+
+.nori-graph :is(.is-connecting, .is-erasing),
+.nori-graph :is(.is-connecting, .is-erasing) .node {
+  cursor: var(--nori-tool-cursor);
+}

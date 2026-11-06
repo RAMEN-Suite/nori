@@ -1,6 +1,10 @@
 <section *transloco="let t" class="property-node-info min-w-0 px-5 py-5">
   <div class="min-w-0">
-    <nori-node-basics id="property-workspace-node-title" [showEditingControls]="true">
+    <nori-node-basics
+      id="property-workspace-node-title"
+      class="[&_h1]:truncate [&_h1>button]:max-w-full [&_h1>button]:truncate"
+      [showEditingControls]="true"
+    >
       <button
         suiButton
         type="button"
@@ -11,18 +15,14 @@
         class="shrink-0"
         [disabled]="disabled()"
         (click)="openDetails()"
-        [attr.aria-label]="t(workspace.queries.nodeEditable() ? 'editor.editNode' : 'editor.nodeDetails')"
+        [attr.aria-label]="t(workspace.queries.isNodeEditable() ? 'editor.editNode' : 'editor.nodeDetails')"
       >
-        @if (workspace.queries.nodeEditable()) {
-          <svg lucidePencil class="size-3.5" aria-hidden="true"></svg>
-        } @else {
-          <svg lucideInfo class="size-3.5" aria-hidden="true"></svg>
-        }
+        <svg lucideInfo class="size-3.5" aria-hidden="true"></svg>
       </button>
     </nori-node-basics>
-    @if (refinement(); as base) {
-      <div class="text-base-content/55 mt-1 flex min-w-0 items-center gap-2 text-xs">
-        <span>{{ t('editor.refinesLabel') }}</span>
+    <div class="text-base-content/55 mt-1 flex h-6 min-w-0 items-center gap-2 text-xs">
+      @if (refinement(); as base) {
+        <span class="shrink-0">{{ t('editor.refinesLabel') }}</span>
         <button
           type="button"
           class="property-refinement-chip text-base-content inline-flex min-w-0 cursor-pointer items-center gap-1.5 rounded-full border border-[color-mix(in_oklab,var(--refinement-colour)_40%,transparent)] bg-[color-mix(in_oklab,var(--refinement-colour)_10%,transparent)] px-2.5 py-0.5 text-xs"
@@ -33,9 +33,9 @@
           <span class="size-1.5 shrink-0 rounded-full bg-[var(--refinement-colour)]" aria-hidden="true"></span>
           <span class="truncate">{{ base.node.name }}</span>
         </button>
-      </div>
-    } @else {
-      <p class="text-base-content/55 mt-0.5 text-xs">{{ t('editor.baseNode') }}</p>
-    }
+      } @else {
+        <span class="truncate">{{ t('editor.baseNode') }}</span>
+      }
+    </div>
   </div>
 </section>

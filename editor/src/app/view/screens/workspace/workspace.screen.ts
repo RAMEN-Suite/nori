@@ -7,6 +7,7 @@ import {
   type OnInit,
   type OnDestroy,
   signal,
+  linkedSignal,
   type Signal,
   type WritableSignal,
 } from '@angular/core';
@@ -23,7 +24,6 @@ import { ProjectService } from '../../../services/projects/project.service';
 import { NodeEditingService } from '../../../services/workspace/editing/node-editing.service';
 import { PropertyEditingService } from '../../../services/workspace/editing/property-editing.service';
 import { WorkspaceService } from '../../../services/workspace/workspace.service';
-import { ApplicationState } from '../../../states/application.state';
 import { WindowState } from '../../../states/window.state';
 import { BaseNodesComponent } from '../../components/workspace/catalogue/base-nodes/base-nodes.component';
 import { EditorPanelComponent } from '../../components/shared/editor-panel/editor-panel.component';
@@ -56,7 +56,6 @@ import { ToolBarComponent } from '../../components/workspace/tool-bar/tool-bar.c
   styleUrl: './workspace.screen.scss',
 })
 export class WorkspaceScreen implements OnInit, OnDestroy {
-  protected readonly appearance: ApplicationState = inject(ApplicationState);
   private readonly windowState: WindowState = inject(WindowState);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   private readonly navigation: NavigationService = inject(NavigationService);
@@ -66,27 +65,28 @@ export class WorkspaceScreen implements OnInit, OnDestroy {
   protected readonly propertyEditing: PropertyEditingService = inject(PropertyEditingService);
   private readonly nodeEditing: NodeEditingService = inject(NodeEditingService);
 
-  protected readonly levelsOpen: WritableSignal<boolean> = signal(true);
-  protected readonly catalogueOpen: WritableSignal<boolean> = signal(true);
-  protected readonly baseNodesOpen: WritableSignal<boolean> = signal(true);
-  protected readonly inspectorOpen: WritableSignal<boolean> = signal(true);
+  protected readonly isLevelsPanelOpen: WritableSignal<boolean> = signal(true);
+  protected readonly isCatalogueOpen: WritableSignal<boolean> = linkedSignal({
+    source: this.nodeEditing.isCreating,
+    computation: (creating: boolean, previous?: { value: boolean }): boolean => creating || (previous?.value ?? true),
+  });
+  protected readonly isBaseNodesPanelOpen: WritableSignal<boolean> = signal(true);
+  protected readonly isInspectorOpen: WritableSignal<boolean> = linkedSignal({
+    source: (): string | null => this.workspace.store.currentNodeId() ?? this.workspace.store.currentRelationId(),
+    computation: (selection: string | null, previous?: { value: boolean }): boolean => !!selection || (previous?.value ?? true),
+  });
 
   protected readonly levelsHeight: Signal<string> = computed(
     (): string => `calc(8.5rem + ${Math.min(6, Math.max(2, this.projects.records().length))} * 2.25rem)`,
   );
-  protected readonly graphPadding: Signal<GraphPadding> = computed(
-    (): GraphPadding => ({
-      top: 100,
-      bottom: 64,
-      left: this.catalogueOpen() || (this.baseNodesOpen() && this.workspace.queries.editable()) ? 320 : 32,
-      right: this.inspectorOpen() || this.levelsOpen() ? 320 : 32,
-    }),
-  );
+  protected readonly graphPadding: Signal<GraphPadding> = computed((): GraphPadding => ({
+    top: 100,
+    bottom: 64,
+    left: this.isCatalogueOpen() || (this.isBaseNodesPanelOpen() && this.workspace.queries.isEditable()) ? 320 : 32,
+    right: this.isInspectorOpen() || this.isLevelsPanelOpen() ? 320 : 32,
+  }));
 
   public constructor() {
-    effect((): void => {
-      if (this.nodeEditing.creating()) this.catalogueOpen.set(true);
-    });
     this.router.events
       .pipe(
         filter((event: unknown): event is NavigationEnd => event instanceof NavigationEnd),
@@ -108,10 +108,6 @@ export class WorkspaceScreen implements OnInit, OnDestroy {
     });
 
     effect((): void => {
-      if (this.workspace.store.currentNodeId() || this.workspace.store.currentRelationId()) this.inspectorOpen.set(true);
-    });
-
-    effect((): void => {
       const manifest: Manifest | null = this.projects.selectedManifest();
       this.windowState.setTitle(manifest?.name ?? '', 'pencil');
     });
@@ -127,11 +123,11 @@ export class WorkspaceScreen implements OnInit, OnDestroy {
   }
 
   protected handleToggleCatalogue(): void {
-    this.catalogueOpen.update((open: boolean): boolean => !open);
+    this.isCatalogueOpen.update((open: boolean): boolean => !open);
   }
 
   protected handleToggleLevels(): void {
-    this.levelsOpen.update((open: boolean): boolean => !open);
+    this.isLevelsPanelOpen.update((open: boolean): boolean => !open);
   }
 
   private ensureSelectedLevel(): void {

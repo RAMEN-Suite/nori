@@ -6,11 +6,10 @@
       variant="text"
       size="xs"
       shape="circle"
-      [attr.aria-label]="t('editor.removeConnection')"
-      [noriTooltip]="t('editor.removeConnection')"
+      [noriIconTooltip]="t('editor.removeConnection')"
       placement="bottom"
       [showDelay]="600"
-      [disabled]="relationEditing.pending()"
+      [disabled]="relationEditing.isPending()"
       (click)="relationEditing.remove(relationId())"
     >
       <svg lucideTrash class="size-3.5" aria-hidden="true"></svg>

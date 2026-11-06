@@ -1,6 +1,6 @@
 import { type Model } from '@ramen-suite/core/model';
 
-export type NodeColors = Record<string, string>;
+export type NodeColours = Record<string, string>;
 
 export interface GraphView {
   positions: Record<string, { x: number; y: number }>;
@@ -10,7 +10,7 @@ export interface GraphView {
 export interface ViewSettings {
   graph?: GraphView;
   visibleNodeRefs?: string[];
-  nodeColors: NodeColors;
+  nodeColors: NodeColours;
 }
 
 export interface ModelRecord {

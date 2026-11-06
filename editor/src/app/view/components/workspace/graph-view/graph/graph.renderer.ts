@@ -44,7 +44,7 @@ export class GraphRenderer {
       .selectAll<SVGPathElement, ResolvedLink>('path.link')
       .data(links, (link: ResolvedLink): string => link.id)
       .join(
-        (enter) =>
+        (enter): Selection<SVGPathElement, ResolvedLink, SVGGElement, unknown> =>
           enter
             .append('path')
             .attr('class', 'link')
@@ -52,22 +52,22 @@ export class GraphRenderer {
             .style('--graph-arrival-delay', (_link: ResolvedLink, index: number): string => `${220 + Math.min(index, 8) * 25}ms`)
             .attr('data-nori-motion', '')
             .attr('marker-end', this.markerUrl),
-        (update) => update,
-        (exit) => exit.remove(),
+        (update): Selection<SVGPathElement, ResolvedLink, SVGGElement, unknown> => update,
+        (exit): Selection<SVGPathElement, ResolvedLink, SVGGElement, unknown> => exit.remove(),
       );
 
     rootGroupSelection
       .selectAll<SVGTextElement, ResolvedLink>('text.link-label')
       .data(links, (link: ResolvedLink): string => link.id)
       .join(
-        (enter) =>
+        (enter): Selection<SVGTextElement, ResolvedLink, SVGGElement, unknown> =>
           enter
             .append('text')
             .attr('class', 'link-label')
             .attr('data-nori-motion', '')
             .style('--graph-arrival-delay', (_link: ResolvedLink, index: number): string => `${380 + Math.min(index, 8) * 25}ms`),
-        (update) => update,
-        (exit) => exit.remove(),
+        (update): Selection<SVGTextElement, ResolvedLink, SVGGElement, unknown> => update,
+        (exit): Selection<SVGTextElement, ResolvedLink, SVGGElement, unknown> => exit.remove(),
       )
       .text((link: ResolvedLink): string => link.label);
     this.drawLinkTargets(rootGroupSelection, links);
@@ -79,7 +79,7 @@ export class GraphRenderer {
       .selectAll<SVGGElement, PositionedNode>('g.node')
       .data(nodes, (node: PositionedNode): string => node.id)
       .join(
-        (enter) => {
+        (enter): NodeSelection => {
           const g: NodeSelection = enter
             .append('g')
             .attr('class', 'node')
@@ -93,8 +93,8 @@ export class GraphRenderer {
 
           return g;
         },
-        (update) => update,
-        (exit) => exit.remove(),
+        (update): Selection<SVGGElement, PositionedNode, SVGGElement, unknown> => update,
+        (exit): Selection<SVGGElement, PositionedNode, SVGGElement, unknown> => exit.remove(),
       );
 
     merged.select('rect.node-body').attr('role', 'button').attr('tabindex', 0);
@@ -180,7 +180,7 @@ export class GraphRenderer {
     const feedback: Selection<SVGGElement, ResolvedLink, SVGGElement, unknown> = root
       .selectAll<SVGGElement, ResolvedLink>('g.link-feedback')
       .data(target ? [target] : [])
-      .join((enter) => enter.insert('g', 'text.link-label'))
+      .join((enter): Selection<SVGGElement, ResolvedLink, SVGGElement, unknown> => enter.insert('g', 'text.link-label'))
       .attr('class', selecting ? 'link-feedback is-relation-selection' : 'link-feedback')
       .attr('aria-hidden', 'true');
     feedback

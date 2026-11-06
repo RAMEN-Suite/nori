@@ -106,7 +106,7 @@ export class CreateModelDialog {
 
   protected async handleSave(): Promise<void> {
     this.isSubmitted.set(true);
-    if (!this.isFormValid() || this.dialogs.pending()) return;
+    if (!this.isFormValid() || this.dialogs.isPending()) return;
 
     const levelIndex: number | undefined = this.currentLevelIndex();
     await this.dialogs.run(async (): Promise<void> => {

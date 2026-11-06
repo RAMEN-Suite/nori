@@ -29,12 +29,12 @@ export class RemovalReviewService {
   private readonly projects: ProjectService = inject(ProjectService);
   private readonly tools: GraphToolsService = inject(GraphToolsService);
 
-  private readonly inspecting: WritableSignal<boolean> = signal(false);
+  private readonly isInspecting: WritableSignal<boolean> = signal(false);
 
   public async inspect(location: WorkspaceLocation, position: RemovalReviewPosition): Promise<void> {
     const dialog: OpenDialog | null = this.dialogs.current();
-    if (!dialog || this.dialogs.pending() || this.inspecting() || this.actions.pending()) return;
-    this.inspecting.set(true);
+    if (!dialog || this.dialogs.isPending() || this.isInspecting() || this.actions.isPending()) return;
+    this.isInspecting.set(true);
     let paused: boolean = false;
     const review: PausedRemoval = { dialog, position, returnUrl: this.router.url };
     try {
@@ -54,7 +54,7 @@ export class RemovalReviewService {
       this.projects.reportError(error);
       if (paused) await this.actions.resume();
     } finally {
-      this.inspecting.set(false);
+      this.isInspecting.set(false);
     }
   }
 

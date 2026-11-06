@@ -1,6 +1,6 @@
 <ng-container *transloco="let t">
   <div #descriptionContent class="min-w-0">
-    @if (showEditAction() && !editing()) {
+    @if (showEditAction() && !isEditing()) {
       <header class="mb-2 flex min-w-0 items-center justify-between gap-3">
         <h2 class="nori-field-label">{{ t('editor.description.label') }}</h2>
         @if (editable()) {
@@ -20,18 +20,24 @@
         }
       </header>
     }
-    @if (editing()) {
+    @if (isEditing()) {
       <form
         class="mt-3 flex flex-col gap-2"
         (submit)="$event.preventDefault(); save()"
         (keydown.escape)="$event.stopPropagation(); cancel()"
       >
-        <nori-description-field [inputId]="fieldId" [(value)]="draft" [disabled]="saving() || !editable()" />
+        <nori-description-field [inputId]="fieldId" [(value)]="draft" [disabled]="isSaving() || !editable()" />
         <div class="flex flex-wrap justify-end gap-1">
-          <button suiButton type="button" size="sm" severity="neutral" variant="text" [disabled]="saving()" (click)="cancel()">
+          <button suiButton type="button" size="sm" severity="neutral" variant="text" [disabled]="isSaving()" (click)="cancel()">
             <svg lucideUndo2 class="size-3.5" aria-hidden="true"></svg>{{ t('editor.discardChanges') }}
           </button>
-          <button suiButton type="submit" size="sm" [loading]="saving()" [disabled]="saving() || !changed() || !valid() || !editable()">
+          <button
+            suiButton
+            type="submit"
+            size="sm"
+            [loading]="isSaving()"
+            [disabled]="isSaving() || !hasChanges() || !isValid() || !editable()"
+          >
             <svg lucideSave class="size-3.5" aria-hidden="true"></svg>{{ t('common.save') }}
           </button>
         </div>
@@ -40,30 +46,30 @@
       <div class="min-w-0">
         <div
           class="editor-panel-scroll relative text-sm leading-relaxed"
-          [class.max-h-40]="expanded()"
-          [class.overflow-y-auto]="expanded()"
+          [class.max-h-40]="isExpanded()"
+          [class.overflow-y-auto]="isExpanded()"
         >
-          <p #descriptionText [id]="fieldId + '-text'" class="text-base-content/65 break-words" [class.line-clamp-2]="!expanded()">
+          <p #descriptionText [id]="fieldId + '-text'" class="text-base-content/65 break-words" [class.line-clamp-2]="!isExpanded()">
             <span class="whitespace-pre-wrap">{{ description }}</span>
-            @if (expanded()) {
+            @if (isExpanded()) {
               <button
                 type="button"
                 class="text-base-content ml-1 cursor-pointer rounded-sm underline decoration-current/40 underline-offset-2 hover:decoration-current"
                 [attr.aria-expanded]="true"
                 [attr.aria-controls]="fieldId + '-text'"
-                (click)="expanded.set(false)"
+                (click)="isExpanded.set(false)"
               >
                 {{ t('editor.description.showLess') }}
               </button>
             }
           </p>
-          @if (!expanded() && overflowing()) {
+          @if (!isExpanded() && isOverflowing()) {
             <button
               type="button"
               class="bg-base-100 text-base-content absolute right-0 bottom-0 cursor-pointer rounded-sm pl-1 underline decoration-current/40 underline-offset-2 hover:decoration-current"
               [attr.aria-expanded]="false"
               [attr.aria-controls]="fieldId + '-text'"
-              (click)="expanded.set(true)"
+              (click)="isExpanded.set(true)"
             >
               <span aria-hidden="true">… </span>{{ t('editor.description.showMore') }}
             </button>

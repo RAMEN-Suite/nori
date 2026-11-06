@@ -31,7 +31,7 @@ export class ModelHistoryService {
   private readonly navigation: NavigationService = inject(NavigationService);
   private readonly past: WritableSignal<readonly ModelEdit[]> = signal([]);
   private readonly future: WritableSignal<readonly ModelEdit[]> = signal([]);
-  private readonly restoring: WritableSignal<boolean> = signal(false);
+  private readonly isRestoring: WritableSignal<boolean> = signal(false);
   private session: number = 0;
   private readonly signature: Signal<string> = computed((): string => {
     this.store.currentModel();
@@ -39,11 +39,11 @@ export class ModelHistoryService {
   });
   public readonly canUndo: Signal<boolean> = computed((): boolean => {
     const edit: ModelEdit | undefined = this.past().at(-1);
-    return !!edit && this.isCurrent(edit.after) && !this.restoring() && edit.after.signature === this.signature();
+    return !!edit && this.isCurrent(edit.after) && !this.isRestoring() && edit.after.signature === this.signature();
   });
   public readonly canRedo: Signal<boolean> = computed((): boolean => {
     const edit: ModelEdit | undefined = this.future().at(-1);
-    return !!edit && this.isCurrent(edit.before) && !this.restoring() && edit.before.signature === this.signature();
+    return !!edit && this.isCurrent(edit.before) && !this.isRestoring() && edit.before.signature === this.signature();
   });
 
   public readonly canUndoCurrentNode: Signal<boolean> = computed(
@@ -146,7 +146,7 @@ export class ModelHistoryService {
     if (!edit) return;
     const previous: HistorySnapshot = this.capture();
     const next: HistorySnapshot = edit[direction];
-    this.restoring.set(true);
+    this.isRestoring.set(true);
     try {
       this.store.restoreModels(next.models);
       await save(next.views);
@@ -154,7 +154,7 @@ export class ModelHistoryService {
       this.rollback(previous);
       throw error;
     } finally {
-      this.restoring.set(false);
+      this.isRestoring.set(false);
     }
     if (!this.isCurrent(previous)) return;
     source.set(source().filter((item): boolean => item !== edit));

@@ -49,7 +49,7 @@ export const appConfig: ApplicationConfig = {
         skipInitialTransition: true,
         onViewTransitionCreated: ({ transition, from, to }: ViewTransitionInfo): void => {
           const preferences: ApplicationState = inject(ApplicationState);
-          if (!preferences.state().animations || (isWorkspaceRoute(from) && isWorkspaceRoute(to))) {
+          if (!preferences.isMotionEnabled() || (isWorkspaceRoute(from) && isWorkspaceRoute(to))) {
             transition.skipTransition();
             return;
           }

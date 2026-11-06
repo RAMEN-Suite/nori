@@ -55,13 +55,11 @@ export class NodeAttributesComponent {
 
       const levelIndex: number = this.workspace.queries.nodeOwner()?.levelIndex ?? 0;
       const inherited: readonly InspectorProperty[] = [...this.workspace.queries.inheritedAttributes().values()].flat();
-      const own: InspectorProperty[] = node.attributes.map(
-        (attribute: Attribute): InspectorProperty => ({
-          attribute,
-          levelIndex,
-          nodeId: node.id,
-        }),
-      );
+      const own: InspectorProperty[] = node.attributes.map((attribute: Attribute): InspectorProperty => ({
+        attribute,
+        levelIndex,
+        nodeId: node.id,
+      }));
       const groups: ReadonlyMap<number, readonly InspectorProperty[]> = groupBy(
         [...inherited, ...own],
         (property: InspectorProperty): number => property.levelIndex,
@@ -69,13 +67,11 @@ export class NodeAttributesComponent {
 
       return [...groups]
         .sort(([left], [right]): number => left - right)
-        .map(
-          ([levelIndex, properties]): InspectorPropertyGroup => ({
-            levelIndex,
-            modelName: this.projects.recordsByLevelIndex().get(levelIndex)?.name ?? null,
-            properties,
-          }),
-        );
+        .map(([levelIndex, properties]): InspectorPropertyGroup => ({
+          levelIndex,
+          modelName: this.projects.recordsByLevelIndex().get(levelIndex)?.name ?? null,
+          properties,
+        }));
     },
   );
 }

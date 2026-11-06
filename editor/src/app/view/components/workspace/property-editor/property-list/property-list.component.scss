@@ -1,3 +1,5 @@
+@use "../../../../../../styles/surface-list";
+
 :host {
   --property-handle-gap: 0.875rem;
   --property-actions-width: calc(var(--size-field, 0.25rem) * 24 + 1.5rem);
@@ -7,14 +9,10 @@
   flex-direction: column;
 }
 .property-groups {
-  --sui-focus-ring-offset: calc(-1 * var(--sui-focus-ring-width));
-  --sui-accordion-background: transparent;
-  --sui-accordion-border-color: transparent;
-  --sui-accordion-content-color: inherit;
+  @include surface-list.accordion-reset;
   --sui-accordion-trigger-padding-inline: 0;
   --sui-accordion-panel-padding-inline: 0.5rem;
   --sui-accordion-gap: 1rem;
-  --sui-accordion-panel-padding-bottom: 0;
 }
 sui-order-list {
   --sui-order-list-row-padding: 0 0.75rem 0 0.25rem;
@@ -57,6 +55,10 @@ sui-order-list {
   padding-inline-start: 1.25rem;
 }
 
+button:disabled .create-property-icon {
+  color: color-mix(in oklab, var(--color-success) 45%, transparent);
+}
+
 .disabled-property-grip {
   display: grid;
   place-items: center;
@@ -85,4 +87,19 @@ sui-order-list {
 :host ::ng-deep .sui-order-list__row:has(.has-property-issues) > .sui-order-list__handle {
   align-self: start;
   margin-block-start: 0.625rem;
+}
+
+.property-row-arrive {
+  animation: property-content-arrive var(--nori-motion-quick) var(--nori-editor-ease) both;
+}
+
+@keyframes property-content-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

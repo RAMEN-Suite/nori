@@ -1,4 +1,5 @@
-import { Injectable, signal, type Type, type WritableSignal } from '@angular/core';
+import { inject, Injectable, signal, type Type, type WritableSignal } from '@angular/core';
+import { TranslocoService } from '@jsverse/transloco';
 
 export type DialogSize = 'compact' | 'form';
 
@@ -28,14 +29,15 @@ export interface OpenDialog {
 /** Owns the active dialog and its pending/error state. */
 @Injectable({ providedIn: 'root' })
 export class DialogService {
+  private readonly translations: TranslocoService = inject(TranslocoService);
   public readonly current: WritableSignal<OpenDialog | null> = signal(null);
-  public readonly detailsOpen: WritableSignal<boolean> = signal(false);
+  public readonly isDetailsOpen: WritableSignal<boolean> = signal(false);
   public readonly error: WritableSignal<string | null> = signal(null);
-  public readonly pending: WritableSignal<boolean> = signal(false);
+  public readonly isPending: WritableSignal<boolean> = signal(false);
 
   public open(component: Type<unknown>, options: DialogOptions = {}): DialogRef {
     this.error.set(null);
-    this.detailsOpen.set(options.detailsOpen ?? false);
+    this.isDetailsOpen.set(options.detailsOpen ?? false);
 
     const dialog: OpenDialog = {
       component,
@@ -55,21 +57,21 @@ export class DialogService {
   }
 
   public close(): void {
-    if (!this.pending()) this.current.set(null);
+    if (!this.isPending()) this.current.set(null);
   }
 
   public async run(action: () => Promise<void>, options: { closeOnSuccess?: boolean } = {}): Promise<void> {
-    if (this.pending()) return;
-    this.pending.set(true);
+    if (this.isPending()) return;
+    this.isPending.set(true);
     this.error.set(null);
 
     try {
       await action();
       if (options.closeOnSuccess !== false) this.current.set(null);
     } catch (error: unknown) {
-      this.error.set(error instanceof Error ? error.message : 'The operation could not be completed.');
+      this.error.set(error instanceof Error ? error.message : this.translations.translate('common.notificationTitles.error'));
     } finally {
-      this.pending.set(false);
+      this.isPending.set(false);
     }
   }
 }

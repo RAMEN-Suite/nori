@@ -1,4 +1,3 @@
-import type { Relation } from '@ramen-suite/core/model';
 import {
   afterEveryRender,
   afterNextRender,
@@ -15,10 +14,9 @@ import {
   type Signal,
   type WritableSignal,
 } from '@angular/core';
-import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
+import { translateSignal, TranslocoDirective, TranslocoService } from '@jsverse/transloco';
 import { LucideList, LucideSpline, LucideShieldCheck, LucideTags, LucideX } from '@lucide/angular';
-import { type Attribute, type Constraint } from '@ramen-suite/core/model';
-import { RAMEN_ELEMENT } from '@ramen-suite/core/ramen';
+import { type Attribute, type Constraint, type Relation } from '@ramen-suite/core/model';
 import { Button, Card, type MenuItem } from '@sushi-kit/angular';
 import type { InheritedAttribute, NodeDefinition } from '../../../../models/WorkspaceDetails';
 import type { WorkspaceLocation } from '../../../../models/WorkspaceLocation';
@@ -30,7 +28,6 @@ import { DialogService } from '../../../../services/interaction/dialog.service';
 import { ProjectService } from '../../../../services/projects/project.service';
 import { PropertyEditingService } from '../../../../services/workspace/editing/property-editing.service';
 import { WorkspaceService, type WorkspaceContext } from '../../../../services/workspace/workspace.service';
-import { ApplicationState } from '../../../../states/application.state';
 import { ConfirmationDialog, type ConfirmationOptions } from '../../dialogs/confirmation/confirmation.dialog';
 import { ActionFeedbackComponent } from '../../shell/action-feedback/action-feedback.component';
 import { NotificationsComponent } from '../../shell/notifications/notifications.component';
@@ -72,7 +69,6 @@ import { PropertyListComponent } from './property-list/property-list.component';
 export class PropertyEditorComponent {
   protected readonly editing: PropertyEditingService = inject(PropertyEditingService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
-  protected readonly appearance: ApplicationState = inject(ApplicationState);
   private readonly shortcuts: ShortcutService = inject(ShortcutService);
   private readonly modelHistory: ModelHistoryService = inject(ModelHistoryService);
   private readonly feedback: ActionFeedbackService = inject(ActionFeedbackService);
@@ -86,70 +82,68 @@ export class PropertyEditorComponent {
 
   protected readonly shapeEditor: Signal<ShapeEditorComponent | undefined> = viewChild(ShapeEditorComponent);
   private readonly propertyList: Signal<PropertyListComponent | undefined> = viewChild(PropertyListComponent);
-  protected readonly switchingNode: WritableSignal<boolean> = signal(false);
-  protected readonly initialArrival: WritableSignal<boolean> = signal(true);
-  protected readonly detailVisible: WritableSignal<boolean> = signal(true);
+  protected readonly isSwitchingNode: WritableSignal<boolean> = signal(false);
+  protected readonly isInitialArrival: WritableSignal<boolean> = signal(true);
+  protected readonly isDetailVisible: WritableSignal<boolean> = signal(true);
   private readonly lifetime: AbortController = new AbortController();
 
   protected readonly properties: Signal<readonly Attribute[]> = computed(
-    () => this.workspace.queries.currentNode()?.attributes ?? [],
+    (): Attribute[] => this.workspace.queries.currentNode()?.attributes ?? [],
   );
-  protected readonly controlsUnavailable: Signal<boolean> = computed(() => this.editing.changingNode() || this.switchingNode());
-  protected readonly actionPending: Signal<boolean> = computed(
-    () => this.controlsUnavailable() || this.dialogs.pending() || !!this.propertyList()?.busy(),
+  protected readonly areControlsUnavailable: Signal<boolean> = computed(
+    (): boolean => this.editing.isChangingNode() || this.isSwitchingNode(),
+  );
+  protected readonly isActionPending: Signal<boolean> = computed(
+    (): boolean => this.areControlsUnavailable() || this.dialogs.isPending() || !!this.propertyList()?.isBusy(),
   );
 
-  protected readonly isAnnotation: Signal<boolean> = computed(
-    (): boolean =>
-      this.workspace.queries.currentNode()?.id === RAMEN_ELEMENT.ANNOTATION ||
-      this.workspace.queries.currentNodeChain().some((base): boolean => base.node.id === RAMEN_ELEMENT.ANNOTATION),
+  protected readonly areAnnotationsVisible: Signal<boolean> = this.editing.canEditAnnotations;
+  protected readonly isShowingAnnotations: Signal<boolean> = computed(
+    (): boolean => this.areAnnotationsVisible() && this.editing.section() === 'shapes',
   );
-  protected readonly annotationsVisible: Signal<boolean> = computed(
-    () => this.editing.annotationEditingEnabled && this.isAnnotation(),
-  );
-  protected readonly windowsShowAnnotations: Signal<boolean> = computed(
-    () => this.annotationsVisible() && this.editing.section() === 'shapes',
-  );
-  protected readonly navigationItems: Signal<readonly MenuItem[]> = computed(() => {
-    this.appearance.language();
+  private readonly propertiesLabel: Signal<string> = translateSignal('editor.properties');
+  private readonly annotationsLabel: Signal<string> = translateSignal('editor.annotations');
+  private readonly relationshipsLabel: Signal<string> = translateSignal('editor.nodeWorkspace.relationships');
+  private readonly constraintsLabel: Signal<string> = translateSignal('editor.constraints');
+  protected readonly navigationItems: Signal<readonly MenuItem[]> = computed((): readonly MenuItem[] => {
     const items: MenuItem[] = [
       {
-        label: this.translations.translate('editor.properties'),
+        label: this.propertiesLabel(),
         value: 'properties',
       },
     ];
-    if (this.annotationsVisible()) {
-      items.push({ label: this.translations.translate('editor.annotations'), value: 'shapes' });
+    if (this.areAnnotationsVisible()) {
+      items.push({ label: this.annotationsLabel(), value: 'shapes' });
     }
-    items.push({ label: this.translations.translate('editor.nodeWorkspace.relationships'), value: 'relationships' });
-    items.push({ label: this.translations.translate('editor.constraints'), value: 'constraints' });
+    items.push({ label: this.relationshipsLabel(), value: 'relationships' });
+    items.push({ label: this.constraintsLabel(), value: 'constraints' });
     return items;
   });
-  protected readonly relationships: Signal<readonly Relation[]> = computed(() => {
+  protected readonly relationships: Signal<readonly Relation[]> = computed((): Relation[] => {
     const id: string | null = this.workspace.store.currentNodeId();
     return this.workspace.queries
       .currentRelations()
       .filter((relation: Relation): boolean => relation.from.nodeId === id || relation.to.nodeId === id);
   });
-  protected readonly nodeConstraints: Signal<readonly Constraint[]> = computed(() => [
-    ...this.workspace.queries.currentNodeChain().flatMap((base) => base.node.constraints ?? []),
+  protected readonly nodeConstraints: Signal<readonly Constraint[]> = computed((): Constraint[] => [
+    ...this.workspace.queries.currentNodeChain().flatMap((base): Constraint[] => base.node.constraints ?? []),
     ...(this.workspace.queries.currentNode()?.constraints ?? []),
   ]);
 
   protected switchSection(value: unknown): void {
     if (value === this.editing.section()) return;
     if (value !== 'properties' && value !== 'shapes' && value !== 'constraints' && value !== 'relationships') return;
-    if (value === 'shapes' && !this.annotationsVisible()) return;
+    if (value === 'shapes' && !this.areAnnotationsVisible()) return;
     if (!this.canRunAction()) return;
-    this.initialArrival.set(false);
-    this.editing.section.set(value);
+    this.isInitialArrival.set(false);
+    this.editing.setSection(value);
   }
 
   protected propertyRules(property: Attribute): void {
     this.dialogs.open(PropertyDetailsDialog, {
       width: 'var(--nori-dialog-width)',
       header: property.name,
-      inputValues: { attribute: property, editable: this.workspace.queries.nodeEditable() },
+      inputValues: { attribute: property, editable: this.workspace.queries.isNodeEditable() },
     });
   }
 
@@ -174,27 +168,24 @@ export class PropertyEditorComponent {
       this.lifetime.abort();
     });
     effect((): void => {
-      if (!this.editing.changingNode() && !this.editing.current()) this.editing.close();
-    });
-    effect((): void => {
-      if (!this.annotationsVisible() && this.editing.section() === 'shapes') this.editing.section.set('properties');
+      if (!this.editing.isChangingNode() && !this.editing.current()) this.editing.close();
     });
   }
 
   protected activateAnnotations(): void {
-    this.initialArrival.set(false);
-    this.editing.section.set('shapes');
+    this.isInitialArrival.set(false);
+    this.editing.setSection('shapes');
   }
 
   protected inspectNeighbour(nodeId: string): void {
     const projectId: string | undefined = this.workspace.context()?.projectId;
     if (!projectId) return;
     const location: WorkspaceLocation = { projectId, levelIndex: this.workspace.store.currentLevelIndex(), nodeId };
-    this.runWithCleanDraft(() => this.changeNode(() => this.editing.inspect(location)));
+    this.runWithCleanDraft((): Promise<void> => this.changeNode((): Promise<boolean> => this.editing.inspect(location)));
   }
 
   public close(): void {
-    if (this.actionPending()) return;
+    if (this.isActionPending()) return;
     this.propertyList()?.discardInvalidDrafts();
     this.runWithCleanDraft((): void => this.editing.close());
   }
@@ -233,26 +224,28 @@ export class PropertyEditorComponent {
     if (!projectId || levelIndex === undefined) return;
 
     const location: WorkspaceLocation = { projectId, levelIndex, nodeId: refinement.node.id };
-    this.runWithCleanDraft(() => this.changeNode(() => this.editing.inspect(location)));
+    this.runWithCleanDraft((): Promise<void> => this.changeNode((): Promise<boolean> => this.editing.inspect(location)));
   }
 
   protected inspectNodeSource(location: WorkspaceLocation): void {
-    this.runWithCleanDraft(() => this.changeNode(() => this.editing.inspect(location)));
+    this.runWithCleanDraft((): Promise<void> => this.changeNode((): Promise<boolean> => this.editing.inspect(location)));
   }
 
   protected inspectPropertySource(property: InheritedAttribute): void {
     const projectId: string | undefined = this.workspace.context()?.projectId;
     if (!projectId) return;
     const location: WorkspaceLocation = { projectId, levelIndex: property.levelIndex, nodeId: property.nodeId };
-    this.runWithCleanDraft(() => this.changeNode(() => this.editing.inspect(location, property.attribute.id), true));
+    this.runWithCleanDraft((): Promise<void> =>
+      this.changeNode((): Promise<boolean> => this.editing.inspect(location, property.attribute.id), true),
+    );
   }
 
   protected forwardToNode(): void {
-    this.runWithCleanDraft(() => this.changeNode(() => this.editing.forward()));
+    this.runWithCleanDraft((): Promise<void> => this.changeNode((): Promise<boolean> => this.editing.forward()));
   }
 
   protected backToNode(): void {
-    this.runWithCleanDraft(() => this.changeNode(() => this.editing.back()));
+    this.runWithCleanDraft((): Promise<void> => this.changeNode((): Promise<boolean> => this.editing.back()));
   }
 
   protected remove(property: Attribute): void {
@@ -299,13 +292,13 @@ export class PropertyEditorComponent {
   }
 
   private async changeNode(action: () => Promise<boolean>, focusProperty: boolean = false): Promise<void> {
-    if (this.actionPending()) return;
-    this.switchingNode.set(true);
+    if (this.isActionPending()) return;
+    this.isSwitchingNode.set(true);
     try {
       this.lifetime.signal.throwIfAborted();
       const navigated: boolean = await action();
       this.lifetime.signal.throwIfAborted();
-      if (navigated) this.detailVisible.set(true);
+      if (navigated) this.isDetailVisible.set(true);
       await this.waitForRender();
       this.lifetime.signal.throwIfAborted();
       if (navigated && focusProperty) this.focusDetail(true);
@@ -313,7 +306,7 @@ export class PropertyEditorComponent {
     } catch (error: unknown) {
       if (!this.destroyRef.destroyed) this.projects.reportError(error);
     } finally {
-      this.switchingNode.set(false);
+      this.isSwitchingNode.set(false);
     }
   }
 
@@ -357,8 +350,8 @@ export class PropertyEditorComponent {
   }
 
   private selectOwnProperty(attributeId: string | null): void {
-    this.editing.section.set('properties');
-    this.detailVisible.set(true);
+    this.editing.setSection('properties');
+    this.isDetailVisible.set(true);
     this.editing.select(attributeId);
   }
 
@@ -367,7 +360,7 @@ export class PropertyEditorComponent {
   }
 
   private canRunAction(): boolean {
-    if (this.actionPending() || this.propertyList()?.guardLeave() === false || this.shapeEditor()?.canLeave() === false)
+    if (this.isActionPending() || this.propertyList()?.guardLeave() === false || this.shapeEditor()?.canLeave() === false)
       return false;
     return true;
   }

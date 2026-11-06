@@ -3,7 +3,7 @@
     <header>
       <div class="flex items-start gap-2">
         <h1 class="min-w-0 flex-1 text-xl leading-8 font-semibold break-words">{{ relation.name }}</h1>
-        @if (workspace.queries.editable()) {
+        @if (workspace.queries.isEditable()) {
           <button
             #actionsButton
             suiButton
@@ -14,7 +14,7 @@
             shape="circle"
             class="mt-0.5 shrink-0"
             [attr.aria-label]="t('editor.relationActions')"
-            [disabled]="description.busy()"
+            [disabled]="description.isBusy()"
             [suiMenuTrigger]="relationMenu"
           >
             <svg lucideEllipsis class="size-3.5" aria-hidden="true"></svg>
@@ -36,7 +36,7 @@
         kind="relation"
         [elementId]="relation.id"
         [value]="relation.description"
-        [editable]="workspace.queries.editable()"
+        [editable]="workspace.queries.isEditable()"
         (finished)="focusActions()"
       />
     </header>

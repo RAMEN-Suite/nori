@@ -23,15 +23,15 @@ import {
       <nori-feedback
         class="action-window"
         [class.node-editor]="context() === 'node-editor'"
-        [class.attention-odd]="appearance.state().animations && conflict !== null && conflict.sequence % 2 === 1"
-        [class.attention-even]="appearance.state().animations && conflict !== null && conflict.sequence % 2 === 0"
+        [class.attention-odd]="appearance.isMotionEnabled() && conflict !== null && conflict.sequence % 2 === 1"
+        [class.attention-even]="appearance.isMotionEnabled() && conflict !== null && conflict.sequence % 2 === 0"
         kind="action"
         [severity]="action.severity"
         [title]="action.title"
         [description]="conflict ? (attentionMessage() | transloco) : action.description"
         [icon]="action.icon"
-        [animate.enter]="appearance.state().animations ? 'feedback-enter' : ''"
-        [animate.leave]="appearance.state().animations ? 'feedback-leave' : ''"
+        [animate.enter]="appearance.isMotionEnabled() ? 'feedback-enter' : ''"
+        [animate.leave]="appearance.isMotionEnabled() ? 'feedback-leave' : ''"
       >
         <button
           feedbackActions
@@ -39,8 +39,8 @@ import {
           size="sm"
           severity="neutral"
           variant="outlined"
-          [disabled]="actions.pending()"
-          [loading]="actions.pending()"
+          [disabled]="actions.isPending()"
+          [loading]="actions.isPending()"
           (click)="actions.run(action)"
         >
           @if (action.buttonIcon; as icon) {
@@ -55,7 +55,7 @@ import {
           severity="neutral"
           variant="text"
           shape="circle"
-          [disabled]="actions.pending()"
+          [disabled]="actions.isPending()"
           [attr.aria-label]="'common.close' | transloco"
           (click)="actions.cancel(action)"
         >

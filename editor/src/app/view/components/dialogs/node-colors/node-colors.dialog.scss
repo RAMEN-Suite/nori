@@ -9,11 +9,7 @@
   position: relative;
 }
 .colour-list {
-  min-height: 0;
-  overflow-y: auto;
   @include surface-list.inset;
-  scrollbar-width: thin;
-  scrollbar-color: var(--nori-scrollbar-thumb) transparent;
 }
 .colour-row {
   @include surface-list.action;
@@ -76,9 +72,4 @@
 }
 :host-context(html[data-motion="off"]) .colour-picker-content.is-open {
   animation: none;
-}
-@media (prefers-reduced-motion: reduce) {
-  .colour-picker-content.is-open {
-    animation: none;
-  }
 }

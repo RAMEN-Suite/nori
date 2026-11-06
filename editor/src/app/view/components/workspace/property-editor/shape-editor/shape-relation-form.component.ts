@@ -3,12 +3,11 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
+  linkedSignal,
   inject,
   input,
   output,
   signal,
-  untracked,
   type InputSignal,
   type OutputEmitterRef,
   type Signal,
@@ -39,12 +38,34 @@ export class ShapeRelationFormComponent {
   public readonly editable: InputSignal<boolean> = input(true);
   public readonly saved: OutputEmitterRef<number> = output();
   public readonly submitRequested: OutputEmitterRef<void> = output();
-  public readonly saving: WritableSignal<boolean> = signal(false);
-  protected readonly direction: WritableSignal<'incoming' | 'outgoing'> = signal('outgoing');
-  protected readonly refs: WritableSignal<readonly string[]> = signal([]);
-  protected readonly minimum: WritableSignal<number> = signal(0);
-  protected readonly maximum: WritableSignal<number | null> = signal(null);
-  private readonly initialValue: WritableSignal<string> = signal('');
+  public readonly isSaving: WritableSignal<boolean> = signal(false);
+  private readonly initialRelation: Signal<AnnotationShapeRelation> = computed((): AnnotationShapeRelation => {
+    const rule: AnnotationShapeRelation | undefined = this.shape().relations[this.index()];
+    const modelId: string = this.ownerModelId();
+    return {
+      relationIds:
+        rule?.relationIds.map((ref: string): string => (ModelRef.isQualified(ref) ? ref : ModelRef.qualify(modelId, ref))) ?? [],
+      direction: rule?.direction ?? 'outgoing',
+      bounds: { lowerBound: rule?.bounds.lowerBound ?? 0, upperBound: rule?.bounds.upperBound ?? -1 },
+    };
+  });
+  protected readonly direction: WritableSignal<'incoming' | 'outgoing'> = linkedSignal({
+    source: this.initialRelation,
+    computation: (relation): 'incoming' | 'outgoing' => relation.direction,
+  });
+  protected readonly refs: WritableSignal<readonly string[]> = linkedSignal({
+    source: this.initialRelation,
+    computation: (relation): readonly string[] => relation.relationIds,
+  });
+  protected readonly minimum: WritableSignal<number> = linkedSignal({
+    source: this.initialRelation,
+    computation: (relation): number => relation.bounds.lowerBound,
+  });
+  protected readonly maximum: WritableSignal<number | null> = linkedSignal({
+    source: this.initialRelation,
+    computation: (relation): number | null => this.upperLimit(relation),
+  });
+  private readonly initialValue: WritableSignal<string> = linkedSignal((): string => JSON.stringify(this.initialRelation()));
 
   protected readonly options: Signal<readonly RelationOption[]> = computed(() => {
     this.workspace.store.currentModel();
@@ -57,25 +78,17 @@ export class ShapeRelationFormComponent {
       : [];
   });
 
-  public constructor() {
-    effect((): void => {
-      this.shape();
-      this.index();
-      untracked((): void => this.reset());
-    });
+  public reset(): void {
+    const relation: AnnotationShapeRelation = this.initialRelation();
+    this.direction.set(relation.direction);
+    this.refs.set(relation.relationIds);
+    this.minimum.set(relation.bounds.lowerBound);
+    this.maximum.set(this.upperLimit(relation));
+    this.initialValue.set(JSON.stringify(relation));
   }
 
-  public reset(): void {
-    const rule: AnnotationShapeRelation | undefined = this.shape().relations[this.index()];
-    this.direction.set(rule?.direction ?? 'outgoing');
-    const modelId: string = this.ownerModelId();
-    this.refs.set(
-      rule?.relationIds.map((ref: string): string => (ModelRef.isQualified(ref) ? ref : ModelRef.qualify(modelId, ref))) ?? [],
-    );
-    this.minimum.set(rule?.bounds.lowerBound ?? 0);
-    const maximum: number = rule?.bounds.upperBound ?? -1;
-    this.maximum.set(maximum === -1 ? null : maximum);
-    this.initialValue.set(JSON.stringify(this.values()));
+  private upperLimit(relation: AnnotationShapeRelation): number | null {
+    return relation.bounds.upperBound === -1 ? null : relation.bounds.upperBound;
   }
 
   public hasChanges(): boolean {
@@ -100,22 +113,23 @@ export class ShapeRelationFormComponent {
   }
 
   public async commit(): Promise<void> {
-    if (!this.editable() || this.saving() || !this.hasChanges()) return;
-    this.saving.set(true);
+    if (!this.editable() || this.isSaving() || !this.hasChanges()) return;
+    this.isSaving.set(true);
     try {
       const shape: AnnotationShape = this.shape();
       const relations: AnnotationShapeRelation[] = [...shape.relations];
       const index: number = this.index() < 0 ? relations.length : this.index();
-      relations[index] = this.values();
+      const submitted: AnnotationShapeRelation = this.values();
+      relations[index] = submitted;
       const context: WorkspaceContext | null = this.workspace.context();
       await this.workspace.actions.updateAnnotationShape(shape.id, { relations });
       if (this.destroyRef.destroyed || !context || !this.workspace.isCurrent(context) || this.shape().id !== shape.id) return;
-      this.initialValue.set(JSON.stringify(this.values()));
+      this.initialValue.set(JSON.stringify(submitted));
       this.saved.emit(index);
     } catch (error: unknown) {
       if (!this.destroyRef.destroyed) this.projects.reportError(error);
     } finally {
-      this.saving.set(false);
+      this.isSaving.set(false);
     }
   }
 

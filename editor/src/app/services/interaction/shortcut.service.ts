@@ -59,13 +59,11 @@ export class ShortcutService {
   public reassign(action: ShortcutAction, binding: string, previousOwner: ShortcutAction): boolean {
     if (!ShortcutBindings.isValid(binding)) throw new TypeError('Invalid shortcut binding.');
     if (action === previousOwner || this.actionsByBinding().get(binding) !== previousOwner) return false;
-    this.overrides.update(
-      (overrides: ShortcutOverrides): ShortcutOverrides => ({
-        ...overrides,
-        [previousOwner]: '',
-        [action]: binding,
-      }),
-    );
+    this.overrides.update((overrides: ShortcutOverrides): ShortcutOverrides => ({
+      ...overrides,
+      [previousOwner]: '',
+      [action]: binding,
+    }));
     return true;
   }
 

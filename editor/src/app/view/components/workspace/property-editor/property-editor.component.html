@@ -3,60 +3,62 @@
     class="property-workspace flex h-full min-h-0 flex-col gap-2.5"
     role="region"
     aria-labelledby="node-editing-screen-title"
-    [class.show-detail]="windowsShowAnnotations() ? shapeEditor()?.mobileDetail() : detailVisible()"
-    [class.motion-enabled]="appearance.state().animations"
-    [class.initial-arrival]="initialArrival()"
-    [class.switching-node]="switchingNode()"
-    [attr.aria-busy]="actionPending()"
+    [class.show-detail]="isShowingAnnotations() ? shapeEditor()?.isMobileDetailVisible() : isDetailVisible()"
+    [class.initial-arrival]="isInitialArrival()"
+    [class.switching-node]="isSwitchingNode()"
+    [attr.aria-busy]="isActionPending()"
   >
     <div class="property-stage flex-1">
-      <sui-card class="property-toolbar min-w-0" size="xs" variant="border">
-        <header class="flex min-w-0 flex-wrap items-center gap-2 px-3">
-          <h1 id="node-editing-screen-title" data-property-screen-heading tabindex="-1" class="sr-only">
-            {{ t('editor.nodeDetails') }}
-          </h1>
-          <nav class="flex min-w-0 flex-1 flex-wrap items-center gap-2" [attr.aria-label]="t('editor.nodeDetails')">
-            @for (item of navigationItems(); track item.value) {
-              <button
-                suiButton
-                type="button"
-                size="sm"
-                severity="neutral"
-                variant="text"
-                class="nori-panel-toggle"
-                [attr.aria-pressed]="editing.section() === item.value"
-                [disabled]="controlsUnavailable()"
-                (click)="switchSection(item.value)"
-              >
-                @if (item.value === 'properties') {
-                  <svg lucideList class="size-4" aria-hidden="true"></svg>
-                } @else if (item.value === 'shapes') {
-                  <svg lucideTags class="size-4" aria-hidden="true"></svg>
-                } @else if (item.value === 'relationships') {
-                  <svg lucideSpline class="size-4" aria-hidden="true"></svg>
-                } @else {
-                  <svg lucideShieldCheck class="size-4" aria-hidden="true"></svg>
-                }
-                {{ item.label }}
-              </button>
-            }
-          </nav>
-          <button
-            type="button"
-            class="property-screen-close inline-grid size-8 shrink-0 cursor-pointer place-items-center rounded-[var(--radius-field)]"
-            [attr.aria-label]="t('common.close')"
-            [disabled]="controlsUnavailable()"
-            (click)="close()"
-          >
-            <svg lucideX class="size-4.5" aria-hidden="true"></svg>
-          </button>
-        </header>
-      </sui-card>
+      <div class="property-toolbar min-w-0">
+        <sui-card size="xs" variant="border">
+          <header class="flex min-w-0 flex-wrap items-center gap-2 px-3">
+            <h1 id="node-editing-screen-title" data-property-screen-heading tabindex="-1" class="sr-only">
+              {{ t('editor.nodeDetails') }}
+            </h1>
+            <nav class="flex min-w-0 flex-1 flex-wrap items-center gap-2" [attr.aria-label]="t('editor.nodeDetails')">
+              @for (item of navigationItems(); track item.value) {
+                <button
+                  suiButton
+                  type="button"
+                  size="sm"
+                  severity="neutral"
+                  variant="text"
+                  class="nori-panel-toggle"
+                  [attr.aria-pressed]="editing.section() === item.value"
+                  [disabled]="areControlsUnavailable()"
+                  (click)="switchSection(item.value)"
+                >
+                  @if (item.value === 'properties') {
+                    <svg lucideList class="size-4" aria-hidden="true"></svg>
+                  } @else if (item.value === 'shapes') {
+                    <svg lucideTags class="size-4" aria-hidden="true"></svg>
+                  } @else if (item.value === 'relationships') {
+                    <svg lucideSpline class="size-4" aria-hidden="true"></svg>
+                  } @else {
+                    <svg lucideShieldCheck class="size-4" aria-hidden="true"></svg>
+                  }
+                  {{ item.label }}
+                </button>
+              }
+            </nav>
+            <button
+              type="button"
+              class="property-screen-close inline-grid size-8 shrink-0 cursor-pointer place-items-center rounded-[var(--radius-field)]"
+              [attr.aria-label]="t('common.close')"
+              [disabled]="areControlsUnavailable()"
+              (click)="close()"
+            >
+              <svg lucideX class="size-4.5" aria-hidden="true"></svg>
+            </button>
+          </header>
+        </sui-card>
+        <nori-notifications context="node-editor" />
+      </div>
       <aside class="property-sidebar flex min-h-0 min-w-0 flex-col">
         <nori-node-neighbourhood
           class="property-neighbourhood min-h-0 flex-1"
           [highlightedRelations]="shapeEditor()?.highlightedRelations() ?? noRelations"
-          [disabled]="controlsUnavailable()"
+          [disabled]="areControlsUnavailable()"
           [previousName]="editing.previous()?.name ?? null"
           [nextName]="editing.next()?.name ?? null"
           (back)="backToNode()"
@@ -66,8 +68,8 @@
         >
           <nori-node-context-panel
             class="bg-base-100 shrink-0 rounded-[var(--nori-radius)] border border-[var(--nori-border)]"
-            [inert]="!!shapeEditor()?.pending()"
-            [disabled]="controlsUnavailable()"
+            [inert]="!!shapeEditor()?.isPending()"
+            [disabled]="areControlsUnavailable()"
             (inspect)="inspectRefinement($event)"
           />
         </nori-node-neighbourhood>
@@ -75,12 +77,12 @@
       <div class="property-main min-h-0 min-w-0">
         @switch (editing.section()) {
           @case ('shapes') {
-            @if (annotationsVisible()) {
+            @if (areAnnotationsVisible()) {
               <div class="annotation-workspace h-full min-h-0">
                 <nori-shape-editor
                   [active]="true"
                   [canActivate]="guardProperties"
-                  [switchingNode]="switchingNode()"
+                  [switchingNode]="isSwitchingNode()"
                   (activated)="activateAnnotations()"
                   (inspectSource)="inspectNodeSource($event)"
                   (inspectPropertySource)="inspectPropertySource($event)"
@@ -161,7 +163,6 @@
       </div>
     </div>
     <nori-dialog-host />
-    <nori-notifications context="node-editor" />
     <nori-action-feedback context="node-editor" />
   </section>
 </ng-container>

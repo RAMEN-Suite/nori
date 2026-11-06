@@ -14,7 +14,7 @@
   height: 1.75rem;
   justify-content: center;
   opacity: 0;
-  transition: opacity 180ms ease;
+  transition: opacity var(--nori-motion-quick) ease;
   color: color-mix(in oklab, var(--color-base-content) 55%, transparent);
   svg {
     border-radius: var(--nori-radius-input);
@@ -52,11 +52,6 @@
     transform: translateY(var(--scroll-hint-distance));
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .scroll-hint {
-    transition: none;
-  }
-  .scroll-hint.is-visible svg {
-    animation: none;
-  }
+:host-context(html[data-motion="off"]) .scroll-hint {
+  transition: none;
 }

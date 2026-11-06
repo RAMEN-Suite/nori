@@ -55,8 +55,8 @@ export class ProjectRepositoryService {
       manifestVersion: environment.manifestVersion,
       appVersion: environment.appVersion,
     };
-    const records: ModelRecord[] = orderModelsByImports(models).map(
-      (model: Model, levelIndex: number): ModelRecord => this.createRecord(projectId, model, levelIndex, timestamp),
+    const records: ModelRecord[] = orderModelsByImports(models).map((model: Model, levelIndex: number): ModelRecord =>
+      this.createRecord(projectId, model, levelIndex, timestamp),
     );
     await database.transaction('rw', database.manifests, database.models, async (): Promise<void> => {
       await database.manifests.add(manifest);
@@ -86,16 +86,14 @@ export class ProjectRepositoryService {
         updatedAt: timestamp,
       });
       await database.models.bulkAdd(
-        records.map(
-          (record: ModelRecord): ModelRecord => ({
-            ...record,
-            projectId,
-            modelId: this.ids.randomUUID(),
-            revision: 1,
-            createdAt: timestamp,
-            updatedAt: timestamp,
-          }),
-        ),
+        records.map((record: ModelRecord): ModelRecord => ({
+          ...record,
+          projectId,
+          modelId: this.ids.randomUUID(),
+          revision: 1,
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        })),
       );
     });
   }
