@@ -31,7 +31,7 @@
   pointer-events: auto;
   max-width: calc(100% - 6rem);
   // Clip the container to unfold it without stretching Sushi controls or text.
-  animation: tools-unfold 900ms 250ms var(--nori-editor-ease) backwards;
+  animation: nori-panel-unfold var(--nori-panel-unfold-duration) 250ms var(--nori-editor-ease) backwards;
 }
 
 .editor-tools-content {
@@ -40,17 +40,4 @@
 .editor-back,
 .editor-settings {
   animation: nori-fade-in 360ms 360ms ease-out backwards;
-}
-@keyframes tools-unfold {
-  from {
-    clip-path: inset(0 49% round var(--nori-radius));
-    opacity: 0;
-  }
-  20% {
-    opacity: 1;
-  }
-  to {
-    clip-path: inset(0 0 round var(--nori-radius));
-    opacity: 1;
-  }
 }

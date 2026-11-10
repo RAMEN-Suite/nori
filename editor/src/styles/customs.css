@@ -14,6 +14,7 @@ body {
 :root {
   --nori-editor-ease: cubic-bezier(0.22, 1, 0.36, 1);
   --nori-motion-quick: 180ms;
+  --nori-panel-unfold-duration: 900ms;
   --nori-brand-ink: light-dark(#0b0d16, var(--color-base-content));
   --nori-ui-font-size: clamp(100%, calc(64% + 0.4vw), 118%);
   --nori-graph-dimmed-opacity: 0.25;
@@ -32,6 +33,7 @@ body {
   --radius-field: var(--nori-radius-action);
   --radius-selector: var(--nori-radius-action);
   --nori-selection-background: color-mix(in oklab, var(--color-primary) 10%, transparent);
+  --nori-selection-hover-background: color-mix(in oklab, var(--color-primary) 14%, transparent);
   --nori-selection-color: var(--color-primary);
   --nori-project-card-height: 38rem;
   --nori-chrome-height: 4.5rem;
@@ -221,13 +223,19 @@ html:active-view-transition-type(open-workspace)::view-transition-old(project-li
   flex-shrink: 0;
 }
 
-.nori-panel-toggle[aria-pressed="true"] {
+.nori-soft-hover:is(:hover, :active) {
+  color: var(--color-neutral);
+  background-color: var(--sui-color-hover);
+  border-color: transparent;
+}
+
+.nori-panel-toggle:is([aria-pressed="true"], [aria-expanded="true"]) {
   background-color: var(--nori-selection-background);
   color: var(--nori-selection-color);
   border-color: transparent;
 }
-.nori-panel-toggle[aria-pressed="true"]:hover {
-  background-color: color-mix(in oklab, var(--color-primary) 14%, transparent);
+.nori-panel-toggle:is([aria-pressed="true"], [aria-expanded="true"]):hover {
+  background-color: var(--nori-selection-hover-background);
 }
 
 .nori-dialog-motion dialog[data-motion="fade"][open] {
@@ -347,5 +355,19 @@ html[data-motion="off"] .nori-confirmation-host.nori-dialog-motion dialog[open] 
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+@keyframes nori-panel-unfold {
+  from {
+    clip-path: inset(0 49% round var(--nori-radius));
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  to {
+    clip-path: inset(0 0 round var(--nori-radius));
+    opacity: 1;
   }
 }

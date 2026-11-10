@@ -4,28 +4,27 @@
     role="region"
     aria-labelledby="node-editing-screen-title"
     [class.show-detail]="isShowingAnnotations() ? shapeEditor()?.isMobileDetailVisible() : isDetailVisible()"
-    [class.initial-arrival]="isInitialArrival()"
-    [class.switching-node]="isSwitchingNode()"
     [attr.aria-busy]="isActionPending()"
   >
     <div class="property-stage flex-1">
       <div class="property-toolbar min-w-0">
         <sui-card size="xs" variant="border">
-          <header class="flex min-w-0 flex-wrap items-center gap-2 px-3">
+          <header class="flex min-w-0 flex-wrap items-center gap-2 px-2">
             <h1 id="node-editing-screen-title" data-property-screen-heading tabindex="-1" class="sr-only">
               {{ t('editor.nodeDetails') }}
             </h1>
             <nav class="flex min-w-0 flex-1 flex-wrap items-center gap-2" [attr.aria-label]="t('editor.nodeDetails')">
               @for (item of navigationItems(); track item.value) {
+                @let active = editing.section() === item.value;
                 <button
                   suiButton
                   type="button"
                   size="sm"
                   severity="neutral"
-                  variant="text"
+                  [variant]="active ? 'soft' : 'text'"
                   class="nori-panel-toggle"
-                  [attr.aria-pressed]="editing.section() === item.value"
-                  [disabled]="areControlsUnavailable()"
+                  [class.nori-soft-hover]="!active"
+                  [attr.aria-pressed]="active"
                   (click)="switchSection(item.value)"
                 >
                   @if (item.value === 'properties') {
@@ -59,17 +58,17 @@
           class="property-neighbourhood min-h-0 flex-1"
           [highlightedRelations]="shapeEditor()?.highlightedRelations() ?? noRelations"
           [disabled]="areControlsUnavailable()"
-          [previousName]="editing.previous()?.name ?? null"
-          [nextName]="editing.next()?.name ?? null"
-          (back)="backToNode()"
-          (forward)="forwardToNode()"
-          (historyChange)="restoreModelHistory($event)"
-          (inspect)="inspectNeighbour($event)"
+          (inspectSearchResult)="inspectRefinement($event)"
+          (inspect)="inspectNode($event)"
         >
           <nori-node-context-panel
             class="bg-base-100 shrink-0 rounded-[var(--nori-radius)] border border-[var(--nori-border)]"
             [inert]="!!shapeEditor()?.isPending()"
             [disabled]="areControlsUnavailable()"
+            [previousName]="editing.previous()?.name ?? null"
+            [nextName]="editing.next()?.name ?? null"
+            (back)="backToNode()"
+            (forward)="forwardToNode()"
             (inspect)="inspectRefinement($event)"
           />
         </nori-node-neighbourhood>
@@ -156,7 +155,12 @@
               tabindex="-1"
               [attr.aria-label]="t('editor.editProperties')"
             >
-              <nori-property-list (inspect)="inspectPropertySource($event)" (remove)="remove($event)" (duplicate)="duplicate($event)" />
+              <nori-property-list
+                [switchingNode]="isSwitchingNode()"
+                (inspect)="inspectPropertySource($event)"
+                (remove)="remove($event)"
+                (duplicate)="duplicate($event)"
+              />
             </section>
           }
         }

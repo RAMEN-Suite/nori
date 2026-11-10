@@ -459,6 +459,10 @@
       "bounds": "Die Höchstanzahl muss mindestens 1 und darf nicht kleiner als die Mindestanzahl sein."
     },
     "neighbourhood": {
+      "jumpTo": "Springe zu",
+      "jumpToNode": "Zu einem Knoten springen",
+      "jumpToNodePlaceholder": "Zu einem Knoten springen…",
+      "viewOptions": "Graphwerkzeuge",
       "title": "Verbindungen",
       "label": "Direkt verbundene Knoten",
       "empty": "Dieser Knoten hat noch keine Relationen.",
@@ -469,7 +473,6 @@
       "details": "Einstellungen für {{name}}",
       "array": "Mehrere Werte erlauben",
       "newName": "Neue Eigenschaft…",
-      "list": "Liste",
       "multipleValues": "Mehrere Werte",
       "inherited": "Geerbte Eigenschaften",
       "viewProperty": "Eigenschaft ansehen",
@@ -478,9 +481,9 @@
       "jumpToNode": "Zum Knoten {{name}}"
     },
     "nodeWorkspace": {
+      "noMatchingNodes": "Keine passenden Knoten",
       "relationships": "Beziehungen",
       "noRelationships": "Dieser Knoten hat keine Beziehungen.",
-      "history": "Knotennavigation",
       "forwardTo": "Vorwärts zu {{name}}",
       "rulesHint": "Pflichtwerte, Grenzen und Nutzungsregeln lassen sich in den Einstellungen der jeweiligen Eigenschaft bearbeiten.",
       "editRules": "Regeln bearbeiten",

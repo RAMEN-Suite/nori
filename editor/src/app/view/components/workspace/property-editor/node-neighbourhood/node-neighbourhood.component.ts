@@ -1,4 +1,5 @@
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
@@ -6,37 +7,30 @@ import {
   effect,
   type ElementRef,
   inject,
+  Injector,
   input,
   output,
+  signal,
   untracked,
   viewChild,
   type InputSignal,
   type OutputEmitterRef,
   type Signal,
+  type WritableSignal,
 } from '@angular/core';
 import { TranslocoDirective, TranslocoService } from '@jsverse/transloco';
-import {
-  LucidePalette,
-  LucideNetwork,
-  LucideScan,
-  LucideArrowLeft,
-  LucideArrowRight,
-  LucideUndo2,
-  LucideRedo2,
-} from '@lucide/angular';
-import { type Model, type NodeSuggestion } from '@ramen-suite/core/model';
-import { Button, Card } from '@sushi-kit/angular';
+import { LucideCornerUpRight, LucidePalette, LucideNetwork, LucideScan, LucideSearch } from '@lucide/angular';
+import { ModelRef, type Model, type Node, type NodeSuggestion } from '@ramen-suite/core/model';
+import { Autocomplete, AutocompleteItemTemplate, Badge, Button, type AutocompleteOption } from '@sushi-kit/angular';
 import * as d3 from 'd3';
-import type { GraphView } from '../../../../../models/ModelRecord';
+import type { GraphView, ModelRecord } from '../../../../../models/ModelRecord';
 import { ApplicationState } from '../../../../../states/application.state';
-import { IconTooltipDirective, TooltipDirective } from '../../../../../directives/tooltip.directive';
+import { IconTooltipDirective } from '../../../../../directives/tooltip.directive';
 import { DialogService } from '../../../../../services/interaction/dialog.service';
 import { NodeColoursDialog } from '../../../dialogs/node-colors/node-colors.dialog';
 import { animateGraphLayout, GRAPH_FIT_DURATION } from '../../graph-view/graph/graph.layout-motion';
 import { type NodePosition } from '../../graph-view/graph/graph.auto-layout';
 import { GraphViewport } from '../../graph-view/graph/graph.viewport';
-import { ModelHistoryService } from '../../../../../services/workspace/model/model-history.service';
-import { ShortcutService } from '../../../../../services/interaction/shortcut.service';
 import { WorkspaceService } from '../../../../../services/workspace/workspace.service';
 import { getLinkPath } from '../../graph-view/graph/graph.geometry';
 import { positionLinkLabels } from '../../graph-view/graph/graph.labels';
@@ -61,6 +55,16 @@ import {
   type GraphData,
 } from '../../graph-view/graph/model-graph';
 
+import { ProjectService } from '../../../../../services/projects/project.service';
+import { ModelQueries } from '../../../../../utils/model-queries';
+import { type NodeDefinition } from '../../../../../models/WorkspaceDetails';
+import { type WorkspaceLocation } from '../../../../../models/WorkspaceLocation';
+
+interface NodeSearchOption extends AutocompleteOption, NodeDefinition {
+  readonly value: string;
+  readonly modelName: string;
+}
+
 const PREVIEW_PADDING: number = 32;
 
 interface NeighbourhoodPositions {
@@ -72,29 +76,58 @@ interface NeighbourhoodPositions {
 @Component({
   selector: 'nori-node-neighbourhood',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { '(document:click)': 'dismissSearchOnOutsideClick($event)' },
   imports: [
     IconTooltipDirective,
-    TooltipDirective,
     TranslocoDirective,
+    Autocomplete,
+    AutocompleteItemTemplate,
+    Badge,
     Button,
-    Card,
+    LucideCornerUpRight,
     LucidePalette,
     LucideNetwork,
     LucideScan,
-    LucideArrowLeft,
-    LucideArrowRight,
-    LucideUndo2,
-    LucideRedo2,
+    LucideSearch,
   ],
   templateUrl: './node-neighbourhood.component.html',
   styleUrl: './node-neighbourhood.component.scss',
 })
 export class NodeNeighbourhoodComponent {
-  protected readonly history: ModelHistoryService = inject(ModelHistoryService);
-  protected readonly shortcuts: ShortcutService = inject(ShortcutService);
-  public readonly historyChange: OutputEmitterRef<'undo' | 'redo'> = output();
+  private readonly projects: ProjectService = inject(ProjectService);
   private readonly workspace: WorkspaceService = inject(WorkspaceService);
   private readonly appearance: ApplicationState = inject(ApplicationState);
+  private readonly injector: Injector = inject(Injector);
+  private readonly nodeSearch: Signal<Autocomplete<NodeSearchOption> | undefined> = viewChild(Autocomplete<NodeSearchOption>);
+  private readonly searchButton: Signal<ElementRef<HTMLButtonElement> | undefined> =
+    viewChild<ElementRef<HTMLButtonElement>>('searchButton');
+  private readonly searchPanel: Signal<ElementRef<HTMLDivElement> | undefined> =
+    viewChild<ElementRef<HTMLDivElement>>('searchPanel');
+  protected readonly isSearchOpen: WritableSignal<boolean> = signal(false);
+  public readonly inspectSearchResult: OutputEmitterRef<NodeDefinition> = output();
+  protected readonly searchOptions: Signal<readonly NodeSearchOption[]> = computed((): readonly NodeSearchOption[] => {
+    const currentLevel: number = this.workspace.store.currentLevelIndex();
+    const rank: (level: number) => number = (level: number): number => (level <= currentLevel ? currentLevel - level : level);
+    const collator: Intl.Collator = new Intl.Collator(this.appearance.language(), { numeric: true, sensitivity: 'base' });
+    return [...this.projects.records()]
+      .sort((left: ModelRecord, right: ModelRecord): number => rank(left.levelIndex) - rank(right.levelIndex))
+      .flatMap((record: ModelRecord): NodeSearchOption[] =>
+        [...ModelQueries.nodes(record.gmodel)]
+          .sort((left: Node, right: Node): number => collator.compare(left.name, right.name))
+          .map((node: Node): NodeSearchOption => ({
+            value: ModelRef.qualify(record.gmodel.id, node.id),
+            label: node.name,
+            modelName: record.name,
+            modelId: record.gmodel.id,
+            node,
+          })),
+      );
+  });
+  protected readonly suggestionsMessage: (count: number) => string = (count: number): string =>
+    this.translations.translate(count === 1 ? 'common.suggestionOne' : 'common.suggestionMany', { count });
+  private readonly viewKey: Signal<string> = computed((): string =>
+    JSON.stringify([this.workspace.store.currentModel()?.id, this.workspace.store.currentNodeId()]),
+  );
   private readonly translations: TranslocoService = inject(TranslocoService);
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
   private readonly dialogs: DialogService = inject(DialogService);
@@ -104,17 +137,13 @@ export class NodeNeighbourhoodComponent {
   private readonly host: Signal<ElementRef<HTMLDivElement> | undefined> = viewChild<ElementRef<HTMLDivElement>>('graphHost');
   private viewport: GraphViewport | null = null;
   private restoreInitialLayout?: () => void;
-  private renderedFocus: string | null | undefined;
+  private renderedView: string | undefined;
   private root: { readonly svg: SVGSVGElement; readonly selection: RootSelection } | null = null;
 
   /** Relation IDs to emphasise, for example the relations an annotation rule may set. */
   public readonly highlightedRelations: InputSignal<ReadonlySet<string>> = input<ReadonlySet<string>>(new Set());
   public readonly disabled: InputSignal<boolean> = input(false);
-  public readonly previousName: InputSignal<string | null> = input<string | null>(null);
-  public readonly nextName: InputSignal<string | null> = input<string | null>(null);
-  public readonly back: OutputEmitterRef<void> = output();
-  public readonly forward: OutputEmitterRef<void> = output();
-  public readonly inspect: OutputEmitterRef<string> = output();
+  public readonly inspect: OutputEmitterRef<WorkspaceLocation> = output();
 
   protected readonly areControlsBusy: Signal<boolean> = computed((): boolean => this.disabled() || !!this.dialogs.current());
 
@@ -123,26 +152,64 @@ export class NodeNeighbourhoodComponent {
       const nodeId: string | null = this.workspace.store.currentNodeId();
       const model: Model | null = this.workspace.store.currentModel();
       if (!nodeId || !model) return { nodes: [], links: [] };
+      const visible: readonly string[] = this.workspace.store.currentModelRecord()?.view?.visibleNodeRefs ?? [];
       const permitted: ReadonlySet<string> = new Set(
         this.workspace.queries.nodeSuggestions().map((node: NodeSuggestion): string => node.ref),
       );
-      const visible: readonly string[] = this.workspace.store.currentModelRecord()?.view?.visibleNodeRefs ?? [];
       return buildNeighbourhoodGraph(buildVisibleModelGraph(model, this.workspace.store.getModels(), visible, permitted), nodeId);
     },
     { equal: areGraphsEqual },
   );
 
+  protected toggleSearch(): void {
+    if (this.isSearchOpen()) {
+      this.closeSearch();
+      return;
+    }
+    this.isSearchOpen.set(true);
+    afterNextRender((): void => this.nodeSearch()?.focus(), { injector: this.injector });
+  }
+
+  protected dismissSearch(event: Event): void {
+    if (!this.isSearchOpen()) return;
+    event.preventDefault();
+    event.stopPropagation();
+    this.closeSearch();
+  }
+
+  protected dismissSearchOnOutsideClick(event: MouseEvent): void {
+    if (!this.isSearchOpen()) return;
+    const path: EventTarget[] = event.composedPath();
+    const panel: HTMLDivElement | undefined = this.searchPanel()?.nativeElement;
+    const button: HTMLButtonElement | undefined = this.searchButton()?.nativeElement;
+    const isBackdropClick: boolean = event.target instanceof Element && event.target.classList.contains('cdk-overlay-backdrop');
+    if (!isBackdropClick && ((panel && path.includes(panel)) || (button && path.includes(button)))) return;
+    this.isSearchOpen.set(false);
+  }
+
+  private closeSearch(): void {
+    this.isSearchOpen.set(false);
+    this.searchButton()?.nativeElement.focus({ preventScroll: true });
+  }
+
+  protected selectSearchResult(value: unknown): void {
+    if (this.areControlsBusy() || typeof value !== 'string') return;
+    const option: NodeSearchOption | undefined = this.searchOptions().find((item): boolean => item.value === value);
+    if (!option) return;
+    this.closeSearch();
+    this.inspectSearchResult.emit(option);
+  }
+
   public constructor() {
     effect((): void => {
       const svg: SVGSVGElement | undefined = this.canvas()?.nativeElement;
       const data: GraphData = this.graph();
-      // Selection can change without changing the visible graph topology.
-      this.workspace.store.currentNodeId();
+      const view: string = this.viewKey();
       const colours: Readonly<Record<string, string>> = this.workspace.store.currentNodeColours();
       const highlighted: ReadonlySet<string> = this.highlightedRelations();
       const disabled: boolean = this.areControlsBusy();
       const host: HTMLDivElement | undefined = this.host()?.nativeElement;
-      if (svg && host) untracked((): void => this.render(svg, host, data, colours, highlighted, disabled));
+      if (svg && host) untracked((): void => this.render(svg, host, data, view, colours, highlighted, disabled));
     });
     this.destroyRef.onDestroy((): void => {
       this.root?.selection.interrupt('layout');
@@ -156,6 +223,7 @@ export class NodeNeighbourhoodComponent {
     svg: SVGSVGElement,
     host: HTMLDivElement,
     data: GraphData,
+    view: string,
     colours: Readonly<Record<string, string>>,
     highlighted: ReadonlySet<string>,
     disabled: boolean,
@@ -180,9 +248,9 @@ export class NodeNeighbourhoodComponent {
     this.updatePositions(root, nodes, links, model);
     this.bindDragging(root, nodes, links, model);
     this.restoreInitialLayout = (): void => this.animatePositions(root, nodes, links, model, this.positions().initial);
-    if (currentId !== this.renderedFocus && model.nodes.length) {
+    if (view !== this.renderedView && model.nodes.length) {
       this.fit();
-      this.renderedFocus = currentId;
+      this.renderedView = view;
     }
   }
 
@@ -210,7 +278,7 @@ export class NodeNeighbourhoodComponent {
     const root: RootSelection = selection.append('g');
     this.root = { svg, selection: root };
     this.viewport = new GraphViewport(host, selection, root, {});
-    this.renderedFocus = undefined;
+    this.renderedView = undefined;
     return root;
   }
 
@@ -224,7 +292,7 @@ export class NodeNeighbourhoodComponent {
   }
 
   private positions(): NeighbourhoodPositions {
-    const focus: string = JSON.stringify([this.workspace.store.currentModel()?.id, this.workspace.store.currentNodeId()]);
+    const focus: string = this.viewKey();
     let positions: NeighbourhoodPositions | undefined = this.positionsByFocus.get(focus);
     if (!positions) {
       positions = { initial: new Map(), local: new Map() };
@@ -256,7 +324,9 @@ export class NodeNeighbourhoodComponent {
 
   private bindNodes(nodes: NodeSelection, currentId: string | null, disabled: boolean): void {
     const open: (node: PositionedNode) => void = (node: PositionedNode): void => {
-      if (!this.areControlsBusy() && node.id !== currentId) this.inspect.emit(node.id);
+      const record: ModelRecord | null = this.workspace.store.currentModelRecord();
+      if (record && !this.areControlsBusy() && node.id !== currentId)
+        this.inspect.emit({ projectId: record.projectId, levelIndex: record.levelIndex, nodeId: node.id });
     };
     nodes
       .select<SVGRectElement>('rect.node-body')

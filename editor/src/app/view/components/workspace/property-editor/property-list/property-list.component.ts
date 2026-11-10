@@ -1,3 +1,4 @@
+import { NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   Injector,
@@ -7,9 +8,11 @@ import {
   DestroyRef,
   computed,
   inject,
+  input,
   output,
   signal,
   linkedSignal,
+  type InputSignal,
   type Signal,
   type WritableSignal,
   type OutputEmitterRef,
@@ -20,7 +23,7 @@ import {
   LucideSettings2,
   LucideTrash,
   LucideEye,
-  LucideArrowUpRight,
+  LucideCornerUpRight,
   LucideCopy,
   LucidePlus,
   LucideGripVertical,
@@ -72,6 +75,7 @@ interface PropertyIssue {
     ScrollOverflowDirective,
     ScrollHintsComponent,
     FormsModule,
+    NgTemplateOutlet,
     TranslocoDirective,
     Button,
     Accordion,
@@ -84,7 +88,7 @@ interface PropertyIssue {
     LucideSettings2,
     LucideTrash,
     LucideEye,
-    LucideArrowUpRight,
+    LucideCornerUpRight,
     LucideCopy,
     LucidePlus,
     LucideGripVertical,
@@ -106,6 +110,7 @@ export class PropertyListComponent {
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
   private readonly projects: ProjectService = inject(ProjectService);
   private readonly dialogs: DialogService = inject(DialogService);
+  public readonly switchingNode: InputSignal<boolean> = input(false);
   public readonly inspect: OutputEmitterRef<InheritedAttribute> = output();
   public readonly remove: OutputEmitterRef<Attribute> = output<Attribute>();
   public readonly duplicate: OutputEmitterRef<Attribute> = output<Attribute>();
@@ -311,6 +316,17 @@ export class PropertyListComponent {
       }
     }
     return true;
+  }
+
+  public focusInheritedSource(property: InheritedAttribute): boolean {
+    if (this.revealGroup('inherited', (): boolean => this.focusInheritedSource(property))) return true;
+    const rows: NodeListOf<HTMLElement> = this.element.nativeElement.querySelectorAll('[data-inherited-property-id]');
+    const row: HTMLElement | undefined = [...rows].find(
+      (entry: HTMLElement): boolean =>
+        entry.dataset['inheritedPropertyId'] === property.attribute.id && entry.dataset['sourceModelId'] === property.modelId,
+    );
+    const target: HTMLButtonElement | null | undefined = row?.querySelector<HTMLButtonElement>('[data-property-source]');
+    return !!target && this.focusPropertyControl(target, true);
   }
 
   public details(

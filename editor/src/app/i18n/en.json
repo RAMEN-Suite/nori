@@ -459,6 +459,10 @@
       "bounds": "The maximum must be at least 1 and not below the minimum."
     },
     "neighbourhood": {
+      "jumpTo": "Jump to",
+      "jumpToNode": "Jump to a node",
+      "jumpToNodePlaceholder": "Jump to a node…",
+      "viewOptions": "Graph tools",
       "title": "Connections",
       "label": "Directly connected nodes",
       "empty": "This node has no relations yet.",
@@ -469,7 +473,6 @@
       "details": "Settings for {{name}}",
       "array": "Allow multiple values",
       "newName": "New property…",
-      "list": "List",
       "multipleValues": "Multiple values",
       "inherited": "Inherited properties",
       "viewProperty": "View property",
@@ -478,9 +481,9 @@
       "jumpToNode": "Go to {{name}}"
     },
     "nodeWorkspace": {
+      "noMatchingNodes": "No matching nodes",
       "relationships": "Relationships",
       "noRelationships": "This node has no relationships.",
-      "history": "Node navigation",
       "forwardTo": "Forward to {{name}}",
       "rulesHint": "Set value requirements, limits and usage rules in each property’s settings.",
       "editRules": "Edit rules",

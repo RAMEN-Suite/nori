@@ -471,6 +471,7 @@
           [style.--refinement-colour]="origin.colour"
           [disabled]="isPending() || switchingNode()"
           [attr.aria-label]="t(detail() === 'shared' ? 'editor.openPropertySource' : 'editor.shapes.openSource', { name: origin.name })"
+          data-annotation-source
           (click)="inspectOrigin()"
         >
           <span class="size-1.5 shrink-0 rounded-full bg-[var(--refinement-colour)]" aria-hidden="true"></span>

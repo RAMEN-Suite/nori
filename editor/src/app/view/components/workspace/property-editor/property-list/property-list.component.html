@@ -7,7 +7,7 @@
     >
       <sui-accordion class="property-groups" size="sm" variant="separated" multiple [(value)]="expandedGroups">
         <ng-template suiAccordionHeader let-item>
-          <span class="text-base-content/60 flex min-w-0 items-center gap-3 text-sm font-medium">
+          <span class="text-base-content/60 flex min-w-0 items-center gap-3 text-sm font-medium select-none">
             <span class="truncate">{{ item.label }}</span>
             <span class="min-w-4 flex-1 border-t border-[var(--nori-border)]" aria-hidden="true"></span>
           </span>
@@ -16,40 +16,53 @@
           <ng-template suiAccordionItem value="inherited" [label]="t('editor.propertyList.inherited')" [preserveContent]="true">
             <ul class="inherited-list">
               @for (entry of inherited(); track entry.levelIndex + ':' + entry.attribute.id) {
-                @let issues = issuesFor(entry.attribute.id, entry.modelId);
+                @let property = entry.attribute;
+                @let issues = issuesFor(property.id, entry.modelId);
                 <li
                   class="inherited-row min-w-0 text-sm"
                   [attr.data-inherited-property-id]="entry.attribute.id"
+                  [attr.data-source-model-id]="entry.modelId"
                   [class.has-property-issues]="issues.length > 0"
                 >
                   <span class="disabled-property-grip" aria-hidden="true">
                     <svg lucideGripVertical class="size-4"></svg>
                   </span>
                   <div class="property-row">
-                    <span class="flex min-w-0 items-center gap-1 font-medium">
-                      <span class="truncate">{{ entry.attribute.name }}</span>
-                      @if (entry.attribute.bounds.lowerBound > 0) {
-                        <span class="text-error shrink-0 cursor-help" [noriTooltip]="t('editor.propertyCount.required')">
-                          <span aria-hidden="true">*</span><span class="sr-only">{{ t('editor.propertyCount.required') }}</span>
-                        </span>
-                      }
-                      @if (entry.attribute.isKey) {
-                        <span class="text-base-content/60 shrink-0 cursor-help" role="img" [noriIconTooltip]="t('editor.keyProperty')">
-                          <svg lucideKeyRound class="size-3.5" aria-hidden="true"></svg>
-                        </span>
-                      }
-                      @if (entry.attribute.isReadOnly) {
-                        <span class="text-base-content/60 shrink-0 cursor-help" role="img" [noriIconTooltip]="t('editor.readOnlyProperty')">
-                          <svg lucideLockKeyhole class="size-3.5" aria-hidden="true"></svg>
-                        </span>
-                      }
-                    </span>
-                    <span class="type-label text-base-content/65"
-                      >{{ workspace.queries.resolveTypeLabel(entry.attribute.typeId, entry.levelIndex) }}
-                      @if (isArray(entry.attribute)) {
-                        · {{ t('editor.propertyList.list') }}
-                      }
-                    </span>
+                    <div class="name-field min-w-0">
+                      <div class="relative">
+                        <input
+                          suiInput
+                          fluid
+                          size="sm"
+                          class="text-sm"
+                          [class.pe-7]="property.bounds.lowerBound > 0 || property.isReadOnly || property.isKey"
+                          [class.pe-12]="
+                            (property.bounds.lowerBound > 0 ? 1 : 0) + (property.isReadOnly ? 1 : 0) + (property.isKey ? 1 : 0) > 1
+                          "
+                          [class.pe-16]="property.bounds.lowerBound > 0 && property.isReadOnly && property.isKey"
+                          [attr.aria-label]="
+                            t('editor.propertyName') +
+                            ': ' +
+                            property.name +
+                            (property.bounds.lowerBound > 0 ? ', ' + t('editor.propertyCount.required') : '')
+                          "
+                          [value]="property.name"
+                          disabled
+                        />
+                        <ng-container *ngTemplateOutlet="nameStatus; context: { $implicit: property }" />
+                      </div>
+                    </div>
+                    <div class="type-field min-w-0">
+                      <nori-property-type
+                        [options]="[
+                          { value: property.typeId, label: workspace.queries.resolveTypeLabel(property.typeId, entry.levelIndex) },
+                        ]"
+                        [value]="property.typeId"
+                        [multiple]="isArray(property)"
+                        [label]="t('editor.dataType') + ': ' + property.name"
+                        [disabled]="true"
+                      />
+                    </div>
 
                     <span class="inherited-actions flex justify-end gap-0.5">
                       <button
@@ -72,9 +85,10 @@
                         shape="circle"
                         [attr.aria-label]="t('editor.propertyList.jumpToNode', { name: entry.nodeName })"
                         [noriTooltip]="t('editor.propertyList.goToSource')"
+                        data-property-source
                         (click)="inspectInherited(entry)"
                       >
-                        <svg lucideArrowUpRight class="size-4" aria-hidden="true"></svg>
+                        <svg lucideCornerUpRight class="size-4" aria-hidden="true"></svg>
                       </button>
                     </span>
                     @if (issues.length) {
@@ -111,7 +125,7 @@
                 @let invalidName = hasIssue(issues, 'name');
                 <div
                   class="property-row"
-                  [animate.enter]="appearance.isMotionEnabled() ? 'property-row-arrive' : ''"
+                  [animate.enter]="appearance.isMotionEnabled() && !switchingNode() ? 'property-row-arrive' : ''"
                   data-nori-motion
                   [attr.data-property-id]="property.id"
                   [class.has-property-issues]="issues.length > 0"
@@ -147,26 +161,7 @@
                         [attr.aria-invalid]="invalidName ? 'true' : null"
                         [attr.aria-describedby]="invalidName ? 'property-row-error-' + property.id : null"
                       />
-                      <span class="absolute inset-y-0 end-2 flex items-center gap-2">
-                        @if (property.bounds.lowerBound > 0) {
-                          <span
-                            class="text-error cursor-help text-sm font-semibold"
-                            [noriTooltip]="t('editor.propertyCount.required')"
-                            aria-hidden="true"
-                            >*</span
-                          >
-                        }
-                        @if (property.isKey) {
-                          <span class="text-base-content/60 shrink-0 cursor-help" role="img" [noriIconTooltip]="t('editor.keyProperty')">
-                            <svg lucideKeyRound class="size-3.5" aria-hidden="true"></svg>
-                          </span>
-                        }
-                        @if (property.isReadOnly) {
-                          <span class="text-base-content/60 cursor-help" role="img" [noriIconTooltip]="t('editor.readOnlyProperty')">
-                            <svg lucideLockKeyhole class="size-3.5" aria-hidden="true"></svg>
-                          </span>
-                        }
-                      </span>
+                      <ng-container *ngTemplateOutlet="nameStatus; context: { $implicit: property }" />
                     </div>
                   </div>
                   <div class="type-field min-w-0">
@@ -297,4 +292,23 @@
     </div>
     <nori-scroll-hints [up]="scroll.canScrollUp()" [down]="scroll.canScrollDown()" />
   </div>
+  <ng-template #nameStatus let-property>
+    <span class="absolute inset-y-0 end-2 flex items-center gap-2">
+      @if (property.bounds.lowerBound > 0) {
+        <span class="text-error cursor-help text-sm font-semibold" [noriTooltip]="t('editor.propertyCount.required')" aria-hidden="true"
+          >*</span
+        >
+      }
+      @if (property.isKey) {
+        <span class="text-base-content/60 shrink-0 cursor-help" role="img" [noriIconTooltip]="t('editor.keyProperty')">
+          <svg lucideKeyRound class="size-3.5" aria-hidden="true"></svg>
+        </span>
+      }
+      @if (property.isReadOnly) {
+        <span class="text-base-content/60 cursor-help" role="img" [noriIconTooltip]="t('editor.readOnlyProperty')">
+          <svg lucideLockKeyhole class="size-3.5" aria-hidden="true"></svg>
+        </span>
+      }
+    </span>
+  </ng-template>
 </ng-container>

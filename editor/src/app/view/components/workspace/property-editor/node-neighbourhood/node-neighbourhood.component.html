@@ -1,68 +1,4 @@
 <ng-container *transloco="let t">
-  <sui-card class="neighbourhood-toolbar shrink-0" size="xs" variant="border">
-    <div class="flex flex-wrap items-center justify-between gap-2 px-3">
-      <div class="flex items-center gap-2" role="group" [attr.aria-label]="t('editor.nodeWorkspace.history')">
-        <button
-          suiButton
-          type="button"
-          size="sm"
-          severity="neutral"
-          variant="text"
-          shape="circle"
-          [disabled]="disabled() || !previousName()"
-          [noriIconTooltip]="previousName() ? t('editor.backToNode', { name: previousName() }) : t('common.back')"
-          (click)="back.emit()"
-        >
-          <svg lucideArrowLeft class="size-4" aria-hidden="true"></svg>
-        </button>
-        <button
-          suiButton
-          type="button"
-          size="sm"
-          severity="neutral"
-          variant="text"
-          shape="circle"
-          [disabled]="disabled() || !nextName()"
-          [noriIconTooltip]="nextName() ? t('editor.nodeWorkspace.forwardTo', { name: nextName() }) : t('editor.nodeWorkspace.forward')"
-          (click)="forward.emit()"
-        >
-          <svg lucideArrowRight class="size-4" aria-hidden="true"></svg>
-        </button>
-      </div>
-      <div class="flex items-center gap-2" role="group">
-        <button
-          suiButton
-          type="button"
-          size="sm"
-          severity="neutral"
-          variant="text"
-          shape="circle"
-          [disabled]="areControlsBusy() || !history.canUndoCurrentNode()"
-          [attr.aria-label]="t('editor.undoModel')"
-          [attr.aria-keyshortcuts]="shortcuts.aria('undo')"
-          [noriTooltip]="t('editor.undoModel') + shortcuts.hint('undo')"
-          (click)="historyChange.emit('undo')"
-        >
-          <svg lucideUndo2 class="size-4" aria-hidden="true"></svg>
-        </button>
-        <button
-          suiButton
-          type="button"
-          size="sm"
-          severity="neutral"
-          variant="text"
-          shape="circle"
-          [disabled]="areControlsBusy() || !history.canRedoCurrentNode()"
-          [attr.aria-label]="t('editor.redoModel')"
-          [attr.aria-keyshortcuts]="shortcuts.aria('redo')"
-          [noriTooltip]="t('editor.redoModel') + shortcuts.hint('redo')"
-          (click)="historyChange.emit('redo')"
-        >
-          <svg lucideRedo2 class="size-4" aria-hidden="true"></svg>
-        </button>
-      </div>
-    </div>
-  </sui-card>
   <ng-content select="nori-node-context-panel" />
   <section
     class="property-surface bg-base-100 flex min-h-0 min-w-0 flex-1 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)]"
@@ -77,10 +13,71 @@
         [attr.aria-label]="t('editor.neighbourhood.navigationHint')"
         (keydown)="handleGraphKey($event)"
       ></svg>
+      @if (isSearchOpen()) {
+        <div
+          #searchPanel
+          id="neighbourhood-node-search"
+          class="neighbourhood-search absolute inset-x-5 top-5 mx-auto max-w-76"
+          tabindex="-1"
+          (keydown.escape)="dismissSearch($event)"
+        >
+          <sui-autocomplete
+            class="[&_input[type=search]]:pe-6"
+            fluid
+            size="sm"
+            forceSelection
+            openOnClick
+            [minQueryLength]="0"
+            [delay]="0"
+            [ariaLabel]="t('editor.neighbourhood.jumpToNode')"
+            [placeholder]="t('editor.neighbourhood.jumpToNodePlaceholder')"
+            [emptyMessage]="t('editor.nodeWorkspace.noMatchingNodes')"
+            [suggestionsMessage]="suggestionsMessage"
+            [options]="searchOptions()"
+            [disabled]="areControlsBusy()"
+            (valueChange)="selectSearchResult($event)"
+          >
+            <ng-template [suiAutocompleteItem]="searchOptions()" let-option>
+              <span class="flex min-w-0 items-center justify-between gap-2 text-sm">
+                <span class="min-w-0 flex-1 truncate">{{ option.label }}</span>
+                <span suiBadge size="xs" severity="neutral" variant="soft" class="max-w-[45%] min-w-0">
+                  <span class="truncate">{{ option.modelName }}</span>
+                </span>
+              </span>
+            </ng-template>
+          </sui-autocomplete>
+          <svg
+            lucideSearch
+            class="text-base-content/55 pointer-events-none absolute end-3 top-1/2 z-1 size-4 -translate-y-1/2"
+            aria-hidden="true"
+          ></svg>
+        </div>
+      }
       <div
-        class="bg-base-100 absolute right-3 bottom-3 flex items-center gap-1 rounded-[var(--nori-radius)] border border-[var(--nori-border)] p-1"
+        class="bg-base-100 absolute start-3 bottom-3 flex items-center gap-1 rounded-[var(--nori-radius)] border border-[var(--nori-border)] px-2 py-1"
+      >
+        <button
+          #searchButton
+          suiButton
+          type="button"
+          size="sm"
+          severity="neutral"
+          class="nori-panel-toggle"
+          [variant]="isSearchOpen() ? 'soft' : 'text'"
+          shape="circle"
+          [disabled]="areControlsBusy()"
+          [noriIconTooltip]="t('editor.neighbourhood.jumpTo')"
+          [attr.aria-expanded]="isSearchOpen()"
+          [attr.aria-controls]="isSearchOpen() ? 'neighbourhood-node-search' : null"
+          (click)="toggleSearch()"
+        >
+          <svg lucideCornerUpRight class="size-4" aria-hidden="true"></svg>
+        </button>
+      </div>
+      <div
+        class="bg-base-100 absolute end-3 bottom-3 flex items-center gap-1 rounded-[var(--nori-radius)] border border-[var(--nori-border)] px-2 py-1"
         role="group"
-        [attr.aria-label]="t('editor.neighbourhood.title')"
+        [attr.aria-label]="t('editor.neighbourhood.viewOptions')"
       >
         <button
           suiButton
@@ -103,10 +100,10 @@
           variant="text"
           shape="circle"
           [disabled]="disabled()"
-          [noriIconTooltip]="t('editor.colours')"
-          (click)="openColours()"
+          [noriIconTooltip]="t('editor.reset')"
+          (click)="resetLayout()"
         >
-          <svg lucidePalette class="size-4" aria-hidden="true"></svg>
+          <svg lucideNetwork class="size-4" aria-hidden="true"></svg>
         </button>
         <button
           suiButton
@@ -116,10 +113,10 @@
           variant="text"
           shape="circle"
           [disabled]="disabled()"
-          [noriIconTooltip]="t('editor.reset')"
-          (click)="resetLayout()"
+          [noriIconTooltip]="t('editor.colours')"
+          (click)="openColours()"
         >
-          <svg lucideNetwork class="size-4" aria-hidden="true"></svg>
+          <svg lucidePalette class="size-4" aria-hidden="true"></svg>
         </button>
       </div>
     </div>

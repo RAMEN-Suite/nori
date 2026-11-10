@@ -34,9 +34,24 @@ import { NotificationsComponent } from '../../shell/notifications/notifications.
 import { DialogHostComponent } from '../../shell/dialog-host/dialog-host.component';
 import { NodeContextPanelComponent } from './node-context-panel/node-context-panel.component';
 import { NodeNeighbourhoodComponent } from './node-neighbourhood/node-neighbourhood.component';
-import { ShapeEditorComponent } from './shape-editor/shape-editor.component';
+import { ShapeEditorComponent, type AnnotationSourceSelection } from './shape-editor/shape-editor.component';
 import { PropertyDetailsDialog } from '../../dialogs/property-details/property-details.dialog';
 import { PropertyListComponent } from './property-list/property-list.component';
+
+type NodeSelection = NonNullable<ReturnType<PropertyEditingService['current']>>;
+
+interface SourceReturn {
+  readonly selection: NodeSelection;
+  readonly target:
+    | { readonly kind: 'property'; readonly property: InheritedAttribute }
+    | { readonly kind: 'annotation'; readonly selection: AnnotationSourceSelection };
+}
+
+interface NodeChangeOptions {
+  readonly focusProperty?: boolean;
+  readonly onNavigated?: () => void;
+  readonly restoreFocus?: () => boolean;
+}
 
 /**
  * Lays out the node column (context, neighbourhood, properties, annotations) beside the editing windows.
@@ -69,6 +84,7 @@ import { PropertyListComponent } from './property-list/property-list.component';
 export class PropertyEditorComponent {
   protected readonly editing: PropertyEditingService = inject(PropertyEditingService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
+  private readonly sourceReturn: WritableSignal<SourceReturn | null> = signal(null);
   private readonly shortcuts: ShortcutService = inject(ShortcutService);
   private readonly modelHistory: ModelHistoryService = inject(ModelHistoryService);
   private readonly feedback: ActionFeedbackService = inject(ActionFeedbackService);
@@ -83,7 +99,6 @@ export class PropertyEditorComponent {
   protected readonly shapeEditor: Signal<ShapeEditorComponent | undefined> = viewChild(ShapeEditorComponent);
   private readonly propertyList: Signal<PropertyListComponent | undefined> = viewChild(PropertyListComponent);
   protected readonly isSwitchingNode: WritableSignal<boolean> = signal(false);
-  protected readonly isInitialArrival: WritableSignal<boolean> = signal(true);
   protected readonly isDetailVisible: WritableSignal<boolean> = signal(true);
   private readonly lifetime: AbortController = new AbortController();
 
@@ -135,7 +150,6 @@ export class PropertyEditorComponent {
     if (value !== 'properties' && value !== 'shapes' && value !== 'constraints' && value !== 'relationships') return;
     if (value === 'shapes' && !this.areAnnotationsVisible()) return;
     if (!this.canRunAction()) return;
-    this.isInitialArrival.set(false);
     this.editing.setSection(value);
   }
 
@@ -173,15 +187,7 @@ export class PropertyEditorComponent {
   }
 
   protected activateAnnotations(): void {
-    this.isInitialArrival.set(false);
     this.editing.setSection('shapes');
-  }
-
-  protected inspectNeighbour(nodeId: string): void {
-    const projectId: string | undefined = this.workspace.context()?.projectId;
-    if (!projectId) return;
-    const location: WorkspaceLocation = { projectId, levelIndex: this.workspace.store.currentLevelIndex(), nodeId };
-    this.runWithCleanDraft((): Promise<void> => this.changeNode((): Promise<boolean> => this.editing.inspect(location)));
   }
 
   public close(): void {
@@ -224,28 +230,90 @@ export class PropertyEditorComponent {
     if (!projectId || levelIndex === undefined) return;
 
     const location: WorkspaceLocation = { projectId, levelIndex, nodeId: refinement.node.id };
-    this.runWithCleanDraft((): Promise<void> => this.changeNode((): Promise<boolean> => this.editing.inspect(location)));
+    this.inspectNode(location);
+  }
+
+  protected inspectNode(location: WorkspaceLocation): void {
+    this.runWithCleanDraft((): Promise<void> =>
+      this.changeNode((): Promise<boolean> => this.editing.inspect(location), {
+        onNavigated: (): void => this.sourceReturn.set(null),
+      }),
+    );
   }
 
   protected inspectNodeSource(location: WorkspaceLocation): void {
-    this.runWithCleanDraft((): Promise<void> => this.changeNode((): Promise<boolean> => this.editing.inspect(location)));
+    this.inspectSource(location);
   }
 
   protected inspectPropertySource(property: InheritedAttribute): void {
     const projectId: string | undefined = this.workspace.context()?.projectId;
     if (!projectId) return;
     const location: WorkspaceLocation = { projectId, levelIndex: property.levelIndex, nodeId: property.nodeId };
-    this.runWithCleanDraft((): Promise<void> =>
-      this.changeNode((): Promise<boolean> => this.editing.inspect(location, property.attribute.id), true),
+    this.inspectSource(location, property);
+  }
+
+  private inspectSource(location: WorkspaceLocation, property?: InheritedAttribute): void {
+    this.runWithCleanDraft((): Promise<void> => {
+      const current: NodeSelection | null = this.editing.current();
+      const bookmark: SourceReturn | null = this.sourceReturn();
+      const origin: SourceReturn | null =
+        bookmark && !this.matchesSelection(bookmark.selection, current) ? bookmark : this.captureSourceReturn(property);
+      return this.changeNode((): Promise<boolean> => this.editing.inspect(location, property?.attribute.id), {
+        focusProperty: !!property,
+        onNavigated: (): void => {
+          this.sourceReturn.set(origin);
+          if (property) this.editing.setSection('properties');
+        },
+      });
+    });
+  }
+
+  private captureSourceReturn(property?: InheritedAttribute): SourceReturn | null {
+    const selection: NodeSelection | null = this.editing.current();
+    if (!selection) return null;
+
+    const annotation: AnnotationSourceSelection | undefined = this.shapeEditor()?.captureSourceSelection();
+    const target: SourceReturn['target'] | null = annotation
+      ? { kind: 'annotation', selection: annotation }
+      : property
+        ? { kind: 'property', property }
+        : null;
+    return target ? { selection, target } : null;
+  }
+
+  private matchesSelection(selection: NodeSelection, other: NodeSelection | null): boolean {
+    return (
+      other !== null &&
+      selection.modelId === other.modelId &&
+      selection.nodeId === other.nodeId &&
+      selection.attributeId === other.attributeId
     );
   }
 
   protected forwardToNode(): void {
-    this.runWithCleanDraft((): Promise<void> => this.changeNode((): Promise<boolean> => this.editing.forward()));
+    this.travelNode('forward');
   }
 
   protected backToNode(): void {
-    this.runWithCleanDraft((): Promise<void> => this.changeNode((): Promise<boolean> => this.editing.back()));
+    this.travelNode('back');
+  }
+
+  private travelNode(direction: 'back' | 'forward'): void {
+    this.runWithCleanDraft((): Promise<void> => {
+      const destination: NodeSelection | undefined = (direction === 'back' ? this.editing.previous() : this.editing.next())
+        ?.selection;
+      const origin: SourceReturn | null = this.sourceReturn();
+      const target: SourceReturn['target'] | null =
+        origin && this.matchesSelection(origin.selection, destination ?? null) ? origin.target : null;
+      return this.changeNode((): Promise<boolean> => this.editing[direction](), {
+        restoreFocus: (): boolean => {
+          if (!target) return false;
+          return target.kind === 'annotation'
+            ? (this.shapeEditor()?.restoreSourceSelection(target.selection) ?? false)
+            : (this.propertyList()?.focusInheritedSource(target.property) ?? false);
+        },
+      });
+    });
   }
 
   protected remove(property: Attribute): void {
@@ -291,18 +359,23 @@ export class PropertyEditorComponent {
     return !this.destroyRef.destroyed && this.workspace.isCurrent(context) && this.workspace.store.currentNodeId() === nodeId;
   }
 
-  private async changeNode(action: () => Promise<boolean>, focusProperty: boolean = false): Promise<void> {
+  private async changeNode(action: () => Promise<boolean>, options: NodeChangeOptions = {}): Promise<void> {
     if (this.isActionPending()) return;
     this.isSwitchingNode.set(true);
     try {
       this.lifetime.signal.throwIfAborted();
       const navigated: boolean = await action();
       this.lifetime.signal.throwIfAborted();
-      if (navigated) this.isDetailVisible.set(true);
+      if (navigated) {
+        this.isDetailVisible.set(true);
+        options.onNavigated?.();
+      }
       await this.waitForRender();
       this.lifetime.signal.throwIfAborted();
-      if (navigated && focusProperty) this.focusDetail(true);
-      else if (navigated) this.focusScreenHeading();
+      if (!navigated) return;
+      if (options.restoreFocus?.()) return;
+      if (options.focusProperty) this.focusDetail(true);
+      else this.focusScreenHeading();
     } catch (error: unknown) {
       if (!this.destroyRef.destroyed) this.projects.reportError(error);
     } finally {

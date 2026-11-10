@@ -1,8 +1,19 @@
-<section *transloco="let t" class="property-node-info min-w-0 px-5 py-5">
-  <div class="min-w-0">
+<section *transloco="let t" class="property-node-info flex min-w-0 select-none">
+  <button
+    type="button"
+    class="node-history-item node-history-back relative grid shrink-0 place-items-center rounded-s-[calc(var(--nori-radius)-1px)] enabled:cursor-pointer"
+    [class.is-available]="previousName() !== null"
+    [disabled]="disabled() || previousName() === null"
+    [attr.aria-hidden]="previousName() === null ? 'true' : null"
+    [attr.aria-label]="previousName() === null ? null : t('editor.backToNode', { name: previousName() })"
+    (click)="back.emit()"
+  >
+    <svg lucideChevronLeft class="size-4" aria-hidden="true"></svg>
+  </button>
+  <div class="min-w-0 flex-1 px-5 py-5">
     <nori-node-basics
       id="property-workspace-node-title"
-      class="[&_h1]:truncate [&_h1>button]:max-w-full [&_h1>button]:truncate"
+      class="[&_h1]:truncate [&_h1>button]:max-w-full [&_h1>button]:truncate [&_input]:select-text"
       [showEditingControls]="true"
     >
       <button
@@ -12,8 +23,7 @@
         variant="text"
         size="xs"
         shape="circle"
-        class="shrink-0"
-        [disabled]="disabled()"
+        class="nori-soft-hover shrink-0"
         (click)="openDetails()"
         [attr.aria-label]="t(workspace.queries.isNodeEditable() ? 'editor.editNode' : 'editor.nodeDetails')"
       >
@@ -38,4 +48,15 @@
       }
     </div>
   </div>
+  <button
+    type="button"
+    class="node-history-item node-history-forward relative grid shrink-0 place-items-center rounded-e-[calc(var(--nori-radius)-1px)] enabled:cursor-pointer"
+    [class.is-available]="nextName() !== null"
+    [disabled]="disabled() || nextName() === null"
+    [attr.aria-hidden]="nextName() === null ? 'true' : null"
+    [attr.aria-label]="nextName() === null ? null : t('editor.nodeWorkspace.forwardTo', { name: nextName() })"
+    (click)="forward.emit()"
+  >
+    <svg lucideChevronRight class="size-4" aria-hidden="true"></svg>
+  </button>
 </section>

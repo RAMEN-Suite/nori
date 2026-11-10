@@ -3,6 +3,47 @@
   min-width: 0;
   flex-shrink: 0;
 }
+.node-history-item {
+  inline-size: 0;
+  opacity: 0;
+  overflow: clip;
+  visibility: hidden;
+}
+.node-history-item.is-available {
+  inline-size: 2rem;
+  opacity: 1;
+  visibility: visible;
+}
+.node-history-item::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inline-size: 1px;
+  background-color: var(--nori-border);
+}
+.node-history-back::after {
+  inset-inline-end: 0;
+}
+.node-history-forward::after {
+  inset-inline-start: 0;
+}
+.node-history-item:hover:enabled {
+  background-color: var(--sui-color-hover);
+}
+.node-history-item.is-available:disabled {
+  opacity: var(--sui-disabled-opacity);
+}
+.node-history-item:focus-visible {
+  outline: var(--sui-focus-ring-width) solid var(--sui-focus-ring-color, currentColor);
+  outline-offset: calc(-1 * var(--sui-focus-ring-offset));
+}
+:host-context(html[data-motion="on"]) .node-history-item {
+  transition:
+    inline-size var(--nori-motion-quick) var(--nori-editor-ease),
+    opacity var(--nori-motion-quick) var(--nori-editor-ease),
+    visibility var(--nori-motion-quick),
+    background-color var(--nori-motion-quick) ease;
+}
 .property-refinement-chip:hover:not(:disabled) {
   background: color-mix(in oklab, var(--refinement-colour) 20%, transparent);
 }

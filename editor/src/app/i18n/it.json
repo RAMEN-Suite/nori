@@ -459,6 +459,10 @@
       "bounds": "Il massimo deve essere almeno 1 e non inferiore al minimo."
     },
     "neighbourhood": {
+      "jumpTo": "Vai a",
+      "jumpToNode": "Vai a un nodo",
+      "jumpToNodePlaceholder": "Vai a un nodo…",
+      "viewOptions": "Strumenti del grafo",
       "title": "Collegamenti",
       "label": "Nodi collegati direttamente",
       "empty": "Questo nodo non ha ancora relazioni.",
@@ -469,7 +473,6 @@
       "details": "Impostazioni per {{name}}",
       "array": "Consenti più valori",
       "newName": "Nuova proprietà…",
-      "list": "Lista",
       "multipleValues": "Più valori",
       "inherited": "Proprietà ereditate",
       "viewProperty": "Visualizza proprietà",
@@ -478,9 +481,9 @@
       "jumpToNode": "Vai al nodo {{name}}"
     },
     "nodeWorkspace": {
+      "noMatchingNodes": "Nessun nodo corrispondente",
       "relationships": "Relazioni",
       "noRelationships": "Questo nodo non ha relazioni.",
-      "history": "Navigazione tra nodi",
       "forwardTo": "Avanti a {{name}}",
       "rulesHint": "Modifica requisiti, limiti e regole di utilizzo nelle impostazioni di ogni proprietà.",
       "editRules": "Modifica regole",

@@ -94,6 +94,12 @@ interface AnnotationSource {
   readonly location: WorkspaceLocation;
 }
 
+export interface AnnotationSourceSelection {
+  readonly shapeId: string;
+  readonly modelId: string;
+  readonly property: { readonly id: string; readonly modelId: string } | null;
+}
+
 interface ShapeGroup {
   readonly modelId: string;
   readonly modelName: string;
@@ -430,6 +436,38 @@ export class ShapeEditorComponent {
     else this.inspectSource.emit(source.location);
   }
 
+  public captureSourceSelection(): AnnotationSourceSelection | undefined {
+    const entry: ShapeEntry | undefined = this.selected();
+    if (!entry) return undefined;
+    const property: InheritedAttribute | null = this.shared();
+    return {
+      shapeId: entry.shape.id,
+      modelId: entry.modelId,
+      property: property ? { id: property.attribute.id, modelId: property.modelId } : null,
+    };
+  }
+
+  public restoreSourceSelection(selection: AnnotationSourceSelection): boolean {
+    const entry: ShapeEntry | undefined = this.shapes().find(
+      (item: ShapeEntry): boolean => item.shape.id === selection.shapeId && item.modelId === selection.modelId,
+    );
+    if (!entry) return false;
+    const sourceProperty: AnnotationSourceSelection['property'] = selection.property;
+    const property: InheritedAttribute | undefined = this.sharedProperties().find(
+      (item: InheritedAttribute): boolean =>
+        sourceProperty !== null && item.attribute.id === sourceProperty.id && item.modelId === sourceProperty.modelId,
+    );
+    this.showShape(
+      entry.shape,
+      property ? '.shape-detail-window [data-annotation-source]' : '.shape-window [data-annotation-source]',
+    );
+    if (property) {
+      this.shared.set(property);
+      this.detail.set('shared');
+    }
+    return true;
+  }
+
   protected selectProperty(attributeId: string | null): void {
     if (!this.canLeave('detail')) return;
     this.clearDetail();
@@ -583,13 +621,13 @@ export class ShapeEditorComponent {
     return true;
   }
 
-  private showShape(shape: AnnotationShape): void {
+  private showShape(shape: AnnotationShape, focusSelector: string = '#annotation-name'): void {
     this.shapeId.set(shape.id);
     this.isCreating.set(false);
     this.clearDetail();
     this.loadSettings(shape.type, shape.description ?? '');
     this.isMobileDetailVisible.set(true);
-    this.focus('#annotation-name');
+    this.focus(focusSelector);
   }
 
   private closeShape(): void {

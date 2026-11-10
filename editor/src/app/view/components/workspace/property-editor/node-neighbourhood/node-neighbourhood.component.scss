@@ -5,13 +5,19 @@
   min-width: 0;
   min-height: 0;
 }
-.neighbourhood-toolbar {
-  --sui-card-border-color: var(--nori-border);
-  background: var(--color-base-100);
-}
 .neighbourhood-host {
   background-image: radial-gradient(var(--nori-grid) 1px, transparent 1px);
   background-size: 20px 20px;
+}
+.neighbourhood-search {
+  --sui-selection-option-hover-background: var(--nori-selection-background);
+  --sui-selection-option-hover-color: var(--nori-selection-color);
+  --sui-selection-option-selected-background: var(--nori-selection-background);
+  --sui-selection-option-selected-color: var(--nori-selection-color);
+  --sui-selection-option-selected-hover-background: var(--nori-selection-hover-background);
+}
+:host-context(html[data-motion="on"]) .neighbourhood-search {
+  animation: nori-panel-unfold var(--nori-motion-quick) var(--nori-editor-ease) backwards;
 }
 .neighbourhood-canvas {
   width: 100%;

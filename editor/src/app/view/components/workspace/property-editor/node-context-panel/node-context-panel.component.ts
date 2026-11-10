@@ -10,7 +10,7 @@ import {
   type Signal,
 } from '@angular/core';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { LucideInfo } from '@lucide/angular';
+import { LucideChevronLeft, LucideChevronRight, LucideInfo } from '@lucide/angular';
 import { ModelRef, type Node } from '@ramen-suite/core/model';
 import { Button } from '@sushi-kit/angular';
 import type { NodeDefinition } from '../../../../../models/WorkspaceDetails';
@@ -22,7 +22,7 @@ import { NodeBasicsComponent } from '../../inspector/node-view/node-basics/node-
 @Component({
   selector: 'nori-node-context-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [TranslocoDirective, NodeBasicsComponent, Button, LucideInfo],
+  imports: [TranslocoDirective, NodeBasicsComponent, Button, LucideChevronLeft, LucideChevronRight, LucideInfo],
   templateUrl: './node-context-panel.component.html',
   styleUrl: './node-context-panel.component.scss',
 })
@@ -30,6 +30,10 @@ export class NodeContextPanelComponent {
   private readonly dialogs: DialogService = inject(DialogService);
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
   public readonly disabled: InputSignal<boolean> = input(false);
+  public readonly previousName: InputSignal<string | null> = input<string | null>(null);
+  public readonly nextName: InputSignal<string | null> = input<string | null>(null);
+  public readonly back: OutputEmitterRef<void> = output();
+  public readonly forward: OutputEmitterRef<void> = output();
   public readonly inspect: OutputEmitterRef<NodeDefinition> = output();
 
   protected readonly refinement: Signal<NodeDefinition | null> = computed(

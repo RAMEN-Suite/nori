@@ -31,6 +31,7 @@ interface PropertyHistoryEntry {
   readonly url: string;
   readonly name: string;
   readonly selection: PropertySelection;
+  readonly section: PropertySection;
 }
 
 /** Owns the node editing screen and its current node/property selection. */
@@ -159,7 +160,7 @@ export class PropertyEditingService {
     const name: string | undefined = this.workspace.queries.currentNode()?.name;
     if (!selection || !name || this.workspace.context()?.projectId !== location.projectId) return false;
 
-    const entry: PropertyHistoryEntry = { url: this.router.url, name, selection };
+    const entry: PropertyHistoryEntry = { url: this.router.url, name, selection, section: this.section() };
     const navigated: boolean = await this.navigate(
       (): Promise<boolean> => this.navigation.navigateToLocation(location),
       attributeId,
@@ -187,12 +188,13 @@ export class PropertyEditingService {
     const selection: PropertySelection | null = this.current();
     const name: string | undefined = this.workspace.queries.currentNode()?.name;
     if (!entry || !selection || !name) return false;
-    const current: PropertyHistoryEntry = { url: this.router.url, name, selection };
+    const current: PropertyHistoryEntry = { url: this.router.url, name, selection, section: this.section() };
     const navigated: boolean = await this.navigate(
       (): Promise<boolean> => this.navigation.navigateToUrl(entry.url),
       entry.selection.attributeId,
     );
     if (navigated) {
+      this.setSection(entry.section);
       source.update((entries): PropertyHistoryEntry[] => entries.slice(0, -1));
       destination.update((entries): PropertyHistoryEntry[] => [...entries, current]);
     }
