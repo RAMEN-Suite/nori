@@ -7,7 +7,7 @@
         <h2 class="text-lg font-medium">{{ t('editor.emptyTitle') }}</h2>
         <p class="text-base-content/60 max-w-[calc(16rem+20px)] text-sm">{{ t('editor.emptyDescription') }}</p>
         @if (workspace.queries.isEditable()) {
-          <div class="flex max-w-lg flex-wrap justify-center gap-2 px-6">
+          <div class="mt-1 flex max-w-lg flex-wrap justify-center gap-2 px-6">
             @for (node of startingNodes(); track node.ref) {
               <button
                 suiButton
