@@ -15,7 +15,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { TranslocoDirective } from '@jsverse/transloco';
-import { LucideBox, LucideChevronRight, LucideCopy, LucidePlus, LucideTrash } from '@lucide/angular';
+import { LucideBox, LucideChevronRight, LucideCopy, LucidePlus, LucideTrash, LucideSearch } from '@lucide/angular';
 import { ModelRef } from '@ramen-suite/core/model';
 import {
   Accordion,
@@ -82,6 +82,7 @@ interface MutableNodeGroup extends Omit<NodeGroup, 'items'> {
     LucideCopy,
     LucideTrash,
     LucidePlus,
+    LucideSearch,
     InlineNameInputComponent,
   ],
   templateUrl: './refinements.component.html',
