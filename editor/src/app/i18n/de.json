@@ -459,10 +459,10 @@
       "bounds": "Die Höchstanzahl muss mindestens 1 und darf nicht kleiner als die Mindestanzahl sein."
     },
     "neighbourhood": {
-      "jumpTo": "Springe zu",
       "jumpToNode": "Zu einem Knoten springen",
       "jumpToNodePlaceholder": "Zu einem Knoten springen…",
       "viewOptions": "Graphwerkzeuge",
+      "fullGraph": "Gesamter Graph",
       "title": "Verbindungen",
       "label": "Direkt verbundene Knoten",
       "empty": "Dieser Knoten hat noch keine Relationen.",

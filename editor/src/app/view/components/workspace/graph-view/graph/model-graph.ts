@@ -1,4 +1,5 @@
 import { ModelRef, type Model, type Node, type Relation } from '@ramen-suite/core/model';
+import { ModelQueries } from '../../../../../utils/model-queries';
 
 export interface GraphNode {
   readonly id: string;
@@ -89,18 +90,13 @@ function projectReference(ref: string, currentModelId: string, models: ReadonlyM
 
 function projectNode(node: Node, id: string, ownerId: string, models: ReadonlyMap<string, Model>): GraphNode {
   const base: string | undefined = node.superTypes[0];
-  const ref: string | undefined = base && (ModelRef.isQualified(base) ? base : ModelRef.qualify(ownerId, base));
-  const owner: { modelId: string; refId: string } | undefined = ref ? ModelRef.splitQualified(ref) : undefined;
-  const baseName: string = owner
-    ? (models.get(owner.modelId)?.classifiers.find((item): boolean => item.id === owner.refId)?.name ?? '')
-    : '';
 
   return {
     id,
     kind: 'Node',
     label: node.name,
     superType: ModelRef.localId(base ?? node.id),
-    baseName,
+    baseName: ModelQueries.parentNodeName(node, ownerId, models) ?? '',
     modelName: models.get(ownerId)?.name ?? '',
   };
 }

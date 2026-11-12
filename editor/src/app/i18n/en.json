@@ -459,10 +459,10 @@
       "bounds": "The maximum must be at least 1 and not below the minimum."
     },
     "neighbourhood": {
-      "jumpTo": "Jump to",
       "jumpToNode": "Jump to a node",
       "jumpToNodePlaceholder": "Jump to a node…",
       "viewOptions": "Graph tools",
+      "fullGraph": "Full graph",
       "title": "Connections",
       "label": "Directly connected nodes",
       "empty": "This node has no relations yet.",

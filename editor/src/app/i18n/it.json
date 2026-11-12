@@ -459,10 +459,10 @@
       "bounds": "Il massimo deve essere almeno 1 e non inferiore al minimo."
     },
     "neighbourhood": {
-      "jumpTo": "Vai a",
       "jumpToNode": "Vai a un nodo",
       "jumpToNodePlaceholder": "Vai a un nodo…",
       "viewOptions": "Strumenti del grafo",
+      "fullGraph": "Grafo completo",
       "title": "Collegamenti",
       "label": "Nodi collegati direttamente",
       "empty": "Questo nodo non ha ancora relazioni.",

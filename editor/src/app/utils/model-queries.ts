@@ -17,6 +17,16 @@ export class ModelQueries {
     return model?.classifiers.filter((item): item is Node => item.kind === 'Node') ?? [];
   }
 
+  public static parentNodeName(node: Node, modelId: string, models: ReadonlyMap<string, Model>): string | undefined {
+    const reference: string | undefined = node.superTypes[0];
+    if (!reference) return undefined;
+
+    const { modelId: parentModelId, refId } = ModelRef.isQualified(reference)
+      ? ModelRef.splitQualified(reference)
+      : { modelId, refId: reference };
+    return models.get(parentModelId)?.classifiers.find((item): boolean => item.kind === 'Node' && item.id === refId)?.name;
+  }
+
   public static nodeAncestors(draft: RamenModel, reference: string): readonly NodeDefinition[] {
     const lineage: readonly NodeLineageItem[] = draft.getNodeLineage(reference);
     return lineage.slice(0, -1).flatMap((item): NodeDefinition[] => {

@@ -238,6 +238,39 @@ html:active-view-transition-type(open-workspace)::view-transition-old(project-li
   background-color: var(--nori-selection-hover-background);
 }
 
+.neighbourhood-search [role="listbox"] > [role="option"] {
+  padding-block: 0.375rem;
+}
+
+.neighbourhood-search [role="option"]:has(.neighbourhood-search-heading) {
+  position: relative;
+  margin-block-start: 2.25rem;
+  scroll-margin-block-start: 2.25rem;
+}
+
+.neighbourhood-search [role="option"] + [role="option"]:has(.neighbourhood-search-heading) {
+  margin-block-start: 2.75rem;
+}
+
+@supports (bottom: anchor(top)) {
+  .neighbourhood-search {
+    anchor-name: --nori-node-search;
+  }
+
+  .neighbourhood-search .cdk-overlay-popover:popover-open {
+    position-anchor: --nori-node-search;
+    inset: auto auto calc(anchor(top) + 0.25rem) anchor(left) !important;
+    width: anchor-size(width) !important;
+    height: auto !important;
+  }
+
+  .neighbourhood-search .cdk-overlay-popover:popover-open > .cdk-overlay-pane {
+    position: static;
+    width: 100% !important;
+    transform: none !important;
+  }
+}
+
 .nori-dialog-motion dialog[data-motion="fade"][open] {
   animation: none;
   opacity: 0;

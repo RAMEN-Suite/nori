@@ -2,7 +2,7 @@
   <ng-content select="nori-node-context-panel" />
   <section
     class="property-surface bg-base-100 flex min-h-0 min-w-0 flex-1 flex-col overflow-clip rounded-[var(--nori-radius)] border border-[var(--nori-border)]"
-    [attr.aria-label]="t('editor.neighbourhood.title')"
+    [attr.aria-label]="t(isFullGraphVisible() ? 'editor.neighbourhood.fullGraph' : 'editor.neighbourhood.title')"
   >
     <div #graphHost class="neighbourhood-host relative min-h-0 flex-1 overflow-hidden">
       <svg
@@ -13,111 +13,114 @@
         [attr.aria-label]="t('editor.neighbourhood.navigationHint')"
         (keydown)="handleGraphKey($event)"
       ></svg>
-      @if (isSearchOpen()) {
+      <div class="pointer-events-none absolute inset-x-3 bottom-3 flex gap-2">
         <div
-          #searchPanel
+          class="bg-base-100 pointer-events-auto flex shrink-0 items-center gap-1 rounded-[var(--nori-radius)] border border-[var(--nori-border)] px-2 py-1"
+          role="group"
+          [attr.aria-label]="t('editor.neighbourhood.viewOptions')"
+        >
+          <button
+            suiButton
+            type="button"
+            size="sm"
+            severity="neutral"
+            variant="text"
+            shape="circle"
+            class="nori-soft-hover"
+            [noriIconTooltip]="t('editor.fit')"
+            (click)="!areControlsBusy() && fit()"
+          >
+            <svg lucideScan class="size-4" aria-hidden="true"></svg>
+          </button>
+          <button
+            suiButton
+            type="button"
+            size="sm"
+            severity="neutral"
+            variant="text"
+            shape="circle"
+            class="nori-soft-hover"
+            [noriIconTooltip]="t('editor.reset')"
+            (click)="resetLayout()"
+          >
+            <svg lucideNetwork class="size-4" aria-hidden="true"></svg>
+          </button>
+          <button
+            suiButton
+            type="button"
+            size="sm"
+            severity="neutral"
+            variant="text"
+            shape="circle"
+            class="nori-soft-hover"
+            [noriIconTooltip]="t('editor.colours')"
+            (click)="openColours()"
+          >
+            <svg lucidePalette class="size-4" aria-hidden="true"></svg>
+          </button>
+          <button
+            suiButton
+            type="button"
+            size="sm"
+            severity="neutral"
+            shape="circle"
+            class="nori-panel-toggle"
+            [variant]="isFullGraphVisible() ? 'soft' : 'text'"
+            [attr.aria-pressed]="isFullGraphVisible()"
+            [noriIconTooltip]="t('editor.neighbourhood.fullGraph')"
+            (click)="toggleFullGraph()"
+          >
+            <svg lucideWaypoints class="size-4" aria-hidden="true"></svg>
+          </button>
+        </div>
+        <div
           id="neighbourhood-node-search"
-          class="neighbourhood-search absolute inset-x-5 top-5 mx-auto max-w-76"
+          class="neighbourhood-search pointer-events-auto relative flex min-w-0 flex-1"
           tabindex="-1"
-          (keydown.escape)="dismissSearch($event)"
+          (keydown.escape)="$event.stopPropagation()"
         >
           <sui-autocomplete
-            class="[&_input[type=search]]:pe-6"
+            class="[&>.input]:h-full [&>.input]:flex-row-reverse"
             fluid
             size="sm"
             forceSelection
             openOnClick
             [minQueryLength]="0"
             [delay]="0"
+            [optionHeight]="34"
             [ariaLabel]="t('editor.neighbourhood.jumpToNode')"
             [placeholder]="t('editor.neighbourhood.jumpToNodePlaceholder')"
             [emptyMessage]="t('editor.nodeWorkspace.noMatchingNodes')"
             [suggestionsMessage]="suggestionsMessage"
             [options]="searchOptions()"
-            [disabled]="areControlsBusy()"
+            [filterWith]="matchesSearch"
+            (queryChange)="searchQuery.set($event)"
             (valueChange)="selectSearchResult($event)"
           >
+            <ng-template suiAutocompletePrefix><svg lucideSearch class="size-4" aria-hidden="true"></svg></ng-template>
             <ng-template [suiAutocompleteItem]="searchOptions()" let-option>
-              <span class="flex min-w-0 items-center justify-between gap-2 text-sm">
-                <span class="min-w-0 flex-1 truncate">{{ option.label }}</span>
-                <span suiBadge size="xs" severity="neutral" variant="soft" class="max-w-[45%] min-w-0">
-                  <span class="truncate">{{ option.modelName }}</span>
+              @if (firstMatchByModel().get(option.modelId) === option) {
+                <span
+                  class="neighbourhood-search-heading pointer-events-none absolute inset-x-0 bottom-full flex h-9 items-center gap-2 px-3 text-xs font-semibold text-(--sui-color-muted)"
+                  aria-hidden="true"
+                >
+                  <span class="min-w-0 truncate">{{ option.modelName }}</span>
+                  <span class="min-w-2 flex-1 border-t border-(--sui-color-border)"></span>
                 </span>
+              }
+              <svg lucideBox class="me-2 size-3.5 shrink-0 opacity-45" aria-hidden="true"></svg>
+              <span class="grid min-w-0 gap-0.5">
+                <span class="truncate text-sm">{{ option.label }}</span>
+                @if (option.parentName) {
+                  <span class="truncate text-xs text-(--sui-color-muted)">{{ t('editor.refines', { name: option.parentName }) }}</span>
+                } @else if (!option.node.superTypes.length) {
+                  <span class="truncate text-xs text-(--sui-color-muted)">{{ t('editor.baseNode') }}</span>
+                }
               </span>
+              <span class="sr-only">{{ option.modelName }}</span>
             </ng-template>
           </sui-autocomplete>
-          <svg
-            lucideSearch
-            class="text-base-content/55 pointer-events-none absolute end-3 top-1/2 z-1 size-4 -translate-y-1/2"
-            aria-hidden="true"
-          ></svg>
         </div>
-      }
-      <div
-        class="bg-base-100 absolute start-3 bottom-3 flex items-center gap-1 rounded-[var(--nori-radius)] border border-[var(--nori-border)] px-2 py-1"
-      >
-        <button
-          #searchButton
-          suiButton
-          type="button"
-          size="sm"
-          severity="neutral"
-          class="nori-panel-toggle"
-          [variant]="isSearchOpen() ? 'soft' : 'text'"
-          shape="circle"
-          [disabled]="areControlsBusy()"
-          [noriIconTooltip]="t('editor.neighbourhood.jumpTo')"
-          [attr.aria-expanded]="isSearchOpen()"
-          [attr.aria-controls]="isSearchOpen() ? 'neighbourhood-node-search' : null"
-          (click)="toggleSearch()"
-        >
-          <svg lucideCornerUpRight class="size-4" aria-hidden="true"></svg>
-        </button>
-      </div>
-      <div
-        class="bg-base-100 absolute end-3 bottom-3 flex items-center gap-1 rounded-[var(--nori-radius)] border border-[var(--nori-border)] px-2 py-1"
-        role="group"
-        [attr.aria-label]="t('editor.neighbourhood.viewOptions')"
-      >
-        <button
-          suiButton
-          type="button"
-          size="sm"
-          severity="neutral"
-          variant="text"
-          shape="circle"
-          [disabled]="disabled()"
-          [noriIconTooltip]="t('editor.fit')"
-          (click)="fit()"
-        >
-          <svg lucideScan class="size-4" aria-hidden="true"></svg>
-        </button>
-        <button
-          suiButton
-          type="button"
-          size="sm"
-          severity="neutral"
-          variant="text"
-          shape="circle"
-          [disabled]="disabled()"
-          [noriIconTooltip]="t('editor.reset')"
-          (click)="resetLayout()"
-        >
-          <svg lucideNetwork class="size-4" aria-hidden="true"></svg>
-        </button>
-        <button
-          suiButton
-          type="button"
-          size="sm"
-          severity="neutral"
-          variant="text"
-          shape="circle"
-          [disabled]="disabled()"
-          [noriIconTooltip]="t('editor.colours')"
-          (click)="openColours()"
-        >
-          <svg lucidePalette class="size-4" aria-hidden="true"></svg>
-        </button>
       </div>
     </div>
   </section>
