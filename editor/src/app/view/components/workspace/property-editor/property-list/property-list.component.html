@@ -125,8 +125,6 @@
                 @let invalidName = hasIssue(issues, 'name');
                 <div
                   class="property-row"
-                  [animate.enter]="appearance.isMotionEnabled() && !switchingNode() ? 'property-row-arrive' : ''"
-                  data-nori-motion
                   [attr.data-property-id]="property.id"
                   [class.has-property-issues]="issues.length > 0"
                   [class.is-selected]="editing.current()?.attributeId === property.id"

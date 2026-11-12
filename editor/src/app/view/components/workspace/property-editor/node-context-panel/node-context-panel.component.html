@@ -3,7 +3,7 @@
     type="button"
     class="node-history-item node-history-back relative grid shrink-0 place-items-center rounded-s-[calc(var(--nori-radius)-1px)] enabled:cursor-pointer"
     [class.is-available]="previousName() !== null"
-    [disabled]="disabled() || previousName() === null"
+    [disabled]="previousName() === null"
     [attr.aria-hidden]="previousName() === null ? 'true' : null"
     [attr.aria-label]="previousName() === null ? null : t('editor.backToNode', { name: previousName() })"
     (click)="back.emit()"
@@ -37,7 +37,6 @@
           type="button"
           class="property-refinement-chip text-base-content inline-flex min-w-0 cursor-pointer items-center gap-1.5 rounded-full border border-[color-mix(in_oklab,var(--refinement-colour)_40%,transparent)] bg-[color-mix(in_oklab,var(--refinement-colour)_10%,transparent)] px-2.5 py-0.5 text-xs"
           [style.--refinement-colour]="colour()"
-          [disabled]="disabled()"
           (click)="inspect.emit(base)"
         >
           <span class="size-1.5 shrink-0 rounded-full bg-[var(--refinement-colour)]" aria-hidden="true"></span>
@@ -52,7 +51,7 @@
     type="button"
     class="node-history-item node-history-forward relative grid shrink-0 place-items-center rounded-e-[calc(var(--nori-radius)-1px)] enabled:cursor-pointer"
     [class.is-available]="nextName() !== null"
-    [disabled]="disabled() || nextName() === null"
+    [disabled]="nextName() === null"
     [attr.aria-hidden]="nextName() === null ? 'true' : null"
     [attr.aria-label]="nextName() === null ? null : t('editor.nodeWorkspace.forwardTo', { name: nextName() })"
     (click)="forward.emit()"

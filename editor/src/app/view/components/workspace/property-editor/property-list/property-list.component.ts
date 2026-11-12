@@ -8,11 +8,9 @@ import {
   DestroyRef,
   computed,
   inject,
-  input,
   output,
   signal,
   linkedSignal,
-  type InputSignal,
   type Signal,
   type WritableSignal,
   type OutputEmitterRef,
@@ -44,7 +42,6 @@ import {
   type AutocompleteOption,
 } from '@sushi-kit/angular';
 import { DataTypes, type Diagnostic, type Model, type Attribute, type UpdateAttributeInput } from '@ramen-suite/core/model';
-import { ApplicationState } from '../../../../../states/application.state';
 import { WorkspaceService, type WorkspaceContext } from '../../../../../services/workspace/workspace.service';
 import { ProjectService } from '../../../../../services/projects/project.service';
 import { DialogService } from '../../../../../services/interaction/dialog.service';
@@ -102,7 +99,6 @@ interface PropertyIssue {
 })
 export class PropertyListComponent {
   protected readonly workspace: WorkspaceService = inject(WorkspaceService);
-  protected readonly appearance: ApplicationState = inject(ApplicationState);
   protected readonly editing: PropertyEditingService = inject(PropertyEditingService);
   private readonly element: ElementRef<HTMLElement> = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly translations: TranslocoService = inject(TranslocoService);
@@ -110,7 +106,6 @@ export class PropertyListComponent {
   private readonly destroyRef: DestroyRef = inject(DestroyRef);
   private readonly projects: ProjectService = inject(ProjectService);
   private readonly dialogs: DialogService = inject(DialogService);
-  public readonly switchingNode: InputSignal<boolean> = input(false);
   public readonly inspect: OutputEmitterRef<InheritedAttribute> = output();
   public readonly remove: OutputEmitterRef<Attribute> = output<Attribute>();
   public readonly duplicate: OutputEmitterRef<Attribute> = output<Attribute>();

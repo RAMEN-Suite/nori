@@ -44,7 +44,6 @@
               type="button"
               class="property-screen-close inline-grid size-8 shrink-0 cursor-pointer place-items-center rounded-[var(--radius-field)]"
               [attr.aria-label]="t('common.close')"
-              [disabled]="areControlsUnavailable()"
               (click)="close()"
             >
               <svg lucideX class="size-4.5" aria-hidden="true"></svg>
@@ -155,12 +154,7 @@
               tabindex="-1"
               [attr.aria-label]="t('editor.editProperties')"
             >
-              <nori-property-list
-                [switchingNode]="isSwitchingNode()"
-                (inspect)="inspectPropertySource($event)"
-                (remove)="remove($event)"
-                (duplicate)="duplicate($event)"
-              />
+              <nori-property-list (inspect)="inspectPropertySource($event)" (remove)="remove($event)" (duplicate)="duplicate($event)" />
             </section>
           }
         }

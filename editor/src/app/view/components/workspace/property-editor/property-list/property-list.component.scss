@@ -88,18 +88,3 @@ button:disabled .create-property-icon {
   align-self: start;
   margin-block-start: 0.625rem;
 }
-
-.property-row-arrive {
-  animation: property-content-arrive var(--nori-motion-quick) var(--nori-editor-ease) both;
-}
-
-@keyframes property-content-arrive {
-  from {
-    opacity: 0;
-    transform: translateY(0.5rem);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}

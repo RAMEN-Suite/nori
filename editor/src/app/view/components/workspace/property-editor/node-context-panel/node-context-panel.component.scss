@@ -30,9 +30,6 @@
 .node-history-item:hover:enabled {
   background-color: var(--sui-color-hover);
 }
-.node-history-item.is-available:disabled {
-  opacity: var(--sui-disabled-opacity);
-}
 .node-history-item:focus-visible {
   outline: var(--sui-focus-ring-width) solid var(--sui-focus-ring-color, currentColor);
   outline-offset: calc(-1 * var(--sui-focus-ring-offset));
