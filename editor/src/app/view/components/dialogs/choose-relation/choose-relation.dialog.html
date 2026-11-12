@@ -1,25 +1,34 @@
 <div *transloco="let t" class="nori-dialog-content">
-  <div class="nori-dialog-scroll flex min-w-0 flex-col gap-4">
-    <div class="flex items-center gap-3 text-sm font-medium">
-      <span class="min-w-0 truncate">{{ fromName() }}</span>
-      <svg lucideArrowRight class="text-base-content/45 size-4 shrink-0" aria-hidden="true"></svg>
-      <span class="min-w-0 truncate">{{ toName() }}</span>
-    </div>
-    <p class="text-base-content/65 text-sm leading-relaxed">{{ t('editor.chooseRelationHint') }}</p>
-    <sui-list [items]="choices()" [dividers]="false" [rowHover]="false">
+  <div class="nori-dialog-scroll flex min-w-0 flex-col gap-2.5">
+    <p class="text-sm wrap-break-word">
+      @for (part of t('editor.chooseRelationHint', { from: '{from}', to: '{to}' }).split(endpointMarkers); track $index) {
+        @switch (part) {
+          @case ('{from}') {
+            <strong class="font-semibold">{{ fromName() }}</strong>
+          }
+          @case ('{to}') {
+            <strong class="font-semibold">{{ toName() }}</strong>
+          }
+          @default {
+            <ng-container>{{ part }}</ng-container>
+          }
+        }
+      }
+    </p>
+    <sui-list class="relationship-list" size="xs" [items]="choices()">
       <ng-template [suiListItem]="choices()" let-choice>
         <button
           suiButton
           size="sm"
           severity="neutral"
-          variant="outlined"
-          class="h-auto w-full justify-start gap-3 rounded-(--nori-radius-input) border-(--nori-border) px-4 py-3 text-left"
+          variant="text"
+          class="relationship-choice col-span-full text-left"
           [disabled]="dialogs.isPending()"
           (click)="handleChoose(choice.ref)"
         >
           <svg lucideLink2 class="text-base-content/50 size-4 shrink-0" aria-hidden="true"></svg>
-          <span class="flex min-w-0 flex-col gap-1">
-            <span class="break-words">{{ choice.name }}</span>
+          <span class="flex min-w-0 flex-col">
+            <span class="wrap-break-word whitespace-normal">{{ choice.name }}</span>
             <span class="text-base-content/55 text-xs font-normal">{{ projects.modelsById().get(choice.modelId)?.name }}</span>
           </span>
         </button>

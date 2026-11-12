@@ -24,9 +24,13 @@ export class RelationEditingService {
     if (this.isPending() || !this.workspace.queries.isEditable()) return;
     try {
       const draft: RamenModel = this.workspace.store.getDraft();
-      const choices: readonly RelationSuggestion[] = this.workspace.queries.resolveRelationChoices(from, to);
+      const compatible: readonly RelationSuggestion[] = this.workspace.queries.resolveRelationChoices(from, to);
       const context: WorkspaceContext = this.requireContext();
-      if (!choices.length) throw new Error(this.translations.translate('editor.noRelation'));
+      if (!compatible.length) throw new Error(this.translations.translate('editor.noRelation'));
+
+      const existing: ReadonlySet<string> = this.existingRelations(draft, from, to, context.modelId);
+      const choices: readonly RelationSuggestion[] = compatible.filter((choice): boolean => !existing.has(choice.ref));
+      if (!choices.length) throw new Error(this.translations.translate('editor.relationExists'));
 
       const connect: (ref: string) => Promise<void> = (ref: string): Promise<void> => this.create(from, to, ref, context);
       if (choices.length === 1 && choices[0]) await connect(choices[0].ref);
@@ -110,16 +114,18 @@ export class RelationEditingService {
   private async create(from: string, to: string, ref: string, context: WorkspaceContext): Promise<void> {
     this.ensureContext(context);
     const draft: RamenModel = this.workspace.store.getDraft();
-    if (
-      ModelRef.splitQualified(ref).modelId === context.modelId &&
-      draft.getRelations(from, to).some((relation): boolean => relation.ref === ref)
-    ) {
+    if (this.existingRelations(draft, from, to, context.modelId).has(ref)) {
       throw new Error(this.translations.translate('editor.relationExists'));
     }
 
     await this.perform(async (): Promise<void> => {
       await this.workspace.actions.createRelation({ refines: ref, from: { nodeId: from }, to: { nodeId: to } });
     });
+  }
+
+  private existingRelations(draft: RamenModel, from: string, to: string, modelId: string): ReadonlySet<string> {
+    const refs: string[] = draft.getRelations(from, to).map((relation): string => relation.ref);
+    return new Set(refs.filter((ref: string): boolean => ModelRef.splitQualified(ref).modelId === modelId));
   }
 
   private async perform(action: () => Promise<void>): Promise<void> {

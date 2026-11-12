@@ -1,0 +1,14 @@
+@use "../../../../../styles/surface-list";
+
+.nori-dialog-content {
+  gap: 0.75rem;
+}
+
+.relationship-list {
+  @include surface-list.frame;
+  @include surface-list.inset;
+}
+
+.relationship-choice {
+  @include surface-list.action;
+}
