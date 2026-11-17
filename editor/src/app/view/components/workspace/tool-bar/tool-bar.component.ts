@@ -179,7 +179,7 @@ export class ToolBarComponent {
     exportSvg: (): void => this.handleExportImage('svg'),
     exportPng: (): void => this.handleExportImage('png'),
     settings: (): void => {
-      this.dialogs.open(SettingsDialog, { closeOnBackdrop: true, headerKey: 'common.settings', width: '42rem' });
+      this.dialogs.open(SettingsDialog, { size: 'settings', closeOnBackdrop: true, headerKey: 'common.settings' });
     },
   };
 

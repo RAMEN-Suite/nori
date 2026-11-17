@@ -21,6 +21,6 @@ export class SettingsButtonComponent {
   public readonly shortcut: InputSignal<string | null> = input<string | null>(null);
 
   protected handleOpen(): void {
-    this.dialogs.open(SettingsDialog, { closeOnBackdrop: true, headerKey: 'common.settings', width: '42rem' });
+    this.dialogs.open(SettingsDialog, { size: 'settings', closeOnBackdrop: true, headerKey: 'common.settings' });
   }
 }

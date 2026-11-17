@@ -63,8 +63,10 @@
                         variant="text"
                         size="xs"
                         shape="circle"
-                        [attr.aria-label]="t(visible().has(node.ref) ? 'editor.hideBaseNode' : 'editor.showBaseNode', { name: node.name })"
-                        [noriTooltip]="t(visible().has(node.ref) ? 'editor.removeFromCanvas' : 'editor.showOnCanvas')"
+                        [attr.aria-label]="
+                          t(visible().has(node.ref) ? 'editor.hideBaseNode' : 'editor.addNamedBaseNode', { name: node.name })
+                        "
+                        [noriTooltip]="t(visible().has(node.ref) ? 'editor.removeFromCanvas' : 'editor.addBaseNode')"
                         placement="bottom"
                         [showDelay]="600"
                         [disabled]="isPending()"

@@ -22,7 +22,6 @@ import { Dialog, DialogHeader, DialogBody, Message, type DialogPosition, type Di
 import { DialogService, type OpenDialog } from '../../../../services/interaction/dialog.service';
 import { ApplicationState } from '../../../../states/application.state';
 import { NodeColoursDialog } from '../../dialogs/node-colors/node-colors.dialog';
-import { SettingsDialog } from '../../dialogs/settings/settings.dialog';
 import { ConfirmationDialog } from '../../dialogs/confirmation/confirmation.dialog';
 
 /** Opens shared dialogs before expanding their dependent removal details. */
@@ -35,7 +34,7 @@ import { ConfirmationDialog } from '../../dialogs/confirmation/confirmation.dial
       <sui-dialog
         #dialog="suiDialog"
         [class.nori-confirmation-host]="isConfirmation()"
-        [class.nori-settings-host]="isSettings()"
+        [class.nori-settings-host]="isSettingsLayout()"
         [class.nori-confirmation-expanded]="isConfirmation() && isPositionReady() && dialogs.isDetailsOpen()"
         [draggable]="false"
         [position]="isContentReady() ? dialogPosition() : 'top'"
@@ -88,7 +87,7 @@ export class DialogHostComponent {
   });
   protected readonly isConfirmation: Signal<boolean> = computed((): boolean => this.content()?.component === ConfirmationDialog);
 
-  protected readonly isSettings: Signal<boolean> = computed((): boolean => this.content()?.component === SettingsDialog);
+  protected readonly isSettingsLayout: Signal<boolean> = computed((): boolean => this.content()?.size === 'settings');
 
   private readonly colourPosition: WritableSignal<DialogPosition> = signal('center');
   private sizeObserver: ResizeObserver | null = null;

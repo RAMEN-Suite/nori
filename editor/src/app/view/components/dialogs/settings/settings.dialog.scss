@@ -59,7 +59,7 @@
 .settings-tabs {
   // Compensate the tab label inset and the dialog body's wider padding.
   margin-left: -1.25rem;
-  margin-right: -1.5rem;
+  margin-inline-end: calc(-1 * var(--sui-dialog-padding));
 }
 
 .settings-page {

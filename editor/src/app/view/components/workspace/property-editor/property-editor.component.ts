@@ -155,7 +155,6 @@ export class PropertyEditorComponent {
 
   protected propertyRules(property: Attribute): void {
     this.dialogs.open(PropertyDetailsDialog, {
-      width: 'var(--nori-dialog-width)',
       header: property.name,
       inputValues: { attribute: property, editable: this.workspace.queries.isNodeEditable() },
     });

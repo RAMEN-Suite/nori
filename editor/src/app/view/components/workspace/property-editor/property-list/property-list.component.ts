@@ -334,7 +334,6 @@ export class PropertyListComponent {
         ? (this.properties().find((item): boolean => item.id === attribute.id) ?? attribute)
         : undefined;
       this.dialogs.open(PropertyDetailsDialog, {
-        width: 'var(--nori-dialog-width)',
         header: current ? current.name : undefined,
         headerKey: current ? undefined : 'editor.addProperty',
         inputValues: { attribute: current, editable, levelIndex },

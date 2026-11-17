@@ -1,7 +1,7 @@
 import { inject, Injectable, signal, type Type, type WritableSignal } from '@angular/core';
 import { TranslocoService } from '@jsverse/transloco';
 
-export type DialogSize = 'compact' | 'form';
+export type DialogSize = 'compact' | 'form' | 'settings';
 
 export interface DialogOptions {
   readonly size?: DialogSize;
@@ -18,6 +18,7 @@ export interface DialogRef {
 }
 
 export interface OpenDialog {
+  readonly size?: DialogSize;
   readonly component: Type<unknown>;
   readonly closeOnBackdrop: boolean;
   readonly title: string;
@@ -25,6 +26,12 @@ export interface OpenDialog {
   readonly width: string | null;
   readonly inputs: Record<string, unknown>;
 }
+
+const dialogWidths: Record<DialogSize, string | null> = {
+  compact: 'var(--nori-dialog-width-compact)',
+  form: null,
+  settings: 'var(--nori-dialog-width-settings)',
+};
 
 /** Owns the active dialog and its pending/error state. */
 @Injectable({ providedIn: 'root' })
@@ -44,7 +51,8 @@ export class DialogService {
       closeOnBackdrop: options.closeOnBackdrop ?? false,
       title: options.header ?? '',
       titleKey: options.headerKey ?? null,
-      width: options.width ?? (options.size === 'compact' ? 'var(--nori-dialog-width-compact)' : null),
+      size: options.size,
+      width: options.width ?? (options.size ? dialogWidths[options.size] : null),
       inputs: options.inputValues ?? {},
     };
 

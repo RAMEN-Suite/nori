@@ -1,7 +1,7 @@
 <div *transloco="let t" class="nori-dialog-content">
   <nori-notifications context="dialog" />
-  <div class="nori-scroll-frame -ms-1 -me-5">
-    <div noriScrollOverflow #scroll="scrollOverflow" class="editor-panel-scroll min-w-0 overflow-y-auto py-1 pe-3">
+  <div class="nori-scroll-frame -me-(--sui-dialog-padding)">
+    <div noriScrollOverflow #scroll="scrollOverflow" class="editor-panel-scroll min-w-0 overflow-y-auto py-1 pe-4">
       <nori-property-form
         [currentAttribute]="attribute()"
         [hideDefinition]="!!attribute()"
